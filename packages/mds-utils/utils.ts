@@ -257,8 +257,11 @@ function pointInFeatureCollection(pt: [number, number], fc: FeatureCollection): 
 
 function pointInShape(
   pt: [number, number] | { lat: number; lng: number },
-  shape: Geometry | FeatureCollection
+  shape: Geometry | FeatureCollection | undefined
 ): boolean {
+  if (shape == null) {
+    return false
+  }
   const point: [number, number] = Array.isArray(pt) ? pt : [pt.lng, pt.lat]
   if (shape.type === 'Point') {
     if (pointInPolygon(point, circleToPolygon(shape.coordinates, RADIUS, NUMBER_OF_EDGES))) {
@@ -580,7 +583,7 @@ function isStateTransitionValid(eventA: VehicleEvent, eventB: VehicleEvent) {
   }
 }
 
-function getPolygon(geographies: Geography[], geography: string): Geometry | FeatureCollection {
+function getPolygon(geographies: Geography[], geography: string): Geometry | FeatureCollection | undefined {
   const res = geographies.find((location: Geography) => {
     return location.geography_id === geography
   })

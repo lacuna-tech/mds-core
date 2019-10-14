@@ -412,6 +412,10 @@ if (pg_info.database) {
 
       it('can edit a Geography', async () => {
         const geography_json = clone(DistrictSeven.geography_json)
+        assert.notEqual(geography_json, null)
+        if (geography_json == null) {
+          return
+        }
         const numFeatures = geography_json.features.length
         geography_json.features = []
         await MDSDBPostgres.editGeography({
@@ -420,6 +424,10 @@ if (pg_info.database) {
           geography_json
         })
         const result = await MDSDBPostgres.readSingleGeography(GEOGRAPHY2_UUID)
+        assert.notEqual(result.geography_json, null)
+        if (result.geography_json == null) {
+          return
+        }
         assert.notEqual(result.geography_json.features.length, numFeatures)
         assert.equal(result.geography_json.features.length, 0)
       })
