@@ -185,7 +185,7 @@ function api(app: express.Express): express.Express {
         return [...acc, geos]
       }, [])
 
-      const polys = geographies.reduce((acc: (Geometry | FeatureCollection)[], geography) => {
+      const polys = geographies.reduce((acc: (Geometry | FeatureCollection | undefined)[], geography) => {
         return [...acc, getPolygon(geographies, geography.geography_id)]
       }, [])
 
