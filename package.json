@@ -4,7 +4,6 @@
   "version": "0.0.6",
   "license": "Apache-2.0",
   "workspaces": [
-    "aws-lambda/*",
     "container-images/*",
     "packages/*"
   ],

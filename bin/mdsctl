@@ -259,7 +259,6 @@ build() {
   (cd ${configs[home]};
     yarn clean;
     yarn;
-    yarn build --ignore=@aws-lambda/*;
     yarn image)
 
   installImages
