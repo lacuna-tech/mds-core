@@ -26,6 +26,7 @@ const InternalServerError = async <T>(req: ApiRequest, res: ApiResponse<T>, err?
   return res.status(500).send({ error: new ServerError(err) })
 }
 
+/* istanbul ignore next */
 function api(app: express.Express): express.Express {
   // ///////////////////// begin middleware ///////////////////////
   app.use(async (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
