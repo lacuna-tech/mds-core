@@ -16,7 +16,7 @@ const request = supertest(ApiServer(api))
 describe('Verify API', () => {
   it('About', done => {
     request
-      .get('/identity')
+      .get('/')
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
