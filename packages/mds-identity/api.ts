@@ -1,0 +1,51 @@
+/*
+    Copyright 2019 City of Los Angeles.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ */
+
+import express from 'express'
+import { ServerError, AuthorizationError } from '@mds-core/mds-utils'
+import logger from '@mds-core/mds-logger'
+import { ApiResponse, ApiRequest } from '@mds-core/mds-api-server'
+
+/* istanbul ignore next */
+const InternalServerError = async <T>(req: ApiRequest, res: ApiResponse<T>, err?: string | Error) => {
+  // 500 Internal Server Error
+  await logger.error(req.method, req.originalUrl, err)
+  return res.status(500).send({ error: new ServerError(err) })
+}
+
+/* istanbul ignore next */
+function api(app: express.Express): express.Express {
+  // ///////////////////// begin middleware ///////////////////////
+  app.use(async (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
+    if (!(req.path.includes('/health') || req.path === '/')) {
+      try {
+        if (!res.locals.claims) {
+          return res.status(401).send({ error: new AuthorizationError('missing_claims') })
+        }
+      } catch (err) {
+        /* istanbul ignore next */
+        return InternalServerError(req, res, err)
+      }
+    }
+    logger.info(req.method, req.originalUrl)
+    return next()
+  })
+  // ///////////////////// begin middleware ///////////////////////
+
+  return app
+}
+
+export { api }
