@@ -71,6 +71,15 @@ apis:
     migration: false
     useCache: true
     useEvents: true
+  mds-identity:
+    enabled: true
+    pathPrefix: /identity
+    port: 4008
+    version: latest
+    useDB: false
+    migration: false
+    useCache: false
+    useEvents: false
 timezone: America/Los_Angeles
 registry:
 useLatestImage: true
@@ -118,16 +127,16 @@ fluentbit:
       index: kubernetes_cluster
       type: flb_type
       logstash_prefix: kubernetes_cluster
-      replace_dots: "On"
-      time_key: "@timestamp"
+      replace_dots: 'On'
+      time_key: '@timestamp'
       # Optional username credential for Elastic X-Pack access
       http_user:
       # Password for user defined in HTTP_User
       http_passwd:
       # Optional TLS encryption to ElasticSearch instance
-      tls: "on"
-      tls_verify: "off"
+      tls: 'on'
+      tls_verify: 'off'
       # TLS certificate for the Elastic (in PEM format). Use if tls=on and tls_verify=on.
-      tls_ca: ""
+      tls_ca: ''
       # TLS debugging levels = 1-4
       tls_debug: 4
