@@ -15,9 +15,18 @@
  */
 
 import express from 'express'
-import { ServerError, AuthorizationError } from '@mds-core/mds-utils'
+import urls from 'url'
+import qs from 'querystring'
+import { pathsFor, ServerError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { ApiResponse, ApiRequest } from '@mds-core/mds-api-server'
+import { cleanEnv, url } from 'envalid'
+import { IdentityApiGetAuthorizeRequest, IdentityApiGetAuthorizeReponse } from './types'
+
+const env = cleanEnv(process.env, {
+  OAuthAuthorizationURL: url(),
+  OAuthTokenURL: url()
+})
 
 /* istanbul ignore next */
 const InternalServerError = async <T>(req: ApiRequest, res: ApiResponse<T>, err?: string | Error) => {
@@ -29,20 +38,36 @@ const InternalServerError = async <T>(req: ApiRequest, res: ApiResponse<T>, err?
 function api(app: express.Express): express.Express {
   // ///////////////////// begin middleware ///////////////////////
   app.use(async (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
-    if (!(req.path.includes('/health') || req.path === '/')) {
-      try {
-        if (!res.locals.claims) {
-          return res.status(401).send({ error: new AuthorizationError('missing_claims') })
-        }
-      } catch (err) {
-        /* istanbul ignore next */
-        return InternalServerError(req, res, err)
-      }
-    }
     logger.info(req.method, req.originalUrl)
     return next()
   })
   // ///////////////////// begin middleware ///////////////////////
+
+  app.get(pathsFor('/authorize'), async (req: IdentityApiGetAuthorizeRequest, res: IdentityApiGetAuthorizeReponse) => {
+    const { client_id, audience, code_challenge, scope, redirect_uri } = req.query
+
+    res.redirect(
+      302,
+      urls.format({
+        ...urls.parse(env.OAuthAuthorizationURL),
+        search: qs.stringify({
+          client_id,
+          audience,
+          code_challenge,
+          code_challenge_method: 'S256',
+          scope,
+          protocol: 'oauth2',
+          response_type: 'code',
+          redirect_uri: urls.format({
+            protocol: req.get('x-forwarded-proto') || req.protocol,
+            host: req.get('host'),
+            pathname: `${req.path}/callback`
+          }),
+          state: qs.stringify({ redirect_uri })
+        })
+      })
+    )
+  })
 
   return app
 }

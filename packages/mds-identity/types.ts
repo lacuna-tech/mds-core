@@ -14,12 +14,21 @@
     limitations under the License.
  */
 
-import { ApiRequest } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
 
 // Place newer versions at the beginning of the list
 const IDENTITY_API_VERSIONS = ['0.1.0'] as const
 type IDENTITY_API_VERSION = typeof IDENTITY_API_VERSIONS[number]
 export const [IdentityApiCurrentVersion] = IDENTITY_API_VERSIONS
 
-// Allow adding type definitions for Express Request objects
-export type IdentityApiRequest = ApiRequest
+// GET Authorize
+
+export type IdentityApiGetAuthorizeReponse = ApiResponse<{}>
+
+export interface IdentityApiGetAuthorizeRequest extends ApiRequest {
+  query: Partial<
+    {
+      [P in 'redirect_uri' | 'code_challenge' | 'client_id' | 'audience' | 'scope']: string
+    }
+  >
+}
