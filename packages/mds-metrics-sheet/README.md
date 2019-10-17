@@ -2,7 +2,7 @@
 Automate reporting api metrics into a LADOT compliance spreadsheet
 ```
 AUTH0_DOMAIN=https://auth.ladot.io
-AUDIENCE=https://api.ladot.io/
+AUDIENCE=https://api.ladot.io/agency/
 CLIENT_ID=<client_id with admin>
 CLIENT_SECRET=<client_secret>
 SPREADSHEET_ID=<google spreadsheet id to update>
