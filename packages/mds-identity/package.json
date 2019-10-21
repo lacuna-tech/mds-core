@@ -19,16 +19,9 @@
     "watch:exec": "yarn build && DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config"
   },
   "dependencies": {
-    "@mds-core/mds-api-helpers": "0.1.13",
     "@mds-core/mds-api-server": "0.1.13",
-    "@mds-core/mds-logger": "0.1.11",
-    "@mds-core/mds-types": "0.1.10",
-    "@mds-core/mds-utils": "0.1.13",
-    "@types/http-status-codes": "1.2.0",
-    "axios": "0.19.0",
     "envalid": "5.0.0",
-    "express": "4.17.1",
-    "express-validator": "6.2.0"
+    "express": "4.17.1"
   },
   "devDependencies": {
     "@mds-core/mds-test-data": "0.1.13"
