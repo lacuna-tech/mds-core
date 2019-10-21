@@ -16,7 +16,7 @@
   "dependencies": {
     "@mds-core/mds-logger": "0.1.12",
     "@mds-core/mds-types": "0.1.11",
-    "bluebird": "3.5.5",
+    "bluebird": "3.7.1",
     "cloudevents-sdk": "0.3.2",
     "flat": "4.1.0",
     "node-gzip": "1.1.2",
