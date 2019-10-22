@@ -1,7 +1,6 @@
 import GoogleSpreadsheet from 'google-spreadsheet'
 
 import { promisify } from 'util'
-import requestPromise from 'request-promise'
 import log from '@mds-core/mds-logger'
 import {
   JUMP_PROVIDER_ID,
@@ -14,7 +13,16 @@ import {
   BOLT_PROVIDER_ID
 } from '@mds-core/mds-providers'
 import { VEHICLE_EVENT, EVENT_STATUS_MAP, VEHICLE_STATUS } from '@mds-core/mds-types'
-import { VehicleCountResponse, LastDayStatsResponse, MetricsSheetRow, VehicleCountRow } from './types'
+import {
+  VehicleCountResponse,
+  LastDayStatsResponse,
+  MetricsSheetRow,
+  VehicleCountRow,
+  GoogleSheetCreds,
+  GoogleSheet,
+  GoogleSheetInfo
+} from './types'
+import { requestPromiseExceptionHelper } from './utils'
 
 // The list of providers ids on which to report
 export const reportProviders = [
@@ -27,6 +35,35 @@ export const reportProviders = [
   SHERPA_LA_PROVIDER_ID,
   BOLT_PROVIDER_ID
 ]
+
+export function eventCountsToStatusCounts(events: { [s in VEHICLE_EVENT]: number }) {
+  return (Object.keys(events) as VEHICLE_EVENT[]).reduce(
+    (acc: { [s in VEHICLE_STATUS]: number }, event) => {
+      const status = EVENT_STATUS_MAP[event]
+      return Object.assign(acc, {
+        [status]: acc[status] + events[event]
+      })
+    },
+    {
+      available: 0,
+      unavailable: 0,
+      reserved: 0,
+      trip: 0,
+      removed: 0,
+      inactive: 0,
+      elsewhere: 0
+    }
+  )
+}
+
+export function sum(arr: number[]) {
+  return arr.reduce((total, amount) => total + (amount || 0))
+}
+
+// Round percent to two decimals
+export function percent(a: number, total: number) {
+  return Math.round(((total - a) / total) * 10000) / 10000
+}
 
 export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDayStatsResponse) => {
   const dateOptions = { timeZone: 'America/Los_Angeles', day: '2-digit', month: '2-digit', year: 'numeric' }
@@ -109,76 +146,72 @@ export async function getProviderMetrics(iter: number): Promise<MetricsSheetRow[
     json: true
   }
   try {
-    const token = await requestPromise(token_options)
+    const token = await requestPromiseExceptionHelper(token_options)
     const counts_options = {
-      uri: 'https://api.ladot.io/daily/admin/vehicle_counts',
+      url: 'https://api.ladot.io/daily/admin/vehicle_counts',
       headers: { authorization: `Bearer ${token.access_token}` },
       json: true
     }
     const last_options = {
-      uri: 'https://api.ladot.io/daily/admin/last_day_stats_by_provider',
+      url: 'https://api.ladot.io/daily/admin/last_day_stats_by_provider',
       headers: { authorization: `Bearer ${token.access_token}` },
       json: true
     }
 
-    const counts: VehicleCountResponse = await requestPromise(counts_options)
-    const last: LastDayStatsResponse = await requestPromise(last_options)
+    const counts: VehicleCountResponse = await requestPromiseExceptionHelper(counts_options)
+    const last: LastDayStatsResponse = await requestPromiseExceptionHelper(last_options)
 
     const rows: MetricsSheetRow[] = counts
       .filter(p => reportProviders.includes(p.provider_id))
       .map(provider => mapProviderToPayload(provider, last))
     return rows
   } catch (err) {
-    await log.error('getProviderMetrics', err)
+    await log.error(`getProviderMetrics() API call ${err.url}`, err)
     return getProviderMetrics(iter + 1)
   }
 }
 
-const creds = {
-  client_email: process.env.GOOGLE_CLIENT_EMAIL,
+const creds: GoogleSheetCreds = {
+  // TODO type this more carefully
+  client_email: process.env.GOOGLE_CLIENT_EMAIL || 'foo@foo.com',
   private_key: process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.split('\\n').join('\n') : null
 }
 
-export function sum(arr: number[]) {
-  return arr.reduce((total, amount) => total + (amount || 0))
+/* istanbul ignore next */
+export const getSpreadsheetInstance = (spreadsheetId: string): GoogleSheet<MetricsSheetRow> => {
+  return new GoogleSpreadsheet(spreadsheetId)
 }
 
-// Round percent to two decimals
-export function percent(a: number, total: number) {
-  return Math.round(((total - a) / total) * 10000) / 10000
+export const getDocInfo = async () => {
+  if (process.env.SPREADSHEET_ID) {
+    const spreadsheetInstance = getSpreadsheetInstance(process.env.SPREADSHEET_ID)
+    await promisify(spreadsheetInstance.useServiceAccountAuth)(creds)
+    const info = await promisify(spreadsheetInstance.getInfo)()
+    log.info(`Loaded doc: ${info.title} by ${info.author.email}`)
+    return info
+  }
+  log.info('No SPREADSHEET_ID env var specified')
 }
 
-export function eventCountsToStatusCounts(events: { [s in VEHICLE_EVENT]: number }) {
-  return (Object.keys(events) as VEHICLE_EVENT[]).reduce(
-    (acc: { [s in VEHICLE_STATUS]: number }, event) => {
-      const status = EVENT_STATUS_MAP[event]
-      return Object.assign(acc, {
-        [status]: acc[status] + events[event]
-      })
-    },
-    {
-      available: 0,
-      unavailable: 0,
-      reserved: 0,
-      trip: 0,
-      removed: 0,
-      inactive: 0,
-      elsewhere: 0
-    }
-  )
+export const getSheet = async (info: GoogleSheetInfo<MetricsSheetRow>, sheetName: string) => {
+  const sheet = info.worksheets.find((s: { title: string; rowCount: number }) => s.title === sheetName)
+  if (sheet) {
+    log.info(`${sheetName} sheet: ${sheet.title} ${sheet.rowCount}x${sheet.colCount}`)
+  } else {
+    log.info(`Sheet ${sheetName} not found!`)
+  }
+  return sheet
 }
 
 export async function appendSheet(sheetName: string, rows: MetricsSheetRow[]) {
-  const doc = new GoogleSpreadsheet(process.env.SPREADSHEET_ID)
-  await promisify(doc.useServiceAccountAuth)(creds)
-  const info = await promisify(doc.getInfo)()
-  log.info(`Loaded doc: ${info.title} by ${info.author.email}`)
-  const sheet = info.worksheets.filter((s: { title: string; rowCount: number } & unknown) => s.title === sheetName)[0]
-  log.info(`${sheetName} sheet: ${sheet.title} ${sheet.rowCount}x${sheet.colCount}`)
-  if (sheet.title === sheetName) {
-    const inserted = rows.map(insert_row => promisify(sheet.addRow)(insert_row))
-    log.info(`Wrote ${inserted.length} rows.`)
-    return Promise.all(inserted)
+  const info = await getDocInfo()
+  if (info) {
+    const sheet = await getSheet(info, sheetName)
+    if (sheet && sheet.title === sheetName) {
+      const inserted = rows.map(insert_row => promisify(sheet.addRow)(insert_row))
+      log.info(`Wrote ${inserted.length} rows.`)
+      return Promise.all(inserted)
+    }
   }
   log.info('Wrong sheet!')
 }
