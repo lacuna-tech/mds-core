@@ -36,12 +36,19 @@ export function eventCountsToStatusCounts(events: { [s in VEHICLE_EVENT]: number
 }
 
 export function sum(arr: number[]): number {
-  return arr.reduce((total, amount) => total + (amount || 0))
+  return arr.reduce((total, amount) => total + amount)
 }
 
 // Round percent to two decimals
 export function percent(a: number, total: number): number {
   return Math.round(((total - a) / total) * 10000) / 10000
+}
+
+export const defaultToZero = (num?: number) => {
+  if (num === undefined) {
+    return 0
+  }
+  return num
 }
 
 export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDayStatsResponse) => {
@@ -69,13 +76,13 @@ export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDaySta
     ends = event_counts_last_24h.trip_end
     enters = event_counts_last_24h.trip_enter
     leaves = event_counts_last_24h.trip_leave
-    telems = last[provider.provider_id].telemetry_counts_last_24h || 0
+    telems = defaultToZero(last[provider.provider_id].telemetry_counts_last_24h)
     if (late_telemetry_counts_last_24h !== undefined && late_telemetry_counts_last_24h !== null) {
-      telem_sla = telems ? percent(late_telemetry_counts_last_24h, telems) : 0
+      telem_sla = percent(late_telemetry_counts_last_24h, telems)
     }
     if (late_event_counts_last_24h !== undefined && late_event_counts_last_24h !== null) {
-      start_sla = starts ? percent(late_event_counts_last_24h.trip_start, starts) : 0
-      end_sla = ends ? percent(late_event_counts_last_24h.trip_end, ends) : 0
+      start_sla = percent(late_event_counts_last_24h.trip_start, starts)
+      end_sla = percent(late_event_counts_last_24h.trip_end, ends)
     }
   }
   return {
@@ -89,7 +96,7 @@ export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDaySta
       provider.status.reserved
     ]),
     validtrips: 'tbd', // Placeholder for next day valid trip analysis
-    trips: last[provider.provider_id].trips_last_24h || 0,
+    trips: defaultToZero(last[provider.provider_id].trips_last_24h),
     servicestart: event_counts.service_start,
     providerdropoff: event_counts.provider_drop_off,
     tripstart: starts,
