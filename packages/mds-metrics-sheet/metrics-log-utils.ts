@@ -3,18 +3,17 @@ import GoogleSpreadsheet from 'google-spreadsheet'
 import { promisify } from 'util'
 import log from '@mds-core/mds-logger'
 import { VEHICLE_EVENT, EVENT_STATUS_MAP, VEHICLE_STATUS } from '@mds-core/mds-types'
-import requestPromise from 'request-promise'
 import {
-  VehicleCountResponse,
   LastDayStatsResponse,
   MetricsSheetRow,
   VehicleCountRow,
   GoogleSheetCreds,
   GoogleSheet,
   GoogleSheetInfo,
-  SpreadsheetWorksheet
+  SpreadsheetWorksheet,
+  ProviderMetrics
 } from './types'
-import { reportProviders, getAuthToken } from './shared-utils'
+import { reportProviders, getAuthToken, getVehicleCounts, getLastDayStats } from './shared-utils'
 
 export function eventCountsToStatusCounts(events: { [s in VEHICLE_EVENT]: number }) {
   return (Object.keys(events) as VEHICLE_EVENT[]).reduce(
@@ -108,35 +107,30 @@ export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDaySta
   }
 }
 
-export const getProviderMetrics = async (iter: number): Promise<MetricsSheetRow[]> => {
-  /* after 10 failed iterations, give up */
-  if (iter >= 10) {
-    throw new Error(`Failed to write to sheet after 10 tries!`)
+export const getProviderMetrics = async (iter: number): Promise<ProviderMetrics> => {
+  const MAX_ITER = 10
+  /* after MAX_ITER failed iterations, give up */
+  if (iter >= MAX_ITER) {
+    throw new Error(`Failed to write to sheet after ${MAX_ITER} tries!`)
   }
-  try {
-    const token = await getAuthToken()
-    const counts_options = {
-      url: 'https://api.ladot.io/daily/admin/vehicle_counts',
-      headers: { authorization: `Bearer ${token.access_token}` },
-      json: true
-    }
-    const last_options = {
-      url: 'https://api.ladot.io/daily/admin/last_day_stats_by_provider',
-      headers: { authorization: `Bearer ${token.access_token}` },
-      json: true
-    }
-
-    const counts: VehicleCountResponse = await requestPromise.get(counts_options)
-    const last: LastDayStatsResponse = await requestPromise.get(last_options)
-
-    const rows: MetricsSheetRow[] = counts
-      .filter(p => reportProviders.includes(p.provider_id))
-      .map(provider => mapProviderToPayload(provider, last))
-    return rows
-  } catch (err) {
-    await log.error(`getProviderMetrics() API call TODO log url`, err)
+  const token = await getAuthToken()
+  if (token == null) {
     return getProviderMetrics(iter + 1)
   }
+  const vehicleCounts = await getVehicleCounts(token)
+  const lastDayStats = await getLastDayStats(token)
+  if (vehicleCounts == null || lastDayStats === null) {
+    return getProviderMetrics(iter + 1)
+  }
+  return { vehicleCounts, lastDayStats }
+}
+
+export const mapProviderMetricsToMetricsSheetRow = (providerMetrics: ProviderMetrics) => {
+  const { vehicleCounts, lastDayStats } = providerMetrics
+  const rows: MetricsSheetRow[] = vehicleCounts
+    .filter(p => reportProviders.includes(p.provider_id))
+    .map(provider => mapProviderToPayload(provider, lastDayStats))
+  return rows
 }
 
 const creds: GoogleSheetCreds = {

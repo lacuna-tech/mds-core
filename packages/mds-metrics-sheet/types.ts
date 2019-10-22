@@ -74,3 +74,13 @@ export interface GoogleSheet<RowType> {
   useServiceAccountAuth: (creds: GoogleSheetCreds, callback: Function) => void
   getInfo: (callback: (err: Error, info: GoogleSheetInfo<RowType>) => void) => void
 }
+
+export interface ProviderMetrics {
+  vehicleCounts: VehicleCountResponse
+  lastDayStats: LastDayStatsResponse
+}
+
+export interface VehicleCountSpreadsheetRow {
+  date: string
+  name: string
+}
