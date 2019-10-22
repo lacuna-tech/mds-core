@@ -1,5 +1,5 @@
 import assert from 'assert'
-import Sinon, { SinonFake } from 'sinon'
+import Sinon from 'sinon'
 import log from '@mds-core/mds-logger'
 import * as metricsLogUtils from '../metrics-log-utils'
 import { getProvider, getLastDayStatsResponse } from './utils'
@@ -16,10 +16,16 @@ const getFakeSpreadsheetInfo = () => {
 }
 
 const getFakeSpreadsheetInstance = () => {
+  /* eslint-disable no-empty-pattern,promise/prefer-await-to-callbacks */
   return {
-    useServiceAccountAuth: Sinon.fake.call(null, ({}, callback : Function) => { callback() }),
-    getInfo: Sinon.fake.call(null, (callback : Function) => { callback(null, getFakeSpreadsheetInfo()) }),
+    useServiceAccountAuth: Sinon.fake.call(null, ({}, callback: Function) => {
+      callback()
+    }),
+    getInfo: Sinon.fake.call(null, (callback: Function) => {
+      callback(null, getFakeSpreadsheetInfo())
+    })
   }
+  /* eslint-enable no-empty-pattern,promise/prefer-await-to-callbacks */
 }
 
 const getMockedSheet = () => {
@@ -243,7 +249,12 @@ describe('Metrics Log utils', () => {
       assert.strictEqual(fakeSpreadsheetInstance.useServiceAccountAuth.calledOnce, true)
       const fakeSpreadsheetInfo = getFakeSpreadsheetInfo()
       assert.deepStrictEqual(info, fakeSpreadsheetInfo)
-      assert.strictEqual(fakeLogInfo.calledOnceWithExactly(`Loaded doc: ${fakeSpreadsheetInfo.title} by ${fakeSpreadsheetInfo.author.email}`), true)
+      assert.strictEqual(
+        fakeLogInfo.calledOnceWithExactly(
+          `Loaded doc: ${fakeSpreadsheetInfo.title} by ${fakeSpreadsheetInfo.author.email}`
+        ),
+        true
+      )
       Sinon.restore()
     })
 
