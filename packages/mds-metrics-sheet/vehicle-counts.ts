@@ -13,13 +13,11 @@
     See the License for the specific language governing permissions and
     limitations under the License.
  */
-import requestPromise from 'request-promise'
-
 import log from '@mds-core/mds-logger'
 
-import { VehicleCountResponse, VehicleCountRow } from './types'
-import { appendSheet } from './metrics-log-utils'
-import { reportProviders, getAuthToken } from './shared-utils'
+import { VehicleCountRow, ProviderMetrics, VehicleCountSpreadsheetRow } from './types'
+import { appendSheet, getProviderMetrics } from './metrics-log-utils'
+import { reportProviders } from './shared-utils'
 
 export function sumColumns(keysToSummarize: string[], row: VehicleCountRow) {
   return keysToSummarize.reduce((acc, veniceAreaKey) => acc + row.areas_48h[veniceAreaKey] || 0, 0)
@@ -42,35 +40,19 @@ export function mapRow(row: VehicleCountRow) {
   }
 }
 
-async function getProviderMetrics(iter: number): Promise<({ date: string; name: string } & unknown)[]> {
-  /* after 10 failed iterations, give up */
-  if (iter >= 10) {
-    throw new Error(`Failed to write to sheet after 10 tries!`)
-  }
-
-  try {
-    const token = await getAuthToken()
-    const counts_options = {
-      uri: 'https://api.ladot.io/daily/admin/vehicle_counts',
-      headers: { authorization: `Bearer ${token.access_token}` },
-      json: true
-    }
-
-    const counts: VehicleCountResponse = await requestPromise(counts_options)
-    const rows: ({ date: string; name: string } & unknown)[] = counts
-      .filter(p => reportProviders.includes(p.provider_id))
-      .map(mapRow)
-    return rows
-  } catch (err) {
-    await log.error('getProviderMetrics', err)
-    return getProviderMetrics(iter + 1)
-  }
+export const mapProviderMetricsToVehicleCountRows = (providerMetrics: ProviderMetrics) => {
+  const { vehicleCounts } = providerMetrics
+  const rows: VehicleCountSpreadsheetRow[] = vehicleCounts
+    .filter(p => reportProviders.includes(p.provider_id))
+    .map(mapRow)
+  return rows
 }
 
 export const VehicleCountsHandler = async () => {
   try {
-    const rows = await getProviderMetrics(0)
-    await appendSheet('Vehicle Counts', rows)
+    const providerMetrics = await getProviderMetrics(0)
+    const rows = mapProviderMetricsToVehicleCountRows(providerMetrics)
+    await appendSheet<VehicleCountSpreadsheetRow>('Vehicle Counts', rows)
   } catch (err) {
     await log.error('VehicleCountsHandler', err)
   }

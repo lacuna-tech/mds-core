@@ -1,5 +1,5 @@
 import log from '@mds-core/mds-logger'
-import { getProviderMetrics, appendSheet } from './metrics-log-utils'
+import { getProviderMetrics, appendSheet, mapProviderMetricsToMetricsSheetRow } from './metrics-log-utils'
 
 /*
     Copyright 2019 City of Los Angeles.
@@ -19,7 +19,8 @@ import { getProviderMetrics, appendSheet } from './metrics-log-utils'
 
 export const MetricsLogHandler = async () => {
   try {
-    const rows = await getProviderMetrics(0)
+    const providerMetrics = await getProviderMetrics(0)
+    const rows = mapProviderMetricsToMetricsSheetRow(providerMetrics)
     await appendSheet('Metrics Log', rows)
   } catch (err) {
     await log.error('MetricsLogHandler', err)
