@@ -44,3 +44,33 @@ export interface MetricsSheetRow {
   tripstartsla: number
   tripendsla: number
 }
+
+export interface GoogleSheetCreds {
+  client_email: string
+  private_key: string | null
+}
+
+export interface SpreadsheetWorksheet<RowType> {
+  url: string
+  id: string
+  title: string
+  rowCount: number
+  colCount: number
+  addRow: (new_row: RowType, callback: (err: Error) => void) => void
+}
+
+export interface GoogleSheetInfo<RowType> {
+  id: string
+  title: string
+  updated: string
+  author: {
+    name: string
+    email: string
+  }
+  worksheets: SpreadsheetWorksheet<RowType>[]
+}
+
+export interface GoogleSheet<RowType> {
+  useServiceAccountAuth: (creds: GoogleSheetCreds, callback: Function) => void
+  getInfo: (callback: (err: Error, info: GoogleSheetInfo<RowType>) => void) => void
+}

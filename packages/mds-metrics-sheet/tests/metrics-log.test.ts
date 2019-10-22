@@ -1,9 +1,8 @@
 import Sinon from 'sinon'
 import assert from 'assert'
+import log from '@mds-core/mds-logger'
 import * as MetricsLogUtils from '../metrics-log-utils'
 import { MetricsLogHandler } from '../metrics-log'
-import log from '@mds-core/mds-logger'
-
 
 describe('MDS Metrics log', () => {
   describe('MetricsLogHandler', () => {
