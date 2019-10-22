@@ -1,8 +1,8 @@
 import assert from 'assert'
 import Sinon from 'sinon'
-import requestPromise from 'request-promise'
 import log from '@mds-core/mds-logger'
 import * as metricsLogUtils from '../metrics-log-utils'
+import * as sharedUtils from '../shared-utils'
 import { VehicleCountRow } from '../types'
 
 import { mapRow, sumColumns } from '../vehicle-counts'
@@ -117,13 +117,70 @@ describe('MDS Metrics Sheet', () => {
   })
 
   describe('getProviderMetrics()', () => {
-    it('Retries 10 times', async () => {
-      const fakeRejects = Sinon.fake.rejects('it-broke')
-      Sinon.replace(requestPromise, 'post', fakeRejects)
-      Sinon.replace(log, 'error', Sinon.fake.returns('fake-error-log'))
-      await assertThrowsAsync(async () => metricsLogUtils.getProviderMetrics(0), /Error/)
-      assert.strictEqual(fakeRejects.callCount, 10)
-      Sinon.restore()
+    describe('Retry logic', () => {
+      it('Gives up after 10th try', async () => {
+        await assertThrowsAsync(async () => metricsLogUtils.getProviderMetrics(10), /Error/)
+      })
+
+      it('Retries if we get a null auth token', async () => {
+        const providerSpy = Sinon.spy(metricsLogUtils.getProviderMetrics)
+        Sinon.replace(metricsLogUtils, 'getProviderMetrics', providerSpy)
+        Sinon.replace(log, 'error', Sinon.fake.returns('fake-error-log'))
+        const fakeGetAuthToken = Sinon.fake.resolves(null)
+        const fakeGetVehicleCounts = Sinon.fake.resolves('fake-counts')
+        const fakeGetLastDayStats = Sinon.fake.resolves('fake-stats')
+        Sinon.replace(sharedUtils, 'getAuthToken', fakeGetAuthToken)
+        Sinon.replace(sharedUtils, 'getVehicleCounts', fakeGetVehicleCounts)
+        Sinon.replace(sharedUtils, 'getLastDayStats', fakeGetLastDayStats)
+        await assertThrowsAsync(async () => metricsLogUtils.getProviderMetrics(0), /Error/)
+        Sinon.restore()
+      })
+
+      it('Retries if we get a null count', async () => {
+        const providerSpy = Sinon.spy(metricsLogUtils.getProviderMetrics)
+        Sinon.replace(metricsLogUtils, 'getProviderMetrics', providerSpy)
+        Sinon.replace(log, 'error', Sinon.fake.returns('fake-error-log'))
+        const fakeGetAuthToken = Sinon.fake.resolves('fake-token')
+        const fakeGetVehicleCounts = Sinon.fake.resolves(null)
+        const fakeGetLastDayStats = Sinon.fake.resolves('fake-stats')
+        Sinon.replace(sharedUtils, 'getAuthToken', fakeGetAuthToken)
+        Sinon.replace(sharedUtils, 'getVehicleCounts', fakeGetVehicleCounts)
+        Sinon.replace(sharedUtils, 'getLastDayStats', fakeGetLastDayStats)
+        await assertThrowsAsync(async () => metricsLogUtils.getProviderMetrics(0), /Error/)
+        Sinon.restore()
+      })
+
+      it('Retries if we get a null last day stats', async () => {
+        const providerSpy = Sinon.spy(metricsLogUtils.getProviderMetrics)
+        Sinon.replace(metricsLogUtils, 'getProviderMetrics', providerSpy)
+        Sinon.replace(log, 'error', Sinon.fake.returns('fake-error-log'))
+        const fakeGetAuthToken = Sinon.fake.resolves('fake-token')
+        const fakeGetVehicleCounts = Sinon.fake.resolves('fake-count')
+        const fakeGetLastDayStats = Sinon.fake.resolves(null)
+        Sinon.replace(sharedUtils, 'getAuthToken', fakeGetAuthToken)
+        Sinon.replace(sharedUtils, 'getVehicleCounts', fakeGetVehicleCounts)
+        Sinon.replace(sharedUtils, 'getLastDayStats', fakeGetLastDayStats)
+        await assertThrowsAsync(async () => metricsLogUtils.getProviderMetrics(0), /Error/)
+        Sinon.restore()
+      })
+
+      it('Returns the correct payload', async () => {
+        const providerSpy = Sinon.spy(metricsLogUtils.getProviderMetrics)
+        Sinon.replace(metricsLogUtils, 'getProviderMetrics', providerSpy)
+        Sinon.replace(log, 'error', Sinon.fake.returns('fake-error-log'))
+        const fakeGetAuthToken = Sinon.fake.resolves('fake-token')
+        const fakeGetVehicleCounts = Sinon.fake.resolves('fake-count')
+        const fakeGetLastDayStats = Sinon.fake.resolves('fake-stats')
+        Sinon.replace(sharedUtils, 'getAuthToken', fakeGetAuthToken)
+        Sinon.replace(sharedUtils, 'getVehicleCounts', fakeGetVehicleCounts)
+        Sinon.replace(sharedUtils, 'getLastDayStats', fakeGetLastDayStats)
+        const providerMetrics = await metricsLogUtils.getProviderMetrics(0)
+        assert.deepStrictEqual(providerMetrics, {
+          vehicleCounts: 'fake-count',
+          lastDayStats: 'fake-stats'
+        })
+        Sinon.restore()
+      })
     })
   })
 })

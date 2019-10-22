@@ -3,27 +3,7 @@ import assert from 'assert'
 import log from '@mds-core/mds-logger'
 import * as MetricsLogUtils from '../metrics-log-utils'
 import * as VehicleCounts from '../vehicle-counts'
-import { VehicleCountRow } from '../types'
-import { reportProviders } from '../shared-utils'
-
-const getFakeVehicleCounts = () => {
-  const fakeVehicleCounts = [] as VehicleCountRow[]
-  const NUM_FAKE_VEHICLE_COUNTS = 10
-  for (let i = 0; i < NUM_FAKE_VEHICLE_COUNTS; i++) {
-    fakeVehicleCounts.push({
-      provider_id: reportProviders[i % reportProviders.length]
-    } as VehicleCountRow)
-  }
-  fakeVehicleCounts[0].provider_id = 'fake-provider-id'
-  return fakeVehicleCounts
-}
-
-const getFakeProviderMetrics = () => {
-  return {
-    lastDayStats: {},
-    vehicleCounts: getFakeVehicleCounts()
-  }
-}
+import { getFakeProviderMetrics } from './utils'
 
 describe('Vehicle Counts', () => {
   describe('VehicleCountsHandler', () => {

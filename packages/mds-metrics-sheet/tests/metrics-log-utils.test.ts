@@ -2,7 +2,7 @@ import assert from 'assert'
 import Sinon from 'sinon'
 import log from '@mds-core/mds-logger'
 import * as metricsLogUtils from '../metrics-log-utils'
-import { getProvider, getLastDayStatsResponse } from './utils'
+import { getProvider, getLastDayStatsResponse, getFakeProviderMetrics } from './utils'
 import { MetricsSheetRow, GoogleSheetInfo, SpreadsheetWorksheet } from '../types'
 
 const getFakeWorksheets = () => {
@@ -177,6 +177,39 @@ describe('Metrics Log utils', () => {
       assert.deepStrictEqual(result, expected)
     })
 
+    it('Maps `lastDayStatsResponse` sans `late_telemetry_counts_last_24h` to the correct payload', () => {
+      const provider = getProvider()
+      const lastDayStatsResponse = getLastDayStatsResponse(provider.provider_id)
+      lastDayStatsResponse[provider.provider_id].late_telemetry_counts_last_24h = undefined
+      const result = metricsLogUtils.mapProviderToPayload(provider, lastDayStatsResponse)
+      const expected = {
+        date: result.date,
+        name: 'fake-provider',
+        registered: 42,
+        deployed: 72,
+        validtrips: 'tbd',
+        trips: 1,
+        servicestart: 42,
+        providerdropoff: 42,
+        tripstart: 42,
+        tripend: 42,
+        tripenter: 42,
+        tripleave: 42,
+        telemetry: 5,
+        telemetrysla: 0,
+        tripstartsla: 0,
+        tripendsla: 0,
+        available: 210,
+        unavailable: 42,
+        reserved: 42,
+        trip: 84,
+        removed: 126,
+        inactive: 42,
+        elsewhere: 42
+      }
+      assert.deepStrictEqual(result, expected)
+    })
+
     it('Maps `lastDayStatsResponse` sans `late_event_counts_last_24h` to the correct payload', () => {
       const provider = getProvider()
       const lastDayStatsResponse = getLastDayStatsResponse(provider.provider_id)
@@ -189,6 +222,39 @@ describe('Metrics Log utils', () => {
         deployed: 72,
         validtrips: 'tbd',
         trips: 1,
+        servicestart: 42,
+        providerdropoff: 42,
+        tripstart: 42,
+        tripend: 42,
+        tripenter: 42,
+        tripleave: 42,
+        telemetry: 5,
+        telemetrysla: 0.8,
+        tripstartsla: 0,
+        tripendsla: 0,
+        available: 210,
+        unavailable: 42,
+        reserved: 42,
+        trip: 84,
+        removed: 126,
+        inactive: 42,
+        elsewhere: 42
+      }
+      assert.deepStrictEqual(result, expected)
+    })
+
+    it('Maps `lastDayStatsResponse` sans `last[provider.provider_id].trips_last_24h` to the correct payload', () => {
+      const provider = getProvider()
+      const lastDayStatsResponse = getLastDayStatsResponse(provider.provider_id)
+      lastDayStatsResponse[provider.provider_id].trips_last_24h = undefined
+      const result = metricsLogUtils.mapProviderToPayload(provider, lastDayStatsResponse)
+      const expected = {
+        date: result.date,
+        name: 'fake-provider',
+        registered: 42,
+        deployed: 72,
+        validtrips: 'tbd',
+        trips: 0,
         servicestart: 42,
         providerdropoff: 42,
         tripstart: 42,
@@ -316,6 +382,28 @@ describe('Metrics Log utils', () => {
       const spreadsheetId = metricsLogUtils.getSpreadsheetId()
       assert.strictEqual(spreadsheetId, 'fake-spreadsheet-id')
       process.env.SPREADSHEET_ID = oldSpreadsheetId
+    })
+  })
+
+  describe('mapProviderMetricsToVehicleCountRows()', () => {
+    it('Maps metrics to vehicle count rows', () => {
+      const fakeProviderMetrics = getFakeProviderMetrics()
+      const fakeMapRow = Sinon.fake.returns('fake-row')
+      Sinon.replace(metricsLogUtils, 'mapProviderToPayload', fakeMapRow)
+      const rows = metricsLogUtils.mapProviderMetricsToMetricsSheetRow(fakeProviderMetrics)
+      const expectedRows = [
+        'fake-row',
+        'fake-row',
+        'fake-row',
+        'fake-row',
+        'fake-row',
+        'fake-row',
+        'fake-row',
+        'fake-row',
+        'fake-row'
+      ]
+      assert.deepStrictEqual(rows, expectedRows)
+      Sinon.restore()
     })
   })
 })
