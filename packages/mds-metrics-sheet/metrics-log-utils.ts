@@ -35,12 +35,12 @@ export function eventCountsToStatusCounts(events: { [s in VEHICLE_EVENT]: number
   )
 }
 
-export function sum(arr: number[]) {
+export function sum(arr: number[]): number {
   return arr.reduce((total, amount) => total + (amount || 0))
 }
 
 // Round percent to two decimals
-export function percent(a: number, total: number) {
+export function percent(a: number, total: number): number {
   return Math.round(((total - a) / total) * 10000) / 10000
 }
 
@@ -65,10 +65,10 @@ export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDaySta
   if (event_counts_last_24h) {
     event_counts = event_counts_last_24h
     status_counts = eventCountsToStatusCounts(event_counts_last_24h)
-    starts = event_counts_last_24h.trip_start || 0
-    ends = event_counts_last_24h.trip_end || 0
-    enters = event_counts_last_24h.trip_enter || 0
-    leaves = event_counts_last_24h.trip_leave || 0
+    starts = event_counts_last_24h.trip_start
+    ends = event_counts_last_24h.trip_end
+    enters = event_counts_last_24h.trip_enter
+    leaves = event_counts_last_24h.trip_leave
     telems = last[provider.provider_id].telemetry_counts_last_24h || 0
     if (late_telemetry_counts_last_24h !== undefined && late_telemetry_counts_last_24h !== null) {
       telem_sla = telems ? percent(late_telemetry_counts_last_24h, telems) : 0
@@ -81,14 +81,17 @@ export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDaySta
   return {
     date: `${d.toLocaleDateString('en-US', dateOptions)} ${d.toLocaleTimeString('en-US', timeOptions)}`,
     name: provider.provider,
-    registered: provider.count || 0,
-    deployed:
-      sum([provider.status.available, provider.status.unavailable, provider.status.trip, provider.status.reserved]) ||
-      0,
+    registered: provider.count,
+    deployed: sum([
+      provider.status.available,
+      provider.status.unavailable,
+      provider.status.trip,
+      provider.status.reserved
+    ]),
     validtrips: 'tbd', // Placeholder for next day valid trip analysis
     trips: last[provider.provider_id].trips_last_24h || 0,
-    servicestart: event_counts.service_start || 0,
-    providerdropoff: event_counts.provider_drop_off || 0,
+    servicestart: event_counts.service_start,
+    providerdropoff: event_counts.provider_drop_off,
     tripstart: starts,
     tripend: ends,
     tripenter: enters,
@@ -133,6 +136,7 @@ export const mapProviderMetricsToMetricsSheetRow = (providerMetrics: ProviderMet
   return rows
 }
 
+/* istanbul ignore next */
 const creds: GoogleSheetCreds = {
   // TODO type this more carefully
   client_email: process.env.GOOGLE_CLIENT_EMAIL || 'foo@foo.com',
@@ -179,7 +183,7 @@ export const getSheet = <RowType>(
 
 export const appendSheet = async <RowType>(sheetName: string, rows: RowType[]) => {
   const info = await getSpreadsheetInfo<RowType>()
-  if (info) {
+  if (info !== null) {
     const sheet = await getSheet<RowType>(info, sheetName)
     if (sheet && sheet.title === sheetName) {
       const inserted = rows.map(insert_row => promisify(sheet.addRow)(insert_row))

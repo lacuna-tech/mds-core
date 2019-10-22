@@ -1,5 +1,6 @@
 import uuid from 'uuid'
 import { VehicleCountRow, LastDayStatsResponse } from '../types'
+import { reportProviders } from '../shared-utils'
 
 export const getStatus = (): VehicleCountRow['status'] => {
   return {
@@ -88,5 +89,24 @@ export const getProvider = (): VehicleCountRow => {
     event_type: getEvent(),
     areas: {},
     areas_48h: {}
+  }
+}
+
+export const getFakeVehicleCounts = () => {
+  const fakeVehicleCounts = [] as VehicleCountRow[]
+  const NUM_FAKE_VEHICLE_COUNTS = 10
+  for (let i = 0; i < NUM_FAKE_VEHICLE_COUNTS; i++) {
+    fakeVehicleCounts.push({
+      provider_id: reportProviders[i % reportProviders.length]
+    } as VehicleCountRow)
+  }
+  fakeVehicleCounts[0].provider_id = 'fake-provider-id'
+  return fakeVehicleCounts
+}
+
+export const getFakeProviderMetrics = () => {
+  return {
+    lastDayStats: {},
+    vehicleCounts: getFakeVehicleCounts()
   }
 }
