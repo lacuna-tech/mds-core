@@ -1,12 +1,25 @@
 import assert from 'assert'
-import Sinon from 'sinon'
+import Sinon, { SinonFake } from 'sinon'
 import log from '@mds-core/mds-logger'
 import * as metricsLogUtils from '../metrics-log-utils'
 import { getProvider, getLastDayStatsResponse } from './utils'
-import { MetricsSheetRow } from '../types'
+import { MetricsSheetRow, GoogleSheetInfo, SpreadsheetWorksheet } from '../types'
+
+const getFakeSpreadsheetInfo = () => {
+  return {
+    title: 'fake-title',
+    author: {
+      email: 'fake-email'
+    },
+    worksheets: [] as SpreadsheetWorksheet<MetricsSheetRow>[]
+  }
+}
 
 const getFakeSpreadsheetInstance = () => {
-  return {}
+  return {
+    useServiceAccountAuth: Sinon.fake.call(null, ({}, callback : Function) => { callback() }),
+    getInfo: Sinon.fake.call(null, (callback : Function) => { callback(null, getFakeSpreadsheetInfo()) }),
+  }
 }
 
 const getMockedSheet = () => {
@@ -182,7 +195,7 @@ describe('Metrics Log utils', () => {
   describe('appendSheet()', () => {
     it('Inserts rows into sheet', async () => {
       const getFakeDocInfo = Sinon.fake.resolves('fake-doc-info')
-      Sinon.replace(metricsLogUtils, 'getDocInfo', getFakeDocInfo)
+      Sinon.replace(metricsLogUtils, 'getSpreadsheetInfo', getFakeDocInfo)
       const fakeSheet = getMockedSheet()
       const getFakeSheet = Sinon.fake.resolves(fakeSheet)
       Sinon.replace(metricsLogUtils, 'getSheet', getFakeSheet)
@@ -201,7 +214,7 @@ describe('Metrics Log utils', () => {
 
     it('Identifies the incorrect sheet', async () => {
       const getFakeDocInfo = Sinon.fake.resolves('fake-doc-info')
-      Sinon.replace(metricsLogUtils, 'getDocInfo', getFakeDocInfo)
+      Sinon.replace(metricsLogUtils, 'getSpreadsheetInfo', getFakeDocInfo)
       const fakeSheet = getMockedSheet()
       const getFakeSheet = Sinon.fake.resolves(fakeSheet)
       Sinon.replace(metricsLogUtils, 'getSheet', getFakeSheet)
@@ -219,8 +232,41 @@ describe('Metrics Log utils', () => {
     })
   })
 
-  it('Loads the doc info correctly', () => {
-    const fakeSpreadsheetInstance = getFakeSpreadsheetInstance()
-    Sinon.replace(metricsLogUtils, 'getSpreadsheetInstance', Sinon.fake.returns(fakeSpreadsheetInstance))
+  describe('Gets spreadsheet info', () => {
+    it('Loads info', async () => {
+      const fakeSpreadsheetInstance = getFakeSpreadsheetInstance()
+      Sinon.replace(metricsLogUtils, 'getSpreadsheetInstance', Sinon.fake.returns(fakeSpreadsheetInstance))
+      Sinon.replace(metricsLogUtils, 'getSpreadsheetId', Sinon.fake.returns('fake-spreadsheet-id'))
+      const fakeLogInfo = Sinon.fake.returns('fake-log-info')
+      Sinon.replace(log, 'info', fakeLogInfo)
+      const info = await metricsLogUtils.getSpreadsheetInfo()
+      assert.strictEqual(fakeSpreadsheetInstance.useServiceAccountAuth.calledOnce, true)
+      const fakeSpreadsheetInfo = getFakeSpreadsheetInfo()
+      assert.deepStrictEqual(info, fakeSpreadsheetInfo)
+      assert.strictEqual(fakeLogInfo.calledOnceWithExactly(`Loaded doc: ${fakeSpreadsheetInfo.title} by ${fakeSpreadsheetInfo.author.email}`), true)
+      Sinon.restore()
+    })
+
+    it('Logs missing SPREADSHEET_ID', async () => {
+      const fakeSpreadsheetInstance = getFakeSpreadsheetInstance()
+      Sinon.replace(metricsLogUtils, 'getSpreadsheetInstance', Sinon.fake.returns(fakeSpreadsheetInstance))
+      Sinon.replace(metricsLogUtils, 'getSpreadsheetId', Sinon.fake.returns(null))
+      const fakeLogInfo = Sinon.fake.returns('fake-log-info')
+      Sinon.replace(log, 'info', fakeLogInfo)
+      const info = await metricsLogUtils.getSpreadsheetInfo()
+      assert.strictEqual(fakeSpreadsheetInstance.useServiceAccountAuth.calledOnce, false)
+      assert.deepStrictEqual(info, null)
+      assert.strictEqual(fakeLogInfo.calledOnceWithExactly('No SPREADSHEET_ID env var specified'), true)
+      Sinon.restore()
+    })
+  })
+
+  describe('getSheet()', () => {
+    it('Does not find the sheet', () => {
+      const fakeSpreadsheetInfo = getFakeSpreadsheetInfo() as GoogleSheetInfo<MetricsSheetRow>
+      const sheet = metricsLogUtils.getSheet(fakeSpreadsheetInfo, 'fake-title')
+      assert.strictEqual(sheet, null)
+      Sinon.restore()
+    })
   })
 })

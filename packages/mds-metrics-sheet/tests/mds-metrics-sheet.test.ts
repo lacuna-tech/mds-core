@@ -1,10 +1,11 @@
 import assert from 'assert'
 import Sinon from 'sinon'
-import { eventCountsToStatusCounts, sum, percent, getProviderMetrics } from '../metrics-log-utils'
+import requestPromise from 'request-promise'
+import log from '@mds-core/mds-logger'
+import * as metricsLogUtils from '../metrics-log-utils'
 import { VehicleCountRow } from '../types'
 
 import { mapRow, sumColumns } from '../vehicle-counts'
-import * as utils from '../utils'
 
 // https://stackoverflow.com/a/46957474
 // TODO shim for old node, when we upgrade replace with assert.rejects()
@@ -40,7 +41,7 @@ describe('MDS Metrics Sheet', () => {
         trip_end: 42,
         deregister: 42
       }
-      const result = eventCountsToStatusCounts(event)
+      const result = metricsLogUtils.eventCountsToStatusCounts(event)
       const expected = {
         available: 210,
         elsewhere: 42,
@@ -55,11 +56,11 @@ describe('MDS Metrics Sheet', () => {
 
     it('Computes `sum()` correctly', () => {
       const arr = [1, 2, 3]
-      assert.equal(sum(arr), 6)
+      assert.equal(metricsLogUtils.sum(arr), 6)
     })
 
     it('Computes `percent()` correctly', () => {
-      assert.equal(percent(9, 100), 0.91)
+      assert.equal(metricsLogUtils.percent(9, 100), 0.91)
     })
   })
 
@@ -118,8 +119,9 @@ describe('MDS Metrics Sheet', () => {
   describe('getProviderMetrics()', () => {
     it('Retries 10 times', async () => {
       const fakeRejects = Sinon.fake.rejects('it-broke')
-      Sinon.replace(utils, 'requestPromiseExceptionHelper', fakeRejects)
-      await assertThrowsAsync(async () => getProviderMetrics(0), /Error/)
+      Sinon.replace(requestPromise, 'post', fakeRejects)
+      Sinon.replace(log, 'error', Sinon.fake.returns('fake-error-log'))
+      await assertThrowsAsync(async () => metricsLogUtils.getProviderMetrics(0), /Error/)
       assert.strictEqual(fakeRejects.callCount, 10)
       Sinon.restore()
     })

@@ -13,6 +13,7 @@ import {
   BOLT_PROVIDER_ID
 } from '@mds-core/mds-providers'
 import { VEHICLE_EVENT, EVENT_STATUS_MAP, VEHICLE_STATUS } from '@mds-core/mds-types'
+import requestPromise from 'request-promise'
 import {
   VehicleCountResponse,
   LastDayStatsResponse,
@@ -20,9 +21,9 @@ import {
   VehicleCountRow,
   GoogleSheetCreds,
   GoogleSheet,
-  GoogleSheetInfo
+  GoogleSheetInfo,
+  SpreadsheetWorksheet
 } from './types'
-import { requestPromiseExceptionHelper } from './utils'
 
 // The list of providers ids on which to report
 export const reportProviders = [
@@ -134,7 +135,6 @@ export async function getProviderMetrics(iter: number): Promise<MetricsSheetRow[
     throw new Error(`Failed to write to sheet after 10 tries!`)
   }
   const token_options = {
-    method: 'POST',
     url: `${process.env.AUTH0_DOMAIN}/oauth/token`,
     headers: { 'content-type': 'application/json' },
     body: {
@@ -145,8 +145,9 @@ export async function getProviderMetrics(iter: number): Promise<MetricsSheetRow[
     },
     json: true
   }
+  let mostRecentUrl = token_options.url
   try {
-    const token = await requestPromiseExceptionHelper(token_options)
+    const token = await requestPromise.post(token_options)
     const counts_options = {
       url: 'https://api.ladot.io/daily/admin/vehicle_counts',
       headers: { authorization: `Bearer ${token.access_token}` },
@@ -158,15 +159,17 @@ export async function getProviderMetrics(iter: number): Promise<MetricsSheetRow[
       json: true
     }
 
-    const counts: VehicleCountResponse = await requestPromiseExceptionHelper(counts_options)
-    const last: LastDayStatsResponse = await requestPromiseExceptionHelper(last_options)
+    mostRecentUrl = counts_options.url
+    const counts: VehicleCountResponse = await requestPromise.get(counts_options)
+    mostRecentUrl = last_options.url
+    const last: LastDayStatsResponse = await requestPromise.get(last_options)
 
     const rows: MetricsSheetRow[] = counts
       .filter(p => reportProviders.includes(p.provider_id))
       .map(provider => mapProviderToPayload(provider, last))
     return rows
   } catch (err) {
-    await log.error(`getProviderMetrics() API call ${err.url}`, err)
+    await log.error(`getProviderMetrics() API call ${mostRecentUrl}`, err)
     return getProviderMetrics(iter + 1)
   }
 }
@@ -182,29 +185,41 @@ export const getSpreadsheetInstance = (spreadsheetId: string): GoogleSheet<Metri
   return new GoogleSpreadsheet(spreadsheetId)
 }
 
-export const getDocInfo = async () => {
-  if (process.env.SPREADSHEET_ID) {
-    const spreadsheetInstance = getSpreadsheetInstance(process.env.SPREADSHEET_ID)
+export const getSpreadsheetId = (): string | null => {
+  if (process.env.SPREADSHEET_ID === undefined) {
+    return null
+  }
+  return process.env.SPREADSHEET_ID
+}
+
+export const getSpreadsheetInfo = async (): Promise<GoogleSheetInfo<MetricsSheetRow> | null> => {
+  const spreadsheetId = getSpreadsheetId()
+  if (spreadsheetId !== null) {
+    const spreadsheetInstance = getSpreadsheetInstance(spreadsheetId)
     await promisify(spreadsheetInstance.useServiceAccountAuth)(creds)
     const info = await promisify(spreadsheetInstance.getInfo)()
     log.info(`Loaded doc: ${info.title} by ${info.author.email}`)
     return info
   }
   log.info('No SPREADSHEET_ID env var specified')
+  return null
 }
 
-export const getSheet = async (info: GoogleSheetInfo<MetricsSheetRow>, sheetName: string) => {
+export const getSheet = (
+  info: GoogleSheetInfo<MetricsSheetRow>,
+  sheetName: string
+): SpreadsheetWorksheet<MetricsSheetRow> | null => {
   const sheet = info.worksheets.find((s: { title: string; rowCount: number }) => s.title === sheetName)
-  if (sheet) {
+  if (sheet !== undefined) {
     log.info(`${sheetName} sheet: ${sheet.title} ${sheet.rowCount}x${sheet.colCount}`)
-  } else {
-    log.info(`Sheet ${sheetName} not found!`)
+    return sheet
   }
-  return sheet
+  log.info(`Sheet ${sheetName} not found!`)
+  return null
 }
 
 export async function appendSheet(sheetName: string, rows: MetricsSheetRow[]) {
-  const info = await getDocInfo()
+  const info = await getSpreadsheetInfo()
   if (info) {
     const sheet = await getSheet(info, sheetName)
     if (sheet && sheet.title === sheetName) {
