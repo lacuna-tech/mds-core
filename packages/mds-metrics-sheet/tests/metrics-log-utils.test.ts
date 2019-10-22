@@ -278,6 +278,16 @@ describe('Metrics Log utils', () => {
   })
 
   describe('appendSheet()', () => {
+    it('Handles null info correctly', async () => {
+      const getFakeDocInfo = Sinon.fake.resolves(null)
+      Sinon.replace(metricsLogUtils, 'getSpreadsheetInfo', getFakeDocInfo)
+      const fakeLogInfo = Sinon.fake.returns('fake-log-info')
+      Sinon.replace(log, 'info', fakeLogInfo)
+      await metricsLogUtils.appendSheet('fake-title', [])
+      assert.strictEqual(fakeLogInfo.calledOnce, true)
+      Sinon.restore()
+    })
+
     it('Inserts rows into sheet', async () => {
       const getFakeDocInfo = Sinon.fake.resolves('fake-doc-info')
       Sinon.replace(metricsLogUtils, 'getSpreadsheetInfo', getFakeDocInfo)
@@ -404,6 +414,16 @@ describe('Metrics Log utils', () => {
       ]
       assert.deepStrictEqual(rows, expectedRows)
       Sinon.restore()
+    })
+  })
+
+  describe('defaultToZero()', () => {
+    it('Returns zero if undefined arg is passed in', () => {
+      assert.strictEqual(metricsLogUtils.defaultToZero(), 0)
+    })
+
+    it('Returns number arg when number is passed in', () => {
+      assert.strictEqual(metricsLogUtils.defaultToZero(42), 42)
     })
   })
 })
