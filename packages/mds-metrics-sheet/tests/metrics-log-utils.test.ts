@@ -5,13 +5,26 @@ import * as metricsLogUtils from '../metrics-log-utils'
 import { getProvider, getLastDayStatsResponse } from './utils'
 import { MetricsSheetRow, GoogleSheetInfo, SpreadsheetWorksheet } from '../types'
 
+const getFakeWorksheets = () => {
+  const NUM_FAKE_WORKSHEETS = 10
+  const fakeWorksheets = [] as SpreadsheetWorksheet<MetricsSheetRow>[]
+  for (let i = 0; i < NUM_FAKE_WORKSHEETS; i++) {
+    fakeWorksheets.push({
+      title: `fake-spreadsheet-title-${i}`,
+      rowCount: 42,
+      colCount: 42
+    } as SpreadsheetWorksheet<MetricsSheetRow>)
+  }
+  return fakeWorksheets
+}
+
 const getFakeSpreadsheetInfo = () => {
   return {
     title: 'fake-title',
     author: {
       email: 'fake-email'
     },
-    worksheets: [] as SpreadsheetWorksheet<MetricsSheetRow>[]
+    worksheets: getFakeWorksheets()
   }
 }
 
@@ -278,6 +291,31 @@ describe('Metrics Log utils', () => {
       const sheet = metricsLogUtils.getSheet(fakeSpreadsheetInfo, 'fake-title')
       assert.strictEqual(sheet, null)
       Sinon.restore()
+    })
+
+    it('Returns the correct sheet', () => {
+      const fakeSpreadsheetInfo = getFakeSpreadsheetInfo() as GoogleSheetInfo<MetricsSheetRow>
+      const sheet = metricsLogUtils.getSheet(fakeSpreadsheetInfo, 'fake-spreadsheet-title-0')
+      assert.strictEqual(sheet, fakeSpreadsheetInfo.worksheets[0])
+      Sinon.restore()
+    })
+  })
+
+  describe('getSpreadsheetId()', () => {
+    it('Returns null with no env var', () => {
+      const oldSpreadsheetId = process.env.SPREADSHEET_ID
+      delete process.env.SPREADSHEET_ID
+      const spreadsheetId = metricsLogUtils.getSpreadsheetId()
+      assert.strictEqual(spreadsheetId, null)
+      process.env.SPREADSHEET_ID = oldSpreadsheetId
+    })
+
+    it('Returns correct value', () => {
+      const oldSpreadsheetId = process.env.SPREADSHEET_ID
+      process.env.SPREADSHEET_ID = 'fake-spreadsheet-id'
+      const spreadsheetId = metricsLogUtils.getSpreadsheetId()
+      assert.strictEqual(spreadsheetId, 'fake-spreadsheet-id')
+      process.env.SPREADSHEET_ID = oldSpreadsheetId
     })
   })
 })
