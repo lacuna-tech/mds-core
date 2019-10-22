@@ -2,16 +2,6 @@ import GoogleSpreadsheet from 'google-spreadsheet'
 
 import { promisify } from 'util'
 import log from '@mds-core/mds-logger'
-import {
-  JUMP_PROVIDER_ID,
-  LIME_PROVIDER_ID,
-  BIRD_PROVIDER_ID,
-  LYFT_PROVIDER_ID,
-  WHEELS_PROVIDER_ID,
-  SPIN_PROVIDER_ID,
-  SHERPA_LA_PROVIDER_ID,
-  BOLT_PROVIDER_ID
-} from '@mds-core/mds-providers'
 import { VEHICLE_EVENT, EVENT_STATUS_MAP, VEHICLE_STATUS } from '@mds-core/mds-types'
 import requestPromise from 'request-promise'
 import {
@@ -24,18 +14,7 @@ import {
   GoogleSheetInfo,
   SpreadsheetWorksheet
 } from './types'
-
-// The list of providers ids on which to report
-export const reportProviders = [
-  JUMP_PROVIDER_ID,
-  LIME_PROVIDER_ID,
-  BIRD_PROVIDER_ID,
-  LYFT_PROVIDER_ID,
-  WHEELS_PROVIDER_ID,
-  SPIN_PROVIDER_ID,
-  SHERPA_LA_PROVIDER_ID,
-  BOLT_PROVIDER_ID
-]
+import { reportProviders, getAuthToken } from './shared-utils'
 
 export function eventCountsToStatusCounts(events: { [s in VEHICLE_EVENT]: number }) {
   return (Object.keys(events) as VEHICLE_EVENT[]).reduce(
@@ -129,25 +108,13 @@ export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDaySta
   }
 }
 
-export async function getProviderMetrics(iter: number): Promise<MetricsSheetRow[]> {
+export const getProviderMetrics = async (iter: number): Promise<MetricsSheetRow[]> => {
   /* after 10 failed iterations, give up */
   if (iter >= 10) {
     throw new Error(`Failed to write to sheet after 10 tries!`)
   }
-  const token_options = {
-    url: `${process.env.AUTH0_DOMAIN}/oauth/token`,
-    headers: { 'content-type': 'application/json' },
-    body: {
-      grant_type: 'client_credentials',
-      client_id: process.env.CLIENT_ID,
-      client_secret: process.env.CLIENT_SECRET,
-      audience: process.env.AUDIENCE
-    },
-    json: true
-  }
-  let mostRecentUrl = token_options.url
   try {
-    const token = await requestPromise.post(token_options)
+    const token = await getAuthToken()
     const counts_options = {
       url: 'https://api.ladot.io/daily/admin/vehicle_counts',
       headers: { authorization: `Bearer ${token.access_token}` },
@@ -159,9 +126,7 @@ export async function getProviderMetrics(iter: number): Promise<MetricsSheetRow[
       json: true
     }
 
-    mostRecentUrl = counts_options.url
     const counts: VehicleCountResponse = await requestPromise.get(counts_options)
-    mostRecentUrl = last_options.url
     const last: LastDayStatsResponse = await requestPromise.get(last_options)
 
     const rows: MetricsSheetRow[] = counts
@@ -169,7 +134,7 @@ export async function getProviderMetrics(iter: number): Promise<MetricsSheetRow[
       .map(provider => mapProviderToPayload(provider, last))
     return rows
   } catch (err) {
-    await log.error(`getProviderMetrics() API call ${mostRecentUrl}`, err)
+    await log.error(`getProviderMetrics() API call TODO log url`, err)
     return getProviderMetrics(iter + 1)
   }
 }
@@ -181,7 +146,7 @@ const creds: GoogleSheetCreds = {
 }
 
 /* istanbul ignore next */
-export const getSpreadsheetInstance = (spreadsheetId: string): GoogleSheet<MetricsSheetRow> => {
+export const getSpreadsheetInstance = <RowType>(spreadsheetId: string): GoogleSheet<RowType> => {
   return new GoogleSpreadsheet(spreadsheetId)
 }
 
@@ -192,10 +157,10 @@ export const getSpreadsheetId = (): string | null => {
   return process.env.SPREADSHEET_ID
 }
 
-export const getSpreadsheetInfo = async (): Promise<GoogleSheetInfo<MetricsSheetRow> | null> => {
+export const getSpreadsheetInfo = async <RowType>(): Promise<GoogleSheetInfo<RowType> | null> => {
   const spreadsheetId = getSpreadsheetId()
   if (spreadsheetId !== null) {
-    const spreadsheetInstance = getSpreadsheetInstance(spreadsheetId)
+    const spreadsheetInstance = getSpreadsheetInstance<RowType>(spreadsheetId)
     await promisify(spreadsheetInstance.useServiceAccountAuth)(creds)
     const info = await promisify(spreadsheetInstance.getInfo)()
     log.info(`Loaded doc: ${info.title} by ${info.author.email}`)
@@ -205,10 +170,10 @@ export const getSpreadsheetInfo = async (): Promise<GoogleSheetInfo<MetricsSheet
   return null
 }
 
-export const getSheet = (
-  info: GoogleSheetInfo<MetricsSheetRow>,
+export const getSheet = <RowType>(
+  info: GoogleSheetInfo<RowType>,
   sheetName: string
-): SpreadsheetWorksheet<MetricsSheetRow> | null => {
+): SpreadsheetWorksheet<RowType> | null => {
   const sheet = info.worksheets.find((s: { title: string; rowCount: number }) => s.title === sheetName)
   if (sheet !== undefined) {
     log.info(`${sheetName} sheet: ${sheet.title} ${sheet.rowCount}x${sheet.colCount}`)
@@ -218,10 +183,10 @@ export const getSheet = (
   return null
 }
 
-export async function appendSheet(sheetName: string, rows: MetricsSheetRow[]) {
-  const info = await getSpreadsheetInfo()
+export const appendSheet = async <RowType>(sheetName: string, rows: RowType[]) => {
+  const info = await getSpreadsheetInfo<RowType>()
   if (info) {
-    const sheet = await getSheet(info, sheetName)
+    const sheet = await getSheet<RowType>(info, sheetName)
     if (sheet && sheet.title === sheetName) {
       const inserted = rows.map(insert_row => promisify(sheet.addRow)(insert_row))
       log.info(`Wrote ${inserted.length} rows.`)
