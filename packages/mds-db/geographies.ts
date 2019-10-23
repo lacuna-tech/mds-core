@@ -7,7 +7,6 @@ import schema from './schema'
 import { vals_sql, cols_sql, vals_list, SqlVals } from './sql-utils'
 
 import { getReadOnlyClient, getWriteableClient } from './client'
-import { ReadGeographiesParams } from './types'
 
 export async function readSingleGeography(geography_id: UUID): Promise<Geography> {
   try {
@@ -24,18 +23,27 @@ export async function readSingleGeography(geography_id: UUID): Promise<Geography
   }
 }
 
-export async function readGeographies(params: Partial<ReadGeographiesParams> = {}): Promise<Geography[]> {
+export async function readGeographies(params?: {
+  get_read_only?: boolean
+  summary?: boolean
+}): Promise<(Geography | GeographySummary)[]> {
+  // use params to filter
+  // query on ids
+  // return geographies
   try {
     const client = await getReadOnlyClient()
 
-    const { get_read_only } = { get_read_only: false, ...params }
+    const cols =
+      params && params.summary
+        ? [...schema.TABLE_COLUMNS.geographies].filter(col => col !== schema.COLUMN.geography_json).join(',')
+        : '*'
 
-    let sql = `SELECT * FROM ${schema.TABLE.geographies}`
+    let sql = `select ${cols} from ${schema.TABLE.geographies}`
 
     const conditions = []
     const vals = new SqlVals()
 
-    if (get_read_only) {
+    if (params && params.get_read_only) {
       conditions.push(`read_only IS TRUE`)
     }
 
@@ -57,15 +65,6 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
     throw err
   }
 }
-
-export async function readGeographySummaries(params?: { get_read_only?: boolean }): Promise<GeographySummary[]> {
-  const geographies = await readGeographies(params)
-  return geographies.map(geography => {
-    const { geography_json, ...geographySummary } = geography
-    return geographySummary
-  })
-}
-
 export async function readBulkGeographyMetadata(params?: { get_read_only?: boolean }): Promise<GeographyMetadata[]> {
   const geographies = await readGeographies(params)
   const geography_ids = geographies.map(geography => {
@@ -129,8 +128,8 @@ export async function deleteGeography(geography_id: UUID) {
   }
 
   const client = await getWriteableClient()
-  const sql = `DELETE FROM ${schema.TABLE.geographies} WHERE geography_id=$1 AND read_only IS NOT TRUE`
-  await client.query(sql, [geography_id])
+  const sql = `DELETE FROM ${schema.TABLE.geographies} WHERE geography_id='${geography_id}' AND read_only IS FALSE`
+  await client.query(sql)
   return geography_id
 }
 
