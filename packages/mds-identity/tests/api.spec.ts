@@ -5,7 +5,7 @@ import test from 'unit.js'
 import { ApiServer } from '@mds-core/mds-api-server'
 import HttpStatus from 'http-status-codes'
 import sinon from 'sinon'
-import { AuthorizationError } from '@mds-core/mds-utils'
+import { AuthorizationError } from 'packages/mds-utils/dist'
 import IdentityProvider from '../identity-provider'
 import { api } from '../api'
 
