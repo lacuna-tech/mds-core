@@ -25,6 +25,8 @@ import { WebClient as SlackClient } from '@slack/client'
 
 const { env } = process
 
+type LogLevel = 'INFO' | 'WARN' | 'ERROR'
+
 interface Datum {
   lat?: string
   lng?: string
@@ -176,17 +178,6 @@ if (argv.length > 3) {
   }
 }
 
-type LogLevel = 'INFO' | 'WARN' | 'ERROR'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function log(logLevel: LogLevel, ...msg: any[]): Promise<any[]> {
-  return {
-    INFO: () => new Promise<any[]>(() => info(msg)), // TODO: Why is info the only one not async??
-    WARN: () => warn(msg),
-    ERROR: () => error(msg),
-  }[logLevel]()
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function info(...msg: any[]): any[] {
   if (env.QUIET) {
@@ -226,6 +217,15 @@ async function error(...msg: any[]): Promise<any[]> {
   await sendSlack(censoredMsg.join(' '))
   await sendPush(censoredMsg.join(' '), 1)
   return censoredMsg
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function log(logLevel: LogLevel, ...msg: any[]): Promise<any[]> {
+  return {
+    INFO: () => info(msg),
+    WARN: () => warn(msg),
+    ERROR: () => error(msg)
+  }[logLevel]()
 }
 
 async function startup() {
