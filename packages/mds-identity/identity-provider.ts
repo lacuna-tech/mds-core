@@ -21,7 +21,6 @@ import HttpStatus from 'http-status-codes'
 
 // Validate and create typed environment variable
 const env = cleanEnv(process.env, {
-  OAuthAuthorizationURL: url(),
   OAuthTokenURL: url(),
   OAuthTokenTimeout: num()
 })
