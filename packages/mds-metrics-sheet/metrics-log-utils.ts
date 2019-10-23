@@ -3,6 +3,7 @@ import GoogleSpreadsheet from 'google-spreadsheet'
 import { promisify } from 'util'
 import log from '@mds-core/mds-logger'
 import { VEHICLE_EVENT, EVENT_STATUS_MAP, VEHICLE_STATUS } from '@mds-core/mds-types'
+import { complementaryPercent, sum } from '@mds-core/mds-utils'
 import {
   LastDayStatsResponse,
   MetricsSheetRow,
@@ -33,15 +34,6 @@ export function eventCountsToStatusCounts(events: { [s in VEHICLE_EVENT]: number
       elsewhere: 0
     }
   )
-}
-
-export function sum(arr: number[]): number {
-  return arr.reduce((total, amount) => total + amount)
-}
-
-// Compute two-decimal complementary percentage of total
-export function complementaryPercent(a: number, total: number): number {
-  return Math.round(((total - a) / total) * 10000) / 10000
 }
 
 export const defaultToZero = (num?: number) => {
