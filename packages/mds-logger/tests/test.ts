@@ -111,22 +111,4 @@ describe('MDS Logger', () => {
     test.string(result).contains('evidence')
     done()
   })
-
-  it('verifies parameterized log INFO works', async () => {
-    const results = await logger.log('INFO', { key1: 'key1', key2: 'key2' })
-    test.object(results).isArray()
-    test.array(results).hasLength(1)
-  })
-
-  it('verifies parameterized log WARN works', async () => {
-    const results = await logger.log('WARN', { key1: 'key1', key2: 'key2' })
-    test.object(results).isArray()
-    test.array(results).hasLength(1)
-  })
-
-  it('verifies parameterized log ERROR works', async () => {
-    const results = await logger.log('ERROR', { key1: 'key1', key2: 'key2' })
-    test.object(results).isArray()
-    test.array(results).hasLength(1)
-  })
 })

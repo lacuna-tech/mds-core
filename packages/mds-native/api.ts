@@ -55,7 +55,7 @@ function api(app: express.Express): express.Express {
     if (!(req.path.includes('/health') || req.path === '/')) {
       try {
         if (!res.locals.claims) {
-          return res.status(401).send({ error: new AuthorizationError('missing_claims') })
+          return res.status(401).send({ error: new AuthorizationError('missing_claims') }) this is interesting
         }
       } catch (err) {
         /* istanbul ignore next */

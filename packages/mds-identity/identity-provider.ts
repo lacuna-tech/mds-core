@@ -71,7 +71,7 @@ const auth0IdentityProvider: IdentityProvider = {
       const {
         response: { status, statusText, data }
       } = err
-      await logger.log(
+      logger.log(
         status === HttpStatus.FORBIDDEN ? 'INFO' : 'ERROR',
         `OAuthToken exchange failed with ${status} ${statusText} ${JSON.stringify(data)}`
       )
