@@ -18,19 +18,19 @@ import express from 'express'
 
 import { pathsFor } from '@mds-core/mds-utils'
 import { checkAccess, ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
-import { getProviderMetrics } from '../metrics-log-utils'
 
 async function mdsTestingShimMiddleware(req: ApiRequest, res: ApiResponse, next: Function) {
   if (!process.env.IS_TEST || !req.path.includes('/test')) {
     return res.status(401).send('Unauthorized, not test env')
   }
+  next()
 }
 
 function api(app: express.Express): express.Express {
   app.use(mdsTestingShimMiddleware)
   app.get(pathsFor('/test/fire_metrics_sheet'), checkAccess(() => true), async (req, res) => {
     console.log('fire it!')
-    const providerMetrics = await getProviderMetrics(0)
+    const providerMetrics = { fake: 'fake-data' }
     return res.status(200).send(providerMetrics)
   })
   return app
