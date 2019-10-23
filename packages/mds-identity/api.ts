@@ -58,21 +58,18 @@ function api(app: express.Express): express.Express {
   // Http request parameter validation enforcement middleware
   const validate = (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
     const result = validationResult(req)
-
-    if (result.isEmpty()) {
-      // No validation errors, so let's keep going
-      return next()
-    }
-
-    // There were some validation errors, so return a BadRequest with body indicating the errors
-    return res.status(HttpStatus.BAD_REQUEST).json({
-      errors: result.array().reduce(
-        (errors, err) => {
-          return [...errors, { [err.param]: err.msg }]
-        },
-        [] as { [key: string]: {} }[]
-      )
-    })
+    return result.isEmpty()
+      ? // No validation errors, so let's keep going
+        next()
+      : // There were some validation errors, so return a BadRequest with body indicating the errors
+        res.status(HttpStatus.BAD_REQUEST).json({
+          errors: result.array().reduce(
+            (errors, err) => {
+              return [...errors, { [err.param]: err.msg }]
+            },
+            [] as { [key: string]: {} }[]
+          )
+        })
   }
 
   // GET /authorize
@@ -181,7 +178,7 @@ function api(app: express.Express): express.Express {
         res.status(HttpStatus.OK).send({ access_token, id_token, expires_in, scope, token_type: 'Bearer' })
       } catch (err) {
         await logger.info(req.method, req.originalUrl, err)
-        // Regardless of the error diposition let's send a vanilla UNAUTHORIZED response for phishing and privacy purposes.
+        // Regardless of the error diposition let's respond with a vanilla UNAUTHORIZED for phishing and privacy purposes.
         res.status(HttpStatus.UNAUTHORIZED).send(new AuthorizationError())
       }
     }
