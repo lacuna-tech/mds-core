@@ -368,6 +368,35 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Tests: mds-identity",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config",
+        "--timeout",
+        "999999",
+        "--colors",
+        "--recursive",
+        "--timeout",
+        "5000",
+        "'tests/**/*.ts'"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-identity",
+      "env": {
+        "DOTENV_CONFIG_PATH": "../../.env",
+        "PATH_PREFIX": "/identity"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Tests: mds-logger",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [

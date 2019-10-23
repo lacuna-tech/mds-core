@@ -15,7 +15,6 @@
  */
 
 import { ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
-import { ServerError, ValidationError } from '@mds-core/mds-utils'
 
 // Place newer versions at the beginning of the list
 const IDENTITY_API_VERSIONS = ['0.1.0'] as const
@@ -27,11 +26,9 @@ export const [IdentityApiCurrentVersion] = IDENTITY_API_VERSIONS
 export type IdentityApiGetAuthorizeReponse = ApiResponse<{}>
 
 export interface IdentityApiGetAuthorizeRequest extends ApiRequest {
-  query: Partial<
-    {
-      [P in 'redirect_uri' | 'code_challenge' | 'client_id' | 'audience' | 'scope']: string
-    }
-  >
+  query: {
+    [P in 'redirect_uri' | 'code_challenge' | 'client_id' | 'audience' | 'scope']: string
+  }
 }
 
 // GET authorize/callback
@@ -39,11 +36,9 @@ export interface IdentityApiGetAuthorizeRequest extends ApiRequest {
 export type IdentityApiGetAuthorizeCallbackReponse = ApiResponse<{}>
 
 export interface IdentityApiGetAuthorizeCallbackRequest extends ApiRequest {
-  query: Partial<
-    {
-      [P in 'code' | 'state']: string
-    }
-  >
+  query: {
+    [P in 'code' | 'state']: string
+  }
 }
 
 // POST oauth/token
@@ -51,9 +46,7 @@ export interface IdentityApiGetAuthorizeCallbackRequest extends ApiRequest {
 export type IdentityApiPostOauthTokenReponse = ApiResponse<{}>
 
 export interface IdentityApiPostOauthTokenRequest extends ApiRequest {
-  body: Partial<
-    {
-      [P in 'code' | 'grant_type' | 'client_id' | 'code_verifier']: string
-    }
-  >
+  body: {
+    [P in 'code' | 'grant_type' | 'client_id' | 'code_verifier']: string
+  }
 }

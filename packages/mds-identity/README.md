@@ -5,5 +5,6 @@ Environment Vars
 ```
 OAuthAuthorizationURL=https://auth.ladot.io/authorize
 OAuthTokenURL=https://auth.ladot.io/oauth/token
+OAuthTokenTimeout=10000
 ```
 
