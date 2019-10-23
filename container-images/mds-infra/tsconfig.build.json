@@ -3,5 +3,9 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "references": [{ "path": "../../packages/mds-metrics-sheet/tsconfig.build.json" }]
+  "references": [
+    { "path": "../../container-images/env-inject/tsconfig.build.json" },
+    { "path": "../../packages/mds-infra/tsconfig.build.json" },
+    { "path": "../../packages/mds-api-server/tsconfig.build.json" }
+  ]
 }

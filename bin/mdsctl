@@ -900,7 +900,8 @@ preset() {
         is+="${is:+,}sets-mds+=redis.slave.persistence.enabled=false";;
       minimal)
         preset $(normalize "disable,no-events,local,no-persistence")
-        is+="${is:+,}sets-mds+=apis.mds-agency.enabled=true";;
+        #FIXME
+        is+="${is:+,}sets-mds+=apis.mds-agency.enabled=true,sets-mds+=apis.mds-infra.enabled=true";;
     esac
   done; unset p
 

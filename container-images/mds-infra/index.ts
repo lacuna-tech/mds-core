@@ -14,6 +14,16 @@
     limitations under the License.
  */
 
-import { MetricsLogHandler as handler } from '@mds-core/mds-metrics-sheet'
+// Express local
+import { ApiServer } from '@mds-core/mds-api-server'
+import { api } from '@mds-core/mds-infra'
+import { env } from '@container-images/env-inject'
 
-export { handler }
+// FIXME port
+const { npm_package_name, npm_package_version, npm_package_git_commit, PORT = 4008 } = env()
+
+ApiServer(api).listen(PORT, () =>
+  /* eslint-reason avoids import of logger */
+  /* eslint-disable-next-line no-console */
+  console.log(`${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) running on port ${PORT}`)
+)

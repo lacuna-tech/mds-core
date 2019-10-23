@@ -20,7 +20,6 @@ import { pathsFor } from '@mds-core/mds-utils'
 import { checkAccess, ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
 
 async function mdsTestingShimMiddleware(req: ApiRequest, res: ApiResponse, next: Function) {
-  // FIXME env vars
   if (!process.env.IS_TEST || !req.path.includes('/test')) {
     return res.status(401).send('Unauthorized, not test env')
   }
