@@ -636,6 +636,15 @@ function filterEmptyHelper<T>(warnOnEmpty?: boolean) {
   }
 }
 
+function sum(arr: number[]): number {
+  return arr.reduce((total, amount) => total + amount)
+}
+
+// Compute two-decimal complementary percentage of total
+function complementaryPercent(a: number, total: number): number {
+  return Math.round(((total - a) / total) * 10000) / 10000
+}
+
 export {
   UUID_REGEX,
   isUUID,
@@ -676,5 +685,7 @@ export {
   isInStatesOrEvents,
   routeDistance,
   clone,
-  filterEmptyHelper
+  filterEmptyHelper,
+  sum,
+  complementaryPercent
 }

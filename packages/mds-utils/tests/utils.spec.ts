@@ -16,7 +16,7 @@
 
 import test from 'unit.js'
 import assert from 'assert'
-import { routeDistance, filterEmptyHelper } from '../utils'
+import { routeDistance, filterEmptyHelper, sum, complementaryPercent } from '../utils'
 
 const Boston = { lat: 42.360081, lng: -71.058884 }
 const LosAngeles = { lat: 34.052235, lng: -118.243683 }
@@ -69,5 +69,14 @@ describe('Tests Utilities', () => {
     //   Sinon.restore()
     //   log.warn = oldLogWarn
     // })
+  })
+
+  it('Computes `sum()` correctly', () => {
+    const arr = [1, 2, 3]
+    assert.equal(sum(arr), 6)
+  })
+
+  it('Computes `complementaryPercent()` correctly', () => {
+    assert.equal(complementaryPercent(9, 100), 0.91)
   })
 })
