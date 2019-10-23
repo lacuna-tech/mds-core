@@ -14,7 +14,7 @@
     "start": "PATH_PREFIX=/identity yarn watch server",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
-    "test:unit": "PATH_PREFIX=/identity DOTENV_CONFIG_PATH=../../.env nyc --check-coverage --exclude tests --extension .ts --lines 90 --reporter=text --reporter=html ts-mocha --project ../../tsconfig.json --require tsconfig-paths/register --require source-map-support/register --require dotenv/config --recursive --timeout 5000 tests/**/*.ts",
+    "test:unit": "PATH_PREFIX=/identity DOTENV_CONFIG_PATH=../../.env nyc --check-coverage --exclude tests --extension .ts --lines 40 --reporter=text --reporter=html ts-mocha --project ../../tsconfig.json --require tsconfig-paths/register --require source-map-support/register --require dotenv/config --recursive --timeout 5000 tests/**/*.ts",
     "watch": "nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec yarn watch:exec --",
     "watch:exec": "yarn build && DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config"
   },
@@ -24,12 +24,8 @@
     "@mds-core/mds-logger": "0.1.11",
     "@mds-core/mds-types": "0.1.10",
     "@mds-core/mds-utils": "0.1.13",
-    "@types/chai": "4.2.3",
-    "@types/chai-as-promised": "7.1.2",
     "@types/http-status-codes": "1.2.0",
     "axios": "0.19.0",
-    "chai": "4.2.0",
-    "chai-as-promised": "7.1.1",
     "envalid": "5.0.0",
     "express": "4.17.1",
     "express-validator": "6.2.0"

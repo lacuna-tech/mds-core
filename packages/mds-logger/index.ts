@@ -176,17 +176,6 @@ if (argv.length > 3) {
   }
 }
 
-type LogLevel = 'INFO' | 'WARN' | 'ERROR'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function log(logLevel: LogLevel, ...msg: any[]): Promise<any[]> {
-  return {
-    INFO: () => new Promise<any[]>(() => info(msg)), // TODO: Why is info the only one not async??
-    WARN: () => warn(msg),
-    ERROR: () => error(msg),
-  }[logLevel]()
-}
-
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function info(...msg: any[]): any[] {
   if (env.QUIET) {
@@ -241,4 +230,4 @@ async function startup() {
   // }
 }
 
-export = { log, info, warn, error, startup }
+export = { info, warn, error, startup }
