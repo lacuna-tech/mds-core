@@ -39,8 +39,8 @@ export function sum(arr: number[]): number {
   return arr.reduce((total, amount) => total + amount)
 }
 
-// Round percent to two decimals
-export function percent(a: number, total: number): number {
+// Compute two-decimal complementary percentage of total
+export function complementaryPercent(a: number, total: number): number {
   return Math.round(((total - a) / total) * 10000) / 10000
 }
 
@@ -78,11 +78,11 @@ export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDaySta
     leaves = event_counts_last_24h.trip_leave
     telems = defaultToZero(last[provider.provider_id].telemetry_counts_last_24h)
     if (late_telemetry_counts_last_24h !== undefined && late_telemetry_counts_last_24h !== null) {
-      telem_sla = percent(late_telemetry_counts_last_24h, telems)
+      telem_sla = complementaryPercent(late_telemetry_counts_last_24h, telems)
     }
     if (late_event_counts_last_24h !== undefined && late_event_counts_last_24h !== null) {
-      start_sla = percent(late_event_counts_last_24h.trip_start, starts)
-      end_sla = percent(late_event_counts_last_24h.trip_end, ends)
+      start_sla = complementaryPercent(late_event_counts_last_24h.trip_start, starts)
+      end_sla = complementaryPercent(late_event_counts_last_24h.trip_end, ends)
     }
   }
   return {
@@ -118,11 +118,13 @@ export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDaySta
 }
 
 export const getProviderMetrics = async (iter: number): Promise<ProviderMetrics> => {
-  const MAX_ITER = 10
   /* after MAX_ITER failed iterations, give up */
+  const MAX_ITER = 10
   if (iter >= MAX_ITER) {
     throw new Error(`Failed to write to sheet after ${MAX_ITER} tries!`)
   }
+  // All the API call helper methods have catch blocks where they log errors
+  // They are normalized to not throw and only return payload | null
   const token = await getAuthToken()
   if (token == null) {
     return getProviderMetrics(iter + 1)

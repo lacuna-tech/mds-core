@@ -59,8 +59,8 @@ describe('MDS Metrics Sheet', () => {
       assert.equal(metricsLogUtils.sum(arr), 6)
     })
 
-    it('Computes `percent()` correctly', () => {
-      assert.equal(metricsLogUtils.percent(9, 100), 0.91)
+    it('Computes `complementaryPercent()` correctly', () => {
+      assert.equal(metricsLogUtils.complementaryPercent(9, 100), 0.91)
     })
   })
 
