@@ -36,7 +36,8 @@ import IdentityProvider from './identity-provider'
 
 // Validate and create typed environment variable
 const env = cleanEnv(process.env, {
-  OAuthAuthorizationURL: url()
+  OAuthAuthorizationURL: url(),
+  OAuthTokenURL: url()
 })
 
 const buildCallbackUri = (req: ApiRequest) =>
