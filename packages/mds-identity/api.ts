@@ -18,12 +18,13 @@
 import express from 'express'
 import urls from 'url'
 import qs from 'querystring'
-import { pathsFor, AuthorizationError, ValidationError, ServerError } from '@mds-core/mds-utils'
+import { pathsFor, AuthorizationError, ValidationError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { ApiResponse, ApiRequest } from '@mds-core/mds-api-server'
 import { cleanEnv, url } from 'envalid'
 import { check, validationResult } from 'express-validator'
 import HttpStatus from 'http-status-codes'
+import { ServerError } from 'packages/mds-utils/dist'
 import {
   IdentityApiGetAuthorizeRequest,
   IdentityApiGetAuthorizeReponse,
