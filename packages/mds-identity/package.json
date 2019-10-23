@@ -24,12 +24,8 @@
     "@mds-core/mds-logger": "0.1.12",
     "@mds-core/mds-types": "0.1.11",
     "@mds-core/mds-utils": "0.1.14",
-    "@types/chai": "4.2.3",
-    "@types/chai-as-promised": "7.1.2",
     "@types/http-status-codes": "1.2.0",
     "axios": "0.19.0",
-    "chai": "4.2.0",
-    "chai-as-promised": "7.1.1",
     "envalid": "5.0.0",
     "express": "4.17.1",
     "express-validator": "6.2.0"
