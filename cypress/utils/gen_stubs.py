@@ -1,19 +1,23 @@
 import os
 
 template_test = """  // API call test: {method} {path}
-  it('Makes a {method} call to {path}', function() {{
-    cy.request({{
-      url: 'http://localhost/agency{path}',
-      auth: {{
-        bearer: "." + Base64.encode("{{\\"scope\\": \\"admin:all test:all\\"}}") + ".",
-      }},
-      method: '{method}'
-    }})
-    .then((resp) => {{
-      expect(resp.status).to.eq(200)
-      expect(resp.headers['content-type']).to.eq('application/json; charset=utf-8');
-      expect(resp.headers['server']).to.eq('istio-envoy');
-      expect(resp.body).to.deep.eq({{ normal: 'payload' }});
+  describe('{method} {path}', () => {{
+    it('Makes a {method} call to {path}', function() {{
+      const urlParams = {url_params_dict}
+      const {{{url_params_keys}}} = urlParams
+      cy.request({{
+        url: `http://localhost/agency{augmented_path}`,
+        auth: {{
+          bearer: "." + Base64.encode("{{\\"scope\\": \\"admin:all test:all\\"}}") + ".",
+        }},
+        method: '{method}'
+      }})
+      .then((resp) => {{
+        expect(resp.status).to.eq(200)
+        expect(resp.headers['content-type']).to.eq('application/json; charset=utf-8');
+        expect(resp.headers['server']).to.eq('istio-envoy');
+        expect(resp.body).to.deep.eq({{ normal: 'payload' }});
+      }})
     }})
   }})
 """
@@ -25,6 +29,19 @@ describe('{package} API Tests', () => {{
 {tests}
 }})
 """
+
+def parse_path_args(path):
+  url_params = {}
+  chunks = path.split('/')
+  augmented_path = ''
+  for chunk in chunks:
+    if chunk.startswith(':'):
+      arg = chunk.replace(':', '').replace('?', '')
+      url_params[arg] = 'some_value'
+      augmented_path += '${{{arg}}}/'.format(arg=arg)
+    else:
+      augmented_path += chunk + '/'
+  return url_params, augmented_path
 
 def parse_file(file_path):
   test_functions = []
@@ -41,7 +58,9 @@ def parse_file(file_path):
             path = nextLine[nextLine.index('pathsFor(') + len('pathsFor(') + 1:nextLine.index(')') - 1]
           else:
             path = trimmed[trimmed.index('pathsFor(') + len('pathsFor(') + 1:trimmed.index(')') - 1]
-          test_function = template_test.format(method=method, path=path)
+          url_params, augmented_path = parse_path_args(path)
+          url_params_keys = ','.join(url_params.keys())
+          test_function = template_test.format(method=method, path=path, url_params_dict=url_params, augmented_path=augmented_path, url_params_keys=url_params_keys)
           test_functions.append(test_function)
   return test_functions
 
@@ -60,7 +79,7 @@ def compute_test_files(mds_core_path):
 
 def pretty_print_package(mds_package):
   prefix, name = mds_package.split('-', 1)
-  return '{} {} API Tests'.format(prefix.upper(), name.capitalize())
+  return '{} {}'.format(prefix.upper(), name.capitalize())
 
 def write_test_files(mds_core_path):
   for package, test_file_string in compute_test_files(mds_core_path).items():
