@@ -1,5 +1,6 @@
-template_test = """
-// {method} {path}
+import os
+
+template_test = """// {method} {path}
 
 it('Makes a {method} call to {path}', function() {{
   cy.request({{
@@ -18,18 +19,46 @@ it('Makes a {method} call to {path}', function() {{
 }})
 """
 
-with open('/Users/maxjohansen/work/mds-core/packages/mds-daily/api.ts', 'r') as f:
-  lines = f.read().split('\n')
-  for lineIndex, line in enumerate(lines):
-    trimmed = line.strip()
-    if trimmed.startswith('app.'):
-      method = trimmed[trimmed.index('app.') + len('app.'):trimmed.index('(')]
-      if method != 'use':
-        method = method.upper()
-        if trimmed[-1] == '(':
-          nextLine = lines[lineIndex + 1].strip()
-          path = nextLine[nextLine.index('pathsFor(') + len('pathsFor(') + 1:nextLine.index(')') - 1]
-        else:
-          path = trimmed[trimmed.index('pathsFor(') + len('pathsFor(') + 1:trimmed.index(')') - 1]
-        test_function = template_test.format(method=method, path=path)
-        print(test_function)
+def parse_file(file_path):
+  test_functions = []
+  with open(file_path, 'r') as f:
+    lines = f.read().split('\n')
+    for lineIndex, line in enumerate(lines):
+      trimmed = line.strip()
+      if trimmed.startswith('app.'):
+        method = trimmed[trimmed.index('app.') + len('app.'):trimmed.index('(')]
+        if method != 'use':
+          method = method.upper()
+          if trimmed[-1] == '(':
+            nextLine = lines[lineIndex + 1].strip()
+            path = nextLine[nextLine.index('pathsFor(') + len('pathsFor(') + 1:nextLine.index(')') - 1]
+          else:
+            path = trimmed[trimmed.index('pathsFor(') + len('pathsFor(') + 1:trimmed.index(')') - 1]
+          test_function = template_test.format(method=method, path=path)
+          test_functions.append(test_function)
+  return test_functions
+
+mds_core_path_hardcoded_fixme = '/Users/maxjohansen/work/mds-core'
+
+def compute_test_files(mds_core_path):
+  mds_packages_path = os.path.join(mds_core_path, 'packages')
+
+  mds_packages = [package for package in os.listdir(mds_packages_path) if package.startswith('mds-')]
+  packages_to_test_files = {}
+  for package in mds_packages:
+    package_path = os.path.join(mds_packages_path, package)
+    api_file_path = os.path.join(package_path, 'api.ts')
+    if os.path.exists(api_file_path) and os.path.isfile(api_file_path):
+      test_functions = parse_file(api_file_path)
+      packages_to_test_files[package] = ''.join(test_functions)
+  return packages_to_test_files
+
+def write_test_files(mds_core_path):
+  for package, test_file_string in compute_test_files(mds_core_path).items():
+    mds_cypress_integration_path = os.path.join(mds_core_path, 'cypress', 'integration')
+    test_file_path = os.path.join(mds_cypress_integration_path, '{}.api.spec.js'.format(package))
+    with open(test_file_path, 'w') as test_file:
+      test_file.write(test_file_string)
+    test_file.close()
+
+write_test_files(mds_core_path_hardcoded_fixme)
