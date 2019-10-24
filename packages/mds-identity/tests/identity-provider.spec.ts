@@ -27,24 +27,24 @@ describe('Identity Provider', () => {
   it('Rejects when idp returns 403', async () => {
     sinon.stub(axios, 'post').rejects({ response: { status: 403, statusText: 'unauthorized', data: 'unauthorized' } })
 
-    await IdentityProvider.CodeAuthenticate(codeAuthenticateParameters).should.be.rejected
+    await IdentityProvider.CodeAuthenticate(codeAuthenticateParameters).should.be.rejected()
   })
 
   it('Rejects when idp returns 401', async () => {
     sinon.stub(axios, 'post').rejects({ response: { status: 401, statusText: 'forbidden', data: 'forbidden' } })
 
-    await IdentityProvider.CodeAuthenticate(codeAuthenticateParameters).should.be.rejected
+    await IdentityProvider.CodeAuthenticate(codeAuthenticateParameters).should.be.rejected()
   })
 
   it('Rejects when idp returns 500', async () => {
     sinon.stub(axios, 'post').rejects({ response: { status: 500, statusText: 'server error', data: 'server_error' } })
 
-    await IdentityProvider.CodeAuthenticate(codeAuthenticateParameters).should.be.rejected
+    await IdentityProvider.CodeAuthenticate(codeAuthenticateParameters).should.be.rejected()
   })
 
   it('Rejects when idp returns 200 but unexpected results', async () => {
     sinon.stub(axios, 'post').rejects({ response: { wtf: 123 } })
 
-    await IdentityProvider.CodeAuthenticate(codeAuthenticateParameters).should.be.rejected
+    await IdentityProvider.CodeAuthenticate(codeAuthenticateParameters).should.be.rejected()
   })
 })
