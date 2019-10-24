@@ -478,6 +478,7 @@ imageVersion() {
 installMds() {
   check ${FUNCNAME[0]}
 
+  # echo "iv> $(imageVersion)<"
   installFallbackCertificate
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
@@ -829,7 +830,7 @@ check() {
     build | testIntegration)
       hash yarn > /dev/null 2>&1 || bootstrap;;
     installHelm | installBookinfo) ;;
-    installDashboard | installMetrics | installMds)
+    installDashboard | installMetrics) # | installMds)
       kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installLogging | installMetricsAdapter)
       hash helm > /dev/null 2>&1 && updateHelmDependencies || installHelm;;
@@ -901,7 +902,7 @@ preset() {
       minimal)
         preset $(normalize "disable,no-events,local,no-persistence")
         #FIXME
-        is+="${is:+,}sets-mds+=apis.mds-agency.enabled=true,sets-mds+=apis.mds-infra.enabled=true";;
+        is+="${is:+,}sets-mds+=apis.mds-agency.enabled=true,sets-mds+=apis.mds-infra.enabled=true,sets-mds+=apis.mds-infra.version=0.0.1-unstable";;
     esac
   done; unset p
 
