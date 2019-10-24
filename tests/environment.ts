@@ -1,4 +1,3 @@
-//@ts-ignore
 import { execSync } from 'child_process'
 
 export const gitHash = () => {
@@ -18,6 +17,6 @@ export const packageVersion = () => {
   return "0.1.14";
 }
 
-export const isIsoDate = (s) => {
+export const isIsoDate = (s : string) => {
   return (!/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(s)) ? false : new Date(s).toISOString() == s;
 }
