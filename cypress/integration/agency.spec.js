@@ -16,7 +16,7 @@ describe('dbInit', function() {
     })
   })
 
-  it.only('Registers a provider', function() {
+  it('Registers a provider', function() {
     cy.request({
       url: 'http://localhost/agency/vehicles',
       auth: {
