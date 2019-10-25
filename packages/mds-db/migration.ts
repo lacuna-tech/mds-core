@@ -8,7 +8,8 @@ const MIGRATIONS = [
   'createMigrationsTable',
   'alterGeographiesColumns',
   'alterAuditEventsColumns',
-  'alterPreviousGeographiesColumn'
+  'alterPreviousGeographiesColumn',
+  'dropAuditEventsColumns'
 ] as const
 type MIGRATION = typeof MIGRATIONS[number]
 
@@ -170,6 +171,12 @@ async function alterPreviousGeographiesColumnMigration(exec: SqlExecuterFunction
   )
 }
 
+async function dropAuditEventsColumnsMigration(exec: SqlExecuterFunction) {
+  await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN ${schema.COLUMN.provider_event_id}`)
+  await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN ${schema.COLUMN.provider_event_type}`)
+  await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN ${schema.COLUMN.provider_event_type_reason}`)
+}
+
 async function doMigrations(client: MDSPostgresClient) {
   const exec = SqlExecuter(client)
   // All migrations go here. createMigrationsTable will never actually run here as it is inserted when the
@@ -178,6 +185,7 @@ async function doMigrations(client: MDSPostgresClient) {
   await doMigration(exec, 'alterGeographiesColumns', alterGeographiesColumnsMigration)
   await doMigration(exec, 'alterAuditEventsColumns', alterAuditEventsColumnsMigration)
   await doMigration(exec, 'alterPreviousGeographiesColumn', alterPreviousGeographiesColumnMigration)
+  await doMigration(exec, 'dropAuditEventsColumns', dropAuditEventsColumnsMigration)
 }
 
 async function updateSchema(client: MDSPostgresClient) {
