@@ -334,10 +334,10 @@ export async function readEventsWithTelemetry({
   const { rows } = await exec(
     `SELECT E.*, T.lat, T.lng, T.speed, T.heading, T.accuracy, T.altitude, T.charge, T.timestamp AS telemetry_timestamp FROM (SELECT * FROM ${
       schema.TABLE.events
-    }${where} ORDER BY timestamp desc LIMIT ${vals.add(limit)}
+    }${where} ORDER BY timestamp DESC LIMIT ${vals.add(limit)}
     ) AS E LEFT JOIN ${
       schema.TABLE.telemetry
-    } T ON E.device_id = T.device_id AND CASE WHEN E.telemetry_timestamp IS NULL THEN E.timestamp ELSE E.telemetry_timestamp END = T.timestamp ORDER BY timestamp desc`,
+    } T ON E.device_id = T.device_id AND CASE WHEN E.telemetry_timestamp IS NULL THEN E.timestamp ELSE E.telemetry_timestamp END = T.timestamp ORDER BY timestamp DESC`,
     vals.values()
   )
 
