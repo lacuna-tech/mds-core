@@ -519,6 +519,7 @@ function api(app: express.Express): express.Express {
                   ? EVENT_STATUS_MAP[providerEvent[0].event_type as VEHICLE_EVENT]
                   : null,
                 provider_telemetry: providerEvent[0] ? providerEvent[0].telemetry : null,
+                provider_event_time: providerEvent[0] ? providerEvent[0].timestamp : null,
                 events: auditEvents.map(withGpsProperty),
                 provider: {
                   device,

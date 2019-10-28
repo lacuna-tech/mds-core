@@ -350,6 +350,7 @@ describe('Testing API', () => {
         test.value(result.body.provider_event_type_reason).is('rebalance')
         test.value(result.body.provider_status).is('available')
         test.value(result.body.provider_telemetry.charge).is(0.5)
+        test.assert(result.body.provider_event_time > 1000000000000)
         done(err)
       })
   })

@@ -236,6 +236,7 @@ export interface AuditDetails extends Audit {
   provider_event_type_reason?: string | null
   provider_status?: string | null
   provider_telemetry?: Telemetry | null
+  provider_event_time?: Timestamp | null
   provider: null | {
     device: Device
     events: VehicleEvent[]
