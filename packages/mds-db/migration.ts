@@ -118,7 +118,7 @@ async function doMigration(
   migration: MIGRATION,
   migrate: (exec: SqlExecuterFunction) => Promise<void>
 ) {
-  const { PG_MIGRATIONS } = process.env
+  const { PG_MIGRATIONS, PG_DEBUG } = process.env
   const migrations = PG_MIGRATIONS ? PG_MIGRATIONS.split(',') : []
   if (migrations.includes('true') || migrations.includes(migration)) {
     const { rowCount } = await exec(
@@ -131,6 +131,7 @@ async function doMigration(
             schema.TABLE_COLUMNS.migrations
           )}) VALUES ('${migration}', ${now()})`
         )
+        process.env.PG_DEBUG = 'true'
         try {
           await log.warn('Running migration', migration)
           await migrate(exec)
@@ -138,6 +139,7 @@ async function doMigration(
         } catch (err) {
           await log.error('Migration', migration, 'failed', err)
         }
+        process.env.PG_DEBUG = PG_DEBUG
       } catch {
         /* Another process is running this migration */
       }
