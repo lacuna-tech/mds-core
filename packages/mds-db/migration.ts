@@ -155,13 +155,13 @@ async function alterGeographiesColumnsMigration(exec: SqlExecuterFunction) {
 
 async function alterAuditEventsColumnsMigration(exec: SqlExecuterFunction) {
   await exec(
-    `ALTER TABLE ${schema.TABLE.audit_events} ADD COLUMN ${schema.COLUMN.provider_event_id} ${schema.COLUMN_TYPE.provider_event_id}`
+    `ALTER TABLE ${schema.TABLE.audit_events} ADD COLUMN provider_event_id bigint`
   )
   await exec(
-    `ALTER TABLE ${schema.TABLE.audit_events} ADD COLUMN ${schema.COLUMN.provider_event_type} ${schema.COLUMN_TYPE.provider_event_type}`
+    `ALTER TABLE ${schema.TABLE.audit_events} ADD COLUMN provider_event_type varchar(31)`
   )
   await exec(
-    `ALTER TABLE ${schema.TABLE.audit_events} ADD COLUMN ${schema.COLUMN.provider_event_type_reason} ${schema.COLUMN_TYPE.provider_event_type_reason}`
+    `ALTER TABLE ${schema.TABLE.audit_events} ADD COLUMN provider_event_type_reason varchar(31)`
   )
 }
 
@@ -172,9 +172,9 @@ async function alterPreviousGeographiesColumnMigration(exec: SqlExecuterFunction
 }
 
 async function dropAuditEventsColumnsMigration(exec: SqlExecuterFunction) {
-  await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN ${schema.COLUMN.provider_event_id}`)
-  await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN ${schema.COLUMN.provider_event_type}`)
-  await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN ${schema.COLUMN.provider_event_type_reason}`)
+  await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN provider_event_id`)
+  await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN provider_event_type`)
+  await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN provider_event_type_reason`)
 }
 
 async function doMigrations(client: MDSPostgresClient) {
