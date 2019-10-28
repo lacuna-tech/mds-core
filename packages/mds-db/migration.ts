@@ -2,22 +2,28 @@ import { csv, now } from '@mds-core/mds-utils'
 
 import log from '@mds-core/mds-logger'
 import schema, { COLUMN_NAME, TABLE_NAME } from './schema'
-import { logSql, SqlExecuter, MDSPostgresClient, cols_sql, SqlExecuterFunction } from './sql-utils'
+import { SqlExecuter, MDSPostgresClient, cols_sql, SqlExecuterFunction } from './sql-utils'
 
 const MIGRATIONS = [
   'createMigrationsTable',
   'alterGeographiesColumns',
   'alterAuditEventsColumns',
-  'alterPreviousGeographiesColumn'
+  'alterPreviousGeographiesColumn',
+  'dropDeprecatedProviderTables'
 ] as const
 type MIGRATION = typeof MIGRATIONS[number]
 
 // drop tables from a list of table names
 async function dropTables(client: MDSPostgresClient) {
-  const drop = `DROP TABLE IF EXISTS ${csv(schema.TABLES)};`
-  await logSql(drop)
-  await client.query(drop)
-  await log.info('postgres drop table succeeded')
+  const exec = SqlExecuter(client)
+  const existing: { rows: { table_name: string }[] } = await exec(
+    'SELECT table_name FROM information_schema.tables WHERE table_catalog = CURRENT_CATALOG AND table_schema = CURRENT_SCHEMA'
+  )
+  if (existing.rows.length > 0) {
+    const drop = csv(existing.rows.map(row => row.table_name))
+    await exec(`DROP TABLE IF EXISTS ${drop};`)
+    await log.info(`postgres drop table succeeded: ${drop}`)
+  }
 }
 
 // Add a foreign key if it doesn't already exist
@@ -170,6 +176,11 @@ async function alterPreviousGeographiesColumnMigration(exec: SqlExecuterFunction
   )
 }
 
+async function dropDeprecatedProviderTablesMigration(exec: SqlExecuterFunction) {
+  const DEPRECATED_PROVIDER_TABLES = ['status_changes', 'trips']
+  await exec(`DROP TABLE IF EXISTS ${csv(DEPRECATED_PROVIDER_TABLES)};`)
+}
+
 async function doMigrations(client: MDSPostgresClient) {
   const exec = SqlExecuter(client)
   // All migrations go here. createMigrationsTable will never actually run here as it is inserted when the
@@ -178,6 +189,7 @@ async function doMigrations(client: MDSPostgresClient) {
   await doMigration(exec, 'alterGeographiesColumns', alterGeographiesColumnsMigration)
   await doMigration(exec, 'alterAuditEventsColumns', alterAuditEventsColumnsMigration)
   await doMigration(exec, 'alterPreviousGeographiesColumn', alterPreviousGeographiesColumnMigration)
+  await doMigration(exec, 'dropDeprecatedProviderTables', dropDeprecatedProviderTablesMigration)
 }
 
 async function updateSchema(client: MDSPostgresClient) {
