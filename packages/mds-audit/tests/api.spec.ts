@@ -73,6 +73,7 @@ before('Initializing Database', async () => {
 describe('Testing API', () => {
   before(done => {
     const timestamp = Date.now()
+    const oldTimestamp = Date.now() - 600
     db.writeDevice({
       device_id: provider_device_id,
       provider_id,
@@ -84,13 +85,33 @@ describe('Testing API', () => {
       db.writeEvent({
         provider_id,
         device_id: provider_device_id,
-        event_type: 'trip_start',
-        telemetry: {
+        event_type: 'agency_drop_off',
+        event_type_reason: 'rebalance',
+        telemetry_timestamp: oldTimestamp,
+        trip_id: uuid(),
+        timestamp: oldTimestamp,
+        recorded: timestamp
+      })
+      db.writeTelemetry([
+        {
           provider_id,
           device_id: provider_device_id,
-          timestamp,
-          gps: { lat: 37.4230723, lng: -122.13742939999999 }
-        },
+          timestamp: oldTimestamp,
+          recorded: oldTimestamp,
+          charge: 0.5,
+          gps: {
+            lat: 37.4230723,
+            lng: -122.137429,
+            speed: 0,
+            hdop: 1,
+            heading: 180
+          }
+        }
+      ])
+      db.writeEvent({
+        provider_id,
+        device_id: provider_device_id,
+        event_type: 'trip_start',
         telemetry_timestamp: timestamp,
         trip_id: uuid(),
         timestamp,
@@ -302,18 +323,6 @@ describe('Testing API', () => {
       })
   })
 
-  it('verify get audit (matched vehicle)', done => {
-    request
-      .get(`/audit/trips/${audit_trip_id}`)
-      .set('Authorization', SCOPED_AUTH(['audits:read'], audit_subject_id))
-      .expect(200)
-      .end((err, result) => {
-        test.value(result).hasHeader('content-type', APP_JSON)
-        test.value(result.body.events.length).is(7)
-        done(err)
-      })
-  })
-
   const routes = ['note', 'vehicle/event', 'vehicle/telemetry', 'end'].map(path => `/audit/trips/${uuid()}/${path}`)
 
   routes.forEach(route =>
@@ -328,6 +337,22 @@ describe('Testing API', () => {
         })
     })
   )
+
+  it('verify get audit (matched vehicle)', done => {
+    request
+      .get(`/audit/trips/${audit_trip_id}`)
+      .set('Authorization', SCOPED_AUTH(['audits:read'], audit_subject_id))
+      .expect(200)
+      .end((err, result) => {
+        test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.events.length).is(7)
+        test.value(result.body.provider_event_type).is('agency_drop_off')
+        test.value(result.body.provider_event_type_reason).is('rebalance')
+        test.value(result.body.provider_status).is('available')
+        test.value(result.body.provider_telemetry.charge).is(0.5)
+        done(err)
+      })
+  })
 
   it(`verify get audit (no scope)`, done => {
     request
