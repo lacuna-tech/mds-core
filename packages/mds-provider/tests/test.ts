@@ -171,7 +171,7 @@ describe('Tests app', () => {
       .get('/trips')
       .expect(401)
       .end((err, result) => {
-        test.value(result.text).is('Unauthorized')
+        test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
   })
@@ -247,7 +247,7 @@ describe('Tests app', () => {
       .get('/status_changes')
       .expect(401)
       .end((err, result) => {
-        test.value(result.text).is('Unauthorized')
+        test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
   })
