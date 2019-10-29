@@ -68,8 +68,8 @@ export const ApiServer = (
     morgan('tiny', {
       skip: (req, res) => {
         // By default only log 400/500 errors
-        const { REQUEST_LOG_LEVEL = 400 } = process.env
-        return res.statusCode < Number(REQUEST_LOG_LEVEL)
+        const { API_REQUEST_LOG_LEVEL = 400 } = process.env
+        return res.statusCode < Number(API_REQUEST_LOG_LEVEL)
       },
       // Use logger, but remove extra line feed added by morgan stream option
       stream: { write: msg => logger.info(msg.slice(0, -1)) }
