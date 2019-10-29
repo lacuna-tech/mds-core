@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { providers } from '@mds-core/mds-providers' // map of uuids -> obb
+import { providers } from '@mds-core/mds-providers'
 import {
   AUDIT_EVENT_TYPES,
   VEHICLE_EVENTS,
