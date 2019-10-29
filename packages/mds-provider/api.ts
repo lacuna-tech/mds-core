@@ -15,7 +15,7 @@
  */
 
 import express from 'express'
-import logger from '@mds-core/mds-logger'
+import { AuthorizationError } from '@mds-core/mds-utils'
 import { ProviderApiRequest, ProviderApiResponse } from './types'
 
 function api(app: express.Express): express.Express {
@@ -23,18 +23,10 @@ function api(app: express.Express): express.Express {
   // Middleware
   //
   app.use(async (req: ProviderApiRequest, res: ProviderApiResponse, next) => {
-    try {
-      if (!(req.path.includes('/health') || req.path === '/')) {
-        if (res.locals.claims) {
-          logger.info(req.method, req.originalUrl)
-        } else {
-          return res.status(401).send('Unauthorized')
-        }
+    if (!(req.path.includes('/health') || req.path === '/')) {
+      if (!res.locals.claims) {
+        return res.status(401).send({ error: new AuthorizationError('missing_claims') })
       }
-    } catch (err) {
-      const desc = err instanceof Error ? err.message : err
-      const stack = err instanceof Error ? err.stack : desc
-      await logger.error(req.originalUrl, 'request validation fail:', desc, stack || JSON.stringify(err))
     }
     return next()
   })

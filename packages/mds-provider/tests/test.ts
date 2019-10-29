@@ -27,6 +27,7 @@ import { ApiServer } from '@mds-core/mds-api-server'
 import { api } from '../api'
 
 const request = supertest(ApiServer(api))
+const APP_JSON = 'application/json; charset=utf-8'
 
 describe('Tests app', () => {
   it('Get Trips (no authorization)', done => {
@@ -34,7 +35,7 @@ describe('Tests app', () => {
       .get('/trips')
       .expect(401)
       .end((err, result) => {
-        test.value(result.text).is('Unauthorized')
+        test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
   })
@@ -54,7 +55,7 @@ describe('Tests app', () => {
       .get('/status_changes')
       .expect(401)
       .end((err, result) => {
-        test.value(result.text).is('Unauthorized')
+        test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
   })
