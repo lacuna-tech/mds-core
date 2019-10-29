@@ -16,8 +16,6 @@
 
 import express from 'express'
 import logger from '@mds-core/mds-logger'
-import { pathsFor, NotImplementedError } from '@mds-core/mds-utils'
-import { checkAccess } from '@mds-core/mds-api-server'
 import { ProviderApiRequest, ProviderApiResponse } from './types'
 
 function api(app: express.Express): express.Express {
@@ -40,25 +38,6 @@ function api(app: express.Express): express.Express {
     }
     return next()
   })
-
-  //
-  // Routes
-  //
-  app.get(
-    pathsFor('/trips'),
-    checkAccess(scopes => scopes.includes('trips:read')),
-    async (req: ProviderApiRequest, res: ProviderApiResponse) => {
-      res.status(501).send(new NotImplementedError(`${req.path} is not implemented`))
-    }
-  )
-
-  app.get(
-    pathsFor('/status_changes'),
-    checkAccess(scopes => scopes.includes('status_changes:read')),
-    async (req: ProviderApiRequest, res: ProviderApiResponse) => {
-      res.status(501).send(new NotImplementedError(`${req.path} is not implemented`))
-    }
-  )
 
   return app
 }

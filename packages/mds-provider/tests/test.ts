@@ -26,11 +26,6 @@ import test from 'unit.js'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { api } from '../api'
 
-const APP_JSON = 'application/json; charset=utf-8'
-const EMPTY_SCOPE = SCOPED_AUTH([], '')
-const TRIPS_READ_SCOPE = SCOPED_AUTH(['trips:read'])
-const STATUS_CHANGES_READ_SCOPE = SCOPED_AUTH(['status_changes:read'])
-
 const request = supertest(ApiServer(api))
 
 describe('Tests app', () => {
@@ -44,24 +39,12 @@ describe('Tests app', () => {
       })
   })
 
-  it('Get Trips (no scope)', done => {
+  it('Get Trips (not found)', done => {
     request
       .get('/trips')
-      .set('Authorization', EMPTY_SCOPE)
-      .expect(403)
-      .end((err, result) => {
-        test.value(result).hasHeader('content-type', APP_JSON)
-        done(err)
-      })
-  })
-
-  it('Get Trips (all)', done => {
-    request
-      .get('/trips')
-      .set('Authorization', TRIPS_READ_SCOPE)
-      .expect(501)
-      .end((err, result) => {
-        test.value(result).hasHeader('content-type', APP_JSON)
+      .set('Authorization', SCOPED_AUTH(['trips:read']))
+      .expect(404)
+      .end(err => {
         done(err)
       })
   })
@@ -76,24 +59,12 @@ describe('Tests app', () => {
       })
   })
 
-  it('Get Status Changes (no scope)', done => {
+  it('Get Status Changes (not found)', done => {
     request
       .get('/status_changes')
-      .set('Authorization', EMPTY_SCOPE)
-      .expect(403)
-      .end((err, result) => {
-        test.value(result).hasHeader('content-type', APP_JSON)
-        done(err)
-      })
-  })
-
-  it('Get Status Changes (all)', done => {
-    request
-      .get('/status_changes')
-      .set('Authorization', STATUS_CHANGES_READ_SCOPE)
-      .expect(501)
-      .end((err, result) => {
-        test.value(result).hasHeader('content-type', APP_JSON)
+      .set('Authorization', SCOPED_AUTH(['status_changes:read']))
+      .expect(404)
+      .end(err => {
         done(err)
       })
   })
