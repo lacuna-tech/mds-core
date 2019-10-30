@@ -1604,4 +1604,16 @@ describe('Tests Stops', async () => {
         done(err)
       })
   })
+
+  it('verifies successfully GETing all stops', done => {
+    request
+      .get(`/stops/${TEST_STOP.stop_id}`)
+      .set('Authorization', AUTH)
+      .expect(200)
+      .end((err, result) => {
+        test.assert(result.body.length === 1)
+        test.assert(result.body[0].stop_id === TEST_STOP.stop_id)
+        done(err)
+      })
+  })
 })
