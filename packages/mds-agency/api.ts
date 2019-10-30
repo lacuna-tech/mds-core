@@ -145,9 +145,9 @@ function api(app: express.Express): express.Express {
 
   app.post(pathsFor('/stops'), checkAccess(scopes => scopes.includes('admin:all')), registerStop)
 
-  app.get(pathsFor('/stops'), readStops)
-
   app.get(pathsFor('/stops/:stop_id'), readStop)
+
+  app.get(pathsFor('/stops'), readStops)
 
   return app
 }

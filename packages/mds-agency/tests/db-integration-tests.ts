@@ -1571,11 +1571,21 @@ describe('Tests Stops', async () => {
   it('verifies successfully POSTing a stop', async () => {
     await db.writeGeography(LAGeography)
     await db.publishGeography(GEOGRAPHY_UUID)
-    request
+    await request
       .post(`/stops`)
       .set('Authorization', AUTH)
       .send(TEST_STOP)
       .expect(201)
-      .end(() => {})
+  })
+
+  it('verifies successfully GETing a stop', done => {
+    request
+      .get(`/stops/${TEST_STOP.stop_id}`)
+      .set('Authorization', AUTH)
+      .expect(200)
+      .end((err, result) => {
+        test.assert(result.body.stop_id === TEST_STOP.stop_id)
+        done(err)
+      })
   })
 })
