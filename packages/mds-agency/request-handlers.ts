@@ -1,7 +1,7 @@
 import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
 import areas from 'ladot-service-areas'
 import log from '@mds-core/mds-logger'
-import { isUUID, now, ServerError } from '@mds-core/mds-utils'
+import { isUUID, now, ServerError, isValidStop, ValidationError, NotFoundError } from '@mds-core/mds-utils'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
@@ -452,12 +452,24 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
 export const registerStop = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   const { stop } = req.body
   const { geography_id } = stop
-  // TODO: validation
 
-  await readSingleGeography(geography_id)
-
-  const recorded_stop = await db.writeStop(stop)
-  res.status(201).send(recorded_stop)
+  try {
+    isValidStop(stop)
+    const geography = await readSingleGeography(geography_id)
+    if (!geography) {
+      throw new NotFoundError(`geography_id: ${geography_id} not_found!`)
+    }
+    const recorded_stop = await db.writeStop(stop)
+    res.status(201).send(recorded_stop)
+  } catch (err) {
+    if (err instanceof NotFoundError) {
+      res.status(404).send(err.message)
+    }
+    if (err instanceof ValidationError) {
+      res.status(400).send(err)
+    }
+    res.status(500).send(new ServerError())
+  }
 }
 
 export const readStop = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
