@@ -39,6 +39,7 @@ import uuid from 'uuid'
 import { ApiServer } from '@mds-core/mds-api-server'
 import db from '@mds-core/mds-db'
 import { MOCHA_PROVIDER_ID } from '@mds-core/mds-providers'
+import { VEHICLE_REASONS } from 'packages/mds-types/dist'
 import { api } from '../api'
 
 const request = supertest(ApiServer(api))
@@ -85,8 +86,8 @@ describe('Testing API', () => {
       db.writeEvent({
         provider_id,
         device_id: provider_device_id,
-        event_type: 'agency_drop_off',
-        event_type_reason: 'rebalance',
+        event_type: VEHICLE_EVENTS.agency_drop_off,
+        event_type_reason: VEHICLE_REASONS.rebalance,
         telemetry_timestamp: oldTimestamp,
         trip_id: uuid(),
         timestamp: oldTimestamp,
@@ -111,7 +112,7 @@ describe('Testing API', () => {
       db.writeEvent({
         provider_id,
         device_id: provider_device_id,
-        event_type: 'trip_start',
+        event_type: VEHICLE_EVENTS.trip_start,
         telemetry_timestamp: timestamp,
         trip_id: uuid(),
         timestamp,
@@ -346,8 +347,8 @@ describe('Testing API', () => {
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
         test.value(result.body.events.length).is(7)
-        test.value(result.body.provider_event_type).is('agency_drop_off')
-        test.value(result.body.provider_event_type_reason).is('rebalance')
+        test.value(result.body.provider_event_type).is(VEHICLE_EVENTS.agency_drop_off)
+        test.value(result.body.provider_event_type_reason).is(VEHICLE_REASONS.rebalance)
         test.value(result.body.provider_status).is('available')
         test.value(result.body.provider_telemetry.charge).is(0.5)
         test.assert(result.body.provider_event_time > 1000000000000)
