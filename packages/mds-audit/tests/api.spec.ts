@@ -29,6 +29,7 @@ import {
   VEHICLE_EVENTS,
   AUDIT_EVENT_TYPES,
   PROPULSION_TYPES,
+  VEHICLE_REASONS,
   VEHICLE_TYPES
 } from '@mds-core/mds-types'
 import { makeEventsWithTelemetry, makeDevices, makeTelemetryInArea, SCOPED_AUTH } from '@mds-core/mds-test-data'
@@ -39,7 +40,6 @@ import uuid from 'uuid'
 import { ApiServer } from '@mds-core/mds-api-server'
 import db from '@mds-core/mds-db'
 import { MOCHA_PROVIDER_ID } from '@mds-core/mds-providers'
-import { VEHICLE_REASONS } from 'packages/mds-types/dist'
 import { api } from '../api'
 
 const request = supertest(ApiServer(api))
