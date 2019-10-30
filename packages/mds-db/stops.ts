@@ -23,12 +23,9 @@ export async function writeStop(stop: Stop): Promise<Recorded<Stop>> {
 export async function readStop(stop_id: UUID): Promise<Recorded<Stop>> {
   const client = await getReadOnlyClient()
   const sql = `SELECT * FROM ${schema.TABLE.stops} WHERE ${schema.COLUMN.stop_id} = '${stop_id}'`
-  console.log(sql)
   const {
     rows: [recorded_stop]
   }: { rows: Recorded<Stop>[] } = await client.query(sql)
-  const foo2 = await client.query('SELECT * FROM stops')
-  console.log(foo2)
   return recorded_stop
 }
 

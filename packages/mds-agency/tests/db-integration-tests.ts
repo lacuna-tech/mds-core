@@ -1607,7 +1607,7 @@ describe('Tests Stops', async () => {
 
   it('verifies successfully GETing all stops', done => {
     request
-      .get(`/stops/${TEST_STOP.stop_id}`)
+      .get(`/stops`)
       .set('Authorization', AUTH)
       .expect(200)
       .end((err, result) => {

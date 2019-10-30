@@ -465,6 +465,7 @@ export const registerStop = async (req: AgencyApiRequest, res: AgencyApiResponse
     if (err instanceof ValidationError) {
       res.status(400).send({ error: err })
     }
+
     res.status(500).send(new ServerError())
   }
 }
@@ -490,5 +491,6 @@ export const readStops = async (req: AgencyApiRequest, res: AgencyApiResponse) =
   if (!stops) {
     res.status(404).send(new NotFoundError())
   }
+
   res.status(200).send(stops)
 }
