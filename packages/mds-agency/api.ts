@@ -29,7 +29,10 @@ import {
   getVehiclesByProvider,
   updateVehicle,
   submitVehicleEvent,
-  submitVehicleTelemetry
+  submitVehicleTelemetry,
+  registerStop,
+  readStop,
+  readStops
 } from './request-handlers'
 import { readAllVehicleIds } from './agency-candidate-request-handlers'
 import { getCacheInfo, wipeDevice, refreshCache } from './sandbox-admin-request-handlers'
@@ -139,6 +142,12 @@ function api(app: express.Express): express.Express {
   )
 
   app.get(pathsFor('/admin/cache/refresh'), checkAccess(scopes => scopes.includes('admin:all')), refreshCache)
+
+  app.post(pathsFor('/stops'), checkAccess(scopes => scopes.includes('admin:all')), registerStop)
+
+  app.get(pathsFor('/stops'), readStops)
+
+  app.get(pathsFor('/stops/:stop_id'), readStops)
 
   return app
 }

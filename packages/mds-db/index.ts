@@ -87,6 +87,8 @@ import {
   getLatestStatusChangeTime
 } from './status_changes'
 
+import { writeStop, readStop, readStops } from './stops'
+
 async function initialize() {
   const client: MDSPostgresClient = await getWriteableClient()
   await dropTables(client)
@@ -243,5 +245,8 @@ export = {
   readUnprocessedStatusChangeEvents,
   readEventsWithTelemetry,
   readTripIds,
-  readEventsForStatusChanges
+  readEventsForStatusChanges,
+  writeStop,
+  readStop,
+  readStops
 }
