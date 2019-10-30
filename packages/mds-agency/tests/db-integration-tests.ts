@@ -1550,22 +1550,27 @@ describe('Tests Stops', async () => {
     capacity: {
       bike: 10,
       scooter: 10,
-      car: 5,
+      carshare: 5,
       recumbant: 0
     },
     num_vehicles_available: {
       bike: 3,
       scooter: 7,
-      car: 0,
+      carshare: 0,
       recumbant: 0
     },
     num_spots_available: {
       bike: 7,
       scooter: 3,
-      car: 5,
+      carshare: 5,
       recumbant: 0
     }
   }
+
+  before(async () => {
+    await Promise.all([db.initialize(), cache.initialize()])
+  })
+
   it('verifies successfully POSTing a stop', done => {
     db.writeGeography(LAGeography)
     request

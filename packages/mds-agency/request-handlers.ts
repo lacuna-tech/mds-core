@@ -450,7 +450,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
 }
 
 export const registerStop = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
-  const { stop } = req.body
+  const stop = req.body
   const { geography_id } = stop
 
   try {
