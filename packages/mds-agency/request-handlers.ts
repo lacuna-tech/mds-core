@@ -455,10 +455,7 @@ export const registerStop = async (req: AgencyApiRequest, res: AgencyApiResponse
 
   try {
     isValidStop(stop)
-    const geography = await readSingleGeography(geography_id)
-    if (!geography) {
-      throw new NotFoundError(`geography_id: ${geography_id} not_found!`)
-    }
+    await readSingleGeography(geography_id)
     const recorded_stop = await db.writeStop(stop)
     res.status(201).send(recorded_stop)
   } catch (err) {
