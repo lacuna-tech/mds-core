@@ -1551,19 +1551,19 @@ describe('Tests Stops', async () => {
       bike: 10,
       scooter: 10,
       carshare: 5,
-      recumbant: 0
+      recumbent: 0
     },
     num_vehicles_available: {
       bike: 3,
       scooter: 7,
       carshare: 0,
-      recumbant: 0
+      recumbent: 0
     },
     num_spots_available: {
       bike: 7,
       scooter: 3,
       carshare: 5,
-      recumbant: 0
+      recumbent: 0
     }
   }
 
