@@ -1566,7 +1566,7 @@ describe('Tests Stops', async () => {
       recumbant: 0
     }
   }
-  it('verifies successfully POSTing a stop', async () => {
+  it('verifies successfully POSTing a stop', done => {
     db.writeGeography(LAGeography)
     request
       .post(`/stops`)
@@ -1575,7 +1575,7 @@ describe('Tests Stops', async () => {
       .expect(201)
       .end((err, result) => {
         deepEqual(result.body, TEST_STOP)
-        return err
+        done(err)
       })
   })
 })
