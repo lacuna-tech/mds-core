@@ -46,7 +46,6 @@ import { makeDevices, makeEvents, GEOGRAPHY_UUID, LA_CITY_BOUNDARY } from '@mds-
 import { ApiServer } from '@mds-core/mds-api-server'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID } from '@mds-core/mds-providers'
 
-import { deepEqual } from 'should'
 import { api } from '../api'
 
 /* eslint-disable-next-line no-console */
