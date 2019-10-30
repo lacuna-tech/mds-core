@@ -463,7 +463,7 @@ export const registerStop = async (req: AgencyApiRequest, res: AgencyApiResponse
       res.status(404).send(err.message)
     }
     if (err instanceof ValidationError) {
-      res.status(400).send(err)
+      res.status(400).send({ error: err })
     }
     res.status(500).send(new ServerError())
   }

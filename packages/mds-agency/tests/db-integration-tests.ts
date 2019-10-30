@@ -1568,6 +1568,22 @@ describe('Tests Stops', async () => {
     await Promise.all([db.initialize(), cache.initialize()])
   })
 
+  it('verifies failing to POST a stop (non-existant geography)', async () => {
+    await request
+      .post(`/stops`)
+      .set('Authorization', AUTH)
+      .send(TEST_STOP)
+      .expect(404)
+  })
+
+  it('verifies failing to POST a stop (garbage data)', async () => {
+    await request
+      .post(`/stops`)
+      .set('Authorization', AUTH)
+      .send({ foo: 'bar' })
+      .expect(400)
+  })
+
   it('verifies successfully POSTing a stop', async () => {
     await db.writeGeography(LAGeography)
     await db.publishGeography(GEOGRAPHY_UUID)
