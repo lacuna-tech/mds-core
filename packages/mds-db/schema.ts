@@ -16,6 +16,7 @@ const TABLE = Enum(
 )
 export type TABLE_NAME = keyof typeof TABLE
 const TABLES = Object.keys(TABLE) as TABLE_NAME[]
+const DEPRECATED_PROVIDER_TABLES = ['status_changes', 'trips']
 
 const COLUMN = Enum(
   'accuracy',
@@ -236,6 +237,7 @@ export default {
   COLUMN,
   COLUMNS,
   COLUMN_TYPE,
+  DEPRECATED_PROVIDER_TABLES,
   TABLE,
   TABLES,
   TABLE_COLUMNS,
