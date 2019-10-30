@@ -16,14 +16,9 @@ type MIGRATION = typeof MIGRATIONS[number]
 // drop tables from a list of table names
 async function dropTables(client: MDSPostgresClient) {
   const exec = SqlExecuter(client)
-  const existing: { rows: { table_name: string }[] } = await exec(
-    'SELECT table_name FROM information_schema.tables WHERE table_catalog = CURRENT_CATALOG AND table_schema = CURRENT_SCHEMA'
-  )
-  if (existing.rows.length > 0) {
-    const drop = csv(existing.rows.map(row => row.table_name))
-    await exec(`DROP TABLE IF EXISTS ${drop};`)
-    await log.info(`postgres drop table succeeded: ${drop}`)
-  }
+  const drop = csv(schema.DEPRECATED_PROVIDER_TABLES.concat(schema.TABLES))
+  await exec(`DROP TABLE IF EXISTS ${drop};`)
+  await log.info(`postgres drop table succeeded: ${drop}`)
 }
 
 // Add a foreign key if it doesn't already exist
@@ -179,8 +174,7 @@ async function alterPreviousGeographiesColumnMigration(exec: SqlExecuterFunction
 }
 
 async function dropDeprecatedProviderTablesMigration(exec: SqlExecuterFunction) {
-  const DEPRECATED_PROVIDER_TABLES = ['status_changes', 'trips']
-  await exec(`DROP TABLE IF EXISTS ${csv(DEPRECATED_PROVIDER_TABLES)};`)
+  await exec(`DROP TABLE IF EXISTS ${csv(schema.DEPRECATED_PROVIDER_TABLES)};`)
 }
 
 async function doMigrations(client: MDSPostgresClient) {
