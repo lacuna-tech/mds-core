@@ -12,11 +12,10 @@ export const nodeVersion = () => {
   return execSync('node --version').toString().trim()
 }
 
-export const packageVersion = () => {
-  // fixme: get package-version from env
-  return "0.1.14";
+export const packageVersion = (pkg: string) => {
+  return execSync('node -p "require(\'./container-images/${pkg}/package.json\').version').toString().trim()
 }
 
-export const isIsoDate = (s : string) => {
-  return (!/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(s)) ? false : new Date(s).toISOString() == s;
+export const isIsoDate = (date : string) => {
+  return (!/\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z/.test(date)) ? false : new Date(date).toISOString() == date;
 }

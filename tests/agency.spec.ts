@@ -20,8 +20,7 @@ describe('Agency', function() {
     assert.strictEqual(res.headers['content-type'], 'application/json; charset=utf-8')
     assert.strictEqual(res.headers['server'], 'istio-envoy')
     assert.strictEqual(res.body.name, "@container-images/mds-agency")
-    // fixme: get package version from env
-    // assert.strictEqual(res.body.version, packageVersion())
+    assert.strictEqual(res.body.version, packageVersion('mds-agency'))
     assert.strictEqual(isIsoDate(res.body.build.date), true)
     assert.strictEqual(res.body.build.branch, gitBranch())
     assert.strictEqual(res.body.build.commit, gitHash())
