@@ -147,7 +147,7 @@ function api(app: express.Express): express.Express {
 
   app.get(pathsFor('/stops'), readStops)
 
-  app.get(pathsFor('/stops/:stop_id'), readStops)
+  app.get(pathsFor('/stops/:stop_id'), readStop)
 
   return app
 }

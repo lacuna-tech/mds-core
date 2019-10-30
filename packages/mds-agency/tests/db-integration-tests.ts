@@ -36,14 +36,17 @@ import {
   PROPULSION_TYPES,
   Timestamp,
   Device,
-  VehicleEvent
+  VehicleEvent,
+  Geography
 } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
-import { makeDevices, makeEvents } from '@mds-core/mds-test-data'
+import { makeDevices, makeEvents, GEOGRAPHY_UUID, LA_CITY_BOUNDARY } from '@mds-core/mds-test-data'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID } from '@mds-core/mds-providers'
+
+import { deepEqual } from 'should'
 import { api } from '../api'
 
 /* eslint-disable-next-line no-console */
@@ -57,7 +60,7 @@ function now(): Timestamp {
 
 const APP_JSON = 'application/json; charset=utf-8'
 
-const LA_CITY_BOUNDARY = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
+const LA_CITY_BOUNDARY_ID = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 const PROVIDER_SCOPES = 'admin:all'
 const DEVICE_UUID = 'ec551174-f324-4251-bfed-28d9f3f473fc'
 const TRIP_UUID = '1f981864-cc17-40cf-aea3-70fd985e2ea7'
@@ -108,6 +111,13 @@ const test_event = {
 }
 
 testTimestamp += 1
+
+const LAGeography: Geography = {
+  name: 'Los Angeles',
+  geography_id: GEOGRAPHY_UUID,
+  geography_json: LA_CITY_BOUNDARY,
+  read_only: false
+}
 
 function deepCopy<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
@@ -1349,7 +1359,7 @@ describe('Tests API', () => {
   /* eslint-disable @typescript-eslint/no-explicit-any */
   it('verifies reading a single service_area', done => {
     request
-      .get(`/service_areas/${LA_CITY_BOUNDARY}`)
+      .get(`/service_areas/${LA_CITY_BOUNDARY_ID}`)
       .set('Authorization', AUTH)
       .expect(200)
       .end((err, result) => {
@@ -1528,6 +1538,44 @@ describe('Tests pagination', async () => {
         test.string(result.body.links.first).contains('http')
         test.string(result.body.links.last).contains('http')
         done(err)
+      })
+  })
+})
+
+describe('Tests Stops', async () => {
+  const TEST_STOP = {
+    stop_id: '821f8dee-dd43-4f03-99d4-3cf761f4fe7e',
+    stop_name: 'LA Stop',
+    geography_id: GEOGRAPHY_UUID,
+    capacity: {
+      bike: 10,
+      scooter: 10,
+      car: 5,
+      recumbant: 0
+    },
+    num_vehicles_available: {
+      bike: 3,
+      scooter: 7,
+      car: 0,
+      recumbant: 0
+    },
+    num_spots_available: {
+      bike: 7,
+      scooter: 3,
+      car: 5,
+      recumbant: 0
+    }
+  }
+  it('verifies successfully POSTing a stop', async () => {
+    db.writeGeography(LAGeography)
+    request
+      .post(`/stops`)
+      .set('Authorization', AUTH)
+      .send(TEST_STOP)
+      .expect(201)
+      .end((err, result) => {
+        deepEqual(result.body, TEST_STOP)
+        return err
       })
   })
 })

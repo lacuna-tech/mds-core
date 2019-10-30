@@ -5,8 +5,7 @@ import schema from './schema'
 
 import { vals_sql, cols_sql, vals_list, logSql } from './sql-utils'
 
-import { getWriteableClient } from './client'
-import { getReadOnlyClient } from './dist/client'
+import { getWriteableClient, getReadOnlyClient } from './client'
 
 export async function writeStop(stop: Stop): Promise<Recorded<Stop>> {
   const client = await getWriteableClient()
