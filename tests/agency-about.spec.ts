@@ -3,7 +3,7 @@ import assert from 'assert'
 import { getAuthToken } from './get-auth-token'
 import { gitHash, gitBranch, nodeVersion, packageVersion, isIsoDate } from './environment'
 
-describe('Agency', function() {
+describe('Agency about', function() {
   it('successfully initializes', async function() {
     const res = await requestPromise({
       url: 'http://localhost/agency',

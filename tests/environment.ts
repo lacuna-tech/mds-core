@@ -13,7 +13,7 @@ export const nodeVersion = () => {
 }
 
 export const packageVersion = (pkg: string) => {
-  return execSync('node -p "require(\'./container-images/${pkg}/package.json\').version').toString().trim()
+  return execSync('node -p "require(\'./container-images/' + pkg + '/package.json\').version"').toString().trim()
 }
 
 export const isIsoDate = (date : string) => {
