@@ -1,13 +1,4 @@
 apis:
-  mds-provider:
-    enabled: true
-    pathPrefix: /provider
-    port: 4000
-    version: ${PROVIDER_VERSION}
-    useDB: true
-    migration: false
-    useCache: true
-    useEvents: false
   mds-agency:
     enabled: true
     pathPrefix: /agency
