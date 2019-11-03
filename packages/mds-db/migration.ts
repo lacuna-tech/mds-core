@@ -10,6 +10,7 @@ const MIGRATIONS = [
   'alterAuditEventsColumns',
   'alterPreviousGeographiesColumn',
   'dropDeprecatedProviderTables',
+  'dropReadOnlyGeographyColumn',
   'dropAuditEventsColumns'
 ] as const
 type MIGRATION = typeof MIGRATIONS[number]
@@ -178,6 +179,10 @@ async function dropDeprecatedProviderTablesMigration(exec: SqlExecuterFunction) 
   await exec(`DROP TABLE IF EXISTS ${csv(schema.DEPRECATED_PROVIDER_TABLES)};`)
 }
 
+async function dropReadOnlyGeographyColumnMigration(exec: SqlExecuterFunction) {
+  await exec(`ALTER TABLE ${schema.TABLE.geographies} DROP COLUMN read_only`)
+}
+
 async function dropAuditEventsColumnsMigration(exec: SqlExecuterFunction) {
   await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN provider_event_id`)
   await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN provider_event_type`)
@@ -193,6 +198,7 @@ async function doMigrations(client: MDSPostgresClient) {
   await doMigration(exec, 'alterAuditEventsColumns', alterAuditEventsColumnsMigration)
   await doMigration(exec, 'alterPreviousGeographiesColumn', alterPreviousGeographiesColumnMigration)
   await doMigration(exec, 'dropDeprecatedProviderTables', dropDeprecatedProviderTablesMigration)
+  await doMigration(exec, 'dropReadOnlyGeographyColumn', dropReadOnlyGeographyColumnMigration)
   await doMigration(exec, 'dropAuditEventsColumns', dropAuditEventsColumnsMigration)
 }
 

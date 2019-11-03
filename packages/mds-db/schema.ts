@@ -57,7 +57,6 @@ const COLUMN = Enum(
   'provider_name',
   'provider_vehicle_id',
   'publish_date',
-  'read_only',
   'recorded',
   'service_area_id',
   'speed',
@@ -135,7 +134,6 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.geography_id,
     COLUMN.geography_json,
     COLUMN.publish_date,
-    COLUMN.read_only,
     COLUMN.prev_geographies,
     COLUMN.name
   ],
@@ -211,7 +209,6 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.provider_id]: 'uuid NOT NULL',
   [COLUMN.provider_name]: 'varchar(127) NOT NULL',
   [COLUMN.provider_vehicle_id]: 'varchar(255) NOT NULL',
-  [COLUMN.read_only]: 'bool DEFAULT FALSE',
   [COLUMN.recorded]: 'bigint NOT NULL', // timestamp of when record was created
   [COLUMN.service_area_id]: 'uuid',
   [COLUMN.speed]: 'real',
