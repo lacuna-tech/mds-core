@@ -281,6 +281,7 @@ export async function readEventsWithTelemetry({
   provider_id,
   start_time,
   end_time,
+  order_by = 'id',
   last_id = 0,
   limit = 1000
 }: Partial<{
@@ -334,10 +335,10 @@ export async function readEventsWithTelemetry({
   const { rows } = await exec(
     `SELECT E.*, T.lat, T.lng, T.speed, T.heading, T.accuracy, T.altitude, T.charge, T.timestamp AS telemetry_timestamp FROM (SELECT * FROM ${
       schema.TABLE.events
-    }${where} ORDER BY timestamp DESC LIMIT ${vals.add(limit)}
+    }${where} ORDER BY ${order_by} LIMIT ${vals.add(limit)}
     ) AS E LEFT JOIN ${
       schema.TABLE.telemetry
-    } T ON E.device_id = T.device_id AND CASE WHEN E.telemetry_timestamp IS NULL THEN E.timestamp ELSE E.telemetry_timestamp END = T.timestamp ORDER BY timestamp DESC`,
+    } T ON E.device_id = T.device_id AND CASE WHEN E.telemetry_timestamp IS NULL THEN E.timestamp ELSE E.telemetry_timestamp END = T.timestamp ORDER BY ${order_by}`,
     vals.values()
   )
 

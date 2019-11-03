@@ -507,6 +507,7 @@ function api(app: express.Express): express.Express {
                 device_id: device.device_id,
                 provider_id: device.provider_id,
                 end_time: audit_start, // Last provider event before the audit started
+                order_by: 'timestamp DESC',
                 limit: 1
               })
               return res.status(200).send({

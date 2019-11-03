@@ -64,6 +64,7 @@ const telemetry = (): {} => ({
 })
 
 const AUDIT_START = Date.now()
+const OLD_EVENT = Date.now() - 60000
 
 const audit_subject_id = 'user@mds-testing.info'
 
@@ -73,51 +74,53 @@ before('Initializing Database', async () => {
 
 describe('Testing API', () => {
   before(done => {
-    const timestamp = Date.now()
-    const oldTimestamp = Date.now() - 600
+    const baseEvent = {
+      provider_id,
+      device_id: provider_device_id,
+      event_type: VEHICLE_EVENTS.agency_drop_off,
+      event_type_reason: VEHICLE_REASONS.rebalance,
+      telemetry_timestamp: AUDIT_START,
+      trip_id: uuid(),
+      timestamp: AUDIT_START,
+      recorded: AUDIT_START
+    }
+    const baseTelemetry = {
+      provider_id,
+      device_id: provider_device_id,
+      timestamp: AUDIT_START,
+      recorded: AUDIT_START,
+      charge: 0.5,
+      gps: {
+        lat: 37.4230723,
+        lng: -122.137429,
+        speed: 0,
+        hdop: 1,
+        heading: 180
+      }
+    }
     db.writeDevice({
       device_id: provider_device_id,
       provider_id,
       vehicle_id: provider_vehicle_id,
       propulsion: [PROPULSION_TYPES.electric],
       type: VEHICLE_TYPES.scooter,
-      recorded: timestamp
+      recorded: AUDIT_START
     }).then(() => {
       db.writeEvent({
-        provider_id,
-        device_id: provider_device_id,
-        event_type: VEHICLE_EVENTS.agency_drop_off,
-        event_type_reason: VEHICLE_REASONS.rebalance,
-        telemetry_timestamp: oldTimestamp,
-        trip_id: uuid(),
-        timestamp: oldTimestamp,
-        recorded: timestamp
+        ...baseEvent,
+        ...{ telemetry_timestamp: OLD_EVENT, timestamp: OLD_EVENT }
       })
+      db.writeEvent(baseEvent)
       db.writeTelemetry([
         {
-          provider_id,
-          device_id: provider_device_id,
-          timestamp: oldTimestamp,
-          recorded: oldTimestamp,
-          charge: 0.5,
-          gps: {
-            lat: 37.4230723,
-            lng: -122.137429,
-            speed: 0,
-            hdop: 1,
-            heading: 180
-          }
+          ...baseTelemetry,
+          ...{ timestamp: OLD_EVENT, recorded: OLD_EVENT }
+        },
+        {
+          ...baseTelemetry,
+          ...{ timestamp: AUDIT_START, recorded: AUDIT_START }
         }
-      ])
-      db.writeEvent({
-        provider_id,
-        device_id: provider_device_id,
-        event_type: VEHICLE_EVENTS.trip_start,
-        telemetry_timestamp: timestamp,
-        trip_id: uuid(),
-        timestamp,
-        recorded: timestamp
-      }).then(() => done())
+      ]).then(() => done())
     })
   })
 
@@ -351,7 +354,7 @@ describe('Testing API', () => {
         test.value(result.body.provider_event_type_reason).is(VEHICLE_REASONS.rebalance)
         test.value(result.body.provider_status).is('available')
         test.value(result.body.provider_telemetry.charge).is(0.5)
-        test.assert(result.body.provider_event_time > 1000000000000)
+        test.value(result.body.provider_event_time).is(AUDIT_START)
         done(err)
       })
   })
