@@ -76,3 +76,5 @@ redis:
 slack:
   channel:
   token:
+nameOverride: ""
+fullnameOverride: ""
