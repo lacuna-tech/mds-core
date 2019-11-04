@@ -28,24 +28,13 @@ import {
   isInStatesOrEvents,
   ServerError
 } from '@mds-core/mds-utils'
-import { Geography, Device, UUID } from '@mds-core/mds-types'
-import {
-  TEST1_PROVIDER_ID,
-  TEST2_PROVIDER_ID,
-  BLUE_SYSTEMS_PROVIDER_ID,
-  DEPRECATED_BLUE_SYSTEMS_PROVIDER_ID,
-  providerName
-} from '@mds-core/mds-providers'
+import { Geography, Device, UUID, VehicleEvent } from '@mds-core/mds-types'
+import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, BLUE_SYSTEMS_PROVIDER_ID, providerName } from '@mds-core/mds-providers'
 import { Geometry, FeatureCollection } from 'geojson'
 import * as compliance_engine from './mds-compliance-engine'
 import { ComplianceApiRequest, ComplianceApiResponse } from './types'
 
-const AllowedProviderIDs = [
-  TEST1_PROVIDER_ID,
-  TEST2_PROVIDER_ID,
-  BLUE_SYSTEMS_PROVIDER_ID,
-  DEPRECATED_BLUE_SYSTEMS_PROVIDER_ID
-]
+const AllowedProviderIDs = [TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, BLUE_SYSTEMS_PROVIDER_ID]
 
 function api(app: express.Express): express.Express {
   app.use(async (req: ComplianceApiRequest, res: ComplianceApiResponse, next: express.NextFunction) => {
@@ -133,7 +122,7 @@ function api(app: express.Express): express.Express {
             .includes(policy.policy_id)
         ) {
           const [geographies, deviceRecords] = await Promise.all([
-            db.readGeographies(),
+            db.readGeographies() as Promise<Geography[]>,
             db.readDeviceIds(target_provider_id)
           ])
           const deviceIdSubset = deviceRecords.map((record: { device_id: UUID; provider_id: UUID }) => record.device_id)
@@ -200,7 +189,10 @@ function api(app: express.Express): express.Express {
         return [...acc, getPolygon(geographies, geography.geography_id)]
       }, [])
 
-      const events = (await cache.readAllEvents()).filter(event => isInStatesOrEvents(rule, event))
+      // https://stackoverflow.com/a/51577579 to remove nulls in typesafe way
+      const events = (await cache.readAllEvents()).filter(
+        (event): event is VehicleEvent => event !== null && isInStatesOrEvents(rule, event)
+      )
       const filteredEvents = compliance_engine.filterEvents(events)
 
       const count = filteredEvents.reduce((count_acc, event) => {

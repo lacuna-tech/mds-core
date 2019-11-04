@@ -163,6 +163,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -190,6 +192,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -197,34 +201,6 @@
       "protocol": "inspector",
       "cwd": "${workspaceFolder}/packages/mds-api-authorizer",
       "env": {
-        "DOTENV_CONFIG_PATH": "../../.env"
-      }
-    },
-    {
-      "type": "node",
-      "request": "launch",
-      "name": "Tests: mds-api-scopes",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "-r",
-        "ts-node/register",
-        "-r",
-        "tsconfig-paths/register",
-        "-r",
-        "dotenv/config",
-        "--timeout",
-        "999999",
-        "--colors",
-        "--recursive",
-        "'tests/**/*.ts'"
-      ],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen",
-      "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/mds-api-scopes",
-      "env": {
-        "npm_package_name": "mds-api-server",
-        "npm_package_version": "0.0.0",
         "DOTENV_CONFIG_PATH": "../../.env"
       }
     },
@@ -244,6 +220,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -272,6 +250,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -299,6 +279,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -326,6 +308,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -353,6 +337,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -379,6 +365,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -405,6 +393,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -432,6 +422,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -459,6 +451,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -486,6 +480,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -513,6 +509,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",
@@ -539,6 +537,8 @@
         "999999",
         "--colors",
         "--recursive",
+        "--timeout",
+        "5000",
         "'tests/**/*.ts'"
       ],
       "console": "integratedTerminal",

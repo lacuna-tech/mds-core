@@ -27,14 +27,15 @@ import should from 'should'
 import supertest from 'supertest'
 import test from 'unit.js'
 import db from '@mds-core/mds-db'
-import { clone } from '@mds-core/mds-utils'
-import { Policy } from '@mds-core/mds-types'
+import { clone, isUUID } from '@mds-core/mds-utils'
+import { Policy, Geography } from '@mds-core/mds-types'
 import { ApiServer } from '@mds-core/mds-api-server'
 import {
   POLICY_JSON,
   POLICY2_JSON,
   POLICY3_JSON,
   POLICY4_JSON,
+  POLICY_JSON_MISSING_POLICY_ID,
   SUPERSEDING_POLICY_JSON,
   POLICY_UUID,
   POLICY2_UUID,
@@ -268,30 +269,13 @@ describe('Tests app', () => {
         })
     })
 
-    it('creates one current geography', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY }
-      request
-        .post(`/geographies`)
-        .set('Authorization', POLICIES_WRITE_SCOPE)
-        .send(geography)
-        .expect(201)
-        .end((err, result) => {
-          const body = result.body
-          log('create one geo response:', body)
-          test.value(result).hasHeader('content-type', APP_JSON)
-          done(err)
-        })
-    })
-
-    it('can publish a policy', done => {
-      request
+    it('can publish a policy', async () => {
+      await db.writeGeography({ name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY })
+      const result = await request
         .post(`/policies/${POLICY_JSON.policy_id}/publish`)
         .set('Authorization', POLICIES_PUBLISH_SCOPE)
         .expect(200)
-        .end((err, result) => {
-          test.value(result).hasHeader('content-type', APP_JSON)
-          done(err)
-        })
+      test.value(result).hasHeader('content-type', APP_JSON)
     })
 
     it('cannot double-publish a policy', done => {
@@ -569,7 +553,7 @@ describe('Tests app', () => {
     })
 
     it('can GET all active policies', async () => {
-      await db.writeGeography({ geography_id: GEOGRAPHY2_UUID, geography_json: DISTRICT_SEVEN })
+      await db.writeGeography({ name: 'Geography 2', geography_id: GEOGRAPHY2_UUID, geography_json: DISTRICT_SEVEN })
       await db.writePolicy(POLICY4_JSON)
       await db.writePolicy(SUPERSEDING_POLICY_JSON)
       await db.publishPolicy(SUPERSEDING_POLICY_JSON.policy_id)
@@ -614,6 +598,19 @@ describe('Tests app', () => {
           done(policies_err)
         })
     })
+
+    it('generates a UUID for a policy that has no UUID', done => {
+      request
+        .post(`/policies`)
+        .set('Authorization', POLICIES_WRITE_SCOPE)
+        .send(POLICY_JSON_MISSING_POLICY_ID)
+        .expect(201)
+        .end((err, result) => {
+          test.value(result).hasHeader('content-type', APP_JSON)
+          test.assert(isUUID(result.body.policy_id))
+          done(err)
+        })
+    })
   })
 
   describe('Geography endpoint tests', () => {
@@ -650,7 +647,7 @@ describe('Tests app', () => {
     })
 
     it('creates one current geography', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY }
+      const geography = { name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY }
       request
         .post(`/geographies`)
         .set('Authorization', POLICIES_WRITE_SCOPE)
@@ -731,7 +728,7 @@ describe('Tests app', () => {
     })
 
     it('verifies updating one geography', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: DISTRICT_SEVEN }
+      const geography = { name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: DISTRICT_SEVEN }
       request
         .put(`/geographies/${GEOGRAPHY_UUID}`)
         .set('Authorization', POLICIES_WRITE_SCOPE)
@@ -781,6 +778,52 @@ describe('Tests app', () => {
         .expect(200)
       const result = await db.readSingleGeographyMetadata(GEOGRAPHY_UUID)
       test.assert(result.geography_metadata.some_arbitrary_thing === 'beep')
+    })
+
+    it('cannot GET geographies (no auth)', done => {
+      request
+        .get(`/geographies/`)
+        .set('Authorization', EMPTY_SCOPE)
+        .expect(403)
+        .end(err => {
+          done(err)
+        })
+    })
+
+    it('cannot GET geographies (wrong auth)', done => {
+      request
+        .get(`/geographies/`)
+        .set('Authorization', EVENTS_READ_SCOPE)
+        .expect(403)
+        .end(err => {
+          done(err)
+        })
+    })
+
+    it('can GET geographies, full version', done => {
+      request
+        .get(`/geographies/`)
+        .set('Authorization', POLICIES_READ_SCOPE)
+        .expect(200)
+        .end((err, result) => {
+          result.body.forEach((item: Geography) => {
+            test.assert(item.geography_json)
+          })
+          done(err)
+        })
+    })
+
+    it('can GET geographies, summarized version', done => {
+      request
+        .get(`/geographies?summary=true`)
+        .set('Authorization', POLICIES_READ_SCOPE)
+        .expect(200)
+        .end((err, result) => {
+          result.body.forEach((item: Geography) => {
+            test.assert(!item.geography_json)
+          })
+          done(err)
+        })
     })
 
     it('cannot GET geography metadata (no auth)', done => {
@@ -852,7 +895,7 @@ describe('Tests app', () => {
     })
 
     it('verifies cannot PUT bad geography', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: 'garbage_json' }
+      const geography = { name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: 'garbage_json' }
       request
         .put(`/geographies/${GEOGRAPHY_UUID}`)
         .set('Authorization', POLICIES_WRITE_SCOPE)
@@ -865,7 +908,7 @@ describe('Tests app', () => {
     })
 
     it('verifies cannot PUT non-existent geography', done => {
-      const geography = { geography_id: POLICY_UUID, geography_json: DISTRICT_SEVEN }
+      const geography = { name: 'LA', geography_id: POLICY_UUID, geography_json: DISTRICT_SEVEN }
       request
         .put(`/geographies/${POLICY_UUID}`)
         .set('Authorization', POLICIES_WRITE_SCOPE)
@@ -878,7 +921,7 @@ describe('Tests app', () => {
     })
 
     it('verifies cannot POST invalid geography', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: 'garbage_json' }
+      const geography = { name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: 'garbage_json' }
       request
         .post(`/geographies`)
         .set('Authorization', POLICIES_WRITE_SCOPE)
@@ -891,7 +934,7 @@ describe('Tests app', () => {
     })
 
     it('cannot POST duplicate geography', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY }
+      const geography = { name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY }
       request
         .post(`/geographies`)
         .set('Authorization', POLICIES_WRITE_SCOPE)
@@ -918,7 +961,7 @@ describe('Tests app', () => {
     })
 
     it('can do bulk geography metadata reads', async () => {
-      await db.writeGeography({ geography_id: GEOGRAPHY2_UUID, geography_json: DISTRICT_SEVEN })
+      await db.writeGeography({ name: 'Geography 2', geography_id: GEOGRAPHY2_UUID, geography_json: DISTRICT_SEVEN })
       await db.writeGeographyMetadata({ geography_id: GEOGRAPHY2_UUID, geography_metadata: { earth: 'isround' } })
 
       const result = await request

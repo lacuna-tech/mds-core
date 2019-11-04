@@ -1,15 +1,17 @@
-{{- range $api := .Values.apis }}
+{{- range $name, $api := .Values.apis }}
+{{- if $api.enabled }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "mds.fullname" $ }}-{{ $api.version }}-{{ $api.name }}
+  name: {{ include "mds.fullname" $ }}-{{ $name }}-{{ $api.version }}-service
   namespace: {{ $.Release.Namespace }}
 spec:
   selector:
-    app: {{ include "mds.fullname" $ }}-{{ $api.name }}
+    app: {{ include "mds.fullname" $ }}-{{ $api.name }}-{{ $api.version }}
   ports:
   -
-    name: http-{{ $api.name }}
-    port: {{ $api.port }}
+    name: http-{{ $name }}
+    port: 4000
+{{- end }}
 {{- end }}

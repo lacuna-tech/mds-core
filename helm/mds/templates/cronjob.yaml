@@ -3,7 +3,7 @@
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
-  name: {{ include "mds.fullname" $ }}-metrics-sheet-cronjob
+  name: {{ include "mds.fullname" $ }}-metrics-sheet-1.0-cronjob
   namespace: {{ $.Release.Namespace }}
 spec:
   schedule: "*/1 * * * *"
@@ -38,7 +38,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ include "mds.fullname" $ }}-metrics-sheet
+  name: {{ include "mds.fullname" $ }}-metrics-sheet-1.0-secret
   namespace: {{ $.Release.Namespace }}
 type: Opaque
 data:

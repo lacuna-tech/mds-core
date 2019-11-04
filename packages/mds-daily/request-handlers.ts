@@ -1,9 +1,16 @@
 import db from '@mds-core/mds-db'
 import log from '@mds-core/mds-logger'
-import cache from '@mds-core/mds-cache'
 import { providerName } from '@mds-core/mds-providers'
-import { now, inc, ServerError } from '@mds-core/mds-utils'
-import { UUID, VehicleEvent, VEHICLE_STATUSES, EVENT_STATUS_MAP, VEHICLE_EVENT, TripsStats } from '@mds-core/mds-types'
+import { now, inc, ServerError, filterEmptyHelper } from '@mds-core/mds-utils'
+import {
+  UUID,
+  VehicleEvent,
+  VEHICLE_STATUSES,
+  EVENT_STATUS_MAP,
+  VEHICLE_EVENT,
+  TripsStats,
+  Device
+} from '@mds-core/mds-types'
 import areas from 'ladot-service-areas'
 import { DailyApiRequest, DailyApiResponse, ProviderInfo } from './types'
 import {
@@ -15,7 +22,7 @@ import {
   getTelemetryCountsPerProviderSince,
   getConformanceLast24Hours
 } from './db-helpers'
-import { startAndEnd, categorizeTrips } from './utils'
+import { startAndEnd, categorizeTrips, getMaps } from './utils'
 
 export async function dbHelperFail(err: Error | string): Promise<void> {
   await log.error(
@@ -37,10 +44,16 @@ const RIGHT_OF_WAY_STATUSES: string[] = [
   VEHICLE_STATUSES.trip
 ]
 
+type Item = Pick<Device, 'provider_id' | 'device_id'>
+
 export async function getRawTripData(req: DailyApiRequest, res: DailyApiResponse) {
   try {
+    const start = now()
     const { trip_id } = req.params
     const eventsAndCount: { events: VehicleEvent[]; count: number } = await db.readEvents({ trip_id })
+    const finish = now()
+    const timeElapsed = finish - start
+    await log.info(`MDS-DAILY /admin/raw_trip_data/:trip_id -> db.readEvents({ trip_id }) time elapsed: ${timeElapsed}`)
     if (eventsAndCount.events.length > 0) {
       const { events } = eventsAndCount
       events[0].timestamp_long = new Date(events[0].timestamp).toString()
@@ -66,34 +79,12 @@ export async function getVehicleCounts(req: DailyApiRequest, res: DailyApiRespon
     })
   }
 
-  async function getMaps(): Promise<{
-    eventMap: { [s: string]: VehicleEvent }
-    // telemetryMap: { [s: string]: Telemetry }
-  }> {
-    try {
-      // const telemetry: Telemetry[] = await cache.readAllTelemetry()
-      // log.info('read telemetry')
-      const events: VehicleEvent[] = await cache.readAllEvents()
-      log.info('read events')
-      const eventSeed: { [s: string]: VehicleEvent } = {}
-      const eventMap: { [s: string]: VehicleEvent } = events.reduce((map, event) => {
-        return Object.assign(map, { [event.device_id]: event })
-      }, eventSeed)
-      // const telemetrySeed: { [s: string]: Telemetry } = {}
-      // const telemetryMap = telemetry.reduce((map, t) => {
-      //   return Object.assign(map, { [t.device_id]: t })
-      // }, telemetrySeed)
-      return Promise.resolve({
-        // telemetryMap,
-        eventMap
-      })
-    } catch (err) {
-      return Promise.reject(err)
-    }
-  }
-
   try {
+    const start = now()
     const rows = await db.getVehicleCountsPerProvider()
+    const finish = now()
+    const timeElapsed = finish - start
+    await log.info(`MDS-DAILY /admin/vehicle_counts -> db.getVehicleCountsPerProvider() time elapsed: ${timeElapsed}`)
     const stats: {
       provider_id: UUID
       provider: string
@@ -128,8 +119,14 @@ export async function getVehicleCounts(req: DailyApiRequest, res: DailyApiRespon
     const { eventMap } = maps
     await Promise.all(
       stats.map(async stat => {
-        const items = await db.readDeviceIds(stat.provider_id)
-        items.map(item => {
+        const start2 = now()
+        const items: (Item | undefined)[] = await db.readDeviceIds(stat.provider_id)
+        const finish2 = now()
+        const timeElapsed2 = finish2 - start2
+        await log.info(
+          `MDS-DAILY /admin/vehicle_counts -> db.readDeviceIds(${stat.provider_id}) time elapsed: ${timeElapsed2}`
+        )
+        items.filter(filterEmptyHelper<Item>(true)).map(async item => {
           const event = eventMap[item.device_id]
           inc(stat.event_type, event ? event.event_type : 'default')
           const status = event ? EVENT_STATUS_MAP[event.event_type] : VEHICLE_STATUSES.removed
@@ -167,7 +164,13 @@ export async function getLastDayTripsByProvider(req: DailyApiRequest, res: Daily
 
   const { start_time, end_time } = startAndEnd(req.params)
   try {
+    const start = now()
     const rows = await db.getTripEventsLast24HoursByProvider(start_time, end_time)
+    const finish = now()
+    const timeElapsed = finish - start
+    await log.info(
+      `MDS-DAILY /admin/last_day_trips_by_provider -> db.getTripEventsLast24HoursByProvider() time elapsed: ${timeElapsed}`
+    )
     const perTripId = categorizeTrips(
       rows.reduce(
         (
@@ -207,6 +210,7 @@ export async function getLastDayStatsByProvider(req: DailyApiRequest, res: Daily
   const { start_time, end_time } = startAndEnd(req.params)
 
   try {
+    const start = now()
     const dbHelperArgs = { start_time, end_time, provider_info, fail: dbHelperFail }
     await Promise.all([
       getTimeSinceLastEvent(dbHelperArgs),
@@ -217,6 +221,11 @@ export async function getLastDayStatsByProvider(req: DailyApiRequest, res: Daily
       getTelemetryCountsPerProviderSince(dbHelperArgs),
       getConformanceLast24Hours(dbHelperArgs)
     ])
+    const finish = now()
+    const timeElapsed = finish - start
+    await log.info(
+      `MDS-DAILY /admin/last_day_stats_by_provider -> Promise.all(dbHelpers...) time elapsed: ${timeElapsed}`
+    )
 
     Object.keys(provider_info).map(provider_id => {
       provider_info[provider_id].name = providerName(provider_id)

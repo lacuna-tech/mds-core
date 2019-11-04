@@ -30,7 +30,7 @@ import logger from '@mds-core/mds-logger'
 import db from '@mds-core/mds-db'
 import { UUID, Timestamp } from '@mds-core/mds-types'
 import { providers } from '@mds-core/mds-providers'
-import { ApiResponse, ApiRequest, checkScope } from '@mds-core/mds-api-server'
+import { ApiResponse, ApiRequest, checkAccess } from '@mds-core/mds-api-server'
 
 import {
   NativeApiGetEventsRequest,
@@ -53,16 +53,10 @@ function api(app: express.Express): express.Express {
   // ///////////////////// begin middleware ///////////////////////
   app.use(async (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
     if (!(req.path.includes('/health') || req.path === '/')) {
-      try {
-        if (!res.locals.claims) {
-          return res.status(401).send({ error: new AuthorizationError('missing_claims') })
-        }
-      } catch (err) {
-        /* istanbul ignore next */
-        return InternalServerError(req, res, err)
+      if (!res.locals.claims) {
+        return res.status(401).send({ error: new AuthorizationError('missing_claims') })
       }
     }
-    logger.info(req.method, req.originalUrl)
     return next()
   })
   // ///////////////////// begin middleware ///////////////////////
@@ -109,7 +103,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/events/:cursor?'),
-    checkScope(check => check('events:read')), // TODO: events:read:provider with filtering
+    checkAccess(scopes => scopes.includes('events:read')), // TODO: events:read:provider with filtering
     async (req: NativeApiGetEventsRequest, res: NativeApiGetEventsReponse) => {
       try {
         const { cursor, limit } = getRequestParameters(req)
@@ -137,7 +131,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/vehicles/:device_id'),
-    checkScope(check => check('vehicles:read')), // TODO: vehicles:read:provider with filtering
+    checkAccess(scopes => scopes.includes('vehicles:read')), // TODO: vehicles:read:provider with filtering
     async (req: NativeApiGetVehiclesRequest, res: NativeApiGetVehiclesResponse) => {
       const { device_id } = req.params
       try {
@@ -162,7 +156,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/providers'),
-    checkScope(check => check('providers:read')),
+    checkAccess(scopes => scopes.includes('providers:read')),
     async (req: NativeApiGetProvidersRequest, res: NativeApiGetProvidersResponse) =>
       res.status(200).send({
         version: NativeApiCurrentVersion,

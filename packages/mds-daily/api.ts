@@ -19,8 +19,8 @@ import express from 'express'
 import log from '@mds-core/mds-logger'
 import cache from '@mds-core/mds-cache'
 import { providerName, isProviderId } from '@mds-core/mds-providers'
-import { isUUID, pathsFor } from '@mds-core/mds-utils'
-import { checkScope } from '@mds-core/mds-api-server'
+import { isUUID, pathsFor, now } from '@mds-core/mds-utils'
+import { checkAccess } from '@mds-core/mds-api-server'
 import { DailyApiRequest, DailyApiResponse } from './types'
 import {
   getRawTripData,
@@ -82,14 +82,18 @@ function api(app: express.Express): express.Express {
 
   // ///////////////////// begin daily endpoints ///////////////////////
 
-  app.get(pathsFor('/admin/vehicle_counts'), checkScope(check => check('admin:all')), getVehicleCounts)
+  app.get(pathsFor('/admin/vehicle_counts'), checkAccess(scopes => scopes.includes('admin:all')), getVehicleCounts)
 
   // read all the latest events out of the cache
   app.get(
     pathsFor('/admin/events'),
-    checkScope(check => check('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     async (req: DailyApiRequest, res: DailyApiResponse) => {
+      const start = now()
       const events = await cache.readAllEvents()
+      const finish = now()
+      const timeElapsed = finish - start
+      await log.info(`MDS-DAILY /admin/events -> cache.readAllEvents() time elapsed: ${timeElapsed}`)
       res.status(200).send({
         events
       })
@@ -98,12 +102,16 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/admin/last_day_trips_by_provider'),
-    checkScope(check => check('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getLastDayTripsByProvider
   )
 
   // get raw trip data for analysis
-  app.get(pathsFor('/admin/raw_trip_data/:trip_id'), checkScope(check => check('admin:all')), getRawTripData)
+  app.get(
+    pathsFor('/admin/raw_trip_data/:trip_id'),
+    checkAccess(scopes => scopes.includes('admin:all')),
+    getRawTripData
+  )
 
   // Get a hash set up where the keys are the provider IDs, so it's easier
   // to combine the result of each db query.
@@ -113,7 +121,7 @@ function api(app: express.Express): express.Express {
   // This function is ludicrously long as it is.
   app.get(
     pathsFor('/admin/last_day_stats_by_provider'),
-    checkScope(check => check('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getLastDayStatsByProvider
   )
 
