@@ -12,7 +12,7 @@ import { ApiServer } from '@mds-core/mds-api-server'
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { providers, MOCHA_PROVIDER_ID } from '@mds-core/mds-providers'
 import uuid from 'uuid'
-import { PROPULSION_TYPES, VEHICLE_TYPES } from '@mds-core/mds-types'
+import { PROPULSION_TYPES, VEHICLE_EVENTS, VEHICLE_TYPES } from '@mds-core/mds-types'
 import { api } from '../api'
 
 const APP_JSON = 'application/json; charset=utf-8'
@@ -38,7 +38,7 @@ describe('Verify API', () => {
     const baseEvent = {
       provider_id,
       device_id,
-      event_type: 'trip_start',
+      event_type: VEHICLE_EVENTS.trip_start,
       telemetry: {
         provider_id,
         device_id,

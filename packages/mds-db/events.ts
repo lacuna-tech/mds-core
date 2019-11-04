@@ -289,6 +289,7 @@ export async function readEventsWithTelemetry({
   provider_id: UUID
   start_time: Timestamp
   end_time: Timestamp
+  order_by: string
   last_id: number
   limit: number
 }>): Promise<Recorded<VehicleEvent>[]> {
