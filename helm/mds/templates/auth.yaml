@@ -5,11 +5,11 @@
 apiVersion: authentication.istio.io/v1alpha1
 kind: Policy
 metadata:
-  name: {{ include "mds.fullname" $ }}-{{ $name }}-{{ $api.version }}-auth
+  name: {{ include "mds.fullname" $ }}-{{ $name }}-auth
   namespace: {{ $.Release.Namespace }}
 spec:
   targets:
-  - name: {{ include "mds.fullname" $ }}-{{ $name }}-{{ $api.version }}
+  - name: {{ include "mds.fullname" $ }}-{{ $name }}-service
   peers:
   - mtls: {}
   origins:

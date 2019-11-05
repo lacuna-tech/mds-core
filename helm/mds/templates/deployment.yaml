@@ -12,11 +12,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ include "mds.fullname" $ }}-{{ $name }}-{{ $api.version }}
+      app: {{ $name }}
   template:
     metadata:
       labels:
-        app: {{ include "mds.fullname" $ }}-{{ $name }}-{{ $api.version }}
+        app: {{ $name }}
     spec:
       containers:
       - name: {{ $name }}

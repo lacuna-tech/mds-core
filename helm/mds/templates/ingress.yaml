@@ -3,13 +3,13 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
-  name: {{ include "mds.fullname" $ }}-{{ $name }}-{{ $api.version }}-route
+  name: {{ include "mds.fullname" $ }}-{{ $name }}-route
   namespace: {{ $.Release.Namespace }}
 spec:
   hosts:
   - {{ $.Values.domain | quote }}
   gateways:
-  - mds-gateway
+  - {{ include "mds.fullname" $ }}-gateway
   http:
   - match:
     - uri:
