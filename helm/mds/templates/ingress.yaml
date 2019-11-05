@@ -16,7 +16,7 @@ spec:
         regex: {{ printf "^%s($|/.*$)" $api.pathPrefix | quote }}
     route:
     - destination:
-        host: {{ $name }}.{{ $.Release.Namespace}}.svc.cluster.local
+        host: {{ include "mds.fullname" $ }}-{{ $name }}-service.{{ $.Release.Namespace }}.svc.cluster.local
         port:
           number: 4000
     corsPolicy:
