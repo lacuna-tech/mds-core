@@ -198,8 +198,25 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
     await (await getClient()).hdelAsync(key, ...nulls)
   }
 
-  await (await getClient()).hmsetAsync(key, hmap)
+  const client = await getClient()
+
+  if (suffix === 'event') {
+    await client.hmsetAsync(`latest_event:${item.provider_id}`, item.recorded)
+  }
+  await client.hmsetAsync(key, hmap)
   return updateVehicleList(device_id)
+}
+
+async function getMostRecentEventByProvider(): Promise<{ provider_id: string; max: number }[]> {
+  const client = await getClient()
+  const result = await client.hgetallAsync('latest_event:*')
+  const payload: { provider_id: string; max: number }[] = []
+  for (const key of Object.keys(result)) {
+    const [, provider_id] = key.split(':')
+    const max = parseInt(result[key])
+    payload.push({ provider_id, max })
+  }
+  return payload
 }
 
 // put basics of device in the cache
@@ -541,5 +558,6 @@ export = {
   readKeys,
   wipeDevice,
   updateVehicleList,
-  cleanup
+  cleanup,
+  getMostRecentEventByProvider
 }
