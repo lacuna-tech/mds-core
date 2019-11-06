@@ -2,7 +2,7 @@
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
-  name: {{ include "mds.fullname" . }}-pg-rw-serviceentry
+  name: {{ include "mds.releasePrefix" . }}-pg-rw-serviceentry
   namespace: {{ .Release.Namespace }}
 spec:
   hosts:
@@ -17,7 +17,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
-  name: {{ include "mds.fullname" . }}-pg-ro-serviceentry
+  name: {{ include "mds.releasePrefix" . }}-pg-ro-serviceentry
   namespace: {{ .Release.Namespace }}
 spec:
   hosts:
@@ -34,7 +34,7 @@ spec:
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
 metadata:
-  name: {{ include "mds.fullname" . }}-redis-serviceentry
+  name: {{ include "mds.releasePrefix" . }}-redis-serviceentry
   namespace: {{ .Release.Namespace }}
 spec:
   hosts:

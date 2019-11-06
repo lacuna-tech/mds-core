@@ -4,19 +4,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "mds.fullname" $ }}-{{ $name }}-{{ $api.version }}-deployment
+  name: {{ include "mds.releasePrefix" $ }}-{{ $name }}-{{ $api.version }}-deployment
   labels:
-    app: {{ include "mds.fullname" $ }}-{{ $name }}-{{ $api.version }}
+    app: {{ include "mds.releasePrefix" $ }}-{{ $name }}-{{ $api.version }}
   namespace: {{ $.Release.Namespace }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ $name }}
+      app: {{ include "mds.releasePrefix" $ }}-{{ $name }}-{{ $api.version }}
   template:
     metadata:
       labels:
-        app: {{ $name }}
+        app: {{ include "mds.releasePrefix" $ }}-{{ $name }}-{{ $api.version }}
     spec:
       containers:
       - name: {{ $name }}
@@ -51,7 +51,7 @@ spec:
           - name: PG_PASS
             valueFrom:
               secretKeyRef:
-                name: {{ include "mds.fullname" $ }}-secrets
+                name: {{ include "mds.releasePrefix" $ }}-secrets
                 key: postgresql-password
           - name: PG_HOST
           {{- if $.Values.postgresql.internal }}
@@ -91,7 +91,7 @@ spec:
           - name: SLACK_TOKEN
             valueFrom:
               secretKeyRef:
-                name: {{ include "mds.fullname" $ }}-secrets
+                name: {{ include "mds.releasePrefix" $ }}-secrets
                 key: slack-token
           {{- end }}
           {{- if $api.env }}
@@ -103,7 +103,7 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: {{ include "mds.fullname" . }}-secrets
+  name: {{ include "mds.releasePrefix" . }}-secrets
   namespace: {{ $.Release.Namespace }}
 data:
   {{- if .Values.slack.channel }}
