@@ -1,7 +1,7 @@
 import log from '@mds-core/mds-logger'
 
 import db from '@mds-core/mds-db'
-import { inc } from '@mds-core/mds-utils'
+import { inc, RuntimeError } from '@mds-core/mds-utils'
 import { VEHICLE_TYPES, EVENT_STATUS_MAP } from '@mds-core/mds-types'
 import {
   MetricsApiRequest,
@@ -25,7 +25,11 @@ export async function getStateSnapshot(req: MetricsApiRequest, res: MetricsApiRe
 
     const { type } = devices.find(d => {
       return d.device_id === device_id
-    }) || { type: VEHICLE_TYPES.scooter }
+    }) || { type: undefined }
+
+    if (type === undefined) {
+      throw new RuntimeError(`Could not find corresponding device ${device_id} for event ${event}!`)
+    }
 
     const incrementedSubAcc = { [type]: inc(acc[type], status) }
 
@@ -47,7 +51,11 @@ export async function getEventSnapshot(req: MetricsApiRequest, res: MetricsApiRe
 
     const { type } = devices.find(d => {
       return d.device_id === device_id
-    }) || { type: VEHICLE_TYPES.scooter }
+    }) || { type: undefined }
+
+    if (type === undefined) {
+      throw new RuntimeError(`Could not find corresponding device ${device_id} for event ${event}!`)
+    }
 
     const incrementedSubAcc = { [type]: inc(acc[type], event_type) }
 
