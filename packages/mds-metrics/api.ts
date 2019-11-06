@@ -21,7 +21,7 @@ import { providerName, isProviderId } from '@mds-core/mds-providers'
 import { isUUID, pathsFor } from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
 import { MetricsApiRequest, MetricsApiResponse } from './types'
-import { getStateSnapshot, getEventSnapshot, getLatency } from './request-handlers'
+import { getStateSnapshot, getEventSnapshot, getTelemetryCounts, getEventCounts } from './request-handlers'
 
 async function agencyMiddleware(req: MetricsApiRequest, res: MetricsApiResponse, next: Function) {
   try {
@@ -76,7 +76,9 @@ function api(app: express.Express): express.Express {
 
   app.get(pathsFor('/event_snapshot'), checkAccess(scopes => scopes.includes('admin:all')), getEventSnapshot)
 
-  app.get(pathsFor('/latency'), checkAccess(scopes => scopes.includes('admin:all')), getLatency)
+  app.get(pathsFor('/telemetry_counts'), checkAccess(scopes => scopes.includes('admin:all')), getTelemetryCounts)
+
+  app.get(pathsFor('/event_counts'), checkAccess(scopes => scopes.includes('admin:all')), getEventCounts)
 
   return app
 }

@@ -65,14 +65,20 @@ export async function getEventSnapshot(req: MetricsApiRequest, res: MetricsApiRe
   res.status(200).send(eventCounts)
 }
 
-export async function getLatency(req: MetricsApiRequest, res: MetricsApiResponse) {
+export async function getTelemetryCounts(req: MetricsApiRequest, res: MetricsApiResponse) {
   const { params } = req
   log.info(params)
-  res.status(200).send('Tada')
+
+  const telemetryCounts = await db.getTelemetryCountsPerProviderSince()
+
+  res.status(200).send(telemetryCounts)
 }
 
-export async function getTelemetryCount(req: MetricsApiRequest, res: MetricsApiResponse) {
+export async function getEventCounts(req: MetricsApiRequest, res: MetricsApiResponse) {
   const { params } = req
   log.info(params)
-  res.status(200).send('Tada')
+
+  const eventCounts = await db.getEventCountsPerProviderSince()
+
+  res.status(200).send(eventCounts)
 }
