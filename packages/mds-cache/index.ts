@@ -201,7 +201,7 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
   const client = await getClient()
 
   if (suffix === 'event') {
-    await client.hmsetAsync(`latest_event:${item.provider_id}`, item.recorded)
+    await client.hmsetAsync(`provider:${item.provider_id}:latest_event`, hmap)
   }
   await client.hmsetAsync(key, hmap)
   return updateVehicleList(device_id)
@@ -209,11 +209,12 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
 
 async function getMostRecentEventByProvider(): Promise<{ provider_id: string; max: number }[]> {
   const client = await getClient()
-  const result = await client.hgetallAsync('latest_event:*')
+  const result = await client.hgetallAsync('provider:*:latest_event')
   const payload: { provider_id: string; max: number }[] = []
   for (const key of Object.keys(result)) {
     const [, provider_id] = key.split(':')
-    const max = parseInt(result[key])
+    const item: CacheReadDeviceResult | Telemetry | VehicleEvent = JSON.parse(result[key])
+    const max = item.recorded || 0
     payload.push({ provider_id, max })
   }
   return payload

@@ -30,6 +30,7 @@ export const getTimeSinceLastEvent = async ({ provider_info, fail }: DbHelperArg
   try {
     const start = now()
     const rows = await cache.getMostRecentEventByProvider()
+    // TODO fall back to DB if we're missing providers
     const finish = now()
     const timeElapsed = finish - start
     await log.info(`MDS-DAILY cache.getMostRecentEventByProvider() time elapsed: ${timeElapsed}`)
