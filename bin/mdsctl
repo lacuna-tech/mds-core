@@ -85,7 +85,7 @@ declare -A configs=(
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
   ["sets-logging"]="${MDS_SETS_LOGGING:-fluentbit.backend.es.host=elasticsearch-master.util,fluentbit.backend.es.port=9200,fluentbit.backend.es.tls=off,kibana.env.ELASTICSEARCH_URL=http:elasticsearch-master.util:9200}"
-  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-host=http://mds-mds-agency-service.${configs[namespace-mds]}:4000/agency}"
+  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-}"
   ["setfiles"]="${MDS_SET_FILES:-}"
   ["setfiles-mds"]="${MDS_SET_FILES_MDS:-}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
@@ -480,8 +480,12 @@ installMetrics() {
 }
 
 imageVersion() {
+  echo $(docker images ${1} --format {{.Tag}})
+}
+
+imageVersions() {
   for s in $(services); do
-    is+="${is:+,}sets-mds+=apis.${s}.version=$(docker images ${s} --format {{.Tag}})"
+    is+="${is:+,}sets-mds+=apis.${s}.version=$(imageVersion ${s})"
   done; unset s mi
 
   echo ${is}
@@ -494,7 +498,7 @@ installMds() {
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
-    configure $(imageVersion)
+    configure $(imageVersions)
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
@@ -553,7 +557,9 @@ installSimulator() {
   (cd ${configs[simulator]};
     git pull;
     docker build -t trackgen .;
-    helm install ./helm --name trackgen ${configs[sets-simulator]:+--set ${configs[sets-simulator]}})
+    helm install ./helm --name trackgen \
+      ${configs[sets-simulator]:-http://mds-mds-agency-$(imageVersion mds-agency | tr '.' '-')-service.${configs[namespace-mds]}:4000/agency} \
+      ${configs[sets-simulator]:+--set ${configs[sets-simulator]}})
 }
 
 testUnit() {
@@ -820,10 +826,11 @@ check() {
         hash ${d} > /dev/null 2>&1 || usage "install: ${d}"
       done; unset d;;
       # todo: include cluster connection check where needed if not globally
-      #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
+      #kubectl cluster-info > /dev/null 2>&1 || usage "unable to connect to kubernetes cluster"
     build | testIntegration)
       hash yarn > /dev/null 2>&1 || bootstrap;;
-    installHelm | installBookinfo) ;;
+    installHelm)
+      kubectl cluster-info > /dev/null 2>&1 || usage "unable to connect to kubernetes cluster";;
     installDashboard | installMetrics | installMds)
       kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installLogging | installMetricsAdapter)
