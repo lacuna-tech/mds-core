@@ -143,17 +143,17 @@ async function getEventsInBBox(bbox: BoundingBox) {
   return client.georadiusAsync('locations', lng, lat, radius, 'm')
 }
 
-async function hreads(suffixes: string[], device_ids: UUID[]): Promise<CachedItem[]> {
+async function hreads(suffixes: string[], ids: UUID[], prefix = 'device'): Promise<CachedItem[]> {
   if (suffixes === undefined) {
     throw new Error('hreads: no suffixes')
   }
-  if (device_ids === undefined) {
+  if (ids === undefined) {
     throw new Error('hreads: no device_ids')
   }
   // bleah
   const multi = (await getClient()).multi()
 
-  suffixes.map(suffix => device_ids.map(device_id => multi.hgetall(`device:${device_id}:${suffix}`)))
+  suffixes.map(suffix => ids.map(id => multi.hgetall(`${prefix}:${id}:${suffix}`)))
 
   /* eslint-reason external lib weirdness */
   /* eslint-disable-next-line promise/avoid-new */
@@ -168,7 +168,7 @@ async function hreads(suffixes: string[], device_ids: UUID[]): Promise<CachedIte
         resolve(
           replies.map((flat, index) => {
             if (flat) {
-              const flattened = { ...flat, device_id: device_ids[index % device_ids.length] }
+              const flattened = { ...flat, device_id: ids[index % ids.length] }
               return unflatten(flattened)
             }
             return unflatten(null)
@@ -209,17 +209,6 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
   return updateVehicleList(device_id)
 }
 
-async function getMostRecentEventByProvider(): Promise<{ provider_id: string; max: number }[]> {
-  const client = await getClient()
-  const result = await client.hgetallAsync('provider:*:latest_event')
-  return Object.keys(result).map(key => {
-    const [, provider_id] = key.split(':')
-    const item: CacheReadDeviceResult | Telemetry | VehicleEvent = JSON.parse(result[key])
-    const max = item.recorded || 0
-    return { provider_id, max }
-  })
-}
-
 // put basics of device in the cache
 async function writeDevice(device: Device) {
   if (!device) {
@@ -230,6 +219,18 @@ async function writeDevice(device: Device) {
 
 async function readKeys(pattern: string) {
   return (await getClient()).keysAsync(pattern)
+}
+
+async function getMostRecentEventByProvider(): Promise<{ provider_id: string; max: number }[]> {
+  const provider_ids = (await readKeys('provider:*:latest_event')).map(key => {
+    const [, provider_id] = key.split(':')
+    return provider_id
+  })
+  const result = await hreads(['latest_event'], provider_ids, 'provider')
+  return result.map(elem => {
+    const max = parseInt(elem.recorded || '0')
+    return { provider_id: elem.provider_id, max }
+  })
 }
 
 async function wipeDevice(device_id: UUID) {

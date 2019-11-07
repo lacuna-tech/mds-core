@@ -29,7 +29,8 @@ export const getTripCountsSince = async ({ start_time, end_time, provider_info, 
 export const getTimeSinceLastEvent = async ({ provider_info, fail }: DbHelperArgs) => {
   try {
     const start = now()
-    const rows = await cache.getMostRecentEventByProvider()
+    await cache.getMostRecentEventByProvider()
+    const rows = await db.getMostRecentEventByProvider()
     // TODO fall back to DB if we're missing providers
     const finish = now()
     const timeElapsed = finish - start

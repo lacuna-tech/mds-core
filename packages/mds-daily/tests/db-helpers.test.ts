@@ -3,14 +3,12 @@ import Sinon from 'sinon'
 import assert from 'assert'
 import {
   getTripCountsSince,
-  getTimeSinceLastEvent,
   getEventCountsPerProviderSince,
   getTelemetryCountsPerProviderSince,
   getNumVehiclesRegisteredLast24Hours,
   getNumEventsLast24Hours,
   getConformanceLast24Hours
 } from '../db-helpers'
-import { ProviderInfo } from '../types'
 
 /* eslint-disable promise/avoid-new */
 
