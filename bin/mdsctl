@@ -558,7 +558,7 @@ installSimulator() {
     git pull;
     docker build -t trackgen .;
     helm install ./helm --name trackgen \
-      ${configs[sets-simulator]:-http://mds-mds-agency-$(imageVersion mds-agency | tr '.' '-')-service.${configs[namespace-mds]}:4000/agency} \
+      ${configs[sets-simulator]:---set host=http://mds-mds-agency-$(imageVersion mds-agency | tr '.' '-')-service.${configs[namespace-mds]}:4000/agency} \
       ${configs[sets-simulator]:+--set ${configs[sets-simulator]}})
 }
 
