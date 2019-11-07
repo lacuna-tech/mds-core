@@ -168,7 +168,7 @@ async function hreads(suffixes: string[], ids: UUID[], prefix = 'device'): Promi
         resolve(
           replies.map((flat, index) => {
             if (flat) {
-              const flattened = { ...flat, device_id: ids[index % ids.length] }
+              const flattened = { ...flat, [`${prefix}_id`]: ids[index % ids.length] }
               return unflatten(flattened)
             }
             return unflatten(null)
