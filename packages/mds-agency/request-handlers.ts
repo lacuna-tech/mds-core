@@ -19,7 +19,6 @@ import {
   UUID
 } from '@mds-core/mds-types'
 import urls from 'url'
-import { readSingleGeography } from 'packages/mds-db/geographies'
 import {
   badDevice,
   getVehicles,
@@ -451,11 +450,9 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
 
 export const registerStop = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   const stop = req.body
-  const { geography_id } = stop
 
   try {
     isValidStop(stop)
-    await readSingleGeography(geography_id)
     const recorded_stop = await db.writeStop(stop)
     res.status(201).send(recorded_stop)
   } catch (err) {

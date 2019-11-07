@@ -96,7 +96,15 @@ const stopSchema = Joi.object().keys({
   stop_name: stringSchema.required(),
   short_name: stringSchema.optional(),
   platform_code: stringSchema.optional(),
-  geography_id: uuidSchema.required(),
+  geography_id: uuidSchema.optional(),
+  lat: numberSchema
+    .min(-90)
+    .max(90)
+    .required(),
+  lng: numberSchema
+    .min(-180)
+    .max(180)
+    .required(),
   zone_id: uuidSchema.optional(),
   address: stringSchema.optional(),
   post_code: stringSchema.optional(),

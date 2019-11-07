@@ -1546,6 +1546,8 @@ describe('Tests Stops', async () => {
     stop_id: '821f8dee-dd43-4f03-99d4-3cf761f4fe7e',
     stop_name: 'LA Stop',
     geography_id: GEOGRAPHY_UUID,
+    lat: 34.0522,
+    lng: -118.2437,
     capacity: {
       bike: 10,
       scooter: 10,
@@ -1565,14 +1567,6 @@ describe('Tests Stops', async () => {
 
   before(async () => {
     await Promise.all([db.initialize(), cache.initialize()])
-  })
-
-  it('verifies failing to POST a stop (non-existant geography)', async () => {
-    await request
-      .post(`/stops`)
-      .set('Authorization', AUTH)
-      .send(TEST_STOP)
-      .expect(404)
   })
 
   it('verifies failing to POST a stop (garbage data)', async () => {

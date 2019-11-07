@@ -408,7 +408,9 @@ export interface Stop {
   stop_name: string
   short_name?: string
   platform_code?: string
-  geography_id: UUID
+  geography_id?: UUID
+  lat: number
+  lng: number
   zone_id?: UUID
   address?: string
   post_code?: string
