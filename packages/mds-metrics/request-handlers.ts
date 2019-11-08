@@ -71,12 +71,11 @@ export async function getTelemetryCounts(req: MetricsApiRequest, res: MetricsApi
 
   const { start_time = now(), end_time = yesterday(), bin = 3600000 } = params
 
-  const slices: { start: number; end: number }[] = []
+  const interval = end_time - start_time
 
-  for (let time: number = start_time; time < end_time; time += bin) {
-    const next_time = time + bin
-    slices.push({ start: time, end: next_time })
-  }
+  const bins = new Array(Math.floor(interval/bin))
+
+  const slices = bins.map((_, idx)=> ({ start: start_time + idx * bin, end: start_time + (idx + 1) * bin }))
 
   const telemetryCounts = await Promise.all(
     slices.map(slice => {
@@ -98,12 +97,11 @@ export async function getEventCounts(req: MetricsApiRequest, res: MetricsApiResp
 
   const { start_time = now(), end_time = yesterday(), bin = 3600000 } = params
 
-  const slices: { start: number; end: number }[] = []
+  const interval = end_time - start_time
 
-  for (let time: number = start_time; time < end_time; time += bin) {
-    const next_time = time + bin
-    slices.push({ start: time, end: next_time })
-  }
+  const bins = new Array(Math.floor(interval/bin))
+
+  const slices = bins.map((_, idx)=> ({ start: start_time + idx * bin, end: start_time + (idx + 1) * bin }))
 
   const eventCounts = await Promise.all(
     slices.map(slice => {
