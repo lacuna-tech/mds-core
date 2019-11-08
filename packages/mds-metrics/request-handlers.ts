@@ -75,7 +75,7 @@ export async function getTelemetryCounts(req: MetricsApiRequest, res: MetricsApi
 
   const slices: { start: number; end: number }[] = []
 
-  for (const time: number = start_time; time < end_time; time + bin) {
+  for (let time: number = start_time; time < end_time; time += bin) {
     const next_time = time + bin
     slices.push({ start: time, end: next_time })
   }
@@ -102,7 +102,7 @@ export async function getEventCounts(req: MetricsApiRequest, res: MetricsApiResp
 
   const slices: { start: number; end: number }[] = []
 
-  for (const time: number = start_time; time < end_time; time + bin) {
+  for (let time: number = start_time; time < end_time; time += bin) {
     const next_time = time + bin
     slices.push({ start: time, end: next_time })
   }
