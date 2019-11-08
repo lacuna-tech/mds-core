@@ -73,7 +73,7 @@ export async function getTelemetryCounts(req: MetricsApiRequest, res: MetricsApi
 
   const { start_time = now(), end_time = yesterday(), bin = 3600000 } = params
 
-  const slices: {start: number, end: number}[] = []
+  const slices: { start: number; end: number }[] = []
 
   for (const time: number = start_time; time < end_time; time + bin) {
     const next_time = time + bin
@@ -100,7 +100,7 @@ export async function getEventCounts(req: MetricsApiRequest, res: MetricsApiResp
 
   const { start_time = now(), end_time = yesterday(), bin = 3600000 } = params
 
-  const slices: {start: number, end: number}[] = []
+  const slices: { start: number; end: number }[] = []
 
   for (const time: number = start_time; time < end_time; time + bin) {
     const next_time = time + bin
