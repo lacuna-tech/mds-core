@@ -89,7 +89,7 @@ export async function getTelemetryCounts(req: MetricsApiRequest, res: MetricsApi
 
   const telemetryCountsWithTimeSlices = telemetryCounts.map((telemetryCount, idx) => {
     const slice = slices[idx]
-    return { ...telemetryCount, slice }
+    return { telemetryCount, slice }
   })
 
   res.status(200).send(telemetryCountsWithTimeSlices)
@@ -116,7 +116,7 @@ export async function getEventCounts(req: MetricsApiRequest, res: MetricsApiResp
 
   const eventCountsWithTimeSlice = eventCounts.map((eventCount, idx) => {
     const slice = slices[idx]
-    return { ...eventCount, slice }
+    return { eventCount, slice }
   })
 
   res.status(200).send(eventCountsWithTimeSlice)
