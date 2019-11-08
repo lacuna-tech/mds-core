@@ -29,15 +29,15 @@ export async function getStateSnapshot(req: MetricsApiRequest, res: MetricsApiRe
   const device_ids = (await db.readDeviceIds(params.provider_id)).map(device => device.device_id)
   const devices = await db.readDeviceList(device_ids)
 
-  const es = await Promise.all(
+  const eventsBySlice = await Promise.all(
     slices.map(slice => {
       const { end } = slice
       return db.readHistoricalEvents({ end_date: end })
     })
   )
 
-  const result = es.map(e => {
-    const statusCounts = e.reduce((acc, event) => {
+  const result = eventsBySlice.map(events => {
+    const statusCounts = events.reduce((acc, event) => {
       const { event_type, device_id } = event
       const status = EVENT_STATUS_MAP[event_type]
 
@@ -75,15 +75,15 @@ export async function getEventSnapshot(req: MetricsApiRequest, res: MetricsApiRe
   const device_ids = (await db.readDeviceIds(params.provider_id)).map(device => device.device_id)
   const devices = await db.readDeviceList(device_ids)
 
-  const es = await Promise.all(
+  const eventsBySlice = await Promise.all(
     slices.map(slice => {
       const { end } = slice
       return db.readHistoricalEvents({ end_date: end })
     })
   )
 
-  const result = es.map(e => {
-    const eventCounts = e.reduce((acc, event) => {
+  const result = eventsBySlice.map(events => {
+    const eventCounts = events.reduce((acc, event) => {
       const { event_type, device_id } = event
 
       const { type } = devices.find(d => {
