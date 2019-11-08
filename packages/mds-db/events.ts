@@ -260,7 +260,7 @@ export async function getEventCountsPerProviderSince(
   stop = now()
 ): Promise<{ provider_id: UUID; event_type: string; count: number; slacount: number }[]> {
   const thirty_sec = seconds(30)
-  const sql = `select provider_id, event_type, count(*), count(case when (recorded-timestamp) > ${thirty_sec} then 1 else null end) as slacount from events where timestamp > ${start} and timestamp < ${stop} group by provider_id, event_type`
+  const sql = `select provider_id, event_type, count(*), count(case when (recorded-timestamp) > ${thirty_sec} then 1 else null end) as slacount from events where recorded > ${start} and recorded < ${stop} group by provider_id, event_type`
   return makeReadOnlyQuery(sql)
 }
 

@@ -1,6 +1,12 @@
 import { ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
-import { VEHICLE_STATUS, VEHICLE_EVENT, VEHICLE_TYPES } from '@mds-core/mds-types'
-import { VEHICLE_TYPE, VEHICLE_EVENTS, VEHICLE_STATUSES } from 'packages/mds-types/dist'
+import {
+  VEHICLE_STATUS,
+  VEHICLE_EVENT,
+  VEHICLE_TYPES,
+  VEHICLE_TYPE,
+  VEHICLE_EVENTS,
+  VEHICLE_STATUSES
+} from '@mds-core/mds-types'
 
 export type MetricsApiRequest = ApiRequest
 export type MetricsApiResponse = ApiResponse
