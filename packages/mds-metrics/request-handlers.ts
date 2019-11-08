@@ -11,8 +11,6 @@ import {
   instantiateStateSnapshotResponse
 } from './types'
 
-// import db from '@mds-core/mds-db'
-
 export async function getStateSnapshot(req: MetricsApiRequest, res: MetricsApiResponse) {
   const { params } = req
   log.info(params)
