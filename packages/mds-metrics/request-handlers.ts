@@ -15,55 +15,97 @@ export async function getStateSnapshot(req: MetricsApiRequest, res: MetricsApiRe
   const { params } = req
   log.info(params)
 
-  const { events } = await db.readEvents(params)
+  const { start_time = yesterday(), end_time = now(), bin = 3600000 } = params
+
+  const interval = end_time - start_time
+
+  const bins = new Array(Math.floor(interval / bin))
+
+  const slices = bins.map((_, idx) => ({
+    start: start_time + idx * bin,
+    end: start_time + (idx + 1) * bin
+  }))
+
   const device_ids = (await db.readDeviceIds(params.provider_id)).map(device => device.device_id)
   const devices = await db.readDeviceList(device_ids)
 
-  const statusCounts = events.reduce((acc, event) => {
-    const { event_type, device_id } = event
-    const status = EVENT_STATUS_MAP[event_type]
+  const es = await Promise.all(
+    slices.map(slice => {
+      const { start, end } = slice
+      return db.readEvents({ start_time: start, end_time: end })
+    })
+  )
 
-    const { type } = devices.find(d => {
-      return d.device_id === device_id
-    }) || { type: undefined }
+  const result = es.map(e => {
+    const { events } = e
 
-    if (type === undefined) {
-      throw new RuntimeError(`Could not find corresponding device ${device_id} for event ${event}!`)
-    }
+    const statusCounts = events.reduce((acc, event) => {
+      const { event_type, device_id } = event
+      const status = EVENT_STATUS_MAP[event_type]
 
-    const incrementedSubAcc = { [type]: inc(acc[type], status) }
+      const { type } = devices.find(d => {
+        return d.device_id === device_id
+      }) || { type: undefined }
 
-    return { ...acc, incrementedSubAcc }
-  }, instantiateStateSnapshotResponse(0))
+      if (type === undefined) {
+        throw new RuntimeError(`Could not find corresponding device ${device_id} for event ${event}!`)
+      }
 
-  res.status(200).send(statusCounts)
+      const incrementedSubAcc = { [type]: inc(acc[type], status) }
+
+      return { ...acc, incrementedSubAcc }
+    }, instantiateStateSnapshotResponse(0))
+
+    return statusCounts
+  })
+
+  res.status(200).send(result)
 }
 
 export async function getEventSnapshot(req: MetricsApiRequest, res: MetricsApiResponse) {
   const { params } = req
   log.info(params)
 
-  const { events } = await db.readEvents(params)
+  const { start_time = yesterday(), end_time = now(), bin = 3600000 } = params
+
+  const interval = end_time - start_time
+
+  const bins = new Array(Math.floor(interval / bin))
+
+  const slices = bins.map((_, idx) => ({ start: start_time + idx * bin, end: start_time + (idx + 1) * bin }))
+
   const device_ids = (await db.readDeviceIds(params.provider_id)).map(device => device.device_id)
   const devices = await db.readDeviceList(device_ids)
 
-  const eventCounts = events.reduce((acc, event) => {
-    const { event_type, device_id } = event
+  const es = await Promise.all(
+    slices.map(slice => {
+      const { start, end } = slice
+      return db.readEvents({ start_time: start, end_time: end })
+    })
+  )
 
-    const { type } = devices.find(d => {
-      return d.device_id === device_id
-    }) || { type: undefined }
+  const result = es.map(e => {
+    const { events } = e
+    const eventCounts = events.reduce((acc, event) => {
+      const { event_type, device_id } = event
 
-    if (type === undefined) {
-      throw new RuntimeError(`Could not find corresponding device ${device_id} for event ${event}!`)
-    }
+      const { type } = devices.find(d => {
+        return d.device_id === device_id
+      }) || { type: undefined }
 
-    const incrementedSubAcc = { [type]: inc(acc[type], event_type) }
+      if (type === undefined) {
+        throw new RuntimeError(`Could not find corresponding device ${device_id} for event ${event}!`)
+      }
 
-    return { ...acc, incrementedSubAcc }
-  }, instantiateEventSnapshotResponse(0))
+      const incrementedSubAcc = { [type]: inc(acc[type], event_type) }
 
-  res.status(200).send(eventCounts)
+      return { ...acc, incrementedSubAcc }
+    }, instantiateEventSnapshotResponse(0))
+
+    return eventCounts
+  })
+
+  res.status(200).send(result)
 }
 
 export async function getTelemetryCounts(req: MetricsApiRequest, res: MetricsApiResponse) {
