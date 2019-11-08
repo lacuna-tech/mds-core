@@ -73,21 +73,26 @@ export async function getTelemetryCounts(req: MetricsApiRequest, res: MetricsApi
 
   const { start_time = now(), end_time = yesterday(), bin = 3600000 } = params
 
-  const slices = []
+  const slices: {start: number, end: number}[] = []
 
   for (const time: number = start_time; time < end_time; time + bin) {
     const next_time = time + bin
     slices.push({ start: time, end: next_time })
   }
 
-  const telemetryCounts = Promise.all(
+  const telemetryCounts = await Promise.all(
     slices.map(slice => {
       const { start, end } = slice
       return db.getTelemetryCountsPerProviderSince(start, end)
     })
   )
 
-  res.status(200).send(telemetryCounts)
+  const telemetryCountsWithTimeSlices = telemetryCounts.map((telemetryCount, idx) => {
+    const slice = slices[idx]
+    return { ...telemetryCount, slice }
+  })
+
+  res.status(200).send(telemetryCountsWithTimeSlices)
 }
 
 export async function getEventCounts(req: MetricsApiRequest, res: MetricsApiResponse) {
@@ -95,19 +100,24 @@ export async function getEventCounts(req: MetricsApiRequest, res: MetricsApiResp
 
   const { start_time = now(), end_time = yesterday(), bin = 3600000 } = params
 
-  const slices = []
+  const slices: {start: number, end: number}[] = []
 
   for (const time: number = start_time; time < end_time; time + bin) {
     const next_time = time + bin
     slices.push({ start: time, end: next_time })
   }
 
-  const eventCounts = Promise.all(
+  const eventCounts = await Promise.all(
     slices.map(slice => {
       const { start, end } = slice
       return db.getEventCountsPerProviderSince(start, end)
     })
   )
 
-  res.status(200).send(eventCounts)
+  const eventCountsWithTimeSlice = eventCounts.map((eventCount, idx) => {
+    const slice = slices[idx]
+    return { ...eventCount, slice }
+  })
+
+  res.status(200).send(eventCountsWithTimeSlice)
 }
