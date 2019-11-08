@@ -1,14 +1,15 @@
 import log from '@mds-core/mds-logger'
 
 import db from '@mds-core/mds-db'
-import { inc, RuntimeError } from '@mds-core/mds-utils'
-import { VEHICLE_TYPES, EVENT_STATUS_MAP } from '@mds-core/mds-types'
+import { inc, RuntimeError, yesterday } from '@mds-core/mds-utils'
+import { EVENT_STATUS_MAP } from '@mds-core/mds-types'
 import {
   MetricsApiRequest,
   MetricsApiResponse,
   instantiateEventSnapshotResponse,
   instantiateStateSnapshotResponse
 } from './types'
+import { now } from 'moment'
 
 // import db from '@mds-core/mds-db'
 
@@ -67,18 +68,40 @@ export async function getEventSnapshot(req: MetricsApiRequest, res: MetricsApiRe
 
 export async function getTelemetryCounts(req: MetricsApiRequest, res: MetricsApiResponse) {
   const { params } = req
-  log.info(params)
 
-  const telemetryCounts = await db.getTelemetryCountsPerProviderSince()
+  const {start_time = now(), end_time = yesterday(), bin = 3600000} = params
+
+  const slices = []
+
+  for (const time: number = start_time; time < end_time; time + bin) {
+    const next_time = time + bin
+    slices.push({start: time, end: next_time})
+  }
+
+  const telemetryCounts = Promise.all(slices.map(slice => {
+    const {start, end} = slice
+    return db.getTelemetryCountsPerProviderSince(start, end)
+  }))
 
   res.status(200).send(telemetryCounts)
 }
 
 export async function getEventCounts(req: MetricsApiRequest, res: MetricsApiResponse) {
   const { params } = req
-  log.info(params)
 
-  const eventCounts = await db.getEventCountsPerProviderSince()
+  const {start_time = now(), end_time = yesterday(), bin = 3600000} = params
+
+  const slices = []
+
+  for (const time: number = start_time; time < end_time; time + bin) {
+    const next_time = time + bin
+    slices.push({start: time, end: next_time})
+  }
+
+  const eventCounts = Promise.all(slices.map(slice => {
+    const {start, end} = slice
+    return db.getEventCountsPerProviderSince(start, end)
+  }))
 
   res.status(200).send(eventCounts)
 }
