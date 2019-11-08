@@ -37,24 +37,26 @@ export async function getStateSnapshot(req: MetricsApiRequest, res: MetricsApiRe
   )
 
   const result = eventsBySlice.map(events => {
-    const statusCounts = events.reduce((acc, event) => {
-      const { event_type, device_id } = event
-      const status = EVENT_STATUS_MAP[event_type]
+    if (events) {
+      const statusCounts = events.reduce((acc, event) => {
+        const { event_type, device_id } = event
+        const status = EVENT_STATUS_MAP[event_type]
 
-      const { type } = devices.find(d => {
-        return d.device_id === device_id
-      }) || { type: undefined }
+        const { type } = devices.find(d => {
+          return d.device_id === device_id
+        }) || { type: undefined }
 
-      if (type === undefined) {
-        throw new RuntimeError(`Could not find corresponding device ${device_id} for event ${event}!`)
-      }
+        if (type === undefined) {
+          throw new RuntimeError(`Could not find corresponding device ${device_id} for event ${event}!`)
+        }
 
-      const incrementedSubAcc = { [type]: inc(acc[type], status) }
+        const incrementedSubAcc = { [type]: inc(acc[type], status) }
 
-      return { ...acc, incrementedSubAcc }
-    }, instantiateStateSnapshotResponse(0))
+        return { ...acc, incrementedSubAcc }
+      }, instantiateStateSnapshotResponse(0))
 
-    return statusCounts
+      return statusCounts
+    }
   })
 
   res.status(200).send(result)
@@ -83,23 +85,25 @@ export async function getEventSnapshot(req: MetricsApiRequest, res: MetricsApiRe
   )
 
   const result = eventsBySlice.map(events => {
-    const eventCounts = events.reduce((acc, event) => {
-      const { event_type, device_id } = event
+    if (events) {
+      const eventCounts = events.reduce((acc, event) => {
+        const { event_type, device_id } = event
 
-      const { type } = devices.find(d => {
-        return d.device_id === device_id
-      }) || { type: undefined }
+        const { type } = devices.find(d => {
+          return d.device_id === device_id
+        }) || { type: undefined }
 
-      if (type === undefined) {
-        throw new RuntimeError(`Could not find corresponding device ${device_id} for event ${event}!`)
-      }
+        if (type === undefined) {
+          throw new RuntimeError(`Could not find corresponding device ${device_id} for event ${event}!`)
+        }
 
-      const incrementedSubAcc = { [type]: inc(acc[type], event_type) }
+        const incrementedSubAcc = { [type]: inc(acc[type], event_type) }
 
-      return { ...acc, incrementedSubAcc }
-    }, instantiateEventSnapshotResponse(0))
+        return { ...acc, incrementedSubAcc }
+      }, instantiateEventSnapshotResponse(0))
 
-    return eventCounts
+      return eventCounts
+    }
   })
 
   res.status(200).send(result)
