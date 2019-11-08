@@ -31,15 +31,13 @@ export async function getStateSnapshot(req: MetricsApiRequest, res: MetricsApiRe
 
   const es = await Promise.all(
     slices.map(slice => {
-      const { start, end } = slice
-      return db.readEvents({ start_time: start, end_time: end })
+      const { end } = slice
+      return db.readHistoricalEvents({ end_date: end })
     })
   )
 
   const result = es.map(e => {
-    const { events } = e
-
-    const statusCounts = events.reduce((acc, event) => {
+    const statusCounts = e.reduce((acc, event) => {
       const { event_type, device_id } = event
       const status = EVENT_STATUS_MAP[event_type]
 
@@ -79,14 +77,13 @@ export async function getEventSnapshot(req: MetricsApiRequest, res: MetricsApiRe
 
   const es = await Promise.all(
     slices.map(slice => {
-      const { start, end } = slice
-      return db.readEvents({ start_time: start, end_time: end })
+      const { end } = slice
+      return db.readHistoricalEvents({ end_date: end })
     })
   )
 
   const result = es.map(e => {
-    const { events } = e
-    const eventCounts = events.reduce((acc, event) => {
+    const eventCounts = e.reduce((acc, event) => {
       const { event_type, device_id } = event
 
       const { type } = devices.find(d => {
