@@ -85,7 +85,7 @@ declare -A configs=(
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
   ["sets-logging"]="${MDS_SETS_LOGGING:-fluentbit.backend.es.host=elasticsearch-master.util,fluentbit.backend.es.port=9200,fluentbit.backend.es.tls=off,kibana.env.ELASTICSEARCH_URL=http:elasticsearch-master.util:9200}"
-  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-}"
+  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-host=http://mds-mds-agency.$(imageVersion mds-agency | tr '.' '-')-service.${configs[namespace-mds]}.svc.cluster.local:4000/agency}"
   ["setfiles"]="${MDS_SET_FILES:-}"
   ["setfiles-mds"]="${MDS_SET_FILES_MDS:-}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
@@ -314,7 +314,7 @@ templateValues() {
     export $varname=${version}${suffix}
   done
   mkdir -p dist
-  envsubst < helm/mds/values.yaml.tpl > dist/values.html
+  envsubst < helm/mds/values.yaml.tpl > dist/values.yaml
   echo "Wrote dist/values.yaml"
 }
 
@@ -558,8 +558,12 @@ installSimulator() {
     git pull;
     docker build -t trackgen .;
     helm install ./helm --name trackgen \
-      ${configs[sets-simulator]:---set host=http://mds-mds-agency-$(imageVersion mds-agency | tr '.' '-')-service.${configs[namespace-mds]}:4000/agency} \
-      ${configs[sets-simulator]:+--set ${configs[sets-simulator]}})
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-simulator]:+$(helmOptions set ${configs[sets-simulator]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[dryrun]:+--dry-run --debug})
 }
 
 testUnit() {
