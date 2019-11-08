@@ -69,13 +69,13 @@ export async function getEventSnapshot(req: MetricsApiRequest, res: MetricsApiRe
 export async function getTelemetryCounts(req: MetricsApiRequest, res: MetricsApiResponse) {
   const { params } = req
 
-  const { start_time = now(), end_time = yesterday(), bin = 3600000 } = params
+  const { start_time = yesterday(), end_time = now(), bin = 3600000 } = params
 
   const interval = end_time - start_time
 
-  const bins = new Array(Math.floor(interval/bin))
+  const bins = new Array(Math.floor(interval / bin))
 
-  const slices = bins.map((_, idx)=> ({ start: start_time + idx * bin, end: start_time + (idx + 1) * bin }))
+  const slices = bins.map((_, idx) => ({ start: start_time + idx * bin, end: start_time + (idx + 1) * bin }))
 
   const telemetryCounts = await Promise.all(
     slices.map(slice => {
@@ -95,13 +95,13 @@ export async function getTelemetryCounts(req: MetricsApiRequest, res: MetricsApi
 export async function getEventCounts(req: MetricsApiRequest, res: MetricsApiResponse) {
   const { params } = req
 
-  const { start_time = now(), end_time = yesterday(), bin = 3600000 } = params
+  const { start_time = yesterday(), end_time = now(), bin = 3600000 } = params
 
   const interval = end_time - start_time
 
-  const bins = new Array(Math.floor(interval/bin))
+  const bins = new Array(Math.floor(interval / bin))
 
-  const slices = bins.map((_, idx)=> ({ start: start_time + idx * bin, end: start_time + (idx + 1) * bin }))
+  const slices = bins.map((_, idx) => ({ start: start_time + idx * bin, end: start_time + (idx + 1) * bin }))
 
   const eventCounts = await Promise.all(
     slices.map(slice => {
