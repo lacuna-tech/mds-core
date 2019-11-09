@@ -143,12 +143,16 @@ async function getEventsInBBox(bbox: BoundingBox) {
   return client.georadiusAsync('locations', lng, lat, radius, 'm')
 }
 
-async function hreads(suffixes: string[], ids: UUID[], prefix = 'device'): Promise<CachedItem[]> {
+async function hreads(
+  suffixes: string[],
+  ids: UUID[],
+  prefix: 'device' | 'provider' = 'device'
+): Promise<CachedItem[]> {
   if (suffixes === undefined) {
     throw new Error('hreads: no suffixes')
   }
   if (ids === undefined) {
-    throw new Error('hreads: no device_ids')
+    throw new Error('hreads: no ids')
   }
   // bleah
   const multi = (await getClient()).multi()
@@ -228,7 +232,7 @@ async function getMostRecentEventByProvider(): Promise<{ provider_id: string; ma
   })
   const result = await hreads(['latest_event'], provider_ids, 'provider')
   return result.map(elem => {
-    const max = parseInt(elem.recorded || '0')
+    const max = parseInt(elem.timestamp || '0')
     return { provider_id: elem.provider_id, max }
   })
 }
