@@ -172,7 +172,7 @@ async function hreads(
         resolve(
           replies.map((flat, index) => {
             if (flat) {
-              const flattened = { ...flat, [`${prefix}_id`]: ids[index % ids.length] }
+              const flattened = { ...flat, entity_id: ids[index % ids.length] }
               return unflatten(flattened)
             }
             return unflatten(null)
