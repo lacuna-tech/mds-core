@@ -10,7 +10,7 @@ import supertest from 'supertest'
 import { ApiServer } from '@mds-core/mds-api-server'
 import test from 'unit.js'
 import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
-import { PROVIDER_SCOPES } from '@mds-core/mds-test-data'
+import { PROVIDER_SCOPES, SCOPED_AUTH } from '@mds-core/mds-test-data'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
@@ -18,8 +18,8 @@ import { api } from '../api'
 
 const request = supertest(ApiServer(api))
 
-const AUTH = `basic ${Buffer.from(`${TEST1_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
-const AUTH_NO_SCOPE = `basic ${Buffer.from(`${TEST1_PROVIDER_ID}`).toString('base64')}`
+const AUTH = SCOPED_AUTH([PROVIDER_SCOPES], TEST1_PROVIDER_ID)
+const AUTH_NO_SCOPE = SCOPED_AUTH([], TEST1_PROVIDER_ID)
 
 before(async () => {
   await Promise.all([db.initialize(), cache.initialize(), stream.initialize()])
