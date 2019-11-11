@@ -1,6 +1,6 @@
 {
   "name": "@container-images/mds-metrics",
-  "version": "0.1.19",
+  "version": "0.0.1",
   "description": "MDS Metrics prototype",
   "main": "dist/index.js",
   "files": [
