@@ -49,11 +49,7 @@ export type GetTimeBinsParams = {
   bin_size: Timestamp
 }
 export interface MetricsApiRequest extends ApiRequest {
-  query: Partial<
-    {
-      [P in 'start_time' | 'end_time' | 'bin']: string
-    }
-  >
+  body: Partial<GetTimeBinsParams & { provider_id: UUID }>
 }
 
 export type MetricsApiResponse<T> = ApiResponse<T | Error>
