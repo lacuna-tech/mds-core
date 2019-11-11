@@ -2,7 +2,7 @@ import { now, yesterday } from '@mds-core/mds-utils'
 
 import { GetTimeBinsParams } from './types'
 
-export async function getTimeBins({
+export function getTimeBins({
   start_time = yesterday(),
   end_time = now(),
   bin_size = 3600000
