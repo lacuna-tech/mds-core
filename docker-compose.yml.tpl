@@ -79,8 +79,8 @@ services:
       PG_MIGRATIONS: "true"
       REDIS_HOST: redis
 
-  daily:
-    image: mds-daily:$METRICS_VERSION
+  metrics:
+    image: mds-metrics:$METRICS_VERSION
     ports:
       - "4005"
     environment:
