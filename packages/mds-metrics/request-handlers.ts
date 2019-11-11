@@ -1,7 +1,7 @@
 import db from '@mds-core/mds-db'
-import { inc, RuntimeError, yesterday, ServerError } from '@mds-core/mds-utils'
+import { inc, RuntimeError, ServerError } from '@mds-core/mds-utils'
 import { EVENT_STATUS_MAP } from '@mds-core/mds-types'
-import { now } from 'moment'
+
 import log from '@mds-core/mds-logger'
 import {
   MetricsApiRequest,
