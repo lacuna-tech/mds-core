@@ -35,9 +35,9 @@ The following command should fix your issue
 `createdb -h localhost`
 
 To run tests, you will need this:
-`createdb -h localhost lacuna`
+`createdb -h localhost mdstest`
 
-Then add `export PG_NAME=lacuna` to your shell's environment file. 
+Then add `export PG_NAME=mdstest` to your shell's environment file.  (The name is not important, but you'll need to point it somehwere.)
 
 #### Node setup
 
