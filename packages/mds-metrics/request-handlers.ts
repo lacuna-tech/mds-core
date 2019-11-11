@@ -20,7 +20,7 @@ import { getTimeBins } from './utils'
 export async function getStateSnapshot(req: MetricsApiRequest, res: GetStateSnapshotResponse) {
   const { body } = req
   const { provider_id } = body
-  const slices = getTimeBins(body)
+  const slices = await getTimeBins(body)
 
   try {
     const device_ids = (await db.readDeviceIds(provider_id)).map(device => device.device_id)
@@ -68,7 +68,7 @@ export async function getStateSnapshot(req: MetricsApiRequest, res: GetStateSnap
 export async function getEventSnapshot(req: MetricsApiRequest, res: GetEventsSnapshotResponse) {
   const { body } = req
   const { provider_id } = body
-  const slices = getTimeBins(body)
+  const slices = await getTimeBins(body)
 
   try {
     const device_ids = (await db.readDeviceIds(provider_id)).map(device => device.device_id)
@@ -114,7 +114,7 @@ export async function getEventSnapshot(req: MetricsApiRequest, res: GetEventsSna
 
 export async function getTelemetryCounts(req: MetricsApiRequest, res: GetTelemetryCountsResponse) {
   const { body } = req
-  const slices = getTimeBins(body)
+  const slices = await getTimeBins(body)
 
   try {
     const telemetryCounts = await Promise.all(
@@ -138,7 +138,7 @@ export async function getTelemetryCounts(req: MetricsApiRequest, res: GetTelemet
 
 export async function getEventCounts(req: MetricsApiRequest, res: GetEventCountsResponse) {
   const { body } = req
-  const slices = getTimeBins(body)
+  const slices = await getTimeBins(body)
 
   try {
     const eventCounts = await Promise.all(
