@@ -66,10 +66,7 @@ export const instantiateEventSnapshotResponse = (value: number) =>
   Object.keys(VEHICLE_TYPES).reduce(
     (acc, vehicle_type) => ({
       ...acc,
-      [vehicle_type]: Object.keys(VEHICLE_EVENTS).reduce((acc2, event_type) => {
-        const eventRow = { [event_type]: value }
-        return { ...acc2, eventRow }
-      }, {})
+      [vehicle_type]: Object.keys(VEHICLE_EVENTS).reduce((acc2, event_type) => ({ ...acc2, [event_type]: value }), {})
     }),
     {}
   ) as EventSnapshotResponse
@@ -78,10 +75,7 @@ export const instantiateStateSnapshotResponse = (value: number) =>
   Object.keys(VEHICLE_TYPES).reduce(
     (acc, vehicle_type) => ({
       ...acc,
-      [vehicle_type]: Object.keys(VEHICLE_STATUSES).reduce((acc2, event_type) => {
-        const eventRow = { [event_type]: value }
-        return { ...acc2, eventRow }
-      }, {})
+      [vehicle_type]: Object.keys(VEHICLE_STATUSES).reduce((acc2, event_type) => ({ ...acc2, [event_type]: value }), {})
     }),
     {}
   ) as StateSnapshotResponse
