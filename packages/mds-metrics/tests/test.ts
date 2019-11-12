@@ -10,20 +10,14 @@ import supertest from 'supertest'
 import { ApiServer } from '@mds-core/mds-api-server'
 import test from 'unit.js'
 import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
-import {
-  PROVIDER_SCOPES,
-  SCOPED_AUTH,
-  makeDevices,
-  makeEventsWithTelemetry,
-  makeTelemetryInArea
-} from '@mds-core/mds-test-data'
+import { PROVIDER_SCOPES, SCOPED_AUTH, makeDevices, makeEventsWithTelemetry } from '@mds-core/mds-test-data'
 import { now } from '@mds-core/mds-utils'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
 import { Telemetry } from 'packages/mds-types'
 import { api } from '../api'
-import { StateSnapshotResponse, WithSlice } from '../types'
+import { StateSnapshotResponse } from '../types'
 
 const request = supertest(ApiServer(api))
 
@@ -142,7 +136,7 @@ describe('Tests API', () => {
     await Promise.all([db.seed(seedData), cache.seed(seedData)])
   })
 
-  it('verifies access to state_snapshot if scoped', done => {
+  it('verifies valid response from state_snapshot', done => {
     request
       .get('/state_snapshot')
       .set('Authorization', AUTH)
