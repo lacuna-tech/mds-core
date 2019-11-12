@@ -87,6 +87,7 @@ declare -A configs=(
   ["namespace-dashboard"]="${MDS_NAMESPACE_LOGGING:-dashboard}"
   ["namespace-logging"]="${MDS_NAMESPACE_LOGGING:-util}"
   ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
+  ["namespace-nats"]="${MDS_NAMESPACE_NATS:-${configs[namespace-mds]}}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
   ["quiet"]="${MDS_QUIET:-}")
 declare -A helmRepositories=(
@@ -176,6 +177,7 @@ where service in:
   metricsAdapter
   logging
   metrics
+  nats
 
 where app in:
   mds-agency
@@ -555,6 +557,22 @@ installSimulator() {
     helm install ./helm --name trackgen)
 }
 
+installNats() {
+  # check ${FUNCNAME[0]}
+
+  # if [[ -z "$(kubectl get nats --namespace ${configs[namespace-nats]} 2>/dev/null)" ]]; then
+  (( $(kubectl get pods --namespace ${configs[namespace-nats]} -l app=nats 2>/dev/null | wc -l) != 2 )) && {
+    helm install stable/nats --name nats-${configs[namespace-nats]} \
+      --namespace ${configs[namespace-nats]} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[dryrun]:+--dry-run --debug}
+    pause 8
+  }
+}
+
 testUnit() {
   check ${FUNCNAME[0]}
 
@@ -708,6 +726,12 @@ uninstallMds() {
   uninstallNamespace ${configs[namespace-mds]}
 }
 
+uninstallNats() {
+  check ${FUNCNAME[0]}
+  helm delete --purge nats-${configs[namespace-nats]} ${configs[dryrun]:+--dry-run}
+  # uninstallNamespace ${configs[namespace-mds]}
+}
+
 uninstallMetrics() {
   check ${FUNCNAME[0]}
   helm delete --purge metrics ${configs[dryrun]:+--dry-run}
@@ -823,7 +847,7 @@ check() {
     build | testIntegration)
       hash yarn > /dev/null 2>&1 || bootstrap;;
     installHelm | installBookinfo) ;;
-    installDashboard | installMetrics | installMds)
+    installDashboard | installMetrics | installMds | installNats)
       kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installLogging | installMetricsAdapter)
       hash helm > /dev/null 2>&1 && updateHelmDependencies || installHelm;;
