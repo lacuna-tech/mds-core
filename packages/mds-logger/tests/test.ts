@@ -129,4 +129,10 @@ describe('MDS Logger', () => {
     test.object(results).isArray()
     test.array(results).hasLength(1)
   })
+
+  it('verifies parameterized log ERROR with multiple parameters works', async () => {
+    const results = await logger.log('ERROR', { key1: 'key1', key2: 'key2' }, { b: 2 })
+    test.object(results).isArray()
+    test.array(results).hasLength(2)
+  })
 })

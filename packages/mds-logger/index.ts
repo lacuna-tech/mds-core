@@ -222,10 +222,10 @@ async function error(...msg: any[]): Promise<any[]> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function log(logLevel: LogLevel, ...msg: any[]): Promise<any[]> {
   return {
-    INFO: () => info(msg),
-    WARN: () => warn(msg),
-    ERROR: () => error(msg)
-  }[logLevel]()
+    INFO: info,
+    WARN: warn,
+    ERROR: error
+  }[logLevel](...msg)
 }
 
 async function startup() {
