@@ -119,16 +119,15 @@ export async function editGeography(geography: Geography) {
 
   const client = await getWriteableClient()
   const vals = new SqlVals()
-  const conditions = []
+  const conditions: string[] = []
   //  conditions.push(`publish_date = ${vals.add(publish_date)}`)
   //  conditions.push(`geography_json = ${vals.add(JSON.stringify(geography.geography_json))}`)
   //  conditions.push()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  Object.keys(geography).forEach(key as keyof Geography => {
+  Object.entries(geography).forEach(([key, value]) => {
     if (key === 'geography_json') {
       conditions.push(`geography_json = ${vals.add(JSON.stringify(geography.geography_json))}`)
     } else {
-      conditions.push(`${key} = ${vals.add(geography[key])}`)
+      conditions.push(`${key} = ${vals.add(value)}`)
     }
   })
   const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} WHERE geography_id='${geography.geography_id}' AND publish_date IS NULL`
