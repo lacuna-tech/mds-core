@@ -69,6 +69,8 @@ declare -A configs=(
   ["istio-version"]="${MDS_ISTIO_VERSION:-1.3.5}" #1.2.6}"
   ["istio-profile"]="${MDS_ISTIO_PROFILE:-}" #-istio-sds-auth}" # todo: looks to fail when installing istio-nodeagent
   ["istio"]="${MDS_ISTIO_PATH:-${configs[workdir]}/istio-${configs[istio-version]}}"
+  ["knative-version"]="${MDS_KNATIVE_VERSION:-0.10.0}"
+  ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-serving eventing}" # monitoring"}
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
   ["ingress-gateway-key-path"]="${MDS_INGRESS_GATEWAY_KEY_PATH:-}"
@@ -562,7 +564,7 @@ installSimulator() {
 }
 
 installNats() {
-  # check ${FUNCNAME[0]}
+  check ${FUNCNAME[0]}
 
   (( $(kubectl get pods --namespace ${configs[namespace-nats]} -l app=nats 2>/dev/null | wc -l) != 2 )) && {
     helm install stable/nats --name nats-${configs[namespace-nats]} \
@@ -578,6 +580,23 @@ installNats() {
       ${configs[dryrun]:+--dry-run --debug}
     pause 8
   }
+}
+
+installKnative() {
+  check ${FUNCNAME[0]}
+
+  for s in knative.dev/crd-install=true ''; do
+    for c in ${configs[knative-components]}; do
+      kubectl get namespace knative-${c} > /dev/null 2>&1 || {
+        [[ "${c}" == eventing ]] && cy=release || unset cy
+        [[ "${c}" == monitoring ]] && { cy=${c}; c=serving; }
+        kubectl apply ${s:+--selector ${s}} \
+          --filename https://github.com/knative/${c}/releases/download/v${configs[knative-version]}/${cy:-${c}}.yaml
+        pause 3
+      }
+    done; unset c
+  done; unset s
+  pause 8
 }
 
 testUnit() {
@@ -739,6 +758,19 @@ uninstallNats() {
   # uninstallNamespace ${configs[namespace-mds]}
 }
 
+uninstallKnative() {
+  check ${FUNCNAME[0]}
+
+  for c in ${configs[knative-components]}; do
+    kubectl get namespace knative-${c} > /dev/null 2>&1 && {
+      [[ "${c}" == eventing ]] && cy=release || unset cy
+      [[ "${c}" == monitoring ]] && { cy=${c}; c=serving; }
+      kubectl delete \
+        --filename https://github.com/knative/${c}/releases/download/v${configs[knative-version]}/${cy:-${c}}.yaml
+    }
+  done; unset c
+}
+
 uninstallMetrics() {
   check ${FUNCNAME[0]}
   helm delete --purge metrics ${configs[dryrun]:+--dry-run}
@@ -854,7 +886,7 @@ check() {
     build | testIntegration)
       hash yarn > /dev/null 2>&1 || bootstrap;;
     installHelm | installBookinfo) ;;
-    installDashboard | installMetrics | installMds | installNats)
+    installDashboard | installMetrics | installMds | installNats | installKnative)
       kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installLogging | installMetricsAdapter)
       hash helm > /dev/null 2>&1 && updateHelmDependencies || installHelm;;
