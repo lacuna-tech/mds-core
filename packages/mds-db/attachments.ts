@@ -1,15 +1,14 @@
-import log from '@mds-core/mds-logger'
 import { Attachment, AuditAttachment, Recorded, UUID } from '@mds-core/mds-types'
 import { NotFoundError, now } from '@mds-core/mds-utils'
 import schema from './schema'
-import { vals_sql, cols_sql, vals_list, logSql, SqlVals } from './sql-utils'
+import { vals_sql, cols_sql, vals_list, logSql } from './sql-utils'
 import { getReadOnlyClient, getWriteableClient } from './client'
 
 export async function writeAttachment(attachment: Attachment): Promise<Recorded<Attachment>> {
   const client = await getWriteableClient()
-  const sql = `INSERT INTO ${schema.TABLE.attachments} (${cols_sql(schema.TABLE_COLUMNS.attachments)}) VALUES (${vals_sql(
+  const sql = `INSERT INTO ${schema.TABLE.attachments} (${cols_sql(
     schema.TABLE_COLUMNS.attachments
-  )}) RETURNING *`
+  )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.attachments)}) RETURNING *`
   const values = vals_list(schema.TABLE_COLUMNS.attachments, { ...attachment, recorded: now() })
   await logSql(sql, values)
   const {
@@ -20,7 +19,7 @@ export async function writeAttachment(attachment: Attachment): Promise<Recorded<
 
 export async function readAttachmentsForAudit(audit_trip_id: UUID): Promise<Recorded<Attachment>[]> {
   const client = await getReadOnlyClient()
-  let sql = `SELECT * FROM ${schema.TABLE.attachments} a JOIN ${schema.TABLE.audit_attachments} aa
+  const sql = `SELECT * FROM ${schema.TABLE.attachments} a JOIN ${schema.TABLE.audit_attachments} aa
     ON a.attachment_id = aa.attachment_id where aa.audit_trip_id = '${audit_trip_id}'`
   const { rows } = await client.query(sql)
   return rows
@@ -35,9 +34,9 @@ export async function readAuditAttachments(attachment_id: UUID): Promise<AuditAt
 
 export async function writeAuditAttachment(auditAttachment: AuditAttachment): Promise<Recorded<AuditAttachment>> {
   const client = await getWriteableClient()
-  const sql = `INSERT INTO ${schema.TABLE.audit_attachments} (${cols_sql(schema.TABLE_COLUMNS.audit_attachments)}) VALUES (${vals_sql(
+  const sql = `INSERT INTO ${schema.TABLE.audit_attachments} (${cols_sql(
     schema.TABLE_COLUMNS.audit_attachments
-  )}) RETURNING *`
+  )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.audit_attachments)}) RETURNING *`
   const values = vals_list(schema.TABLE_COLUMNS.audit_attachments, { ...auditAttachment, recorded: now() })
   await logSql(sql, values)
   const {
@@ -52,18 +51,19 @@ export async function deleteAttachment(attachment_id: UUID): Promise<Attachment 
   const res = await client.query(sql, [attachment_id])
   if (res.rows.length > 0) {
     return { ...res.rows[0] } as Attachment
-  } else {
-    throw new NotFoundError(`Attachment ${attachment_id} not found`)
   }
+  throw new NotFoundError(`Attachment ${attachment_id} not found`)
 }
 
-export async function deleteAuditAttachment(audit_trip_id: UUID, attachment_id: UUID): Promise<AuditAttachment | undefined> {
+export async function deleteAuditAttachment(
+  audit_trip_id: UUID,
+  attachment_id: UUID
+): Promise<AuditAttachment | undefined> {
   const client = await getWriteableClient()
   const sql = `DELETE FROM ${schema.TABLE.audit_attachments} WHERE attachment_id=$1 AND audit_trip_id=$2 RETURNING *`
   const res = await client.query(sql, [attachment_id, audit_trip_id])
   if (res.rows.length > 0) {
     return { ...res.rows[0] } as AuditAttachment
-  } else {
-    throw new NotFoundError(`Audit attachment ${audit_trip_id} ${attachment_id} not found`)
   }
+  throw new NotFoundError(`Audit attachment ${audit_trip_id} ${attachment_id} not found`)
 }

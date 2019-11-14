@@ -71,14 +71,6 @@ import {
   getMostRecentTelemetryByProvider
 } from './telemetry'
 
-async function initialize() {
-  const client: MDSPostgresClient = await getWriteableClient()
-  await dropTables(client)
-  await updateSchema(client)
-  await getReadOnlyClient()
-  return 'postgres'
-}
-
 import {
   deleteAttachment,
   deleteAuditAttachment,
@@ -87,6 +79,14 @@ import {
   writeAttachment,
   writeAuditAttachment
 } from './attachments'
+
+async function initialize() {
+  const client: MDSPostgresClient = await getWriteableClient()
+  await dropTables(client)
+  await updateSchema(client)
+  await getReadOnlyClient()
+  return 'postgres'
+}
 
 /*
  * Returns an array of currently running queries, ordered going from
