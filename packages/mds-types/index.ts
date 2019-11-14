@@ -265,6 +265,7 @@ export interface AuditEvent extends TelemetryData {
 
 export interface AuditDetails extends Audit {
   events: WithGpsProperty<AuditEvent>[]
+  attachments: AttachmentSummary[]
   provider: null | {
     device: Device
     events: VehicleEvent[]
