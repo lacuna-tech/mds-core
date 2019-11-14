@@ -79,6 +79,15 @@ async function initialize() {
   return 'postgres'
 }
 
+import {
+  deleteAttachment,
+  deleteAuditAttachment,
+  readAttachmentsForAudit,
+  readAuditAttachments,
+  writeAttachment,
+  writeAuditAttachment
+} from './attachments'
+
 /*
  * Returns an array of currently running queries, ordered going from
  * oldest to youngest, and return some stats on how the db cache is doing
@@ -182,6 +191,12 @@ export = {
   deleteAudit,
   readAuditEvents,
   writeAuditEvent,
+  deleteAttachment,
+  deleteAuditAttachment,
+  readAttachmentsForAudit,
+  readAuditAttachments,
+  writeAttachment,
+  writeAuditAttachment,
   readGeographies,
   readGeographySummaries,
   writeGeography,
