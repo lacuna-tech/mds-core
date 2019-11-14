@@ -30,7 +30,6 @@ import Sinon from 'sinon'
 import uuid from 'uuid'
 import {
   attachmentSummary,
-  // deleteAttachmentS3,
   deleteAuditAttachment,
   readAttachments,
   writeAttachment
@@ -142,7 +141,7 @@ describe('Testing Attachments Service', () => {
     await db.writeAuditAttachment({ ...auditAttachment, ...{ audit_trip_id: uuid() } })
     await deleteAuditAttachment(auditAttachment.audit_trip_id, auditAttachment.attachment_id)
     Sinon.assert.notCalled(deleteS3ObjectSpy)
-    Sinon.assert.notCalled(deleteAttachmentSpy) // Undo (to notCalled)
+    Sinon.assert.notCalled(deleteAttachmentSpy)
     Sinon.assert.calledOnce(deleteAuditAttachmentSpy)
   })
 

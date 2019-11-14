@@ -25,6 +25,15 @@ import { UnsupportedTypeError, ValidationError } from '@mds-core/mds-utils'
 /* eslint-disable-next-line */
 const multer = require('multer')
 
+const supportedMimetypes = ['image/png', 'image/jpeg']
+const thumbnailSize = 250
+const s3Bucket = 'lacuna-audit-uploads'
+const s3BucketSubdir = 'dev.mdscompliance.app'
+const s3Region = 'us-west-2'
+const s3ACL = 'public-read'
+const s3 = new aws.S3()
+const memoryStorage = multer.memoryStorage()
+
 /* eslint-disable-next-line */
 aws.config.getCredentials(async (err) => {
   if (err) {
@@ -33,17 +42,10 @@ aws.config.getCredentials(async (err) => {
     aws.config.update({
       secretAccessKey: aws.config.credentials.secretAccessKey,
       accessKeyId: aws.config.credentials.accessKeyId,
-      region: aws.config.region
+      region: s3Region
     })
   }
 })
-const supportedMimetypes = ['image/png', 'image/jpeg']
-const thumbnailSize = 250
-const s3Bucket = 'lacuna-audit-uploads'
-const s3BucketSubdir = 'dev.mdscompliance.app'
-const s3ACL = 'public-read'
-const s3 = new aws.S3()
-const memoryStorage = multer.memoryStorage()
 
 export const multipartFormUpload = multer({ storage: memoryStorage }).single('file')
 
@@ -90,7 +92,7 @@ async function writeAttachmentS3(file: Express.Multer.File) {
     s3
       .upload({
         Bucket: s3Bucket,
-        Key: [s3Bucket, s3BucketSubdir, attachmentFilename].join('/'),
+        Key: [s3BucketSubdir, attachmentFilename].join('/'),
         Body: attachmentBuf,
         ACL: s3ACL
       })
@@ -98,7 +100,7 @@ async function writeAttachmentS3(file: Express.Multer.File) {
     s3
       .upload({
         Bucket: s3Bucket,
-        Key: [s3Bucket, s3BucketSubdir, thumbnailFilename].join('/'),
+        Key: [s3BucketSubdir, thumbnailFilename].join('/'),
         Body: thumbnailBuf,
         ACL: s3ACL
       })
@@ -107,7 +109,7 @@ async function writeAttachmentS3(file: Express.Multer.File) {
   return {
     attachment_filename: attachmentFilename,
     attachment_id: attachmentId,
-    base_url: `https://${s3Bucket}.s3.amazonaws.com/${s3Bucket}/`,
+    base_url: `https://${s3Bucket}.s3-${s3Region}.amazonaws.com/${s3BucketSubdir}/`,
     mimetype: file.mimetype,
     thumbnail_filename: thumbnailFilename,
     thumbnail_mimetype: file.mimetype
