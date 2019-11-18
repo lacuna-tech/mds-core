@@ -76,7 +76,7 @@ export interface ReadEventsQueryParams {
 }
 
 export interface ReadHistoricalEventsQueryParams {
-  provider_id: UUID
+  provider_id?: UUID
   end_date: number
 }
 
@@ -97,4 +97,9 @@ export interface VehicleEventCountResult {
 
 export interface ReadGeographiesParams {
   get_read_only: boolean
+}
+
+export interface PublishGeographiesParams {
+  publish_date: Timestamp
+  geography_id: UUID
 }

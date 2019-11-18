@@ -6,8 +6,9 @@ import logger from '@mds-core/mds-logger'
 import { pathsFor, AuthorizationError } from '@mds-core/mds-utils'
 import { AuthorizationHeaderApiAuthorizer, ApiAuthorizer, ApiAuthorizerClaims } from '@mds-core/mds-api-authorizer'
 import { AccessTokenScope } from '@mds-core/mds-types'
+import { Params, ParamsDictionary } from 'express-serve-static-core'
 
-export type ApiRequest = express.Request
+export type ApiRequest<P extends Params = ParamsDictionary> = express.Request<P>
 
 export interface ApiResponseLocals {
   claims: ApiAuthorizerClaims | null
@@ -16,8 +17,7 @@ export interface ApiResponseLocals {
 
 export interface ApiResponse<T = unknown> extends express.Response {
   locals: ApiResponseLocals
-  status: (code: number) => ApiResponse<T | { error: Error }>
-  send: (body: T) => ApiResponse<T | { error: Error }>
+  send: (body: T | { error: Error }) => this
 }
 
 const about = () => {
@@ -65,15 +65,28 @@ export const ApiServer = (
     //
     // Request logging
     //
-    morgan('tiny', {
-      skip: (req, res) => {
-        // By default only log 400/500 errors
-        const { API_REQUEST_LOG_LEVEL = 400 } = process.env
-        return res.statusCode < Number(API_REQUEST_LOG_LEVEL)
-      },
-      // Use logger, but remove extra line feed added by morgan stream option
-      stream: { write: msg => logger.info(msg.slice(0, -1)) }
-    }),
+    morgan(
+      (tokens, req: ApiRequest, res: ApiResponse) =>
+        [
+          ...(res.locals.claims && res.locals.claims.provider_id ? [res.locals.claims.provider_id] : []),
+          tokens.method(req, res),
+          tokens.url(req, res),
+          tokens.status(req, res),
+          tokens.res(req, res, 'content-length'),
+          '-',
+          tokens['response-time'](req, res),
+          'ms'
+        ].join(' '),
+      {
+        skip: (req: ApiRequest, res: ApiResponse) => {
+          // By default only log 400/500 errors
+          const { API_REQUEST_LOG_LEVEL = 400 } = process.env
+          return res.statusCode < Number(API_REQUEST_LOG_LEVEL)
+        },
+        // Use logger, but remove extra line feed added by morgan stream option
+        stream: { write: msg => logger.info(msg.slice(0, -1)) }
+      }
+    ),
     //
     // JSON body parser
     //
