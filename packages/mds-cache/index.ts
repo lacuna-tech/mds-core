@@ -407,7 +407,7 @@ async function readDevicesStatus(query: { since?: number; skip?: number; take?: 
     .filter(item => Boolean(item))
   finishTime = now()
   timeElapsed = finishTime - startTime
-  await log.info(`readDevicesStatus hreadsEventsAndParse runtime: ${timeElapsed}`)
+  await log.info(`readDevicesStatus hreadsDevicesAndParse runtime: ${timeElapsed}`)
 
   const all = [...devices, ...events]
   all.map(item => {
