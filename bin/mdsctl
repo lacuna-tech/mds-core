@@ -54,7 +54,7 @@ declare -A configs=(
   ["os"]="${MDS_OS:-`uname`}"
   ["rc"]="${MDS_RC:-~/.bashrc ~/.zshrc}"
   ["workdir"]="/tmp/mds/tools"
-  ["brew"]="${MDS_BREW:-oq jq gettext yarn nvm kubernetes-helm k9s pgcli redis git}"
+  ["brew"]="${MDS_BREW:-oq jq gettext yarn nvm kubernetes-helm k9s pgcli redis git go}"
   ["tools"]="${MDS_TOOLCHAIN:-kubernetes-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
@@ -70,7 +70,7 @@ declare -A configs=(
   ["istio-version"]="${MDS_ISTIO_VERSION:-1.3.5}" #1.2.6}"
   ["istio-profile"]="${MDS_ISTIO_PROFILE:-}" #-istio-sds-auth}" # todo: looks to fail when installing istio-nodeagent
   ["istio"]="${MDS_ISTIO_PATH:-${configs[workdir]}/istio-${configs[istio-version]}}"
-  ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/natss}"
+  ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/src/knative.dev/eventing-contrib}"
   ["knative-version"]="${MDS_KNATIVE_VERSION:-0.10.0}"
   ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-eventing}" # serving monitoring"}
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
@@ -244,6 +244,8 @@ bootstrap() {
         gettext)
           brew link --force gettext
           export PATH=$(brew --prefix gettext)/bin:${PATH};;
+        ko)
+          GO111MODULE=on go get github.com/google/ko/cmd/ko;;
       esac
     }
   done; unset l
@@ -608,16 +610,20 @@ installNatss() {
 
   if [ ! -d ${configs[natss]} ]; then
     mkdir -p ${configs[natss]}
-    (cd ${configs[workdir]};
-      git clone ${configs[natss-repository]} ${configs[natss]})
+    (cd ${configs[natss]};
+      git clone ${configs[natss-repository]} .;
+      git remote add upstream ${configs[natss-repository]};
+      git remote set-url --push upstream no_push)
   fi
 
   # todo: pin down better semaphore
   kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-natss]}
-     kubectl apply -n ${configs[namespace-natss]} -f ${configs[natss]}/natss/config/broker/natss.yaml \
-       ${configs[dryrun]:+--dry-run --debug}
-    kubectl apply -f ${configs[natss]}/natss/config ${configs[dryrun]:+--dry-run --debug}
+    kubectl apply -n ${configs[namespace-natss]} -f ${configs[natss]}/natss/config/broker/natss.yaml \
+      ${configs[dryrun]:+--dry-run --debug}
+    (GOPATH=${configs[workdir]} \
+      KO_DOCKER_REPO=ko.local \
+      ko apply -f ${configs[natss]}/natss/config)
   }
 }
 
