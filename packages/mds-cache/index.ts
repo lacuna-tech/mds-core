@@ -358,7 +358,11 @@ async function readDevicesStatus(query: { since?: number; skip?: number; take?: 
   const client = await getClient()
 
   const { bbox } = query
+  let startTime = now()
   const deviceIdsInBbox = await getEventsInBBox(bbox)
+  let finishTime = now()
+  let timeElapsed = finishTime - startTime
+  await log.info(`readDevicesStatus getEventsInBBox() runtime: ${timeElapsed}`)
   const deviceIdsRes =
     deviceIdsInBbox.length === 0 ? await client.zrangebyscoreAsync('device-ids', start, stop) : deviceIdsInBbox
   const skip = query.skip || 0
@@ -367,6 +371,7 @@ async function readDevicesStatus(query: { since?: number; skip?: number; take?: 
 
   const deviceStatusMap: { [device_id: string]: CachedItem | {} } = {}
 
+  startTime = now()
   const events = ((await hreads(['event'], deviceIds)) as StringifiedEvent[])
     .reduce((acc: VehicleEvent[], item: StringifiedEventWithTelemetry) => {
       try {
@@ -383,8 +388,13 @@ async function readDevicesStatus(query: { since?: number; skip?: number; take?: 
       }
     }, [])
     .filter(item => Boolean(item))
+  finishTime = now()
+  timeElapsed = finishTime - startTime
+  await log.info(`readDevicesStatus hreadsEventsAndParse runtime: ${timeElapsed}`)
 
   const eventDeviceIds = events.map(event => event.device_id)
+
+  startTime = now()
   const devices = (await hreads(['device'], eventDeviceIds))
     .reduce((acc: (Device | Telemetry | VehicleEvent)[], item: CachedItem) => {
       try {
@@ -395,6 +405,10 @@ async function readDevicesStatus(query: { since?: number; skip?: number; take?: 
       }
     }, [])
     .filter(item => Boolean(item))
+  finishTime = now()
+  timeElapsed = finishTime - startTime
+  await log.info(`readDevicesStatus hreadsEventsAndParse runtime: ${timeElapsed}`)
+
   const all = [...devices, ...events]
   all.map(item => {
     deviceStatusMap[item.device_id] = deviceStatusMap[item.device_id] || {}
