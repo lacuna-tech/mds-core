@@ -28,12 +28,7 @@ import assert from 'assert'
 import fs from 'fs'
 import Sinon from 'sinon'
 import uuid from 'uuid'
-import {
-  attachmentSummary,
-  deleteAuditAttachment,
-  readAttachments,
-  writeAttachment
-} from '../attachments'
+import { attachmentSummary, deleteAuditAttachment, readAttachments, writeAttachment } from '../attachments'
 import { getWriteableClient } from '../../mds-db/client'
 import schema from '../../mds-db/schema'
 

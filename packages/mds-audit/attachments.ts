@@ -22,15 +22,16 @@ import sharp from 'sharp'
 import uuid from 'uuid'
 import { Attachment, AttachmentSummary, AuditAttachment, Recorded, UUID } from '@mds-core/mds-types'
 import { UnsupportedTypeError, ValidationError } from '@mds-core/mds-utils'
+
 /* eslint-disable-next-line */
 const multer = require('multer')
-
+const { env } = process
 const supportedMimetypes = ['image/png', 'image/jpeg']
-const thumbnailSize = 250
-const s3Bucket = 'lacuna-audit-uploads'
-const s3BucketSubdir = 'dev.mdscompliance.app'
-const s3Region = 'us-west-2'
-const s3ACL = 'public-read'
+const thumbnailSize = env.ATTACHMENTS_THUMBNAIL_SIZE
+const s3Bucket = env.ATTACHMENTS_BUCKET
+const s3BucketSubdir = env.ATTACHMENTS_SUBDIR
+const s3Region = env.ATTACHMENTS_REGION
+const s3ACL = env.ATTACHMENTS_ACL
 const s3 = new aws.S3()
 const memoryStorage = multer.memoryStorage()
 
