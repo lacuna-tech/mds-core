@@ -72,6 +72,15 @@ import {
   getMostRecentTelemetryByProvider
 } from './telemetry'
 
+import {
+  deleteAttachment,
+  deleteAuditAttachment,
+  readAttachmentsForAudit,
+  readAuditAttachments,
+  writeAttachment,
+  writeAuditAttachment
+} from './attachments'
+
 async function initialize() {
   const client: MDSPostgresClient = await getWriteableClient()
   await dropTables(client)
@@ -183,6 +192,12 @@ export = {
   deleteAudit,
   readAuditEvents,
   writeAuditEvent,
+  deleteAttachment,
+  deleteAuditAttachment,
+  readAttachmentsForAudit,
+  readAuditAttachments,
+  writeAttachment,
+  writeAuditAttachment,
   readGeographies,
   readGeographySummaries,
   writeGeography,
