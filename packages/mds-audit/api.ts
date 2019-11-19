@@ -525,13 +525,11 @@ function api(app: express.Express): express.Express {
               return res.status(200).send({
                 ...audit,
                 provider_vehicle_id: device.vehicle_id,
-                provider_event_type: providerEvent[0] ? providerEvent[0].event_type : null,
-                provider_event_type_reason: providerEvent[0] ? providerEvent[0].event_type_reason : null,
-                provider_status: providerEvent[0]
-                  ? EVENT_STATUS_MAP[providerEvent[0].event_type as VEHICLE_EVENT]
-                  : null,
-                provider_telemetry: providerEvent[0] ? providerEvent[0].telemetry : null,
-                provider_event_time: providerEvent[0] ? providerEvent[0].timestamp : null,
+                provider_event_type: providerEvent[0]?.event_type,
+                provider_event_type_reason: providerEvent[0]?.event_type_reason,
+                provider_status: EVENT_STATUS_MAP[providerEvent[0]?.event_type as VEHICLE_EVENT],
+                provider_telemetry: providerEvent[0]?.telemetry,
+                provider_event_time: providerEvent[0]?.timestamp,
                 events: auditEvents.map(withGpsProperty),
                 attachments: attachments.map(attachmentSummary),
                 provider: {
