@@ -205,6 +205,23 @@ export interface Telemetry extends WithGpsProperty<TelemetryData> {
   recorded?: Timestamp
 }
 
+// Represents a row in the "attachments" table
+export interface Attachment {
+  attachment_filename: string
+  attachment_id: UUID
+  base_url: string
+  mimetype: string
+  thumbnail_filename?: string | null
+  thumbnail_mimetype?: string | null
+  recorded?: Timestamp | null
+}
+
+export interface AttachmentSummary {
+  attachment_id: UUID
+  attachment_url: string
+  thumbnail_url?: string | null
+}
+
 // Represents a row in the "audits" table
 export interface Audit {
   audit_trip_id: UUID
@@ -215,6 +232,13 @@ export interface Audit {
   provider_vehicle_id: string
   provider_device_id: UUID | null
   timestamp: Timestamp
+  recorded: Timestamp
+}
+
+// Represents a row in the "audit_attachments" table
+export interface AuditAttachment {
+  attachment_id: UUID
+  audit_trip_id: UUID
   recorded: Timestamp
 }
 
@@ -237,6 +261,7 @@ export interface AuditDetails extends Audit {
   provider_status?: string | null
   provider_telemetry?: Telemetry | null
   provider_event_time?: Timestamp | null
+  attachments: AttachmentSummary[]
   provider: null | {
     device: Device
     events: VehicleEvent[]
