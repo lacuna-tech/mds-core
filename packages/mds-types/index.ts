@@ -219,7 +219,7 @@ export interface Attachment {
   mimetype: string
   thumbnail_filename?: string | null
   thumbnail_mimetype?: string | null
-  recorded: Timestamp
+  recorded?: Timestamp | null
 }
 
 export interface AttachmentSummary {

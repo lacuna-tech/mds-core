@@ -714,18 +714,15 @@ function api(app: express.Express): express.Express {
         return res.status(415).send({ error: err })
       }
     }
-    const attachment: Attachment | null = await writeAttachment(req.file, audit_trip_id)
-    if (attachment) {
+    try {
+      const attachment = await writeAttachment(req.file, audit_trip_id)
       res.status(200).send({
         ...attachmentSummary(attachment),
         audit_trip_id
       })
-    } else {
-      await log.error('post attachment fail')
-      res.status(500).send({
-        error: 'server_error',
-        error_description: 'an internal server error has occurred and been logged'
-      })
+    } catch (err) {
+      await log.error('post attachment fail', err)
+      return res.status(500).send({ error: new ServerError(err) })
     }
   })
 
@@ -742,10 +739,7 @@ function api(app: express.Express): express.Express {
       if (err instanceof NotFoundError) {
         return res.status(404).send({ error: err })
       }
-      res.status(500).send({
-        error: 'server_error',
-        error_description: 'an internal server error has occurred and been logged'
-      })
+      return res.status(500).send({ error: new ServerError(err) })
     }
   })
 

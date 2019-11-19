@@ -27,11 +27,11 @@ import { UnsupportedTypeError, ValidationError } from '@mds-core/mds-utils'
 const multer = require('multer')
 const { env } = process
 const supportedMimetypes = ['image/png', 'image/jpeg']
-const thumbnailSize = env.ATTACHMENTS_THUMBNAIL_SIZE
-const s3Bucket = env.ATTACHMENTS_BUCKET
-const s3BucketSubdir = env.ATTACHMENTS_SUBDIR
-const s3Region = env.ATTACHMENTS_REGION
-const s3ACL = env.ATTACHMENTS_ACL
+const thumbnailSize = Number(env.ATTACHMENTS_THUMBNAIL_SIZE || 250)
+const s3Bucket = String(env.ATTACHMENTS_BUCKET)
+const s3BucketSubdir = String(env.ATTACHMENTS_SUBDIR)
+const s3Region = String(env.ATTACHMENTS_REGION)
+const s3ACL = String(env.ATTACHMENTS_ACL)
 const s3 = new aws.S3()
 const memoryStorage = multer.memoryStorage()
 
@@ -114,22 +114,17 @@ async function writeAttachmentS3(file: Express.Multer.File) {
     mimetype: file.mimetype,
     thumbnail_filename: thumbnailFilename,
     thumbnail_mimetype: file.mimetype
-  } as Attachment
+  }
 }
 
 export async function writeAttachment(file: Express.Multer.File, auditTripId: UUID) {
-  try {
-    const attachment: Attachment = await writeAttachmentS3(file)
-    await db.writeAttachment(attachment)
-    await db.writeAuditAttachment({
-      attachment_id: attachment.attachment_id,
-      audit_trip_id: auditTripId
-    } as AuditAttachment)
-    return attachment
-  } catch (err) {
-    await log.error('writeAttachment error', err.stack || err)
-    return null
-  }
+  const attachment = await writeAttachmentS3(file)
+  await db.writeAttachment(attachment)
+  await db.writeAuditAttachment({
+    attachment_id: attachment.attachment_id,
+    audit_trip_id: auditTripId
+  } as AuditAttachment)
+  return attachment
 }
 
 export async function readAttachments(audit_trip_id: UUID): Promise<Recorded<Attachment>[]> {

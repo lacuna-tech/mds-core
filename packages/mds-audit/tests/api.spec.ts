@@ -785,7 +785,7 @@ describe('Testing API', () => {
         .set('Authorization', SCOPED_AUTH(['audits:write'], audit_subject_id))
         .expect(500)
         .end((err, result) => {
-          test.value(result.body.error).is('server_error')
+          test.value(result.body.error.name).is('ServerError')
           done(err)
         })
     })
