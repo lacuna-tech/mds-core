@@ -613,7 +613,9 @@ installNatss() {
     (cd ${configs[natss]};
       git clone ${configs[natss-repository]} .;
       git remote add upstream ${configs[natss-repository]};
-      git remote set-url --push upstream no_push)
+      git remote set-url --push upstream no_push;
+      # note: bump nats-streaming version
+      sed -i '' "s/image: nats-streaming:.*/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
   fi
 
   # todo: pin down better semaphore
