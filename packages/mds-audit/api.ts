@@ -41,7 +41,6 @@ import {
 } from '@mds-core/mds-utils'
 import { providerName } from '@mds-core/mds-providers' // map of uuids -> obj
 import {
-  Attachment,
   AUDIT_EVENT_TYPES,
   AuditDetails,
   AuditEvent,
