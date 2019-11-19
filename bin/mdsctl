@@ -77,6 +77,11 @@ declare -A configs=(
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
   ["ingress-gateway-key-path"]="${MDS_INGRESS_GATEWAY_KEY_PATH:-}"
   ["ingress-gateway-certificate-path"]="${MDS_INGRESS_GATEWAY_CERTIFICATE_PATH:-}"
+  ["namespace"]="${MDS_NAMESPACE:-default}"
+  ["namespace-metrics-adapter"]="${MDS_NAMESPACE_METRICS_ADAPTER:-util}"
+  ["namespace-dashboard"]="${MDS_NAMESPACE_LOGGING:-dashboard}"
+  ["namespace-logging"]="${MDS_NAMESPACE_LOGGING:-util}"
+  ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
   ["values"]="${MDS_VALUES:-}"
   ["values-mds"]="${MDS_VALUES_MDS:-}"
   ["values-nats"]="${MDS_VALUES_NATS:-}" # todo: enable istio-sidecar ${configs[home]}/bin/nats-values.yaml}"
@@ -86,7 +91,8 @@ declare -A configs=(
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
   ["sets-nats"]="${MDS_SETS_NATS:-}"
-  ["sets-logging"]="${MDS_SETS_LOGGING:=fluentbit.backend.es.host=elasticsearch-master.util,fluentbit.backend.es.port=9200,fluentbit.backend.es.tls=off,kibana.env.ELASTICSEARCH_URL=http:elasticsearch-master.util:9200}"
+  ["sets-logging"]="${MDS_SETS_LOGGING:-fluentbit.backend.es.host=elasticsearch-master.util,fluentbit.backend.es.port=9200,fluentbit.backend.es.tls=off,kibana.env.ELASTICSEARCH_URL=http:elasticsearch-master.util:9200}"
+  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-host=http://mds-agency.${configs[namespace-mds]}.svc.cluster.local:4000/agency}"
   ["setfiles"]="${MDS_SET_FILES:-}"
   ["setfiles-mds"]="${MDS_SET_FILES_MDS:-}"
   ["setfiles-nats"]="${MDS_SET_FILES_NATS:-}"
@@ -326,7 +332,7 @@ templateValues() {
     export $varname=${version}${suffix}
   done
   mkdir -p dist
-  envsubst < helm/mds/values.yaml.tpl > dist/values.html
+  envsubst < helm/mds/values.yaml.tpl > dist/values.yaml
   echo "Wrote dist/values.yaml"
 }
 
@@ -441,19 +447,19 @@ installIstio() {
 
     installNamespace istio-system
     pause 2
-    helm template ${configs[istio]}/install/kubernetes/helm/istio-init \
-      --name istio-init --namespace istio-system | \
-      kubectl apply -f - ${configs[dryrun]:+--dry-run}
+    helm install ${configs[istio]}/install/kubernetes/helm/istio-init \
+      --name istio-init --namespace istio-system \
+      ${configs[dryrun]:+--dry-run}
     # todo: query pod status
     pause 5
 
     (( $(kubectl get crds | grep "istio.io" | wc -l) == 23 )) && \
       echo "istio successfully installed" || echo "istio installation failure"
 
-    helm template ${configs[istio]}/install/kubernetes/helm/istio \
+    helm install ${configs[istio]}/install/kubernetes/helm/istio \
       --name istio --namespace istio-system \
-      --values ${configs[istio]}/install/kubernetes/helm/istio/values${configs[istio-profile]}.yaml | \
-      kubectl apply -f - ${configs[dryrun]:+--dry-run}
+      --values ${configs[istio]}/install/kubernetes/helm/istio/values${configs[istio-profile]}.yaml \
+      ${configs[dryrun]:+--dry-run}
     labelNamespaceIstioInjection default
   }
 }
@@ -565,7 +571,13 @@ installSimulator() {
   (cd ${configs[simulator]};
     git pull;
     docker build -t trackgen .;
-    helm install ./helm --name trackgen)
+    helm install ./helm --name trackgen \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-simulator]:+$(helmOptions set ${configs[sets-simulator]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[dryrun]:+--dry-run --debug})
 }
 
 installNats() {
@@ -623,9 +635,15 @@ installNatss() {
     installNamespace ${configs[namespace-natss]}
     kubectl apply -n ${configs[namespace-natss]} -f ${configs[natss]}/natss/config/broker/natss.yaml \
       ${configs[dryrun]:+--dry-run --debug}
-    (GOPATH=${configs[workdir]} \
-      KO_DOCKER_REPO=ko.local \
-      ko apply -f ${configs[natss]}/natss/config)
+    for d in $(find ${configs[natss]}/natss/cmd/* -type d); do
+      d=$(basename ${d})
+      $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || {
+        (cd ${configs[natss]}/natss;
+          export GOPATH=${configs[workdir]};
+          export KO_DOCKER_REPO=ko.local;
+          ko publish -BL ./cmd/${d});
+      }
+    done
   }
 }
 
@@ -837,16 +855,13 @@ uninstallKiali() {
 uninstallIstio() {
   kubectl get namespace istio-system > /dev/null 2>&1 && {
     check ${FUNCNAME[0]}
-    helm template ${configs[istio]}/install/kubernetes/helm/istio \
-      --name istio \
-      --namespace istio-system \
-      --values ${configs[istio]}/install/kubernetes/helm/istio/values-istio-demo.yaml | \
-        kubectl delete -f - ${configs[dryrun]:+--dry-run}
+    helm delete --purge istio ${configs[dryrun]:+--dry-run}
+    helm delete --purge istio-init ${configs[dryrun]:+--dry-run}
     kubectl delete namespace istio-system ${configs[dryrun]:+--dry-run}
     kubectl delete -f ${configs[istio]}/install/kubernetes/helm/istio-init/files \
       ${configs[dryrun]:+--dry-run} > /dev/null
   }
-  [ -d ${configs[istio]} ] && /bin/rm -rf ${configs[istio]}
+  [[ -d ${configs[istio]} && -z "${configs[dryrun]}" ]] && echo "/bin/rm -rf ${configs[istio]}"
 }
 
 uninstallDashboard() {
