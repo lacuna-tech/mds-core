@@ -171,6 +171,8 @@ export async function publishPolicy(policy_id: UUID) {
       throw new NotFoundError('cannot publish nonexistent policy')
     }
 
+    const publish_date = now()
+
     const geographies: UUID[] = []
     policy.rules.forEach(rule => {
       rule.geographies.forEach(geography_id => {
@@ -180,7 +182,7 @@ export async function publishPolicy(policy_id: UUID) {
     await Promise.all(
       geographies.map(geography_id => {
         log.info('publishing geography', geography_id)
-        return publishGeography(geography_id)
+        return publishGeography({ geography_id, publish_date })
       })
     )
     await Promise.all(
@@ -191,9 +193,7 @@ export async function publishPolicy(policy_id: UUID) {
     )
 
     // Only publish the policy if the geographies are successfully published first
-    const publishPolicySQL = `UPDATE ${
-      schema.TABLE.policies
-    } SET policy_json = policy_json::jsonb || '{"publish_date": ${now()}}' where policy_id='${policy_id}'`
+    const publishPolicySQL = `UPDATE ${schema.TABLE.policies} SET policy_json = policy_json::jsonb || '{"publish_date": ${publish_date}}' where policy_id='${policy_id}'`
     await client.query(publishPolicySQL).catch(err => {
       throw err
     })
@@ -257,4 +257,13 @@ export async function readRule(rule_id: UUID): Promise<Rule> {
     })
     return rule
   }
+}
+
+export async function findPoliciesByGeographyID(geography_id: UUID): Promise<Policy[]> {
+  const client = await getReadOnlyClient()
+  const sql = `select * from ${schema.TABLE.policies}
+    where ${schema.COLUMN.policy_json}::jsonb
+    @> '{"rules":[{"geographies":["${geography_id}"]}]}'`
+  const res = await client.query(sql)
+  return res.rows.map(row => row.policy_json)
 }
