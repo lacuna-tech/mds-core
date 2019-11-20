@@ -15,13 +15,13 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: natss-ch-controller
+  name: natss-ch-controller-{{ $.Release.Namespace }}
   labels:
     contrib.eventing.knative.dev/release: devel
 subjects:
   - kind: ServiceAccount
     name: natss-ch-controller
-    namespace: knative-eventing
+    namespace: {{ $.Release.Namespace }} #knative-eventing
 roleRef:
   kind: ClusterRole
   name: natss-ch-controller
@@ -32,11 +32,11 @@ roleRef:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: natss-ch-dispatcher
+  name: natss-ch-dispatcher-{{ $.Release.Namespace }}
 subjects:
   - kind: ServiceAccount
     name: natss-ch-dispatcher
-    namespace: knative-eventing
+    namespace: {{ $.Release.Namespace }} #knative-eventing
 roleRef:
   kind: ClusterRole
   name: natss-ch-dispatcher

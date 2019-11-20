@@ -1,4 +1,0 @@
-controller:
-  image: ko.local/channel_controller:a65b3183cc473d7cd0bb41096362daf161c1fd5575e99cdaf644d4863913fd29 #latest
-dispatcher:
-  image: ko.local/channel_dispatcher:1a61a3670e8ed16cc28163851509df2c26b15efcaf77168846a2776db9efc538 #latest

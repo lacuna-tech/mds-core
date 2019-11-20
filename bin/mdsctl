@@ -87,16 +87,19 @@ declare -A configs=(
   ["values-nats"]="${MDS_VALUES_NATS:-}" # todo: enable istio-sidecar ${configs[home]}/bin/nats-values.yaml}"
   ["values-natss"]="${MDS_VALUES_NATSS:-}"
   ["values-nats-knative"]="${MDS_VALUES_NATS_KNATIVE:-}"
+  ["values-nats-tenant"]="${MDS_VALUES_NATS_TENANT:-}"
   ["presets"]="${MDS_PRESETS:-}"
   ["presets-mds"]="${MDS_PRESETS_MDS:-postgresql.password=Password123#,apis.mds-agency.migration=true}"
   ["presets-nats"]="${MDS_PRESETS_NATS:-}"
   ["presets-natss"]="${MDS_PRESETS_NATSS:-}"
   ["presets-nats-knative"]="${MDS_PRESETS_NATS_KNATIVE:-}"
+  ["presets-nats-tenant"]="${MDS_PRESETS_NATS_TENANT:-}"
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
   ["sets-nats"]="${MDS_SETS_NATS:-}"
   ["sets-natss"]="${MDS_SETS_NATSS:-}"
   ["sets-nats-knative"]="${MDS_SETS_NATS_KNATIVE:-}"
+  ["sets-nats-tenant"]="${MDS_SETS_NATS_TENANT:-}"
   ["sets-logging"]="${MDS_SETS_LOGGING:-fluentbit.backend.es.host=elasticsearch-master.util,fluentbit.backend.es.port=9200,fluentbit.backend.es.tls=off,kibana.env.ELASTICSEARCH_URL=http:elasticsearch-master.util:9200}"
   ["sets-simulator"]="${MDS_SETS_SIMULATOR:-host=http://mds-agency.${configs[namespace-mds]}.svc.cluster.local:4000/agency}"
   ["setfiles"]="${MDS_SET_FILES:-}"
@@ -104,14 +107,16 @@ declare -A configs=(
   ["setfiles-nats"]="${MDS_SET_FILES_NATS:-}"
   ["setfiles-natss"]="${MDS_SET_FILES_NATSS:-}"
   ["setfiles-nats-knative"]="${MDS_SET_FILES_NATS_KNATIVE:-}"
+  ["setfiles-nats-tenant"]="${MDS_SET_FILES_NATS_TENANT:-}"
   ["namespace"]="${MDS_NAMESPACE:-default}"
   ["namespace-metrics-adapter"]="${MDS_NAMESPACE_METRICS_ADAPTER:-util}"
   ["namespace-dashboard"]="${MDS_NAMESPACE_LOGGING:-dashboard}"
   ["namespace-logging"]="${MDS_NAMESPACE_LOGGING:-util}"
   ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-${configs[namespace-mds]}}"
-  ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-natss}"
-  ["namespace-nats-knative"]="${MDS_NAMESPACE_NATS_KNATIVE:-natss}"
+  ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-${configs[namespace-mds]}}"
+  ["namespace-nats-knative"]="${MDS_NAMESPACE_NATS_KNATIVE:-knative-eventing}" #${configs[namespace-mds]}}"
+  ["namespace-nats-tenant"]="${MDS_NAMESPACE_NATS_TENANT:-${configs[namespace-mds]}}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
   ["quiet"]="${MDS_QUIET:-}")
 declare -A helmRepositories=(
@@ -649,11 +654,9 @@ installNatss() {
       # sed -i '' "s/image: nats-streaming:.*/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
   fi
 
-  # todo: pin down better semaphore
+  # todo: pin to a better semaphore
   kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-natss]}
-    # kubectl apply -n ${configs[namespace-natss]} -f ${configs[natss]}/natss/config/broker/natss.yaml \
-    #   ${configs[dryrun]:+--dry-run --debug}
     helm install ${configs[home]}/helm/natss --name ${configs[namespace-mds]}-nats \
       --namespace ${configs[namespace-natss]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -670,8 +673,8 @@ installNatss() {
       $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
     done
 
-      # --namespace ${configs[namespace-nats-knative]} \
     helm install ${configs[home]}/helm/nats-knative --name ${configs[namespace-mds]}-nats-knative \
+      --namespace ${configs[namespace-nats-knative]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-nats-knative]:+$(helmOptions values ${configs[values-nats-knative]})} \
       ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
@@ -681,6 +684,19 @@ installNatss() {
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats-knative]:+$(helmOptions set-file ${configs[setfiles-nats-knative]})} \
       ${configs[dryrun]:+--dry-run --debug}
+    helm install ${configs[home]}/helm/nats-tenant --name ${configs[namespace-mds]}-nats-tenant \
+      --namespace ${configs[namespace-nats-tenant]} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats-tenant]:+$(helmOptions values ${configs[values-nats-tenant]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats-tenant]:+$(helmOptions set ${configs[presets-nats-tenant]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats-tenant]:+$(helmOptions set ${configs[sets-nats-tenant]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats-tenant]:+$(helmOptions set-file ${configs[setfiles-nats-tenant]})} \
+      ${configs[dryrun]:+--dry-run --debug}
+    kubectl get configmap config-logging -n=knative-eventing --export -o yaml | \
+      kubectl apply -n=${configs[namespace-nats-tenant]} -f -
   }
 }
 
@@ -862,11 +878,12 @@ uninstallNatss() {
 
   helm delete --purge ${configs[namespace-mds]}-nats
   helm delete --purge ${configs[namespace-mds]}-nats-knative
+  helm delete --purge ${configs[namespace-mds]}-nats-tenant
   # helm del --purge ${conrigs[namespace-mds]}
   # kubectl delete -n ${configs[namespace-natss]} -f ${configs[natss]}/natss/config/broker/natss.yaml \
   #   ${configs[dryrun]:+--dry-run --debug}
   # kubectl delete -f ${configs[natss]}/natss/config ${configs[dryrun]:+--dry-run --debug}
-  uninstallNamespace ${configs[namespace-natss]}
+  uninstallNamespace ${configs[namespace-natss]} ${configs[namespace-nats-knative]} ${configs[namespace-tenant]}
   [ -d ${configs[natss]} ] && /bin/rm -rf ${configs[natss]}
 }
 

@@ -15,8 +15,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: natss-ch-controller
-  namespace: knative-eventing
+  name: natss-ch-dispatcher
+  namespace: {{ $.Release.Namespace }} #knative-eventing
   labels:
     contrib.eventing.knative.dev/release: devel
 spec:
@@ -24,24 +24,29 @@ spec:
   selector:
     matchLabels: &labels
       messaging.knative.dev/channel: natss-channel
-      messaging.knative.dev/role: controller
+      messaging.knative.dev/role: dispatcher
   template:
     metadata:
       labels: *labels
     spec:
-      serviceAccountName: natss-ch-controller
+      serviceAccountName: natss-ch-dispatcher
       containers:
-        - name: controller
-          image: {{ default "knative.dev/eventing-contrib/natss/cmd/channel_controller" .Values.controller.image }}
+        - name: dispatcher
+          image: {{ default "knative.dev/eventing-contrib/natss/cmd/channel_dispatcher" .Values.dispatcher.image }}
           env:
             - name: CONFIG_LOGGING_NAME
               value: config-logging
             - name: METRICS_DOMAIN
               value: knative.dev/eventing
+            - name: DEFAULT_NATSS_URL
+              value: nats://nats-streaming.{{ $.Release.Namespace }}.svc.cluster.local:4222
+            - name: DEFAULT_CLUSTER_ID
+              value: {{ $.Release.Namespace }}-cluster
             - name: SYSTEM_NAMESPACE
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.namespace
+
           ports:
             - containerPort: 9090
               name: metrics

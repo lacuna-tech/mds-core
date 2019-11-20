@@ -18,7 +18,7 @@ metadata:
   labels:
     app: nats-streaming
   name: nats-streaming
-  namespace: natss
+  namespace: {{ $.Release.Namespace }}
 data:
   gnatsd.conf: |
     # configuration file used to override default NATS server settings
@@ -31,7 +31,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nats-streaming
-  namespace: natss
+  namespace: {{ $.Release.Namespace }}
   labels:
     app: nats-streaming
 spec:
@@ -51,7 +51,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: nats-streaming
-  namespace: natss
+  namespace: {{ $.Release.Namespace }}
   labels:
     app: nats-streaming
 spec:
@@ -71,7 +71,7 @@ spec:
           args:
           - -D
           - -SD
-          - --cluster_id=knative-nats-streaming
+          - --cluster_id={{ $.Release.Namespace }}-cluster #knative-nats-streaming
           - --http_port=8222
           - --max_age=24h
           - --store=FILE
