@@ -695,8 +695,10 @@ installNatss() {
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats-tenant]:+$(helmOptions set-file ${configs[setfiles-nats-tenant]})} \
       ${configs[dryrun]:+--dry-run --debug}
-    kubectl get configmap config-logging -n=knative-eventing --export -o yaml | \
-      kubectl apply -n=${configs[namespace-nats-tenant]} -f -
+    for cm in config-logging config-observability config-tracing; do
+      kubectl get configmap ${cm} -n=knative-eventing --export -o yaml | \
+        kubectl apply -n=${configs[namespace-nats-tenant]} -f -
+    done
   }
 }
 
