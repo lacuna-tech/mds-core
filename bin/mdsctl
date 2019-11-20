@@ -81,7 +81,6 @@ declare -A configs=(
   ["namespace-metrics-adapter"]="${MDS_NAMESPACE_METRICS_ADAPTER:-util}"
   ["namespace-dashboard"]="${MDS_NAMESPACE_LOGGING:-dashboard}"
   ["namespace-logging"]="${MDS_NAMESPACE_LOGGING:-util}"
-  ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
   ["values"]="${MDS_VALUES:-}"
   ["values-mds"]="${MDS_VALUES_MDS:-}"
   ["values-nats"]="${MDS_VALUES_NATS:-}" # todo: enable istio-sidecar ${configs[home]}/bin/nats-values.yaml}"
@@ -115,8 +114,8 @@ declare -A configs=(
   ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-${configs[namespace-mds]}}"
   ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-${configs[namespace-mds]}}"
-  ["namespace-nats-knative"]="${MDS_NAMESPACE_NATS_KNATIVE:-knative-eventing}" #${configs[namespace-mds]}}"
-  ["namespace-nats-tenant"]="${MDS_NAMESPACE_NATS_TENANT:-${configs[namespace-mds]}}"
+  ["namespace-nats-knative"]="${MDS_NAMESPACE_NATS_KNATIVE:-${configs[namespace-natss]}}"
+  ["namespace-nats-tenant"]="${MDS_NAMESPACE_NATS_TENANT:-${configs[namespace-natss]}}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
   ["quiet"]="${MDS_QUIET:-}")
 declare -A helmRepositories=(
@@ -207,6 +206,7 @@ where service in:
   logging
   metrics
   nats
+  natss
 
 where app in:
   mds-agency
@@ -657,7 +657,7 @@ installNatss() {
   # todo: pin to a better semaphore
   kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-natss]}
-    helm install ${configs[home]}/helm/natss --name ${configs[namespace-mds]}-nats \
+    helm install ${configs[home]}/helm/natss --name ${configs[namespace-natss]}-nats \
       --namespace ${configs[namespace-natss]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-natss]:+$(helmOptions values ${configs[values-natss]})} \
@@ -673,8 +673,8 @@ installNatss() {
       $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
     done
 
-    helm install ${configs[home]}/helm/nats-knative --name ${configs[namespace-mds]}-nats-knative \
-      --namespace ${configs[namespace-nats-knative]} \
+    helm install ${configs[home]}/helm/nats-knative --name ${configs[namespace-nats-knative]}-nats-knative \
+      # --namespace ${configs[namespace-nats-knative]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-nats-knative]:+$(helmOptions values ${configs[values-nats-knative]})} \
       ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
@@ -684,7 +684,7 @@ installNatss() {
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats-knative]:+$(helmOptions set-file ${configs[setfiles-nats-knative]})} \
       ${configs[dryrun]:+--dry-run --debug}
-    helm install ${configs[home]}/helm/nats-tenant --name ${configs[namespace-mds]}-nats-tenant \
+    helm install ${configs[home]}/helm/nats-tenant --name ${configs[namespace-nats-tenant]}-nats-tenant \
       --namespace ${configs[namespace-nats-tenant]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-nats-tenant]:+$(helmOptions values ${configs[values-nats-tenant]})} \
@@ -696,8 +696,9 @@ installNatss() {
       ${configs[setfiles-nats-tenant]:+$(helmOptions set-file ${configs[setfiles-nats-tenant]})} \
       ${configs[dryrun]:+--dry-run --debug}
     for cm in config-logging config-observability config-tracing; do
-      kubectl get configmap ${cm} -n=knative-eventing --export -o yaml | \
-        kubectl apply -n=${configs[namespace-nats-tenant]} -f -
+      # note: --export is deprecated
+      kubectl get configmap ${cm} -n knative-eventing --export -o yaml | \
+        kubectl apply -n ${configs[namespace-nats-tenant]} -f -
     done
   }
 }
@@ -878,14 +879,14 @@ uninstallKnative() {
 uninstallNatss() {
   check ${FUNCNAME[0]}
 
-  helm delete --purge ${configs[namespace-mds]}-nats
-  helm delete --purge ${configs[namespace-mds]}-nats-knative
-  helm delete --purge ${configs[namespace-mds]}-nats-tenant
-  # helm del --purge ${conrigs[namespace-mds]}
-  # kubectl delete -n ${configs[namespace-natss]} -f ${configs[natss]}/natss/config/broker/natss.yaml \
-  #   ${configs[dryrun]:+--dry-run --debug}
-  # kubectl delete -f ${configs[natss]}/natss/config ${configs[dryrun]:+--dry-run --debug}
-  uninstallNamespace ${configs[namespace-natss]} ${configs[namespace-nats-knative]} ${configs[namespace-tenant]}
+  helm delete --purge ${configs[namespace-natss]}-nats
+  helm delete --purge ${configs[namespace-nats-knative]}-nats-knative
+  helm delete --purge ${configs[namespace-nats-tenant]}-nats-tenant
+
+  # fixme: deleteing a shared namespace is not right
+  for ns in ${configs[namespace-natss]} ${configs[namespace-tenant]}; do # ${configs[namespace-nats-knative]}; do
+    [ "${ns}" != "${configs[namespace-mds]}" ] && uninstallNamespace ${ns}
+  done; unset ns
   [ -d ${configs[natss]} ] && /bin/rm -rf ${configs[natss]}
 }
 
