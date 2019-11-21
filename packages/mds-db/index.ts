@@ -74,12 +74,7 @@ import {
 } from "./audits"
 
 import {
-  writeTrips,
-  updateTrip,
-  readTrips,
-  readTripList,
   readTripIds,
-  getLatestTripTime,
   getTripEventsLast24HoursByProvider,
   getTripCountsPerProviderSince
 } from "./trips"
@@ -90,13 +85,6 @@ import {
   getTelemetryCountsPerProviderSince,
   getMostRecentTelemetryByProvider
 } from "./telemetry"
-
-import {
-  writeStatusChanges,
-  readStatusChanges,
-  readUnprocessedStatusChangeEvents,
-  getLatestStatusChangeTime
-} from "./status_changes"
 
 import schema from "./schema"
 import { TABLE_NAME } from "./schema"

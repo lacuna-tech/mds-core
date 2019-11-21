@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
-
 osx=Darwin
 linux=Linux
-
 hash brew > /dev/null 2>&1 || {
   case "${MDS_OS:-$(uname)}" in
     ${osx})
