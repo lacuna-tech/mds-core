@@ -857,9 +857,8 @@ context() {
   hash kubectl && {
     [[ -z ${context+x} && "$(lower $(kubectl config current-context))" =~ ^(${configs[local-context]})$ ]] || {
       v=yes
-      r=$(prompt "confirm you want to proceed: [${v}/no] ")
-      [[ "${r}" != "${v}" ]] && usage "opted to exit" || context=true
-      unset v r
+      [[ "$(prompt "confirm you want to proceed: [${v}/no] ")" != "${v}" ]] && usage "opted to exit" || context=true
+      unset v
     }
   }
 }
