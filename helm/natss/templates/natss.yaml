@@ -114,3 +114,13 @@ spec:
       resources:
         requests:
           storage: "1Gi"
+---
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Broker
+metadata:
+  name: natss-broker
+  namespace: {{ $.Release.Namespace }}
+spec:
+  channelTemplateSpec:
+    apiVersion: messaging.knative.dev/v1alpha1
+    kind: NatssChannel

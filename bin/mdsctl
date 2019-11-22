@@ -71,7 +71,7 @@ declare -A configs=(
   ["istio-profile"]="${MDS_ISTIO_PROFILE:-}" #-istio-sds-auth}" # todo: looks to fail when installing istio-nodeagent
   ["istio"]="${MDS_ISTIO_PATH:-${configs[workdir]}/istio-${configs[istio-version]}}"
   ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/src/knative.dev/eventing-contrib}"
-  ["knative-version"]="${MDS_KNATIVE_VERSION:-0.10.0}"
+  ["knative-version"]="${MDS_KNATIVE_VERSION:-0.10.1}"
   ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-eventing}" # serving monitoring"}
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
@@ -657,17 +657,6 @@ installNatss() {
   # todo: pin to a better semaphore
   kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-natss]}
-    helm install ${configs[home]}/helm/natss --name ${configs[namespace-natss]}-nats \
-      --namespace ${configs[namespace-natss]} \
-      ${configs[values]:+$(helmOptions values ${configs[values]})} \
-      ${configs[values-natss]:+$(helmOptions values ${configs[values-natss]})} \
-      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-      ${configs[presets-natss]:+$(helmOptions set ${configs[presets-natss]})} \
-      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-      ${configs[sets-natss]:+$(helmOptions set ${configs[sets-natss]})} \
-      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-      ${configs[setfiles-natss]:+$(helmOptions set-file ${configs[setfiles-natss]})} \
-      ${configs[dryrun]:+--dry-run --debug}
 
     for d in $(find ${configs[natss]}/natss/cmd/* -type d -maxdepth 1 -exec sh -c 'echo $(basename {})' \;); do
       $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
@@ -684,6 +673,17 @@ installNatss() {
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats-knative]:+$(helmOptions set-file ${configs[setfiles-nats-knative]})} \
       ${configs[dryrun]:+--dry-run --debug}
+    helm install ${configs[home]}/helm/natss --name ${configs[namespace-natss]}-nats \
+      --namespace ${configs[namespace-natss]} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-natss]:+$(helmOptions values ${configs[values-natss]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-natss]:+$(helmOptions set ${configs[presets-natss]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-natss]:+$(helmOptions set ${configs[sets-natss]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-natss]:+$(helmOptions set-file ${configs[setfiles-natss]})} \
+      ${configs[dryrun]:+--dry-run --debug}
     helm install ${configs[home]}/helm/nats-tenant --name ${configs[namespace-nats-tenant]}-nats-tenant \
       --namespace ${configs[namespace-nats-tenant]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -695,7 +695,8 @@ installNatss() {
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats-tenant]:+$(helmOptions set-file ${configs[setfiles-nats-tenant]})} \
       ${configs[dryrun]:+--dry-run --debug}
-    for cm in config-logging config-observability config-tracing; do
+
+    for cm in config-logging config-observability config-tracing; do # default-ch-webhook; do
       # note: --export is deprecated
       kubectl get configmap ${cm} -n knative-eventing --export -o yaml | \
         kubectl apply -n ${configs[namespace-nats-tenant]} -f -
