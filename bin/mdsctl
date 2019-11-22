@@ -658,6 +658,18 @@ installNatss() {
   kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-natss]}
 
+    helm install ${configs[home]}/helm/natss --name ${configs[namespace-natss]}-nats \
+      --namespace ${configs[namespace-natss]} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-natss]:+$(helmOptions values ${configs[values-natss]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-natss]:+$(helmOptions set ${configs[presets-natss]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-natss]:+$(helmOptions set ${configs[sets-natss]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-natss]:+$(helmOptions set-file ${configs[setfiles-natss]})} \
+      ${configs[dryrun]:+--dry-run --debug}
+
     for d in $(find ${configs[natss]}/natss/cmd/* -type d -maxdepth 1 -exec sh -c 'echo $(basename {})' \;); do
       $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
     done
@@ -672,17 +684,6 @@ installNatss() {
       ${configs[sets-nats-knative]:+$(helmOptions set ${configs[sets-nats-knative]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats-knative]:+$(helmOptions set-file ${configs[setfiles-nats-knative]})} \
-      ${configs[dryrun]:+--dry-run --debug}
-    helm install ${configs[home]}/helm/natss --name ${configs[namespace-natss]}-nats \
-      --namespace ${configs[namespace-natss]} \
-      ${configs[values]:+$(helmOptions values ${configs[values]})} \
-      ${configs[values-natss]:+$(helmOptions values ${configs[values-natss]})} \
-      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-      ${configs[presets-natss]:+$(helmOptions set ${configs[presets-natss]})} \
-      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-      ${configs[sets-natss]:+$(helmOptions set ${configs[sets-natss]})} \
-      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-      ${configs[setfiles-natss]:+$(helmOptions set-file ${configs[setfiles-natss]})} \
       ${configs[dryrun]:+--dry-run --debug}
     helm install ${configs[home]}/helm/nats-tenant --name ${configs[namespace-nats-tenant]}-nats-tenant \
       --namespace ${configs[namespace-nats-tenant]} \
