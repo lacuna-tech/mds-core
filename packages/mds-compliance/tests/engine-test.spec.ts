@@ -325,6 +325,7 @@ describe('Verifies errors are being properly thrown', () => {
   })
 
   it('Verifies RuntimeErrors are being thrown with an invalid TIMEZONE env_var', done => {
+    const oldTimezone = process.env.TIMEZONE
     process.env.TIMEZONE = 'Pluto/Potato_Land'
     const devices = makeDevices(1, now())
     const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_end')
@@ -344,11 +345,12 @@ describe('Verifies errors are being properly thrown', () => {
       () => filteredPolicies.map(policy => processPolicy(policy, filteredEvents, geographies, deviceMap)),
       RuntimeError
     )
+    process.env.TIMEZONE = oldTimezone
     done()
   })
 })
 
-describe.only('Verifies compliance engine processes by vehicle most recent event', async () => {
+describe('Verifies compliance engine processes by vehicle most recent event', async () => {
   before(async () => {
     low_count_policies = await readJson('test_data/low_limit_policy.json')
     // geographies = await readJson('test_data/geographies.json')

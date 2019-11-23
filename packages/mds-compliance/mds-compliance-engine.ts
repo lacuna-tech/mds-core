@@ -217,7 +217,7 @@ function processPolicy(
 ): ComplianceResponse | undefined {
   if (isPolicyActive(policy)) {
     const sortedEvents = [...events].sort((e_1, e_2) => {
-      return e_1.telemetry.timestamp - e_2.telemetry.timestamp
+      return e_1.timestamp - e_2.timestamp
     })
     const vehiclesToFilter: MatchedVehicle[] = []
     let overflowVehiclesMap: { [key: string]: MatchedVehiclePlusRule } = {}
