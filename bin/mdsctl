@@ -77,6 +77,7 @@ declare -A configs=(
   ["namespace-metrics-adapter"]="${MDS_NAMESPACE_METRICS_ADAPTER:-util}"
   ["namespace-dashboard"]="${MDS_NAMESPACE_LOGGING:-dashboard}"
   ["namespace-logging"]="${MDS_NAMESPACE_LOGGING:-util}"
+  ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-}"
   ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
   ["values"]="${MDS_VALUES:-}"
   ["values-mds"]="${MDS_VALUES_MDS:-}"
@@ -554,6 +555,7 @@ installSimulator() {
     git pull;
     docker build -t trackgen .;
     helm install ./helm --name trackgen \
+      ${configs[namespace-simulator]:+--namespace ${configs[namespace-simulator]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
       ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
