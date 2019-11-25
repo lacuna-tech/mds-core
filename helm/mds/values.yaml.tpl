@@ -46,6 +46,6 @@ apis:
     migration: false
   mds-config:
     enabled: true
-    pathPrefix: /policy-author
+    pathPrefix: /config
     version: ${CONFIG_VERSION}
     migration: false
