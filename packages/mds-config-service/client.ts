@@ -22,7 +22,7 @@ const asJson = <TSettings extends object>(utf8: string): TSettings => {
 }
 
 export const getSettings = async <TSettings extends object>(name = 'settings'): Promise<TSettings> => {
-  const { MDS_CONFIG_PATH = '.' } = process.env
+  const { MDS_CONFIG_PATH = '/mds-config' } = process.env
   const path = MDS_CONFIG_PATH.endsWith('/') ? MDS_CONFIG_PATH : `${MDS_CONFIG_PATH}/`
   return asJson<TSettings>(await readFileAsync(`${path}${name}.json`))
 }

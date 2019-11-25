@@ -13,7 +13,7 @@ describe('Test Config Client', () => {
   })
 
   it('Parse Settings File', async () => {
-    process.env.MDS_CONFIG_PATH = '.'
+    process.env.MDS_CONFIG_PATH = './'
     const settings = await client.getSettings<{ name: string }>('package')
     test.value(settings).isNot(null)
     test.value(settings.name).is('@mds-core/mds-config-service')
