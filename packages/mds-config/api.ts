@@ -20,12 +20,13 @@ import client from '@mds-core/mds-config-service'
 import { ConfigApiGetSettingsRequest, ConfigApiResponse } from './types'
 
 function api(app: express.Express): express.Express {
-  app.get(pathsFor('/settings/:name'), async (req: ConfigApiGetSettingsRequest, res: ConfigApiResponse) => {
+  app.get(pathsFor('/settings/:name?'), async (req: ConfigApiGetSettingsRequest, res: ConfigApiResponse) => {
     const { name } = req.params
     try {
       const settings = await client.getSettings(name)
       return res.status(200).send(settings)
     } catch (error) {
+      /* istanbul ignore else */
       if (error instanceof NotFoundError) {
         return res.status(404).send(error)
       }

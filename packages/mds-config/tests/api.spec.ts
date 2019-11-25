@@ -23,16 +23,6 @@ import { api } from '../api'
 const request = supertest(ApiServer(api))
 
 describe('Testing API', () => {
-  it(`Invalid Route`, done => {
-    request
-      .get(`/config/settings`)
-      .expect(404)
-      .end((err, result) => {
-        test.value(result.text).contains('Cannot GET /config/settings')
-        done(err)
-      })
-  })
-
   it(`Missing Config File`, done => {
     request
       .get(`/config/settings/missing`)
