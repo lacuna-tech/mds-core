@@ -2,7 +2,7 @@ import fs from 'fs'
 import { promisify } from 'util'
 import { NotFoundError, UnsupportedTypeError } from '@mds-core/mds-utils'
 
-const readFile = async (path: string): Promise<string> => {
+const readFileAsync = async (path: string): Promise<string> => {
   try {
     const utf8 = await promisify(fs.readFile)(path, { encoding: 'utf8' })
     return utf8
@@ -11,7 +11,7 @@ const readFile = async (path: string): Promise<string> => {
   }
 }
 
-const parseFile = <TSettings extends object>(utf8: string): TSettings => {
+const asJson = <TSettings extends object>(utf8: string): TSettings => {
   try {
     const json: TSettings = JSON.parse(utf8)
     return json
@@ -23,5 +23,5 @@ const parseFile = <TSettings extends object>(utf8: string): TSettings => {
 export const getSettings = async <TSettings extends object>(name = 'settings'): Promise<TSettings> => {
   const { MDS_CONFIG_PATH = '.' } = process.env
   const path = MDS_CONFIG_PATH.endsWith('/') ? MDS_CONFIG_PATH : `${MDS_CONFIG_PATH}/`
-  return parseFile<TSettings>(await readFile(`${path}${name}.json`))
+  return asJson<TSettings>(await readFileAsync(`${path}${name}.json`))
 }
