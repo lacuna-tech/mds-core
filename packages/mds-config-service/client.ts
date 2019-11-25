@@ -1,6 +1,7 @@
 import fs from 'fs'
 import { promisify } from 'util'
 import { NotFoundError, UnsupportedTypeError } from '@mds-core/mds-utils'
+import JSON5 from 'json5'
 
 const readFileAsync = async (path: string): Promise<string> => {
   try {
@@ -13,7 +14,7 @@ const readFileAsync = async (path: string): Promise<string> => {
 
 const asJson = <TSettings extends object>(utf8: string): TSettings => {
   try {
-    const json: TSettings = JSON.parse(utf8)
+    const json: TSettings = JSON5.parse(utf8)
     return json
   } catch (error) {
     throw new UnsupportedTypeError('Settings File must contain JSON', error)

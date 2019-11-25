@@ -13,7 +13,9 @@
   ],
   "author": "City of Los Angeles",
   "license": "Apache-2.0",
-  "dependencies": {},
+  "dependencies": {
+    "json5": "2.1.1"
+  },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "test": "yarn test:eslint && yarn test:unit",
