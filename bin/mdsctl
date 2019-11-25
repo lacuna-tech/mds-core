@@ -81,7 +81,8 @@ declare -A configs=(
   ["namespace-metrics-adapter"]="${MDS_NAMESPACE_METRICS_ADAPTER:-util}"
   ["namespace-dashboard"]="${MDS_NAMESPACE_LOGGING:-dashboard}"
   ["namespace-logging"]="${MDS_NAMESPACE_LOGGING:-util}"
-  ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-}"
+  ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-mds}"
+  ["namespace-knative"]="${MDS_NAMESPACE_KNATIVE:-knative-eventing}"
   ["values"]="${MDS_VALUES:-}"
   ["values-mds"]="${MDS_VALUES_MDS:-}"
   ["values-nats"]="${MDS_VALUES_NATS:-}" # todo: enable istio-sidecar ${configs[home]}/bin/nats-values.yaml}"
@@ -101,7 +102,7 @@ declare -A configs=(
   ["sets-nats-knative"]="${MDS_SETS_NATS_KNATIVE:-}"
   ["sets-nats-tenant"]="${MDS_SETS_NATS_TENANT:-}"
   ["sets-logging"]="${MDS_SETS_LOGGING:-fluentbit.backend.es.host=elasticsearch-master.util,fluentbit.backend.es.port=9200,fluentbit.backend.es.tls=off,kibana.env.ELASTICSEARCH_URL=http:elasticsearch-master.util:9200}"
-  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-host=http://mds-agency.${configs[namespace-mds]}.svc.cluster.local:4000/agency}"
+  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-registry=,jwt.enabled=false}"
   ["setfiles"]="${MDS_SET_FILES:-}"
   ["setfiles-mds"]="${MDS_SET_FILES_MDS:-}"
   ["setfiles-nats"]="${MDS_SET_FILES_NATS:-}"
@@ -576,8 +577,7 @@ installIngressGatewayCertificate() {
 
 installSimulator() {
   check ${FUNCNAME[0]}
-  echo ">${configs[namespace-simulator]:+--namespace ${configs[namespace-simulator]}}<"
-exit
+
   if [[ ! -d ${configs[simulator]} ]]; then
     mkdir -p ${configs[workdir]}
     (cd ${configs[workdir]};
@@ -587,7 +587,7 @@ exit
   (cd ${configs[simulator]};
     git pull;
     docker build -t trackgen .;
-    helm install ./helm --name trackgen \
+    helm install ${configs[simulator]}/helm --name trackgen \
       ${configs[namespace-simulator]:+--namespace ${configs[namespace-simulator]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
@@ -860,8 +860,7 @@ uninstallNamespace() {
 uninstallSimulator() {
   check ${FUNCNAME[0]}
 
-  (( $(kubectl get pod -l app=trackgen | wc -l) == 2 )) &&
-    (cd ${configs[simulator]}; helm delete --purge trackgen)
+  helm del --purge trackgen
   [ -d ${configs[simulator]} ] && /bin/rm -rf ${configs[simulator]}
 }
 
@@ -1040,7 +1039,7 @@ check() {
       hash helm > /dev/null 2>&1 && updateHelmDependencies || installHelm;;
     installNatss)
       [ ! "${configs[natss-repository]}" ] && usage "unspecified natss repository"
-      kubectl get namespace knative-eventing > /dev/null 2>&1 || installKnative;;
+      kubectl get namespace ${configs[namespace-knative]} > /dev/null 2>&1 || installKnative;;
     installImages)
       [ "${configs[image-repository]}" ] || \
         warn "configure an image-repository; eg ' ... -c:image-repository=[image-repository-url] ...'";;
@@ -1048,7 +1047,8 @@ check() {
       uninstallDashboard | uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)
       hash helm > /dev/null 2>&1 || installHelm;;
     installSimulator)
-      [ ! "${configs[simulator-repository]}" ] && usage "unspecified simulator repository";;
+      [ ! "${configs[simulator-repository]}" ] && usage "unspecified simulator repository"
+      kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || (preset "-p minimal"; installMds);;
     forward) ;;
     app:*) forwardIfNeeded ${1##*:};;
     cliPostgresql)
