@@ -15,7 +15,7 @@
  */
 
 import express from 'express'
-import { pathsFor, NotFoundError, ServerError } from '@mds-core/mds-utils'
+import { pathsFor, NotFoundError } from '@mds-core/mds-utils'
 import client from '@mds-core/mds-config-service'
 import { ConfigApiGetSettingsRequest, ConfigApiResponse } from './types'
 
@@ -26,12 +26,7 @@ function api(app: express.Express): express.Express {
       const settings = await client.getSettings(name)
       return res.status(200).send(settings)
     } catch (error) {
-      /* istanbul ignore else */
-      if (error instanceof NotFoundError) {
-        return res.status(404).send(error)
-      }
-      /* istanbul ignore next */
-      return res.status(500).send(new ServerError('Error loading settings', { ...error, name }))
+      return res.status(error instanceof NotFoundError ? 404 : 500).send({ ...error, settings: name })
     }
   })
 
