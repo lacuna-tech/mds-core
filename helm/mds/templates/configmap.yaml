@@ -6,5 +6,3 @@ metadata:
 data:
 {{ (.Files.Glob (printf "files/organization-config/org/%s/*.json" .Release.Namespace) ).AsConfig | indent 2 }}
 {{ (.Files.Glob (printf "files/organization-config/org/%s/*.json5" .Release.Namespace) ).AsConfig | indent 2 }}
-{{ (.Files.Glob "files/organization-config/temp/*.json").AsConfig | indent 2 }}
-{{ (.Files.Glob "files/organization-config/temp/*.json5").AsConfig | indent 2 }}
