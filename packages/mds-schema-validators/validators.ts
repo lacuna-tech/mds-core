@@ -25,6 +25,7 @@ import {
   VEHICLE_EVENTS,
   AUDIT_EVENT_TYPE,
   VEHICLE_EVENT,
+  RULE_TYPES,
   UUID,
   Timestamp,
   Telemetry
@@ -89,7 +90,7 @@ const ruleSchema = Joi.object().keys({
     .guid()
     .required(),
   rule_type: Joi.string()
-    .valid(['count', 'time', 'speed', 'user'])
+    .valid(RULE_TYPES)
     .required(),
   rule_units: Joi.string().valid(['seconds', 'minutes', 'hours', 'mph', 'kph']),
   geographies: Joi.array().items(Joi.string().guid()),
