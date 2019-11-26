@@ -4,4 +4,5 @@ metadata:
   name: mds-config-files
   namespace: {{ .Release.Namespace }}
 data:
-{{ (.Files.Glob "mds-config/*.json").AsConfig | indent 2 }}
+{{ (.Files.Glob "files/mds-config/*.json").AsConfig | indent 2 }}
+{{ (.Files.Glob "files/mds-config/*.json5").AsConfig | indent 2 }}
