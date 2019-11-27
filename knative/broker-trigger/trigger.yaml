@@ -1,0 +1,14 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: my-service-trigger
+spec:
+  broker: default
+  filter:
+    attributes:
+      type: dev.knative.foo.bar
+  subscriber:
+    ref:
+      apiVersion: serving.knative.dev/v1
+      kind: Service
+      name: my-service
