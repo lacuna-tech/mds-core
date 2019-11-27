@@ -463,7 +463,7 @@ installIstio() {
       --name istio-init --namespace istio-system \
       ${configs[dryrun]:+--dry-run}
     # todo: query pod status
-    pause 5
+    pause 7
 
     (( $(kubectl get crds | grep "istio.io" | wc -l) == 23 )) && \
       echo "istio successfully installed" || echo "istio installation failure"
@@ -623,7 +623,7 @@ installKnative() {
         kubectl apply ${s:+--selector ${s}} \
           --filename https://github.com/knative/${c}/releases/download/v${configs[knative-version]}/${cy:-${c}}.yaml \
           ${configs[dryrun]:+--dry-run --debug}
-        pause 3
+        pause 5
       }
     done; unset c
   done; unset s
