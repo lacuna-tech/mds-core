@@ -468,7 +468,7 @@ installIstio() {
       --name istio-init --namespace istio-system \
       ${configs[dryrun]:+--dry-run}
     # todo: query pod status
-    pause 5
+    pause 7
 
     (( $(kubectl get crds | grep "istio.io" | wc -l) == 23 )) && \
       echo "istio successfully installed" || echo "istio installation failure"
