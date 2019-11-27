@@ -1,0 +1,48 @@
+#apiVersion: sources.eventing.knative.dev/v1alpha1
+#kind: ContainerSource
+#metadata:
+#  name: heartbeats-sender
+#spec:
+#  template:
+#    spec:
+#      containers:
+#        - image: github.com/knative/eventing-contrib/cmd/heartbeats/
+#          name: heartbeats-sender
+#          args:
+#            - --eventType=dev.knative.foo.bar
+#          env:
+#            - name: POD_NAME
+#              valueFrom:
+#                fieldRef:
+#                  fieldPath: metadata.name
+#            - name: POD_NAMESPACE
+#              valueFrom:
+#                fieldRef:
+#                  fieldPath: metadata.namespace
+#  sink:
+#    apiVersion: eventing.knative.dev/v1alpha1
+#    kind: Broker
+#    name: default
+
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: ContainerSource
+metadata:
+  name: heartbeat-event-source
+spec:
+  image: quay.io/openshift-knative/knative-eventing-sources-heartbeats:v0.5.0
+  args:
+    - '--label="Thanks for doing Knative Tutorial"'
+    - '--period=1'
+  env:
+    - name: POD_NAME
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.name
+    - name: POD_NAMESPACE
+      valueFrom:
+        fieldRef:
+          fieldPath: metadata.namespace
+  sink:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: Broker
+    name: default
