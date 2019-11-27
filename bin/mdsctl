@@ -628,7 +628,7 @@ installKnative() {
         kubectl apply ${s:+--selector ${s}} \
           --filename https://github.com/knative/${c}/releases/download/v${configs[knative-version]}/${cy:-${c}}.yaml \
           ${configs[dryrun]:+--dry-run --debug}
-        pause 3
+        pause 5
       }
     done; unset c
   done; unset s
