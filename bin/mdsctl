@@ -302,7 +302,7 @@ installImages() {
 
   if [ "${configs[image-repository]}" ]; then
     for i in $(docker images --filter "reference=mds-*" --format '{{.Repository}}:{{.Tag}}'); do
-      # docker tag ${i} ${configs[image-repository]}/${i}
+      docker tag ${i} ${configs[image-repository]}/${i}
       docker push ${configs[image-repository]}/${i}
     done; unset i
   fi
@@ -460,19 +460,29 @@ installIstio() {
 
     installNamespace istio-system
     pause 2
-    helm install ${configs[istio]}/install/kubernetes/helm/istio-init \
+    # HACK: do not merge
+    # helm install ${configs[istio]}/install/kubernetes/helm/istio-init \
+    #   --name istio-init --namespace istio-system \
+    #   ${configs[dryrun]:+--dry-run}
+    helm template ${configs[istio]}/install/kubernetes/helm/istio-init \
       --name istio-init --namespace istio-system \
-      ${configs[dryrun]:+--dry-run}
+      ${configs[dryrun]:+--dry-run} | kubectl apply -f -
     # todo: query pod status
-    pause 7
+    # pause 9
+    kubectl -n istio-system wait --for=condition=complete job --all
 
     (( $(kubectl get crds | grep "istio.io" | wc -l) == 23 )) && \
       echo "istio successfully installed" || echo "istio installation failure"
 
-    helm install ${configs[istio]}/install/kubernetes/helm/istio \
+    # HACK: do not merge
+    # helm install ${configs[istio]}/install/kubernetes/helm/istio \
+    #   --name istio --namespace istio-system \
+    #   --values ${configs[istio]}/install/kubernetes/helm/istio/values${configs[istio-profile]}.yaml \
+    #   ${configs[dryrun]:+--dry-run}
+    helm template ${configs[istio]}/install/kubernetes/helm/istio \
       --name istio --namespace istio-system \
       --values ${configs[istio]}/install/kubernetes/helm/istio/values${configs[istio-profile]}.yaml \
-      ${configs[dryrun]:+--dry-run}
+      ${configs[dryrun]:+--dry-run} | kubectl apply -f -
     labelNamespaceIstioInjection default
   }
 }
@@ -525,7 +535,8 @@ installMds() {
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
-    configure $(imageVersion)
+    # configure $(imageVersion)
+    [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
@@ -943,11 +954,14 @@ uninstallKiali() {
 uninstallIstio() {
   kubectl get namespace istio-system > /dev/null 2>&1 && {
     check ${FUNCNAME[0]}
-    helm delete --purge istio ${configs[dryrun]:+--dry-run}
-    helm delete --purge istio-init ${configs[dryrun]:+--dry-run}
-    kubectl delete namespace istio-system ${configs[dryrun]:+--dry-run}
-    kubectl delete -f ${configs[istio]}/install/kubernetes/helm/istio-init/files \
-      ${configs[dryrun]:+--dry-run} > /dev/null
+    # HACK: do not merge
+    # helm delete --purge istio ${configs[dryrun]:+--dry-run}
+    # helm delete --purge istio-init ${configs[dryrun]:+--dry-run}
+    # kubectl delete namespace istio-system ${configs[dryrun]:+--dry-run}
+    # kubectl delete -f ${configs[istio]}/install/kubernetes/helm/istio-init/files \
+    #   ${configs[dryrun]:+--dry-run} > /dev/null
+    helm template install/kubernetes/helm/istio --name istio --namespace istio-system | kubectl delete -f -
+    kubectl delete namespace istio-system
   }
   [[ -d ${configs[istio]} && -z "${configs[dryrun]}" ]] && echo "/bin/rm -rf ${configs[istio]}"
 }
