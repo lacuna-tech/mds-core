@@ -303,7 +303,11 @@ installImages() {
 
   if [ "${configs[image-repository]}" ]; then
     for i in $(docker images --filter "reference=mds-*" --format '{{.Repository}}:{{.Tag}}'); do
-      docker tag ${i} ${configs[image-repository]}/${i}
+      case "${configs[provider],,}" in
+        # fixme: verify
+        gcp) docker tag ${i} ${configs[image-repository]}/${i};;
+        *);;
+      esac
       docker push ${configs[image-repository]}/${i}
     done; unset i
   fi
