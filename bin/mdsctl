@@ -52,6 +52,7 @@ declare -A os=(
 declare -A configs=(
   ["home"]="${MDS_HOME:-$(installDir)}"
   ["os"]="${MDS_OS:-`uname`}"
+  ["provider"]="${MDS_PROVIDER:-}"
   ["rc"]="${MDS_RC:-~/.bashrc ~/.zshrc}"
   ["workdir"]="/tmp/mds/tools"
 #  ["brew"]="${MDS_BREW:-oq jq gettext yarn nvm helm derailed/k9s/k9s pgcli redis git go}"
@@ -60,7 +61,7 @@ declare -A configs=(
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
   ["natss-repository"]="${MDS_NATSS_REPOSITORY:-https://github.com/knative/eventing-contrib}"
-  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio}"
+  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,tiller,istio}"
   ["install"]="${MDS_INSTALL:-mds}"
   ["test"]="${MDS_TEST:-unit,integration}"
   ["uninstall"]="${MDS_UNINSTALL:-logging,mds,istio,helm}"
@@ -403,9 +404,19 @@ helmOptions() {
 installTiller() {
   check ${FUNCNAME[0]}
 
-  if [ $(kubectl get serviceaccount tiller --namespace kube-system > /dev/null 2>&1; echo $?) == "1" ]; then
-    warn "NOT FOR PRODUCTION USE"
-    cat << EOF | kubectl create -f -
+  # fixme: clean this up, one path
+  case "${configs[provider],,}" in
+    gcp)
+      kubectl create clusterrolebinding cluster-admin-binding \
+        --clusterrole=cluster-admin \
+        --user="$(gcloud config get-value core/account)"
+      kubectl create serviceaccount --namespace kube-system tiller
+      kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
+      kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}';;
+    *)
+      if [ $(kubectl get serviceaccount tiller --namespace kube-system > /dev/null 2>&1; echo $?) == "1" ]; then
+        warn "NOT FOR PRODUCTION USE"
+        cat << EOF | kubectl create -f -
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -425,10 +436,9 @@ roleRef:
   name: cluster-admin
   apiGroup: ""
 EOF
-
-    helm init --service-account tiller --upgrade
-    pause 5
-  fi
+      helm init --service-account tiller --upgrade
+    fi;;
+  esac
 }
 
 installDashboard() {
@@ -460,29 +470,34 @@ installIstio() {
 
     installNamespace istio-system
     pause 2
-    # HACK: do not merge
-    # helm install ${configs[istio]}/install/kubernetes/helm/istio-init \
-    #   --name istio-init --namespace istio-system \
-    #   ${configs[dryrun]:+--dry-run}
-    helm template ${configs[istio]}/install/kubernetes/helm/istio-init \
-      --name istio-init --namespace istio-system \
-      ${configs[dryrun]:+--dry-run} | kubectl apply -f -
-    # todo: query pod status
-    # pause 9
+
+    case "${configs[provider],,}" in
+      gcp)
+        helm template ${configs[istio]}/install/kubernetes/helm/istio-init \
+        --name istio-init --namespace istio-system \
+        ${configs[dryrun]:+--dry-run} | kubectl apply -f -;;
+      *)
+        helm install ${configs[istio]}/install/kubernetes/helm/istio-init \
+          --name istio-init --namespace istio-system \
+          ${configs[dryrun]:+--dry-run};;
+    esac
     kubectl -n istio-system wait --for=condition=complete job --all
 
     (( $(kubectl get crds | grep "istio.io" | wc -l) == 23 )) && \
       echo "istio successfully installed" || echo "istio installation failure"
 
-    # HACK: do not merge
-    # helm install ${configs[istio]}/install/kubernetes/helm/istio \
-    #   --name istio --namespace istio-system \
-    #   --values ${configs[istio]}/install/kubernetes/helm/istio/values${configs[istio-profile]}.yaml \
-    #   ${configs[dryrun]:+--dry-run}
-    helm template ${configs[istio]}/install/kubernetes/helm/istio \
-      --name istio --namespace istio-system \
-      --values ${configs[istio]}/install/kubernetes/helm/istio/values${configs[istio-profile]}.yaml \
-      ${configs[dryrun]:+--dry-run} | kubectl apply -f -
+    case "${configs[provider],,}" in
+      gcp)
+        helm template ${configs[istio]}/install/kubernetes/helm/istio \
+          --name istio --namespace istio-system \
+          --values ${configs[istio]}/install/kubernetes/helm/istio/values${configs[istio-profile]}.yaml \
+          ${configs[dryrun]:+--dry-run} | kubectl apply -f -;;
+      *)
+        helm install ${configs[istio]}/install/kubernetes/helm/istio \
+          --name istio --namespace istio-system \
+          --values ${configs[istio]}/install/kubernetes/helm/istio/values${configs[istio-profile]}.yaml \
+          ${configs[dryrun]:+--dry-run};;
+    esac
     labelNamespaceIstioInjection default
   }
 }
@@ -954,13 +969,16 @@ uninstallKiali() {
 uninstallIstio() {
   kubectl get namespace istio-system > /dev/null 2>&1 && {
     check ${FUNCNAME[0]}
-    # HACK: do not merge
-    # helm delete --purge istio ${configs[dryrun]:+--dry-run}
-    # helm delete --purge istio-init ${configs[dryrun]:+--dry-run}
-    # kubectl delete namespace istio-system ${configs[dryrun]:+--dry-run}
-    # kubectl delete -f ${configs[istio]}/install/kubernetes/helm/istio-init/files \
-    #   ${configs[dryrun]:+--dry-run} > /dev/null
-    helm template install/kubernetes/helm/istio --name istio --namespace istio-system | kubectl delete -f -
+    case "${config[provider]}" in
+      gcp)
+        helm template install/kubernetes/helm/istio --name istio --namespace istio-system | kubectl delete -f -;;
+      *)
+        helm delete --purge istio ${configs[dryrun]:+--dry-run}
+        helm delete --purge istio-init ${configs[dryrun]:+--dry-run}
+        kubectl delete namespace istio-system ${configs[dryrun]:+--dry-run}
+        kubectl delete -f ${configs[istio]}/install/kubernetes/helm/istio-init/files \
+          ${configs[dryrun]:+--dry-run} > /dev/null;;
+    esac
     kubectl delete namespace istio-system
   }
   [[ -d ${configs[istio]} && -z "${configs[dryrun]}" ]] && echo "/bin/rm -rf ${configs[istio]}"
