@@ -559,7 +559,7 @@ installMds() {
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
-    # configure $(imageVersion)
+    configure $(imageVersion)
     [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
