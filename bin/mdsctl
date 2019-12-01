@@ -93,6 +93,7 @@ declare -A configs=(
   ["presets-nats-tenant"]="${MDS_PRESETS_NATS_TENANT:-}"
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
+  ["sets-istio"]="${MDS_SETS_ISTIO:-pilot.resources.requests.memory=512Mi}"
   ["sets-nats"]="${MDS_SETS_NATS:-}"
   ["sets-natss"]="${MDS_SETS_NATSS:-}"
   ["sets-nats-knative"]="${MDS_SETS_NATS_KNATIVE:-}"
@@ -500,11 +501,15 @@ installIstio() {
         helm template ${configs[istio]}/install/kubernetes/helm/istio \
           --name istio --namespace istio-system \
           --values ${configs[istio]}/install/kubernetes/helm/istio/values${configs[istio-profile]}.yaml \
+          ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+          ${configs[sets-istio]:+$(helmOptions set ${configs[sets-istio]})} \
           ${configs[dryrun]:+--dry-run} | kubectl apply -f -;;
       *)
         helm install ${configs[istio]}/install/kubernetes/helm/istio \
           --name istio --namespace istio-system \
           --values ${configs[istio]}/install/kubernetes/helm/istio/values${configs[istio-profile]}.yaml \
+          ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+          ${configs[sets-istio]:+$(helmOptions set ${configs[sets-istio]})} \
           ${configs[dryrun]:+--dry-run};;
     esac
     labelNamespaceIstioInjection default
