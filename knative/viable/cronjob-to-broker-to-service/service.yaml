@@ -1,12 +1,3 @@
-#apiVersion: serving.knative.dev/v1
-#kind: Service
-#metadata:
-#  name: event-display
-#spec:
-#  template:
-#    spec:
-#      containers:
-#        - image: gcr.io/knative-releases/github.com/knative/eventing-sources/cmd/event_display
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -27,8 +18,7 @@ spec:
 
 ---
 
-# Service pointing at the previous Deployment. This will be the target for event
-# consumption.
+# Service pointing at the previous Deployment. This will be the target for event # consumption.
 kind: Service
 apiVersion: v1
 metadata:

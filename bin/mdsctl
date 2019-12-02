@@ -74,7 +74,7 @@ declare -A configs=(
   ["istio"]="${MDS_ISTIO_PATH:-${configs[workdir]}/istio-${configs[istio-version]}}"
   ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/src/knative.dev/eventing-contrib}"
   ["knative-version"]="${MDS_KNATIVE_VERSION:-0.10.0}"
-  ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-eventing serving}" # serving monitoring"}
+  ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-eventing}" # serving monitoring"}
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
   ["ingress-gateway-key-path"]="${MDS_INGRESS_GATEWAY_KEY_PATH:-}"
@@ -93,7 +93,7 @@ declare -A configs=(
   ["presets-nats-tenant"]="${MDS_PRESETS_NATS_TENANT:-}"
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
-  ["sets-istio"]="${MDS_SETS_ISTIO:-pilot.resources.requests.memory=512Mi}"
+  ["sets-istio"]="${MDS_SETS_ISTIO:-}" #pilot.resources.requests.memory=512Mi}"
   ["sets-nats"]="${MDS_SETS_NATS:-}"
   ["sets-natss"]="${MDS_SETS_NATSS:-}"
   ["sets-nats-knative"]="${MDS_SETS_NATS_KNATIVE:-}"

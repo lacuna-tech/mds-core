@@ -6,7 +6,6 @@ spec:
   schedule: "*/2 * * * *"
   data: '{"message": "Hello world!"}'
   sink:
-#    apiVersion: serving.knative.dev/v1
     apiVersion: v1
     kind: Service
     name: hello-display

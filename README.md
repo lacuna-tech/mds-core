@@ -129,7 +129,7 @@ MDS can be provisioned to a Kubernetes cluster as follows:
   * `preferences / advanced`: cpus:6, memory:8G, swap:1G
   * `preferences / kubernetes`: enabled kubernetes
 * Add `kubectl` to your PATH environment, e.g. for OSX:
-  * `export PATH=/Applications/Docker.app/Contents/Resources/bin:${PATH}`
+  * `export PATH=/usr/local/bin:${PATH}`
 * Ensure an active kubernetes cluster is configured and accessible:
   * `kubectl config set-context docker-desktop`
 
