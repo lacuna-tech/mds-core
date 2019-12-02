@@ -23,11 +23,15 @@ import {
 import { now, clone, NotFoundError } from '@mds-core/mds-utils'
 
 import { isNullOrUndefined } from 'util'
+import Sinon from 'sinon'
+import uuid from 'uuid'
 import MDSDBPostgres from '../index'
 
 import { dropTables, createTables, updateSchema } from '../migration'
 import { Trip } from '../types'
 import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
+import { getMetrics } from '../processors'
+import * as dbClient from '../client'
 
 const { env } = process
 
@@ -497,5 +501,39 @@ if (pg_info.database) {
         assert.deepEqual(notReadOnlyResult.length, 1)
       })
     })
+  })
+
+  it('Queries metrics correctly', async () => {
+    const fakeReadOnly = Sinon.fake.returns('boop')
+    Sinon.replace(dbClient, 'makeReadOnlyQuery', fakeReadOnly)
+    const start_time = 42
+    const end_time = 50
+    const provider_id = null
+    const geography_id = null
+    await getMetrics({ start_time, end_time, provider_id, geography_id })
+    assert.strictEqual(
+      fakeReadOnly.calledOnceWithExactly(
+        `SELECT * FROM reports_providers WHERE timestamp BETWEEN ${start_time} AND ${end_time}  `
+      ),
+      true
+    )
+    Sinon.restore()
+  })
+
+  it('Queries metrics with provider_id & geography_id correctly', async () => {
+    const fakeReadOnly = Sinon.fake.returns('boop')
+    Sinon.replace(dbClient, 'makeReadOnlyQuery', fakeReadOnly)
+    const start_time = 42
+    const end_time = 50
+    const provider_id = uuid()
+    const geography_id = uuid()
+    await getMetrics({ start_time, end_time, provider_id, geography_id })
+    assert.strictEqual(
+      fakeReadOnly.calledOnceWithExactly(
+        `SELECT * FROM reports_providers WHERE timestamp BETWEEN ${start_time} AND ${end_time} AND provider_id = "${provider_id}"  AND geography_id = "${geography_id}" `
+      ),
+      true
+    )
+    Sinon.restore()
   })
 }

@@ -13,7 +13,8 @@ import {
   GetEventCountsResponse,
   TelemetryCountsResponse,
   StateSnapshot,
-  EventSnapshot
+  EventSnapshot,
+  GetDumpMetricsResponse
 } from './types'
 import { getTimeBins } from './utils'
 
@@ -182,6 +183,46 @@ export async function getEventCounts(req: MetricsApiRequest, res: GetEventCounts
     })
 
     res.status(200).send(eventCountsWithTimeSlice)
+  } catch (error) {
+    await log.error(error)
+    res.status(500).send(new ServerError(error))
+  }
+}
+
+/*
+  This method is a stopgap so the FE has something to display.
+
+  It is scheduled to be replaced with methods that have better querying support
+  and finer-grained field-fetching a la GraphQL.
+*/
+export async function getDumpMetrics(req: MetricsApiRequest, res: GetDumpMetricsResponse) {
+  const { body } = req
+  const slices = getTimeBins(body)
+
+  try {
+    const dumpMetrics = await Promise.all(
+      slices.map(slice => {
+        const { start, end } = slice
+        // TODO pull out geography_id and provider_id from request body
+        // TODO add time aliases, see https://docs.google.com/document/d/1Zyn58tHo-VzibsdgmFU3fBcDlplUDxFzGWLHtTG4-Cs/edit?pli=1#bookmark=id.5snf8ffk8bjf
+        return db.getMetrics({
+          start_time: start,
+          end_time: end,
+          geography_id: null,
+          provider_id: null
+        })
+      })
+    )
+
+    const dumpMetricsWithTimeSlice = dumpMetrics.map((metricsRows, idx) => {
+      const slice = slices[idx]
+      return { metricsRows, slice }
+    })
+
+    // TODO follow up with TSV formatting if necessary,
+    // see https://lacuna-tech.slack.com/archives/CPY98QSS3/p1575314506007400
+
+    res.status(200).send(dumpMetricsWithTimeSlice)
   } catch (error) {
     await log.error(error)
     res.status(500).send(new ServerError(error))

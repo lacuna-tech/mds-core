@@ -90,7 +90,8 @@ import {
   resetTable,
   insertDeviceStates,
   insertTrips,
-  insertMetrics
+  insertMetrics,
+  getMetrics
 } from './processors'
 
 async function initialize() {
@@ -256,5 +257,6 @@ export = {
   getEventsLast24HoursPerProvider,
   readEventsWithTelemetry,
   readTripIds,
-  readEventsForStatusChanges
+  readEventsForStatusChanges,
+  getMetrics
 }
