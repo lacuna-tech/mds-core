@@ -1,4 +1,4 @@
-import { StateEntry, TripEntry, MetricsTableRow, Recorded } from '@mds-core/mds-types'
+import { StateEntry, TripEntry, MetricsTableRow, Recorded, VEHICLE_EVENT } from '@mds-core/mds-types'
 import schema, { TABLE_NAME } from './schema'
 import { vals_sql, cols_sql, vals_list, logSql } from './sql-utils'
 import { getWriteableClient, makeReadOnlyQuery } from './client'
@@ -44,7 +44,7 @@ export async function getVehicleTripCount(
 
 export async function getLateEventCount(
   provider_id: string,
-  events: any,
+  events: VEHICLE_EVENT[],
   start_time = 0,
   end_time: number = Date.now()
 ): Promise<Array<{ count: number }>> {
