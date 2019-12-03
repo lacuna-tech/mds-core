@@ -1,8 +1,6 @@
 https://knative.dev/docs/eventing/getting-started/
 
 % ./bin/mdsctl bootstrap install:knative
-# note: the following is likely not required, verify/remove
-% kubectl apply -f knative/viable/getting-started/istio-knative-extras.yaml
 
 % kubectl create namespace event-example
 % kubectl label namespace event-example knative-eventing-injection=enabled
