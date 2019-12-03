@@ -16,6 +16,9 @@ https://knative.dev/docs/eventing/getting-started/
 % kubectl --namespace event-example apply -f knative/viable/getting-started/goodbye-trigger.yaml
 % kubectl --namespace event-example get triggers
 
+% kubectl logs -n event-example hello-display-* -f
+% kubectl logs -n event-example  goodbye-display-68989d98fc-kcvvm -f
+
 % kubectl --namespace event-example apply -f knative/viable/getting-started/curl-pod.yaml
 % kubectl --namespace event-example attach curl -it
 # hello
@@ -28,6 +31,8 @@ https://knative.dev/docs/eventing/getting-started/
 % ./bin/mdsctl install:natss
 % kubectl -n event-example apply -f knative/viable/getting-started/natss-channel.yaml
 % kubectl -n event-example apply -f knative/viable/getting-started/natss-broker.yaml
+% kubectl -n event-example apply -f knative/viable/getting-started/hello-natss-trigger.yaml
+% kubectl -n event-example apply -f knative/viable/getting-started/goodbye-natss-trigger.yaml
 
 % curl -v "http://natss-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-hello" -H "Ce-Specversion: 0.3" -H "Ce-Type: greeting" -H "Ce-Source: not-sendoff" -H "Content-Type: application/json" -d '{"msg":"Hello Knative!"}'
 # goodbye
