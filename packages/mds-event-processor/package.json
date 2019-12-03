@@ -25,25 +25,12 @@
   "license": "ISC",
   "dependencies": {
     "@mds-core/mds-types": "0.1.22",
-    "@turf/boolean-point-in-polygon": "^6.0.1",
-    "@turf/helpers": "^6.1.4",
+    "@turf/boolean-point-in-polygon": "6.0.1",
+    "@turf/helpers": "6.1.4",
     "@turf/turf": "5.1.6",
-    "bluebird": "^3.5.3",
-    "cloudevents-sdk": "^0.2.3",
-    "loglevel": "1.6.3",
-    "pg": "7.12.0",
-    "redis": "^2.8.0",
-    "uuid": "^3.3.2"
+    "cloudevents-sdk": "0.3.2",
+    "loglevel": "1.6.6",
+    "uuid": "3.3.3"
   },
-  "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "2.3.0",
-    "@typescript-eslint/parser": "2.3.0",
-    "eslint": "6.4.0",
-    "eslint-config-airbnb-base": "14.0.0",
-    "eslint-plugin-import": "2.18.2",
-    "mocha": "^5.2.0",
-    "nyc": "^13.1.0",
-    "supertest": "^3.3.0",
-    "unit.js": "^2.0.0"
-  }
+  "devDependencies": {}
 }
