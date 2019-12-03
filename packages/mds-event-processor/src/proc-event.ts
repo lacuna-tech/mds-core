@@ -208,7 +208,7 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
         gps,
         service_area_id,
         charge,
-        state: EVENT_STATUS_MAP[event_type as VEHICLE_EVENT],
+        state: EVENT_STATUS_MAP[event_type],
         event_type,
         event_type_reason,
         trip_id
