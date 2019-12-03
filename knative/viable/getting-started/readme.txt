@@ -19,12 +19,18 @@ https://knative.dev/docs/eventing/getting-started/
 % kubectl --namespace event-example apply -f knative/viable/getting-started/curl-pod.yaml
 % kubectl --namespace event-example attach curl -it
 # hello
-curl -v "http://default-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-hello" -H "Ce-Specversion: 0.3" -H "Ce-Type: greeting" -H "Ce-Source: not-sendoff" -H "Content-Type: application/json" -d '{"msg":"Hello Knative!"}'
+% curl -v "http://default-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-hello" -H "Ce-Specversion: 0.3" -H "Ce-Type: greeting" -H "Ce-Source: not-sendoff" -H "Content-Type: application/json" -d '{"msg":"Hello Knative!"}'
 # goodbye
-curl -v "http://default-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-goodbye" -H "Ce-Specversion: 0.3" -H "Ce-Type: not-greeting" -H "Ce-Source: sendoff" -H "Content-Type: application/json" -d '{"msg":"Goodbye Knative!"}'
+% curl -v "http://default-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-goodbye" -H "Ce-Specversion: 0.3" -H "Ce-Type: not-greeting" -H "Ce-Source: sendoff" -H "Content-Type: application/json" -d '{"msg":"Goodbye Knative!"}'
 # hello, goodbye
-curl -v "http://default-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-hello-goodbye" -H "Ce-Specversion: 0.3" -H "Ce-Type: greeting" -H "Ce-Source: sendoff" -H "Content-Type: application/json" -d '{"msg":"Hello Knative! Goodbye Knative!"}'
+% curl -v "http://default-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-hello-goodbye" -H "Ce-Specversion: 0.3" -H "Ce-Type: greeting" -H "Ce-Source: sendoff" -H "Content-Type: application/json" -d '{"msg":"Hello Knative! Goodbye Knative!"}'
 
 % ./bin/mdsctl install:natss
 % kubectl -n event-example apply -f knative/viable/getting-started/natss-channel.yaml
 % kubectl -n event-example apply -f knative/viable/getting-started/natss-broker.yaml
+
+% curl -v "http://natss-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-hello" -H "Ce-Specversion: 0.3" -H "Ce-Type: greeting" -H "Ce-Source: not-sendoff" -H "Content-Type: application/json" -d '{"msg":"Hello Knative!"}'
+# goodbye
+% curl -v "http://natss-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-goodbye" -H "Ce-Specversion: 0.3" -H "Ce-Type: not-greeting" -H "Ce-Source: sendoff" -H "Content-Type: application/json" -d '{"msg":"Goodbye Knative!"}'
+# hello, goodbye
+% curl -v "http://natss-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-hello-goodbye" -H "Ce-Specversion: 0.3" -H "Ce-Type: greeting" -H "Ce-Source: sendoff" -H "Content-Type: application/json" -d '{"msg":"Hello Knative! Goodbye Knative!"}'
