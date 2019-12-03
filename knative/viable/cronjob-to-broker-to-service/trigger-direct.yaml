@@ -1,0 +1,14 @@
+apiVersion: eventing.knative.dev/v1alpha1
+kind: Trigger
+metadata:
+  name: mytrigger-direct
+spec:
+  broker: default
+  filter:
+    sourceAndType:
+      type: dev.knative.cronjob.event
+  subscriber:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: hello-display

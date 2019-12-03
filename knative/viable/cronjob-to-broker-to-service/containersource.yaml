@@ -1,0 +1,17 @@
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: ContainerSource
+metadata:
+  name: heartbeats-sender
+spec:
+  image: docker.io/daisyycguo/heartbeats-6790335e994243a8d3f53b967cdd6398
+  sink:
+    apiVersion: eventing.knative.dev/v1alpha1
+    kind: Broker
+    name: default
+  args:
+    - --period=10
+  env:
+    - name: POD_NAME
+      value: "heartbeats"
+    - name: POD_NAMESPACE
+      value: "default"

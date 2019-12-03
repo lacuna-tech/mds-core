@@ -1,6 +1,7 @@
 https://knative.dev/docs/eventing/getting-started/
 
 % ./bin/mdsctl bootstrap install:knative
+# note: the following is likely not required, verify/remove
 % kubectl apply -f knative/viable/getting-started/istio-knative-extras.yaml
 
 % kubectl create namespace event-example
@@ -23,3 +24,7 @@ curl -v "http://default-broker.event-example.svc.cluster.local" -X POST -H "Ce-I
 curl -v "http://default-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-goodbye" -H "Ce-Specversion: 0.3" -H "Ce-Type: not-greeting" -H "Ce-Source: sendoff" -H "Content-Type: application/json" -d '{"msg":"Goodbye Knative!"}'
 # hello, goodbye
 curl -v "http://default-broker.event-example.svc.cluster.local" -X POST -H "Ce-Id: say-hello-goodbye" -H "Ce-Specversion: 0.3" -H "Ce-Type: greeting" -H "Ce-Source: sendoff" -H "Content-Type: application/json" -d '{"msg":"Hello Knative! Goodbye Knative!"}'
+
+% ./bin/mdsctl install:natss
+% kubectl -n event-example apply -f knative/viable/getting-started/natss-channel.yaml
+% kubectl -n event-example apply -f knative/viable/getting-started/natss-broker.yaml

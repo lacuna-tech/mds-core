@@ -73,7 +73,8 @@ declare -A configs=(
   ["istio-profile"]="${MDS_ISTIO_PROFILE:-}" #-istio-sds-auth}" # todo: looks to fail when installing istio-nodeagent
   ["istio"]="${MDS_ISTIO_PATH:-${configs[workdir]}/istio-${configs[istio-version]}}"
   ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/src/knative.dev/eventing-contrib}"
-  ["knative-version"]="${MDS_KNATIVE_VERSION:-0.10.0}"
+  ["natss-version"]="${MDS_NATSS_VERSION:-0.10.2}"
+  ["knative-version"]="${MDS_KNATIVE_VERSION:-0.10.0}" # 0.10.1}"
   ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-eventing}" # serving monitoring"}
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
@@ -114,7 +115,7 @@ declare -A configs=(
   ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-${configs[namespace-mds]}}"
   ["namespace-knative"]="${MDS_NAMESPACE_KNATIVE:-knative-eventing}"
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-${configs[namespace-mds]}}"
-  ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-${configs[namespace-mds]}}"
+  ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-natss}" #${configs[namespace-mds]}}"
   ["namespace-nats-knative"]="${MDS_NAMESPACE_NATS_KNATIVE:-${configs[namespace-natss]}}"
   ["namespace-nats-tenant"]="${MDS_NAMESPACE_NATS_TENANT:-${configs[namespace-natss]}}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
@@ -689,14 +690,18 @@ installNatss() {
     (cd ${configs[natss]};
       git clone ${configs[natss-repository]} .;
       git remote add upstream ${configs[natss-repository]};
-      git remote set-url --push upstream no_push)      # sed -i '' "s/image: nats-streaming:.*/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
+      git remote set-url --push upstream no_push)
+      #sed -i '' "s/image: nats-streaming:.*/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
   fi
 
   # fixme: classic install
-  kubectl get namespace natss > /dev/null 2>&1 || {
-    installNamespace natss
-    kubectl apply -n natss -f ${configs[natss]}/natss/config/broker/natss.yaml
+  kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 || {
+    installNamespace ${configs[namespace-natss]}
+    # kubectl label namespace ${configs[namespace-natss]} knative-eventing-injection=enabled
   }
+
+  # kubectl apply -n ${configs[namespace-natss]} -f ${configs[natss]}/natss/config/broker/natss.yaml
+  kubectl apply -f ${configs[natss]}/natss/config/broker/natss.yaml
 
   for d in $(find ${configs[natss]}/natss/cmd/* -type d -maxdepth 1 -exec sh -c 'echo $(basename {})' \;); do
     $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
@@ -705,13 +710,13 @@ installNatss() {
   for c in controller dispatcher; do
     for t in $(docker images ko.local/channel_${c} --format '{{.Tag}}'); do
       if [ "${t}" != "latest" ]; then
-        sed -i '' "s/image: knative.dev\/eventing-${c}\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
+        sed -i '' "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
         break
       fi
     done
   done
 
-  # fixme: test for deployment
+  # # fixme: test for deployment
   kubectl apply -f ${configs[natss]}/natss/config
 
   # fixme: bump version
