@@ -485,8 +485,8 @@ installIstio() {
     case "${configs[provider],,}" in
       gcp)
         helm template ${configs[istio]}/install/kubernetes/helm/istio-init \
-        --name istio-init --namespace istio-system \
-        ${configs[dryrun]:+--dry-run} | kubectl apply -f -;;
+          --name istio-init --namespace istio-system \
+          ${configs[dryrun]:+--dry-run} | kubectl apply -f -;;
       *)
         helm install ${configs[istio]}/install/kubernetes/helm/istio-init \
           --name istio-init --namespace istio-system \
@@ -565,6 +565,7 @@ installMds() {
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
+    # labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
     configure $(imageVersion)
     [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
@@ -1087,7 +1088,7 @@ check() {
     build | testIntegration)
       hash yarn > /dev/null 2>&1 || bootstrap;;
     installHelm | installBookinfo) ;;
-    installDashboard | installMetrics | installMds | installNats | installKnative)
+    installDashboard | installMetrics | installMds | installKnative) #installNats)
       kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installLogging | installMetricsAdapter)
       hash helm > /dev/null 2>&1 && updateHelmDependencies || installHelm;;
