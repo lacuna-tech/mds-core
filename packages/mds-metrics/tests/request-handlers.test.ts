@@ -3,7 +3,7 @@ import * as db from 'packages/mds-db/processors'
 import { MetricsTableRow } from '@mds-core/mds-types'
 import assert from 'assert'
 import * as requestHandlers from '../request-handlers'
-import { MetricsApiRequest, GetDumpMetricsResponse } from '../types'
+import { MetricsApiRequest, GetAllResponse } from '../types'
 
 describe('Request handlers', () => {
   it('Dumps the correct metrics', async () => {
@@ -17,14 +17,14 @@ describe('Request handlers', () => {
 
     const send = Sinon.fake.returns('boop')
     const status = Sinon.fake.returns({ send })
-    const res: GetDumpMetricsResponse = ({
+    const res: GetAllResponse = ({
       status
-    } as unknown) as GetDumpMetricsResponse
+    } as unknown) as GetAllResponse
 
     const fakeMetricsRows: MetricsTableRow[] = []
 
     Sinon.replace(db, 'getAllMetrics', Sinon.fake.resolves(fakeMetricsRows))
-    await requestHandlers.getDumpMetrics(req, res)
+    await requestHandlers.getAll(req, res)
 
     assert.strictEqual(status.calledOnceWithExactly(200), true)
     assert.strictEqual(send.calledOnce, true)
