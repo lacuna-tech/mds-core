@@ -14,6 +14,7 @@
     limitations under the License.
  */
 
+import log from '@mds-core/mds-logger'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import {
@@ -172,6 +173,15 @@ export async function getVehicle(provider_id: UUID, vehicle_id: string) {
     const updated = deviceStatus.timestamp
     return { ...device, ...deviceStatus, status, updated }
   }
+  log.info(
+    'Missing vehicle status',
+    'provider_id',
+    provider_id,
+    'vehicle_id',
+    vehicle_id,
+    'device_id',
+    device.device_id
+  )
   return device
 }
 

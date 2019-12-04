@@ -348,6 +348,7 @@ async function readDeviceStatus(device_id: UUID) {
     if (err.name !== 'NotFoundError') {
       throw err
     }
+    log.info('Missing vehicle event', 'device_id', device_id)
   }
   try {
     device = await readDevice(device_id)
@@ -356,6 +357,7 @@ async function readDeviceStatus(device_id: UUID) {
     if (err.name !== 'NotFoundError') {
       throw err
     }
+    log.info('Missing vehicle device', 'device_id', device_id)
   }
 
   const deviceStatusMap: { [device_id: string]: CachedItem | {} } = {}
@@ -363,9 +365,13 @@ async function readDeviceStatus(device_id: UUID) {
     deviceStatusMap[item.device_id] = deviceStatusMap[item.device_id] || {}
     Object.assign(deviceStatusMap[item.device_id], item)
   })
-  const values = Object.values(deviceStatusMap)
-
-  return values[0]
+  const statuses = Object.values(deviceStatusMap)
+  const statusesWithTelemetry = statuses.filter((status: any) => status.telemetry)
+  if (statusesWithTelemetry.length === 0) {
+    log.info('Missing vehicle telemetry', 'device_id', device_id)
+    return statuses[0]
+  }
+  return statusesWithTelemetry[0]
 }
 
 /* eslint-reason redis external lib weirdness */
