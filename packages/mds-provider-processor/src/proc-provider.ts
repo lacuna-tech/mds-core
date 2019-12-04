@@ -82,7 +82,7 @@ async function providerAggregator() {
   for (const id in providersList) {
     /* eslint-reason FIXME use Promise.all() */
     /* eslint-disable-next-line no-await-in-loop */
-    const providerProcessed = await processProvider(id, curTime)
+    const providerProcessed = await processProvider(providersList[id], curTime)
     if (providerProcessed) {
       log.info('PROVIDER PROCESSED')
     } else {

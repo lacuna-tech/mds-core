@@ -118,9 +118,9 @@ async function calcVehicleTripCount(id: string, curTime: number): Promise<string
 
 async function calcLateEventCount(id: string, curTime: number): Promise<LateMetricObj> {
   const last_hour = curTime - 3600000
-  const se = await db.getLateEventCount(id, "('trip_start', 'trip_end')", last_hour, curTime)
-  const el = await db.getLateEventCount(id, "('trip_enter', 'trip_leave')", last_hour, curTime)
-  const t = await db.getLateEventCount(id, "('telemetry')", last_hour, curTime)
+  const se = await db.getLateEventCount(id, ['trip_start', 'trip_end'], last_hour, curTime)
+  const el = await db.getLateEventCount(id, ['trip_enter', 'trip_leave'], last_hour, curTime)
+  const t = await db.getLateTelemetryCount(id, last_hour, curTime)
 
   const lateStartEnd = {
     count: se[0].count
