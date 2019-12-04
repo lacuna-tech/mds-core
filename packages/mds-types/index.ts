@@ -18,9 +18,11 @@ import { FeatureCollection } from 'geojson'
 export { AccessTokenScope, AccessTokenScopes, ScopeDescriptions } from './scopes'
 
 export const Enum = <T extends string>(...keys: T[]) =>
-  Object.freeze(keys.reduce((e, key) => {
-    return { ...e, [key]: key }
-  }, {}) as { [K in T]: K })
+  Object.freeze(
+    keys.reduce((e, key) => {
+      return { ...e, [key]: key }
+    }, {}) as { [K in T]: K }
+  )
 
 export const isEnum = (enums: { [key: string]: string }, value: unknown) =>
   typeof value === 'string' && typeof enums === 'object' && enums[value] === value
@@ -28,7 +30,7 @@ export const isEnum = (enums: { [key: string]: string }, value: unknown) =>
 export const VEHICLE_TYPES = Enum('car', 'bicycle', 'scooter', 'recumbent')
 export type VEHICLE_TYPE = keyof typeof VEHICLE_TYPES
 
-export const RULE_TYPES = Enum('count', 'speed', 'time')
+export const RULE_TYPES = Enum('count', 'speed', 'time', 'user')
 export type RULE_TYPE = keyof typeof RULE_TYPES
 
 export const RULE_UNIT_MAP = {
@@ -177,12 +179,6 @@ export interface VehicleEvent {
   recorded: Timestamp
 }
 
-export interface VehicleEventSummary {
-  provider_event_id: number | null
-  provider_event_type: VEHICLE_EVENT | null
-  provider_event_type_reason?: VEHICLE_REASON | null
-}
-
 // Standard telemetry columns (used in more than one table)
 export interface TelemetryData {
   lat: number
@@ -211,6 +207,23 @@ export interface Telemetry extends WithGpsProperty<TelemetryData> {
   recorded?: Timestamp
 }
 
+// Represents a row in the "attachments" table
+export interface Attachment {
+  attachment_filename: string
+  attachment_id: UUID
+  base_url: string
+  mimetype: string
+  thumbnail_filename?: string | null
+  thumbnail_mimetype?: string | null
+  recorded?: Timestamp | null
+}
+
+export interface AttachmentSummary {
+  attachment_id: UUID
+  attachment_url: string
+  thumbnail_url?: string | null
+}
+
 // Represents a row in the "audits" table
 export interface Audit {
   audit_trip_id: UUID
@@ -224,6 +237,13 @@ export interface Audit {
   recorded: Timestamp
 }
 
+// Represents a row in the "audit_attachments" table
+export interface AuditAttachment {
+  attachment_id: UUID
+  audit_trip_id: UUID
+  recorded: Timestamp
+}
+
 // Represents a row in the "audit_events" table
 export interface AuditEvent extends TelemetryData {
   audit_trip_id: UUID
@@ -232,15 +252,18 @@ export interface AuditEvent extends TelemetryData {
   audit_issue_code?: string | null
   audit_subject_id: string
   note?: string | null
-  provider_event_id?: number | null
-  provider_event_type?: string | null
-  provider_event_type_reason?: string | null
   timestamp: Timestamp
   recorded: Timestamp
 }
 
 export interface AuditDetails extends Audit {
   events: WithGpsProperty<AuditEvent>[]
+  provider_event_type?: string | null
+  provider_event_type_reason?: string | null
+  provider_status?: string | null
+  provider_telemetry?: Telemetry | null
+  provider_event_time?: Timestamp | null
+  attachments: AttachmentSummary[]
   provider: null | {
     device: Device
     events: VehicleEvent[]

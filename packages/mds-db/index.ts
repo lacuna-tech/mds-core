@@ -34,6 +34,7 @@ import {
   readPolicies,
   writePolicy,
   readPolicy,
+  findPoliciesByGeographyID,
   editPolicy,
   deletePolicy,
   writePolicyMetadata,
@@ -72,6 +73,14 @@ import {
 } from './telemetry'
 
 import { writeStop, readStop, readStops } from './stops'
+import {
+  deleteAttachment,
+  deleteAuditAttachment,
+  readAttachmentsForAudit,
+  readAuditAttachments,
+  writeAttachment,
+  writeAuditAttachment
+} from './attachments'
 
 async function initialize() {
   const client: MDSPostgresClient = await getWriteableClient()
@@ -184,6 +193,12 @@ export = {
   deleteAudit,
   readAuditEvents,
   writeAuditEvent,
+  deleteAttachment,
+  deleteAuditAttachment,
+  readAttachmentsForAudit,
+  readAuditAttachments,
+  writeAttachment,
+  writeAuditAttachment,
   readGeographies,
   readGeographySummaries,
   writeGeography,
@@ -192,6 +207,7 @@ export = {
   isGeographyPublished,
   editGeography,
   readPolicies,
+  findPoliciesByGeographyID,
   writePolicy,
   readPolicy,
   editPolicy,
