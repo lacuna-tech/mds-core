@@ -108,7 +108,7 @@ export async function getMetrics({
 }: GetMetricsArgs): Promise<Array<MetricsTableRow>> {
   const providerSegment = provider_id !== null ? `AND provider_id = "${provider_id}" ` : ''
   const geographySegment = geography_id !== null ? `AND geography_id = "${geography_id}" ` : ''
-  const query = `SELECT * FROM reports_providers WHERE timestamp BETWEEN ${start_time} AND ${end_time} ${providerSegment} ${geographySegment}`
+  const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} ${providerSegment} ${geographySegment}`
   return makeReadOnlyQuery(query)
 }
 
