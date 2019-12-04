@@ -19,6 +19,7 @@ import {
 } from '@mds-core/mds-schema-validators'
 
 import log from '@mds-core/mds-logger'
+import { ParseError } from '@mds-core/mds-utils'
 import {
   StringifiedEvent,
   StringifiedTelemetry,
@@ -62,7 +63,7 @@ function parseDeviceState(deviceState: StringifiedStateEntry): StateEntry {
       trip_id: deviceState.trip_id ? (deviceState.trip_id as UUID) : null
     }
   } catch (err) {
-    throw new Error(`unable to parse deviceState: ${deviceState}`)
+    throw new ParseError(`unable to parse deviceState: ${deviceState}`)
   }
 }
 
@@ -75,7 +76,7 @@ function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [v
     }
     return devices
   } catch (err) {
-    throw new Error(`unable to parse allDeviceStates`)
+    throw new ParseError(`unable to parse allDeviceStates`)
   }
 }
 
@@ -118,7 +119,7 @@ async function parseTripsEvents(tripsEventsStr: StringifiedTripsEvents): Promise
     return trips
   } catch (err) {
     await log.error(err)
-    throw new Error(`unable to parse tripsEvents: ${tripsEventsStr}`)
+    throw new ParseError(`unable to parse tripsEvents: ${tripsEventsStr}`)
   }
 }
 
@@ -149,7 +150,7 @@ async function parseTripsTelemetry(tripsTelemetryStr: StringifiedTripsTelemetry)
     return trips
   } catch (err) {
     await log.error(err)
-    throw new Error(`unable to parse tripsTelemetry: ${tripsTelemetryStr}`)
+    throw new ParseError(`unable to parse tripsTelemetry: ${tripsTelemetryStr}`)
   }
 }
 
@@ -170,7 +171,7 @@ async function parseAllTripsEvents(
     }
     return allTrips
   } catch (err) {
-    throw new Error(`unable to parse allTripsEvents`)
+    throw new ParseError(`unable to parse allTripsEvents`)
   }
 }
 
@@ -193,7 +194,7 @@ function parseTelemetry(telemetry: StringifiedTelemetry): Telemetry {
       timestamp: Number(telemetry.timestamp)
     }
   } catch (err) {
-    throw new Error(`unable to parse telemetry: ${telemetry}`)
+    throw new ParseError(`unable to parse telemetry: ${telemetry}`)
   }
 }
 
@@ -249,7 +250,7 @@ function parseCachedItem(item: CachedItem): Device | Telemetry | VehicleEvent {
     return parseDevice(item)
   }
 
-  throw new Error(`unable to parse ${JSON.stringify(item)}`)
+  throw new ParseError(`unable to parse ${JSON.stringify(item)}`)
 }
 
 export {
