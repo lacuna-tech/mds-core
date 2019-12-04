@@ -114,8 +114,7 @@ testTimestamp += 1
 const LAGeography: Geography = {
   name: 'Los Angeles',
   geography_id: GEOGRAPHY_UUID,
-  geography_json: LA_CITY_BOUNDARY,
-  read_only: false
+  geography_json: LA_CITY_BOUNDARY
 }
 
 function deepCopy<T>(obj: T): T {
@@ -1579,7 +1578,7 @@ describe('Tests Stops', async () => {
 
   it('verifies successfully POSTing a stop', async () => {
     await db.writeGeography(LAGeography)
-    await db.publishGeography(GEOGRAPHY_UUID)
+    await db.publishGeography({ geography_id: GEOGRAPHY_UUID, publish_date: now() })
     await request
       .post(`/stops`)
       .set('Authorization', AUTH)

@@ -155,7 +155,11 @@ function api(app: express.Express): express.Express {
     refreshCache
   )
 
-  app.post(pathsFor('/stops'), checkAccess(scopes => scopes.includes('admin:all')), registerStop)
+  app.post(
+    pathsFor('/stops'),
+    checkAccess(scopes => scopes.includes('admin:all')),
+    registerStop
+  )
 
   app.get(pathsFor('/stops/:stop_id'), readStop)
 
