@@ -531,8 +531,8 @@ describe('Testing API', () => {
     })
   )
   describe('Tests retreiving vehicles', () => {
-    let devices_a: Device[] // Have events and telemetry inside our BBOX
-    let devices_b: Device[] // Have events and telemetry outside our BBOX
+    let devices_a: Device[] // Have events and telemetry outside our BBOX
+    let devices_b: Device[] // Have events and telemetry inside our BBOX
     let devices_c: Device[] // No events or telemetry
     before(done => {
       devices_a = makeDevices(10, now(), MOCHA_PROVIDER_ID)
