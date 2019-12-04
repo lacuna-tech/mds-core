@@ -232,12 +232,11 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
           break
         }
         default: {
-          throw new Error('EVANNN')
+          log.info('Not a trip transition state')
         }
       }
       // Only update cache (device:state) with most recent event
       if (!lastState || lastState.timestamp < deviceState.timestamp) {
-        // await cache.hset('device:state', provider_id + ':' + device_id, JSON.stringify(deviceState))
         await cache.writeDeviceState(`${provider_id}:${device_id}`, deviceState)
       }
       // Add to PG table (reports_device_states) and stream
@@ -257,14 +256,13 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
       } as StateEntry
       // Match telemetry to trip data
       await processTripTelemetry(deviceState)
-
       // Add to PG table (reports_device_states) and stream
       await db.insertDeviceStates(deviceState)
       // await stream.writeCloudEvent('mds.processed.event', JSON.stringify(device_state))
       return deviceState
     }
     default: {
-      throw new Error('EVANNN')
+      throw new Error('Not a valid cloudevent type')
     }
   }
 }

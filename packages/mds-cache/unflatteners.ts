@@ -79,14 +79,17 @@ function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [v
   }
 }
 
-async function parseTripsEvents(tripsEvents: StringifiedTripsEvents): Promise<TripsEvents> {
+async function parseTripsEvents(tripsEventsStr: StringifiedTripsEvents): Promise<TripsEvents> {
   try {
     const trips: TripsEvents = {}
+    //Need some help here
+    const tripsEvents = JSON.parse(String(tripsEventsStr))
     /* eslint-reason FIXME use map() */
     /* eslint-disable-next-line guard-for-in */
     for (const trip_id in tripsEvents) {
       for (let i = 0; i < tripsEvents[trip_id].length; i++) {
-        trips[trip_id][i] = {
+        trips[trip_id] = []
+        trips[trip_id].push({
           vehicle_type: tripsEvents[trip_id][i].vehicle_type as VEHICLE_TYPE,
           timestamp: Number(tripsEvents[trip_id][i].timestamp) as Timestamp,
           event_type: tripsEvents[trip_id][i].event_type as VEHICLE_EVENT,
@@ -109,25 +112,26 @@ async function parseTripsEvents(tripsEvents: StringifiedTripsEvents): Promise<Tr
           service_area_id: tripsEvents[trip_id][i].service_area_id
             ? (tripsEvents[trip_id][i].service_area_id as UUID)
             : null
-        }
+        })
       }
     }
     return trips
   } catch (err) {
     await log.error(err)
-    throw new Error(`unable to parse tripsEvents: ${tripsEvents}`)
+    throw new Error(`unable to parse tripsEvents: ${tripsEventsStr}`)
   }
 }
 
-async function parseTripsTelemetry(tripsTelemetry: StringifiedTripsTelemetry): Promise<TripsTelemetry> {
+async function parseTripsTelemetry(tripsTelemetryStr: StringifiedTripsTelemetry): Promise<TripsTelemetry> {
   try {
     const trips: TripsTelemetry = {}
-
+    const tripsTelemetry = JSON.parse(String(tripsTelemetryStr))
     /* eslint-reason FIXME use map() */
     /* eslint-disable-next-line guard-for-in */
     for (const trip_id in tripsTelemetry) {
       for (let i = 0; i < tripsTelemetry[trip_id].length; i++) {
-        trips[trip_id][i] = {
+        trips[trip_id] = []
+        trips[trip_id].push({
           timestamp: Number(tripsTelemetry[trip_id][i].timestamp) as Timestamp,
           latitude: Number(tripsTelemetry[trip_id][i].latitude),
           longitude: Number(tripsTelemetry[trip_id][i].longitude),
@@ -139,13 +143,13 @@ async function parseTripsTelemetry(tripsTelemetry: StringifiedTripsTelemetry): P
           service_area_id: tripsTelemetry[trip_id][i].service_area_id
             ? (tripsTelemetry[trip_id][i].service_area_id as UUID)
             : null
-        }
+        })
       }
     }
     return trips
   } catch (err) {
     await log.error(err)
-    throw new Error(`unable to parse tripsTelemetry: ${tripsTelemetry}`)
+    throw new Error(`unable to parse tripsTelemetry: ${tripsTelemetryStr}`)
   }
 }
 
