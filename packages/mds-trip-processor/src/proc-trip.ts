@@ -48,12 +48,15 @@ async function processTrip(
   tripEvents.sort((a: { timestamp: number }, b: { timestamp: number }) => {
     return a.timestamp - b.timestamp
   })
-  const timeSLA = config.compliance_sla.max_telemetry_time
-  const latestTime = tripEvents[tripEvents.length - 1].timestamp
-  //if (latestTime + timeSLA > curTime) {
+  // const timeSLA = config.compliance_sla.max_telemetry_time
+  // const latestTime = tripEvents[tripEvents.length - 1].timestamp
+  // if (latestTime + timeSLA > curTime) {
   //  log.info('trips ended less than 24hrs ago')
   //  return false
-  //}
+  // }
+
+  // FIXME Remove this line when above code is un-commented
+  log.info(config, curTime)
 
   // Get trip metadata
   const tripStartEvent = tripEvents[0]

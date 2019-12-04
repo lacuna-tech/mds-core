@@ -82,7 +82,7 @@ function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [v
 async function parseTripsEvents(tripsEventsStr: StringifiedTripsEvents): Promise<TripsEvents> {
   try {
     const trips: TripsEvents = {}
-    //Need some help here
+    // Need some help here
     const tripsEvents = JSON.parse(String(tripsEventsStr))
     /* eslint-reason FIXME use map() */
     /* eslint-disable-next-line guard-for-in */

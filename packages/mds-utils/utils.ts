@@ -37,7 +37,7 @@ import {
 import { TelemetryRecord } from '@mds-core/mds-db/types'
 import log from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
-import { point } from '@turf/helpers'
+import { point as turfPoint } from '@turf/helpers'
 import turf from '@turf/boolean-point-in-polygon'
 import { serviceAreaMap } from 'ladot-service-areas'
 
@@ -652,7 +652,7 @@ function findServiceAreas(lng: number, lat: number) {
     districtAreas[index] = serviceAreaMap[index].area
   }
   const areas = []
-  const turfPT = point([lng, lat])
+  const turfPT = turfPoint([lng, lat])
   for (const key in districtAreas) {
     if (turf(turfPT, districtAreas[key])) {
       areas.push({ id: key, type: 'district' })
