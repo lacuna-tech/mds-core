@@ -565,9 +565,12 @@ installMds() {
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
-    # labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
+    labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
     configure $(imageVersion)
     [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
+    # fixme: do better
+    kubectl -n mds apply -f knative/viable/getting-started/natss-channel.yaml
+    kubectl -n mds apply -f knative/viable/getting-started/natss-broker.yaml
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
@@ -698,7 +701,7 @@ installNatss() {
       git clone ${configs[natss-repository]} .;
       git remote add upstream ${configs[natss-repository]};
       git remote set-url --push upstream no_push
-      sed -i '' "s/image: nats-streaming:.*$/image: nats-streaming: 0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
+      sed -i '' "s/image: nats-streaming:.*$/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
   fi
 
   # fixme: classic install
