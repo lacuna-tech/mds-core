@@ -48,9 +48,9 @@ export async function getLateEventCount(
   start_time = 0,
   end_time: number = Date.now()
 ): Promise<Array<{ count: number }>> {
-  const query = `SELECT count(*) FROM reports_device_states WHERE event_type IN ${events} AND timestamp BETWEEN ${start_time} AND ${end_time}`
+  const eventList = "'" + events.join("','") + "'"
+  const query = `SELECT count(*) FROM reports_device_states WHERE event_type IN (${eventList}) AND timestamp BETWEEN ${start_time} AND ${end_time}`
   // let query = `SELECT count(*) FROM reports_device_states WHERE provider_id = ${provider_id} AND event_type IN ${events} AND timestamp BETWEEN ${start_time} AND ${end_time}`
-  console.log(query)
   return makeReadOnlyQuery(query)
 }
 
@@ -61,7 +61,6 @@ export async function getLateTelemetryCount(
 ): Promise<Array<{ count: number }>> {
   const query = `SELECT count(*) FROM reports_device_states WHERE type = 'telemetry' AND timestamp BETWEEN ${start_time} AND ${end_time}`
   // let query = `SELECT count(*) FROM reports_device_states WHERE provider_id = ${provider_id} AND event_type IN ${events} AND timestamp BETWEEN ${start_time} AND ${end_time}`
-  console.log(query)
   return makeReadOnlyQuery(query)
 }
 

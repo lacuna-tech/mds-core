@@ -50,10 +50,10 @@ async function processTrip(
   })
   const timeSLA = config.compliance_sla.max_telemetry_time
   const latestTime = tripEvents[tripEvents.length - 1].timestamp
-  if (latestTime + timeSLA > curTime) {
-    log.info('trips ended less than 24hrs ago')
-    return false
-  }
+  //if (latestTime + timeSLA > curTime) {
+  //  log.info('trips ended less than 24hrs ago')
+  //  return false
+  //}
 
   // Get trip metadata
   const tripStartEvent = tripEvents[0]
@@ -149,7 +149,6 @@ async function tripAggregator() {
   for (const vehicleID in tripsMap) {
     const [provider_id, device_id] = vehicleID.split(':')
     const trips = tripsMap[vehicleID]
-    log.info(trips)
     const unprocessedTrips = trips
 
     /* eslint-reason FIXME use map() */

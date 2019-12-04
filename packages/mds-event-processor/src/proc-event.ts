@@ -39,55 +39,6 @@ import { dataHandler } from './proc'
           VALUES = deviceState
 */
 
-async function processTripEvent(deviceState: StateEntry) {
-  /*
-  Add vehicle events of a trip to cache (trips:events):
-
-    Key: 'provider_id:device_id'
-    Value: hash map of tripEvents keyed by trip_id
-
-  */
-  const {
-    timestamp,
-    event_type,
-    event_type_reason,
-    annotation_version,
-    annotation,
-    gps,
-    service_area_id,
-    trip_id,
-    provider_id,
-    device_id
-  } = deviceState
-
-  const tripEvent = {
-    vehicle_type: 'scooter',
-    timestamp,
-    event_type,
-    event_type_reason,
-    annotation_version,
-    annotation,
-    gps,
-    service_area_id
-  } as TripEvent
-
-  // Either append to existing trip or create new entry
-  const tripsCache = await cache.readTripsEvents(`${provider_id}:${device_id}`)
-  const trips = tripsCache || {}
-  // TODO reduce logic
-  if (trip_id) {
-    if (!trips[trip_id]) {
-      trips[trip_id] = []
-    }
-    trips[trip_id].push(tripEvent)
-    // Update trip event cache and stream
-    await cache.writeTripsEvents(`${provider_id}:${device_id}`, trips)
-    // await stream.writeCloudEvent('mds.trip.event', JSON.stringify(tripEvent))
-  }
-  // eslint-disable-next-line @typescript-eslint/no-use-before-define
-  await processTripTelemetry(deviceState)
-}
-
 async function getTripId(deviceState: StateEntry) {
   /*
   Return trip_id for telemetery entry by associating timestamps
@@ -169,6 +120,54 @@ async function processTripTelemetry(deviceState: StateEntry) {
     await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, trips)
   }
   return true
+}
+
+async function processTripEvent(deviceState: StateEntry) {
+  /*
+  Add vehicle events of a trip to cache (trips:events):
+
+    Key: 'provider_id:device_id'
+    Value: hash map of tripEvents keyed by trip_id
+
+  */
+  const {
+    timestamp,
+    event_type,
+    event_type_reason,
+    annotation_version,
+    annotation,
+    gps,
+    service_area_id,
+    trip_id,
+    provider_id,
+    device_id
+  } = deviceState
+
+  const tripEvent = {
+    vehicle_type: 'scooter',
+    timestamp,
+    event_type,
+    event_type_reason,
+    annotation_version,
+    annotation,
+    gps,
+    service_area_id
+  } as TripEvent
+
+  // Either append to existing trip or create new entry
+  const tripsCache = await cache.readTripsEvents(`${provider_id}:${device_id}`)
+  const trips = tripsCache || {}
+  // TODO reduce logic
+  if (trip_id) {
+    if (!trips[trip_id]) {
+      trips[trip_id] = []
+    }
+    trips[trip_id].push(tripEvent)
+    // Update trip event cache and stream
+    await cache.writeTripsEvents(`${provider_id}:${device_id}`, trips)
+    // await stream.writeCloudEvent('mds.trip.event', JSON.stringify(tripEvent))
+  }
+  await processTripTelemetry(deviceState)
 }
 
 async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) {
