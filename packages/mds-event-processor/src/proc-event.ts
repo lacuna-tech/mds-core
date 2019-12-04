@@ -198,8 +198,8 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
         trip_id: string
         service_area_id: string
       }
-      const gps = telemetry ? telemetry.gps : null
-      const charge = telemetry ? telemetry.charge : null
+      const gps = telemetry?.gps
+      const charge = telemetry?.charge
       const annotation = gps ? getAnnotationData(gps) : null
       const deviceState = {
         ...baseDeviceState,
