@@ -57,7 +57,7 @@ export type EventCountsResponse = {
 }
 
 export type MetricsAllResponse = {
-  metricsRows: MetricsTableRow[]
+  bucketedMetricsRow: MetricsTableRow[]
   slice: {
     start: number
     end: number
