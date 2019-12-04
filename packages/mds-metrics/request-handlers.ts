@@ -14,7 +14,7 @@ import {
   TelemetryCountsResponse,
   StateSnapshot,
   EventSnapshot,
-  GetDumpMetricsResponse
+  GetAllResponse
 } from './types'
 import { getTimeBins } from './utils'
 
@@ -190,22 +190,24 @@ export async function getEventCounts(req: MetricsApiRequest, res: GetEventCounts
 }
 
 /*
+  This method simply returns the time-binned metrics table rows with some basic querying.
+
   This method is a stopgap so the FE has something to display.
 
   It is scheduled to be replaced with methods that have better querying support
   and finer-grained field-fetching a la GraphQL.
 */
-export async function getDumpMetrics(req: MetricsApiRequest, res: GetDumpMetricsResponse) {
+export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   const { body } = req
   const slices = getTimeBins(body)
 
   try {
-    const dumpMetrics = await Promise.all(
+    const bucketedMetrics = await Promise.all(
       slices.map(slice => {
         const { start, end } = slice
         // TODO pull out geography_id and provider_id from request body
         // TODO add time aliases, see https://docs.google.com/document/d/1Zyn58tHo-VzibsdgmFU3fBcDlplUDxFzGWLHtTG4-Cs/edit?pli=1#bookmark=id.5snf8ffk8bjf
-        return db.getMetrics({
+        return db.getAllMetrics({
           start_time: start,
           end_time: end,
           geography_id: null,
@@ -214,15 +216,15 @@ export async function getDumpMetrics(req: MetricsApiRequest, res: GetDumpMetrics
       })
     )
 
-    const dumpMetricsWithTimeSlice = dumpMetrics.map((metricsRows, idx) => {
+    const bucketedMetricsWithTimeSlice = bucketedMetrics.map((bucketedMetricsRow, idx) => {
       const slice = slices[idx]
-      return { metricsRows, slice }
+      return { bucketedMetricsRow, slice }
     })
 
     // TODO follow up with TSV formatting if necessary,
     // see https://lacuna-tech.slack.com/archives/CPY98QSS3/p1575314506007400
 
-    res.status(200).send(dumpMetricsWithTimeSlice)
+    res.status(200).send(bucketedMetricsWithTimeSlice)
   } catch (error) {
     await log.error(error)
     res.status(500).send(new ServerError(error))

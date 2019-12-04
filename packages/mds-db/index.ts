@@ -91,7 +91,7 @@ import {
   insertDeviceStates,
   insertTrips,
   insertMetrics,
-  getMetrics
+  getAllMetrics
 } from './processors'
 
 async function initialize() {
@@ -258,5 +258,5 @@ export = {
   readEventsWithTelemetry,
   readTripIds,
   readEventsForStatusChanges,
-  getMetrics
+  getAllMetrics
 }

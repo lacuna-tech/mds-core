@@ -30,7 +30,7 @@ import MDSDBPostgres from '../index'
 import { dropTables, createTables, updateSchema } from '../migration'
 import { Trip } from '../types'
 import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
-import { getMetrics } from '../processors'
+import { getAllMetrics } from '../processors'
 import * as dbClient from '../client'
 
 const { env } = process
@@ -510,7 +510,7 @@ if (pg_info.database) {
     const end_time = 50
     const provider_id = null
     const geography_id = null
-    await getMetrics({ start_time, end_time, provider_id, geography_id })
+    await getAllMetrics({ start_time, end_time, provider_id, geography_id })
     assert.strictEqual(
       fakeReadOnly.calledOnceWithExactly(
         `SELECT * FROM reports_providers WHERE timestamp BETWEEN ${start_time} AND ${end_time}  `
@@ -527,7 +527,7 @@ if (pg_info.database) {
     const end_time = 50
     const provider_id = uuid()
     const geography_id = uuid()
-    await getMetrics({ start_time, end_time, provider_id, geography_id })
+    await getAllMetrics({ start_time, end_time, provider_id, geography_id })
     assert.strictEqual(
       fakeReadOnly.calledOnceWithExactly(
         `SELECT * FROM reports_providers WHERE timestamp BETWEEN ${start_time} AND ${end_time} AND provider_id = "${provider_id}"  AND geography_id = "${geography_id}" `

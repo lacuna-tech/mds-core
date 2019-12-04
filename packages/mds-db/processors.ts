@@ -1,4 +1,4 @@
-import { StateEntry, TripEntry, MetricsTableRow, Recorded, VEHICLE_EVENT, UUID } from '@mds-core/mds-types'
+import { StateEntry, TripEntry, MetricsTableRow, Recorded, VEHICLE_EVENT, UUID, Timestamp } from '@mds-core/mds-types'
 import schema, { TABLE_NAME } from './schema'
 import { vals_sql, cols_sql, vals_list, logSql } from './sql-utils'
 import { getWriteableClient, makeReadOnlyQuery } from './client'
@@ -93,19 +93,19 @@ export async function insertMetrics(metric: MetricsTableRow) {
   return { ...metric, ...recorded_metric }
 }
 
-interface GetMetricsArgs {
-  start_time: number
+interface GetAllMetricsArgs {
+  start_time: Timestamp
   end_time: number
   provider_id: UUID | null
   geography_id: UUID | null
 }
 
-export async function getMetrics({
+export async function getAllMetrics({
   start_time,
   end_time,
   provider_id,
   geography_id
-}: GetMetricsArgs): Promise<Array<MetricsTableRow>> {
+}: GetAllMetricsArgs): Promise<Array<MetricsTableRow>> {
   const providerSegment = provider_id !== null ? `AND provider_id = "${provider_id}" ` : ''
   const geographySegment = geography_id !== null ? `AND geography_id = "${geography_id}" ` : ''
   const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} ${providerSegment} ${geographySegment}`

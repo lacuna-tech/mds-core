@@ -23,7 +23,7 @@ describe('Request handlers', () => {
 
     const fakeMetricsRows: MetricsTableRow[] = []
 
-    Sinon.replace(db, 'getMetrics', Sinon.fake.resolves(fakeMetricsRows))
+    Sinon.replace(db, 'getAllMetrics', Sinon.fake.resolves(fakeMetricsRows))
     await requestHandlers.getDumpMetrics(req, res)
 
     assert.strictEqual(status.calledOnceWithExactly(200), true)

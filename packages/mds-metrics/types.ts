@@ -56,7 +56,7 @@ export type EventCountsResponse = {
   }
 }
 
-export type MetricsDumpResponse = {
+export type MetricsAllResponse = {
   metricsRows: MetricsTableRow[]
   slice: {
     start: number
@@ -78,7 +78,7 @@ export type GetStateSnapshotResponse = MetricsApiResponse<StateSnapshotResponse[
 export type GetEventsSnapshotResponse = MetricsApiResponse<EventSnapshotResponse[]>
 export type GetTelemetryCountsResponse = MetricsApiResponse<TelemetryCountsResponse[]>
 export type GetEventCountsResponse = MetricsApiResponse<EventCountsResponse[]>
-export type GetDumpMetricsResponse = MetricsApiResponse<MetricsDumpResponse[]>
+export type GetAllResponse = MetricsApiResponse<MetricsAllResponse[]>
 
 export const instantiateEventSnapshotResponse = (value: number) =>
   Object.keys(VEHICLE_TYPES).reduce(
