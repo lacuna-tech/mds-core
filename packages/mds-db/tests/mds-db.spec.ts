@@ -513,7 +513,7 @@ if (pg_info.database) {
     await getAllMetrics({ start_time, end_time, provider_id, geography_id })
     assert.strictEqual(
       fakeReadOnly.calledOnceWithExactly(
-        `SELECT * FROM reports_providers WHERE timestamp BETWEEN ${start_time} AND ${end_time}  `
+        `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}  `
       ),
       true
     )
@@ -530,7 +530,7 @@ if (pg_info.database) {
     await getAllMetrics({ start_time, end_time, provider_id, geography_id })
     assert.strictEqual(
       fakeReadOnly.calledOnceWithExactly(
-        `SELECT * FROM reports_providers WHERE timestamp BETWEEN ${start_time} AND ${end_time} AND provider_id = "${provider_id}"  AND geography_id = "${geography_id}" `
+        `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} AND provider_id = "${provider_id}"  AND geography_id = "${geography_id}" `
       ),
       true
     )
