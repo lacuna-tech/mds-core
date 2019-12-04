@@ -569,8 +569,8 @@ installMds() {
     configure $(imageVersion)
     [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
     # fixme: do better
-    kubectl -n mds apply -f knative/viable/getting-started/natss-channel.yaml
-    kubectl -n mds apply -f knative/viable/getting-started/natss-broker.yaml
+    kubectl -n mds apply -f knative/natss-channel.yaml
+    kubectl -n mds apply -f knative/natss-broker.yaml
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
