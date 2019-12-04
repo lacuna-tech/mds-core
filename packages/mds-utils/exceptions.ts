@@ -69,7 +69,7 @@ export class UnsupportedTypeError extends BaseError {
 }
 
 export class ParseError extends BaseError {
-  public constructor(error?: Error | string, public info?: unknonw) {
+  public constructor(error?: Error | string, public info?: unknown) {
     super('ParseError', reason(error))
   }
 }
