@@ -78,9 +78,9 @@ jwt:
   enabled: false
   audiences: []
 postgresql:
-  internal: false
-  host: host.docker.internal
-  hostReader: host.docker.internal
+  internal: true # false
+  host: #host.docker.internal
+  hostReader: #host.docker.internal
   port: 5432
   existingSecret: mds-secrets
   password: 'Password123#'
@@ -90,8 +90,8 @@ postgresql:
     repository: postgres
     tag: 10
 redis:
-  internal: false
-  host: host.docker.internal
+  internal: true # false
+  host: #host.docker.internal
   port: 6379
   usePassword: false
   cluster:

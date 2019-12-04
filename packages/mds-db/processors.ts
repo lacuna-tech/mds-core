@@ -44,7 +44,7 @@ export async function getVehicleTripCount(
 
 export async function getLateEventCount(
   provider_id: string,
-  events: VEHICLE_EVENT[],
+  events: any,
   start_time = 0,
   end_time: number = Date.now()
 ): Promise<Array<{ count: number }>> {

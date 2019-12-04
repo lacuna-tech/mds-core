@@ -8,7 +8,8 @@ metadata:
   name: {{ $key }}-{{ $value }}
   namespace: {{ $.Release.Namespace }}
 spec:
-  broker: default
+#  broker: default
+  broker: natss
   filter:
     sourceAndType:
       type: {{ $value }}
