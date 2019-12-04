@@ -266,11 +266,14 @@ bootstrap() {
         gettext)
           brew link --force gettext
           export PATH=$(brew --prefix gettext)/bin:${PATH};;
-        ko)
-          GO111MODULE=on go get github.com/google/ko/cmd/ko;;
       esac
     }
   done; unset l
+
+  # fixme: impl
+  hash ko > /dev/null 2>&1 || {
+    GO111MODULE=on go get github.com/google/ko/cmd/ko
+  }
 
   for p in lerna cypress mocha chai mochawesome; do
     yarn ${p} --version > /dev/null 2>&1 || yarn add -W ${p}
@@ -571,6 +574,7 @@ installMds() {
     # fixme: do better
     kubectl -n mds apply -f knative/natss-channel.yaml
     kubectl -n mds apply -f knative/natss-broker.yaml
+    pause 12
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
