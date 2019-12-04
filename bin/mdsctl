@@ -574,7 +574,8 @@ installMds() {
     # fixme: do better
     kubectl -n mds apply -f knative/natss-channel.yaml
     kubectl -n mds apply -f knative/natss-broker.yaml
-    pause 12
+    pause 3
+    kubectl -n ${configs[namespace-mds]} -system wait --for=condition=complete job --all
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
