@@ -62,3 +62,8 @@ apis:
     migration: false
     triggeredBy:
       cron: '0 * * * *'
+  mds-config:
+    enabled: true
+    pathPrefix: /config
+    version: ${CONFIG_VERSION}
+    migration: false

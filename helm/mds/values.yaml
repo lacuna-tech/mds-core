@@ -65,6 +65,11 @@ apis:
     migration: false
     triggeredBy:
       cron: '0 * * * *'
+  mds-config:
+    enabled: true
+    pathPrefix: /config
+    version: latest
+    migration: false
 useEvents: true
 timezone: America/Los_Angeles
 registry:
