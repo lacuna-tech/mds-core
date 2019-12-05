@@ -736,11 +736,11 @@ installNatss() {
   for d in $(find ${configs[natss]}/natss/cmd/* -type d -maxdepth 1 -exec sh -c 'echo $(basename {})' \;); do
     $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
   done
-
+  
   for c in controller dispatcher; do
     for t in $(docker images ko.local/channel_${c} --format '{{.Tag}}'); do
       if [ "${t}" != "latest" ]; then
-        sed -i '' "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
+  		sed -i '' "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
         break
       fi
     done
@@ -1188,6 +1188,19 @@ preset() {
       minimal)
         preset $(normalize "disable,no-events,local,no-persistence")
         is+="${is:+,}sets-mds+=apis.mds-agency.enabled=true";;
+	  eventing)
+		preset $(normalize "disable,local,no-persistence")
+		is+="${is:+,}sets-mds+=apis.mds-agency.enabled=true"
+		is+="${is:+,}sets-mds+=apis.mds-event-processor.enabled=true"
+		is+="${is:+,}sets-mds+=apis.mds-trip-processor.enabled=true"
+		is+="${is:+,}sets-mds+=apis.mds-provider-processor.enabled=true";;
+	  data-external)
+	    is+="${is:+,}sets-mds+=postgresql.internal=false"
+		is+="${is:+,}sets-mds+=postgresql.host=host.docker.internal"
+		is+="${is:+,}sets-mds+=postgresql.hostReader=host.docker.internal"
+		is+="${is:+,}sets-mds+=redis.internal=false"
+		is+="${is:+,}sets-mds+=redis.host=host.docker.internal"
+	    
     esac
   done; unset p
 
