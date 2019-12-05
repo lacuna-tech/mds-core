@@ -3968,10 +3968,10 @@ clone@^1.0.2:
   resolved "https://registry.yarnpkg.com/clone/-/clone-1.0.4.tgz#da309cc263df15994c688ca902179ca3c7cd7c7e"
   integrity sha1-2jCcwmPfFZlMaIypAheco8fNfH4=
 
-cloudevents-sdk@0.3.2:
-  version "0.3.2"
-  resolved "https://registry.yarnpkg.com/cloudevents-sdk/-/cloudevents-sdk-0.3.2.tgz#6c518d5b4c78732b1a8ecb16cb0b55fedb72b252"
-  integrity sha512-w5IWOGAeP6ixcgv+SpgQ7OiKiaQTnb6obuz4L8W38Bo/Qf8XBCtzcCaGiw8QAXGeAVlkPoGXQ3shyRdn0OgKmg==
+cloudevents-sdk@1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/cloudevents-sdk/-/cloudevents-sdk-1.0.0.tgz#b52c4383979c0c41c1d88aac1a84620db115b0be"
+  integrity sha512-YviL6+jQ4aeNJBqLtHchjcNab8BgK4mgpaIexqmP1p5qQrhAWMrQEVdDSQfo0NLqeJg1zTRYGFM1O6/IP4RZkg==
   dependencies:
     ajv "^6.7.0"
     axios "0.18.1"

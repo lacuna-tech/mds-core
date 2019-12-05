@@ -17,7 +17,7 @@
 import logger from '@mds-core/mds-logger'
 import redis from 'redis'
 import bluebird from 'bluebird'
-import Cloudevent from 'cloudevents-sdk'
+import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import {
   Stream,
@@ -32,44 +32,26 @@ import {
 
 const { env } = process
 
-/* eslint-reason no cloud-event typings */
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-let binding: any = null
+const binding: BinaryHTTPEmitter | null = null
 
-function getBinding() {
-  if (!binding) {
-    const config = {
-      method: 'POST',
-      url: env.SINK
-    }
-
-    // eslint-disable-next-line new-cap
-    binding = new Cloudevent.bindings['http-binary0.2'](config)
-  }
-
-  return binding
-}
+const getBinding = () =>
+  binding ??
+  new BinaryHTTPEmitter({
+    method: 'POST',
+    url: env.SINK
+  })
 
 async function writeCloudEvent(type: string, data: string) {
-  if (!env.SINK) {
+  if (!env.SINK || !env.CE_NAME) {
     return
   }
 
-  const cloudevent = new Cloudevent(Cloudevent.specs['0.2'])
+  const event = cloudevent()
     .type(type)
     .source(env.CE_NAME)
     .data(data)
 
-  return getBinding().emit(cloudevent)
-  /* .then(response => {
-    // Treat the response
-    console.log(response.data);
-
-  }).catch(err => {
-    // Deal with errors
-    console.error(err);
-  });
-  */
+  return getBinding().emit(event)
 }
 
 declare module 'redis' {

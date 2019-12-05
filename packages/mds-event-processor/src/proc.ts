@@ -25,7 +25,7 @@ async function dataHandler(
 
         if (parsedContentType === 'application/json') {
           // binary
-          const ce_data: { [x: string]: any } = {
+          const ce_data = {
             type: req.headers['ce-type'],
             specversion: req.headers['ce-specversion'],
             source: req.headers['ce-source'],
