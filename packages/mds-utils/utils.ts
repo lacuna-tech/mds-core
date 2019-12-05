@@ -784,6 +784,7 @@ const parseAnchorPoint = (offset: string) => {
   throw new BadParamsError(`Invalid anchor point: ${offset}`)
 }
 
+// For details on time parameters and ailases, see https://docs.google.com/document/d/1Zyn58tHo-VzibsdgmFU3fBcDlplUDxFzGWLHtTG4-Cs/edit?pli=1#bookmark=id.5snf8ffk8bjf
 const parseRelative = (
   startOffset: string,
   endOffset: string

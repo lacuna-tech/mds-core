@@ -222,7 +222,6 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     const bucketedMetrics = await Promise.all(
       slices.map(slice => {
         const { start, end } = slice
-        // TODO add time aliases, see https://docs.google.com/document/d/1Zyn58tHo-VzibsdgmFU3fBcDlplUDxFzGWLHtTG4-Cs/edit?pli=1#bookmark=id.5snf8ffk8bjf
         return db.getAllMetrics({
           start_time: start,
           end_time: end,
