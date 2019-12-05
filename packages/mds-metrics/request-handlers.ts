@@ -200,12 +200,7 @@ export async function getEventCounts(req: MetricsApiRequest, res: GetEventCounts
 export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   const { body, query } = req
   const slices = getTimeBins(body)
-  const geography_id = query.geography_id || null
   const provider_id = query.provider_id || null
-
-  // This geo query is problematic and will likely be removed for Q4
-  if (geography_id !== null && !isUUID(geography_id))
-    return res.status(400).send(new BadParamsError(`geography_id ${geography_id} is not a UUID`))
 
   if (provider_id !== null && !isUUID(provider_id))
     return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
@@ -219,7 +214,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
         return db.getAllMetrics({
           start_time: start,
           end_time: end,
-          geography_id,
+          geography_id: null,
           provider_id
         })
       })
