@@ -693,6 +693,8 @@ const calcDistance = (telemetry: TripTelemetry[][], startGps: GpsData) => {
   return { totalDist: distance, points }
 }
 
+const getLocalTime = () => moment(new Date()).tz(process.env.TIMEZONE || 'America/Los_Angeles')
+
 const parseOperator = (offset: string): '+' | '-' => {
   if (offset === 'today' || offset === 'yesterday' || offset === 'now') {
     return '+'
@@ -768,12 +770,16 @@ const parseOffset = (
   }
 }
 
-const parseAnchorPoint = (local_time: moment.Moment, offset: string) => {
+const parseAnchorPoint = (offset: string) => {
+  const localTime = getLocalTime()
   if (offset === 'today') {
-    return local_time.startOf('day')
+    return localTime.startOf('day')
   }
   if (offset === 'now') {
-    return local_time
+    return localTime
+  }
+  if (offset === 'yesterday') {
+    return localTime.startOf('day').subtract(1, 'days')
   }
   throw new BadParamsError(`Invalid anchor point: ${offset}`)
 }
@@ -785,14 +791,13 @@ const parseRelative = (
   start_time: Timestamp
   end_time: Timestamp
 } => {
-  const local_time = moment().tz(process.env.TIMEZONE || 'America/Los_Angeles')
   const parsedStartOffset = parseOffset(startOffset)
   const parsedEndOffset = parseOffset(endOffset)
 
   if (!parsedStartOffset?.relative && !parsedEndOffset?.relative) {
     return {
-      start_time: parseAnchorPoint(local_time, startOffset).valueOf(),
-      end_time: parseAnchorPoint(local_time, endOffset).valueOf()
+      start_time: parseAnchorPoint(startOffset).valueOf(),
+      end_time: parseAnchorPoint(endOffset).valueOf()
     }
   }
 
@@ -801,7 +806,7 @@ const parseRelative = (
   }
 
   if (parsedStartOffset?.relative) {
-    const anchorPoint = parseAnchorPoint(local_time, endOffset)
+    const anchorPoint = parseAnchorPoint(endOffset)
     const { operator, unit, count } = parsedStartOffset
     if (operator === '-') {
       return {
@@ -813,7 +818,7 @@ const parseRelative = (
   }
 
   if (parsedEndOffset?.relative) {
-    const anchorPoint = parseAnchorPoint(local_time, startOffset)
+    const anchorPoint = parseAnchorPoint(startOffset)
     const { operator, unit, count } = parsedEndOffset
     if (operator === '+') {
       return {

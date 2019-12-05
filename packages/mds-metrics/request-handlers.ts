@@ -207,7 +207,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   const bin_size = timeToMs[bin_size_english]
 
   // TODO figure out query params vs. body
-  const { start_time, end_time } = parseRelative(query.start, query.end)
+  const { start_time, end_time } = parseRelative(query.start || 'today', query.end || 'now')
   const slices = getTimeBins({
     ...body,
     bin_size,
