@@ -1,5 +1,5 @@
 import db from '@mds-core/mds-db'
-import { inc, RuntimeError, ServerError, isUUID, BadParamsError, hours, days, parseRelative } from '@mds-core/mds-utils'
+import { inc, RuntimeError, ServerError, isUUID, BadParamsError, parseRelative } from '@mds-core/mds-utils'
 import { EVENT_STATUS_MAP, VEHICLE_TYPES } from '@mds-core/mds-types'
 
 import log from '@mds-core/mds-logger'
@@ -16,7 +16,7 @@ import {
   EventSnapshot,
   GetAllResponse
 } from './types'
-import { getTimeBins } from './utils'
+import { getTimeBins, getBinSizeFromQuery } from './utils'
 
 export async function getStateSnapshot(req: MetricsApiRequest, res: GetStateSnapshotResponse) {
   const { body } = req
@@ -201,12 +201,7 @@ export async function getEventCounts(req: MetricsApiRequest, res: GetEventCounts
 */
 export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   const { query } = req
-  const bin_size_english: 'hour' | 'day' = query.bin_size || 'hour'
-  const timeToMs = {
-    hour: hours(1),
-    day: days(1)
-  }
-  const bin_size = timeToMs[bin_size_english]
+  const bin_size = getBinSizeFromQuery(query)
 
   const { start_time, end_time } = parseRelative(query.start || 'today', query.end || 'now')
   const slices = getTimeBins({
