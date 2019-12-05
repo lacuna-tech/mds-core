@@ -1,4 +1,4 @@
-import { StateEntry, TripEntry, MetricsTableRow, Recorded, VEHICLE_EVENT, UUID, Timestamp } from '@mds-core/mds-types'
+import { StateEntry, TripEntry, MetricsTableRow, Recorded, UUID, Timestamp } from '@mds-core/mds-types'
 import schema, { TABLE_NAME } from './schema'
 import { vals_sql, cols_sql, vals_list, logSql } from './sql-utils'
 import { getWriteableClient, makeReadOnlyQuery } from './client'
