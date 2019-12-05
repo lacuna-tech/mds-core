@@ -199,7 +199,16 @@ export async function getEventCounts(req: MetricsApiRequest, res: GetEventCounts
 */
 export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   const { body, query } = req
-  const slices = getTimeBins(body)
+  const bin_size_english: 'hour' | 'day' = query.bin_size || 'hour'
+  const timeToMs = {
+    hour: 3600000,
+    day: 86400000
+  }
+  const bin_size = timeToMs[bin_size_english]
+  const slices = getTimeBins({
+    ...body,
+    bin_size
+  })
   const provider_id = query.provider_id || null
   const vehicle_type = query.vehicle_type || null
 
