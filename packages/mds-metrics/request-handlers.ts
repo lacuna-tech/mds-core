@@ -1,5 +1,5 @@
 import db from '@mds-core/mds-db'
-import { inc, RuntimeError, ServerError, isUUID } from '@mds-core/mds-utils'
+import { inc, RuntimeError, ServerError, isUUID, BadParamsError } from '@mds-core/mds-utils'
 import { EVENT_STATUS_MAP } from '@mds-core/mds-types'
 
 import log from '@mds-core/mds-logger'
@@ -203,10 +203,12 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   const geography_id = query.geography_id || null
   const provider_id = query.provider_id || null
 
+  // This geo query is problematic and will likely be removed for Q4
   if (geography_id !== null && !isUUID(geography_id))
-    return res.status(400).send(new ServerError(`geography_id ${geography_id} is not a UUID`))
+    return res.status(400).send(new BadParamsError(`geography_id ${geography_id} is not a UUID`))
+
   if (provider_id !== null && !isUUID(provider_id))
-    return res.status(400).send(new ServerError(`provider_id ${provider_id} is not a UUID`))
+    return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
 
   try {
     const bucketedMetrics = await Promise.all(
