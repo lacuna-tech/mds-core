@@ -1,6 +1,6 @@
 import db from '@mds-core/mds-db'
 import { inc, RuntimeError, ServerError, isUUID, BadParamsError } from '@mds-core/mds-utils'
-import { EVENT_STATUS_MAP } from '@mds-core/mds-types'
+import { EVENT_STATUS_MAP, VEHICLE_TYPES } from '@mds-core/mds-types'
 
 import log from '@mds-core/mds-logger'
 import {
@@ -201,9 +201,15 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   const { body, query } = req
   const slices = getTimeBins(body)
   const provider_id = query.provider_id || null
+  const vehicle_type = query.vehicle_type || null
 
   if (provider_id !== null && !isUUID(provider_id))
     return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
+
+  // TODO test validation
+  // TODO forward to query method
+  if (vehicle_type !== null && !Object.values(VEHICLE_TYPES).includes(vehicle_type))
+    return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
 
   try {
     const bucketedMetrics = await Promise.all(

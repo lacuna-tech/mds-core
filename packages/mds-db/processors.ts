@@ -111,6 +111,7 @@ interface GetAllMetricsArgs {
   geography_id: UUID | null
 }
 
+// TODO accept vehicle_type and do conditional querying
 export async function getAllMetrics({
   start_time,
   end_time,
