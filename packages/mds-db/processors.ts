@@ -1,4 +1,4 @@
-import { StateEntry, TripEntry, MetricsTableRow, Recorded, UUID, Timestamp } from '@mds-core/mds-types'
+import { StateEntry, TripEntry, MetricsTableRow, Recorded, UUID, Timestamp, VEHICLE_TYPE } from '@mds-core/mds-types'
 import schema, { TABLE_NAME } from './schema'
 import { vals_sql, cols_sql, vals_list, logSql } from './sql-utils'
 import { getWriteableClient, makeReadOnlyQuery } from './client'
@@ -109,18 +109,20 @@ interface GetAllMetricsArgs {
   end_time: number
   provider_id: UUID | null
   geography_id: UUID | null
+  vehicle_type: VEHICLE_TYPE | null
 }
 
-// TODO accept vehicle_type and do conditional querying
 export async function getAllMetrics({
   start_time,
   end_time,
   provider_id,
-  geography_id
+  geography_id,
+  vehicle_type
 }: GetAllMetricsArgs): Promise<Array<MetricsTableRow>> {
-  const providerSegment = provider_id !== null ? `AND provider_id = "${provider_id}" ` : ''
-  const geographySegment = geography_id !== null ? `AND geography_id = "${geography_id}" ` : ''
-  const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} ${providerSegment} ${geographySegment}`
+  const providerSegment = provider_id !== null ? ` AND provider_id = "${provider_id}" ` : ''
+  const geographySegment = geography_id !== null ? ` AND geography_id = "${geography_id}" ` : ''
+  const vehicleTypeSegment = vehicle_type !== null ? ` AND vehicle_type = "${vehicle_type}" ` : ''
+  const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}${providerSegment}${geographySegment}${vehicleTypeSegment}`
   return makeReadOnlyQuery(query)
 }
 

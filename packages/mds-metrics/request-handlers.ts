@@ -207,7 +207,6 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
 
   // TODO test validation
-  // TODO forward to query method
   if (vehicle_type !== null && !Object.values(VEHICLE_TYPES).includes(vehicle_type))
     return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
 
@@ -215,13 +214,13 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     const bucketedMetrics = await Promise.all(
       slices.map(slice => {
         const { start, end } = slice
-        // TODO pull out geography_id and provider_id from request body
         // TODO add time aliases, see https://docs.google.com/document/d/1Zyn58tHo-VzibsdgmFU3fBcDlplUDxFzGWLHtTG4-Cs/edit?pli=1#bookmark=id.5snf8ffk8bjf
         return db.getAllMetrics({
           start_time: start,
           end_time: end,
           geography_id: null,
-          provider_id
+          provider_id,
+          vehicle_type
         })
       })
     )
