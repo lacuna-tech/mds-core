@@ -1,5 +1,5 @@
 import db from '@mds-core/mds-db'
-import { inc, RuntimeError, ServerError } from '@mds-core/mds-utils'
+import { inc, RuntimeError, ServerError, isUUID } from '@mds-core/mds-utils'
 import { EVENT_STATUS_MAP } from '@mds-core/mds-types'
 
 import log from '@mds-core/mds-logger'
@@ -198,8 +198,15 @@ export async function getEventCounts(req: MetricsApiRequest, res: GetEventCounts
   and finer-grained field-fetching a la GraphQL.
 */
 export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
-  const { body } = req
+  const { body, query } = req
   const slices = getTimeBins(body)
+  const geography_id = query.geography_id || null
+  const provider_id = query.provider_id || null
+
+  if (geography_id !== null && !isUUID(geography_id))
+    return res.status(400).send(new ServerError(`geography_id ${geography_id} is not a UUID`))
+  if (provider_id !== null && !isUUID(provider_id))
+    return res.status(400).send(new ServerError(`provider_id ${provider_id} is not a UUID`))
 
   try {
     const bucketedMetrics = await Promise.all(
@@ -210,8 +217,8 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
         return db.getAllMetrics({
           start_time: start,
           end_time: end,
-          geography_id: null,
-          provider_id: null
+          geography_id,
+          provider_id
         })
       })
     )
