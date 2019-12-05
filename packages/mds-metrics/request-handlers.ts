@@ -196,9 +196,11 @@ export async function getEventCounts(req: MetricsApiRequest, res: GetEventCounts
 
   It is scheduled to be replaced with methods that have better querying support
   and finer-grained field-fetching a la GraphQL.
+
+  **Note: unlike the above methods, this method exclusively uses URL query params**
 */
 export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
-  const { body, query } = req
+  const { query } = req
   const bin_size_english: 'hour' | 'day' = query.bin_size || 'hour'
   const timeToMs = {
     hour: hours(1),
@@ -206,10 +208,8 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   }
   const bin_size = timeToMs[bin_size_english]
 
-  // TODO figure out query params vs. body
   const { start_time, end_time } = parseRelative(query.start || 'today', query.end || 'now')
   const slices = getTimeBins({
-    ...body,
     bin_size,
     start_time,
     end_time
