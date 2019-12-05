@@ -214,18 +214,9 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
       } as StateEntry
       // Take necessary steps on event trasitions
       switch (data.event_type) {
-        case 'trip_start': {
-          await processTripEvent(deviceState)
-          break
-        }
-        case 'trip_enter': {
-          await processTripEvent(deviceState)
-          break
-        }
-        case 'trip_leave': {
-          await processTripEvent(deviceState)
-          break
-        }
+        case 'trip_start':
+        case 'trip_enter':
+        case 'trip_leave':
         case 'trip_end': {
           await processTripEvent(deviceState)
           break
