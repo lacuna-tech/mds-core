@@ -69,7 +69,7 @@ declare -A configs=(
   ["token"]="${MDS_TOKEN:-dashboard}"
   ["reinstall"]="${MDS_REINSTALL:-mds}"
   ["pause"]="${MDS_PAUSE:-3}"
-  ["istio-version"]="${MDS_ISTIO_VERSION:-1.4.0}" #1.3.5}" #1.2.6}"
+  ["istio-version"]="${MDS_ISTIO_VERSION:-1.3.3}" #1.4.0}" #1.3.5}" #1.2.6}"
   ["istio-profile"]="${MDS_ISTIO_PROFILE:-}" #-istio-sds-auth}" # todo: looks to fail when installing istio-nodeagent
   ["istio"]="${MDS_ISTIO_PATH:-${configs[workdir]}/istio-${configs[istio-version]}}"
   ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/src/knative.dev/eventing-contrib}"
@@ -568,14 +568,28 @@ installMds() {
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
-    labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
+    # labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
     configure $(imageVersion)
     [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
     # fixme: do better
-    kubectl -n mds apply -f knative/natss-channel.yaml
-    kubectl -n mds apply -f knative/natss-broker.yaml
-    pause 3
-    kubectl -n ${configs[namespace-mds]} -system wait --for=condition=complete job --all
+    kubectl -n ${configs[namespace-mds]} create serviceaccount eventing-broker-ingress
+    kubectl -n ${configs[namespace-mds]} create serviceaccount eventing-broker-filter
+    kubectl -n ${configs[namespace-mds]} create rolebinding eventing-broker-ingress \
+      --clusterrole=eventing-broker-ingress \
+      --serviceaccount=default:eventing-broker-ingress
+    kubectl -n ${configs[namespace-mds]} create rolebinding eventing-broker-filter \
+      --clusterrole=eventing-broker-filter \
+      --serviceaccount=default:eventing-broker-filter
+    kubectl -n knative-eventing create rolebinding eventing-config-reader-mds-eventing-broker-ingress \
+      --clusterrole=eventing-config-reader \
+      --serviceaccount=mds:eventing-broker-ingress
+    kubectl -n knative-eventing create rolebinding eventing-config-reader-mds-eventing-broker-filter \
+      --clusterrole=eventing-config-reader \
+      --serviceaccount=mds:eventing-broker-filter
+    kubectl -n ${configs[namespace-mds]} apply -f knative/natss-channel.yaml
+    kubectl -n ${configs[namespace-mds]} apply -f knative/natss-broker.yaml
+    pause 12
+    # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
@@ -587,6 +601,7 @@ installMds() {
       ${configs[setfiles-mds]:+$(helmOptions set-file ${configs[setfiles-mds]})} \
       ${configs[dryrun]:+--dry-run --debug}
     pause 12
+    # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
   }
 }
 
@@ -605,8 +620,8 @@ installFallbackCertificate() {
     kubectl -n istio-system create secret tls gateway-fallback \
       --key ${TMPCERT}.key --cert ${TMPCERT}.crt
     /bin/rm -rf ${TMPCERT} ${TMPCERT}.key ${TMPCERT}.crt
-  else
-    warn "ingress-domain is unspecified"
+  # else
+  #   warn "ingress-domain is unspecified"
   fi
 }
 
@@ -733,6 +748,7 @@ installNatss() {
 
   # # fixme: test for deployment
   kubectl apply -f ${configs[natss]}/natss/config
+  pause 7
 
   # fixme: bump version
   # sed -i '' "s/image: nats-streaming:.*/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml
