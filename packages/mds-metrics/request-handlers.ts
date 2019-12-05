@@ -211,7 +211,6 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   })
   const provider_id = query.provider_id || null
   const vehicle_type = query.vehicle_type || null
-
   if (provider_id !== null && !isUUID(provider_id))
     return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
 
@@ -236,7 +235,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
 
     const bucketedMetricsWithTimeSlice = bucketedMetrics.map((bucketedMetricsRow, idx) => {
       const slice = slices[idx]
-      return { bucketedMetricsRow, slice }
+      return { data: bucketedMetricsRow, ...slice }
     })
 
     // TODO follow up with TSV formatting if necessary,

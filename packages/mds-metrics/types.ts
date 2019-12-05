@@ -57,11 +57,9 @@ export type EventCountsResponse = {
 }
 
 export type MetricsAllResponse = {
-  bucketedMetricsRow: MetricsTableRow[]
-  slice: {
-    start: number
-    end: number
-  }
+  data: MetricsTableRow[]
+  start: number
+  end: number
 }
 
 export type GetTimeBinsParams = {
