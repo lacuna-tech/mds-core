@@ -211,7 +211,7 @@ export async function getVehicles(
     return [...acc, { ...item, status, updated }]
   }, [])
   const finish = now()
-  log.info(`getVehicles processing ${JSON.stringify(bbox)} time elapsed: ${finish - start}ms`)
+  log.info(`getVehicles processing ${JSON.stringify(bbox)} provider ${provider_id} time elapsed: ${finish - start}ms`)
 
   const noNext = skip + take >= statusesSuperset.length
   const noPrev = skip === 0 || skip > statusesSuperset.length
