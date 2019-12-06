@@ -241,6 +241,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     })
 
     if (format === 'tsv') {
+      // TODO this branch needs some serious testing
       const parser = new Parser({
         delimiter: '\t'
       })
