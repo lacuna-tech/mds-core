@@ -129,6 +129,7 @@ describe('Request handlers', () => {
       '"foo"\t"bar"\t"baz"\n10\t11\t12\n1\t2\t3',
       '"foo"\t"bar"\t"baz"\n10\t11\t12\n1\t2\t3',
       '"foo"\t"bar"\t"baz"\n10\t11\t12\n1\t2\t3',
+      '"foo"\t"bar"\t"baz"\n10\t11\t12\n1\t2\t3',
       '"foo"\t"bar"\t"baz"\n10\t11\t12\n1\t2\t3'
     ])
 
