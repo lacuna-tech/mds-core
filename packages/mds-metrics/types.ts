@@ -57,7 +57,7 @@ export type EventCountsResponse = {
 }
 
 export type MetricsAllResponse = {
-  data: MetricsTableRow[]
+  data: MetricsTableRow[] | string
   start: number
   end: number
 }

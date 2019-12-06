@@ -1,6 +1,7 @@
 import db from '@mds-core/mds-db'
 import { inc, RuntimeError, ServerError, isUUID, BadParamsError, parseRelative } from '@mds-core/mds-utils'
 import { EVENT_STATUS_MAP, VEHICLE_TYPES } from '@mds-core/mds-types'
+import { Parser } from 'json2csv'
 
 import log from '@mds-core/mds-logger'
 import {
@@ -211,6 +212,8 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   })
   const provider_id = query.provider_id || null
   const vehicle_type = query.vehicle_type || null
+  const format : 'json' | 'tsv' = query.format || 'json'
+
   if (provider_id !== null && !isUUID(provider_id))
     return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
 
@@ -237,10 +240,21 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
       return { data: bucketedMetricsRow, ...slice }
     })
 
-    // TODO follow up with TSV formatting if necessary,
-    // see https://lacuna-tech.slack.com/archives/CPY98QSS3/p1575314506007400
-
-    res.status(200).send(bucketedMetricsWithTimeSlice)
+    if (format === 'tsv') {
+      const parser = new Parser({
+        delimiter: '\t'
+      })
+      const bucketedMetricsWithTimeSliceWithTsvRows = bucketedMetricsWithTimeSlice.map((bucketedMetricsBundle) => {
+        return {
+          ...bucketedMetricsBundle,
+          data: parser.parse(bucketedMetricsBundle.data)
+        }
+      })
+      return res.status(200).send(bucketedMetricsWithTimeSliceWithTsvRows)
+    } else if (format === 'json') {
+      return res.status(200).send(bucketedMetricsWithTimeSlice)
+    }
+    return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
   } catch (error) {
     await log.error(error)
     res.status(500).send(new ServerError(error))
