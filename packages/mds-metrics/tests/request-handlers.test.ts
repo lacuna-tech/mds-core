@@ -5,7 +5,7 @@ import assert from 'assert'
 import uuid from 'uuid'
 import * as requestHandlers from '../request-handlers'
 import { MetricsApiRequest, GetAllResponse } from '../types'
-import * as utils from 'packages/mds-utils'
+import * as utils from '@mds-core/mds-utils'
 
 describe('Request handlers', () => {
   it('Dumps the correct metrics without forwarding query params', async () => {
