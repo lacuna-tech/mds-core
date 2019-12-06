@@ -13,11 +13,16 @@ const wss = new WebSocket.Server({ server })
 
 let cachedWs: WebSocket | null = null
 
+wss.on('connection', (ws: WebSocket) => {
+  cachedWs = ws
+})
+
 function getClient() {
   if (!cachedWs) {
     wss.on('connection', (ws: WebSocket) => {
       cachedWs = ws
     })
+    console.log(cachedWs)
   }
   return cachedWs as WebSocket
 }
@@ -25,9 +30,11 @@ function getClient() {
 export function writeTelemetry(telemetry: Telemetry) {
   const ws = getClient()
   ws.emit('TELEMETRIES', telemetry)
+  ws.send(JSON.stringify(telemetry))
 }
 
 export function writeEvent(event: VehicleEvent) {
   const ws = getClient()
   ws.emit('EVENTS', event)
+  ws.send(JSON.stringify(event))
 }

@@ -5,6 +5,7 @@ import { isUUID, now, ServerError } from '@mds-core/mds-utils'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
+import socket from '@mds-core/mds-web-sockets'
 import { providerName } from '@mds-core/mds-providers'
 import {
   Device,
@@ -329,7 +330,11 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
     // database write is crucial; failures of cache/stream should be noted and repaired
     const recorded_event = await db.writeEvent(event)
     try {
-      await Promise.all([cache.writeEvent(recorded_event), stream.writeEvent(recorded_event)])
+      await Promise.all([
+        cache.writeEvent(recorded_event),
+        stream.writeEvent(recorded_event),
+        socket.writeEvent(recorded_event)
+      ])
       await finish()
     } catch (err) {
       await log.warn('/event exception cache/stream', err)
@@ -399,6 +404,11 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
 
     if (valid.length) {
       const recorded_telemetry = await writeTelemetry(valid)
+      try {
+        await socket.writeTelemetry(valid)
+      } catch (err) {
+        await log.error(err)
+      }
       const delta = Date.now() - start
       if (delta > 300) {
         log.info(
