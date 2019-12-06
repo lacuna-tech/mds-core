@@ -212,7 +212,11 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   })
   const provider_id = query.provider_id || null
   const vehicle_type = query.vehicle_type || null
-  const format : 'json' | 'tsv' = query.format || 'json'
+  const format : string | 'json' | 'tsv' = query.format || 'json'
+
+  if (format !== 'json' && format !== 'tsv') {
+    return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
+  }
 
   if (provider_id !== null && !isUUID(provider_id))
     return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
@@ -255,7 +259,8 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     } else if (format === 'json') {
       return res.status(200).send(bucketedMetricsWithTimeSlice)
     }
-    return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
+    // We should never fall out to this case
+    return res.status(500).send(new ServerError('Unexpected error'))
   } catch (error) {
     await log.error(error)
     res.status(500).send(new ServerError(error))
