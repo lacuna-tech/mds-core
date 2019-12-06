@@ -12,7 +12,9 @@ import {
   Telemetry,
   EVENT_STATUS_MAP,
   VEHICLE_EVENT,
-  VEHICLE_REASON
+  VEHICLE_REASON,
+  UUID,
+  Timestamp
 } from '@mds-core/mds-types'
 import { getAnnotationData, getAnnotationVersion } from './annotation'
 import { dataHandler } from './proc'
@@ -39,38 +41,30 @@ import { dataHandler } from './proc'
           VALUES = deviceState
 */
 
-async function getTripId(deviceState: StateEntry) {
+async function getTripId(deviceState: StateEntry): Promise<string | null> {
   /*
-  Return trip_id for telemetery entry by associating timestamps
+    Return trip_id for telemetery entry by associating timestamps
   */
   const { provider_id, device_id, timestamp } = deviceState
   const tripsEvents = await cache.readTripsEvents(`${provider_id}:${device_id}`)
   if (!tripsEvents) {
-    await log.warn('NO TRIP DATA FOUND')
-    return undefined
+    await log.warn('NO PRIOR TRIP EVENTS FOUND')
+    return null
   }
-  let latestStartTime
-  let matchedID
-  // Find latest trip whose start time is before current timestamp
-  // TODO reduce logic with better filtering/mapping ({trip_id, start_time}[])
-  // eslint-disable-next-line guard-for-in
-  for (const trip_id in tripsEvents) {
-    const tripEvents: TripEvent[] = tripsEvents[trip_id]
-    const startEvents: TripEvent[] = tripEvents.filter(tripEvent => {
+  const sortedStartEvents = Object.entries(tripsEvents).sort((a, b) =>
+    b[1].filter(tripEvent => {
       return tripEvent.event_type === 'trip_start' || tripEvent.event_type === 'trip_enter'
-    })
-    startEvents.sort((a, b) => (b.timestamp > a.timestamp ? 1 : -1))
-    const tripStartTime = startEvents[0].timestamp
-    if (tripStartTime <= timestamp && (!latestStartTime || latestStartTime <= tripStartTime)) {
-      matchedID = trip_id
-      latestStartTime = tripStartTime
-    }
-  }
-  if (!matchedID) {
-    await log.warn('NO TRIPS MATCHED')
-    return undefined
-  }
-  return matchedID
+    })[0].timestamp >
+    a[1].filter(tripEvent => {
+      return tripEvent.event_type === 'trip_start' || tripEvent.event_type === 'trip_enter'
+    })[0].timestamp
+      ? 1
+      : -1
+  )
+  const match = sortedStartEvents.find(x => {
+    return timestamp >= x[1][0].timestamp
+  })
+  return match ? match[0] : null
 }
 
 async function processTripTelemetry(deviceState: StateEntry) {
@@ -105,29 +99,28 @@ async function processTripTelemetry(deviceState: StateEntry) {
   } as TripTelemetry
 
   // Check if associated to an event or telemetry post
-  const tripId = type === 'telemetry' ? getTripId(deviceState) : trip_id
-  if (typeof tripId === 'undefined') {
-    return false
-  }
-  const tripsCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
-  const trips = tripsCache || {}
-  // TODO reduce logic
-  if (typeof tripId === 'string') {
+  const tripId = type === 'telemetry' ? await getTripId(deviceState) : trip_id
+  if (tripId) {
+    console.log('MATCH', tripId)
+    const tripsCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
+    const trips = tripsCache || {}
     if (!trips[tripId]) {
       trips[tripId] = []
     }
     trips[tripId].push(tripTelemetry)
     await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, trips)
+    return true
+  } else {
+    return false
   }
-  return true
 }
 
 async function processTripEvent(deviceState: StateEntry) {
   /*
-  Add vehicle events of a trip to cache (trips:events):
+    Add vehicle events of a trip to cache (trips:events):
 
-    Key: 'provider_id:device_id'
-    Value: hash map of tripEvents keyed by trip_id
+      Key: 'provider_id:device_id'
+      Value: hash map of tripEvents keyed by trip_id
 
   */
   const {
@@ -155,27 +148,27 @@ async function processTripEvent(deviceState: StateEntry) {
   } as TripEvent
 
   // Either append to existing trip or create new entry
-  const tripsCache = await cache.readTripsEvents(`${provider_id}:${device_id}`)
-  const trips = tripsCache || {}
-  // TODO reduce logic
   if (trip_id) {
+    const tripsCache = await cache.readTripsEvents(`${provider_id}:${device_id}`)
+    const trips = tripsCache || {}
     if (!trips[trip_id]) {
       trips[trip_id] = []
     }
     trips[trip_id].push(tripEvent)
-    // Update trip event cache and stream
     await cache.writeTripsEvents(`${provider_id}:${device_id}`, trips)
-    // await stream.writeCloudEvent('mds.trip.event', JSON.stringify(tripEvent))
+    await processTripTelemetry(deviceState)
+    return true
+  } else {
+    return false
   }
-  await processTripTelemetry(deviceState)
 }
 
 async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) {
   const { timestamp, device_id, provider_id, recorded } = data as {
-    timestamp: number
-    device_id: string
-    provider_id: string
-    recorded: number
+    timestamp: Timestamp
+    device_id: UUID
+    provider_id: UUID
+    recorded: Timestamp
   }
   const lastState = await cache.readDeviceState(`${provider_id}:${device_id}`)
   // Construct state
@@ -195,8 +188,8 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
         event_type: VEHICLE_EVENT
         telemetry: Telemetry
         event_type_reason: VEHICLE_REASON
-        trip_id: string
-        service_area_id: string
+        trip_id: UUID
+        service_area_id: UUID
       }
       const gps = telemetry?.gps
       const charge = telemetry?.charge
@@ -214,9 +207,18 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
       } as StateEntry
       // Take necessary steps on event trasitions
       switch (data.event_type) {
-        case 'trip_start':
-        case 'trip_enter':
-        case 'trip_leave':
+        case 'trip_start': {
+          await processTripEvent(deviceState)
+          break
+        }
+        case 'trip_enter': {
+          await processTripEvent(deviceState)
+          break
+        }
+        case 'trip_leave': {
+          await processTripEvent(deviceState)
+          break
+        }
         case 'trip_end': {
           await processTripEvent(deviceState)
           break
@@ -229,9 +231,7 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
       if (!lastState || lastState.timestamp < deviceState.timestamp) {
         await cache.writeDeviceState(`${provider_id}:${device_id}`, deviceState)
       }
-      // Add to PG table (reports_device_states) and stream
       await db.insertDeviceStates(deviceState)
-      // await stream.writeCloudEvent('mds.processed.event', JSON.stringify(device_state))
       return deviceState
     }
 
@@ -244,13 +244,11 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
         gps,
         charge
       } as StateEntry
-      // Match telemetry to trip data
       await processTripTelemetry(deviceState)
-      // Add to PG table (reports_device_states) and stream
       await db.insertDeviceStates(deviceState)
-      // await stream.writeCloudEvent('mds.processed.event', JSON.stringify(device_state))
       return deviceState
     }
+
     default: {
       throw new Error('Not a valid cloudevent type')
     }
