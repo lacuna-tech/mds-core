@@ -23,7 +23,7 @@ wss.on('connection', (ws: WebSocket) => {
 // TODO: Subscribe to telemetry and event streams from KNE, and call writeTelemetry/writeEvent
 
 function pushToClients(entity: string, message: string) {
-  clients.map(client => {
+  clients.clientList[entity].map(client => {
     // looks good
     // if client has subscribed lalalala
     client.emit(entity, message)
