@@ -1,0 +1,35 @@
+{
+  "name": "@mds-core/mds-web-sockets",
+  "version": "0.0.1",
+  "description": "Mobility Data Specification web sockets interface",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "keywords": [
+    "mds",
+    "stream"
+  ],
+  "author": "City of Los Angeles",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@mds-core/mds-logger": "0.1.23",
+    "@mds-core/mds-types": "0.1.22",
+    "bluebird": "3.7.1",
+    "cloudevents-sdk": "0.3.2",
+    "flat": "5.0.0",
+    "node-gzip": "1.1.2",
+    "redis": "2.8.0",
+    "socket.io": "2.3.0"
+  },
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "start": "yarn watch index",
+    "test": "yarn test:eslint && yarn test:unit",
+    "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
+    "test:unit": "exit 0",
+    "watch": "nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec yarn watch:exec --",
+    "watch:exec": "yarn build && DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config"
+  }
+}
