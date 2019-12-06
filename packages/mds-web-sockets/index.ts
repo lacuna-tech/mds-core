@@ -22,7 +22,6 @@ function getClient() {
     wss.on('connection', (ws: WebSocket) => {
       cachedWs = ws
     })
-    console.log(cachedWs)
   }
   return cachedWs as WebSocket
 }
