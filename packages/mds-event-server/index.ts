@@ -5,7 +5,7 @@ import { AboutRequestHandler, HealthRequestHandler, JsonBodyParserMiddleware } f
 import Cloudevent, { BinaryHTTPReceiver } from 'cloudevents-sdk/v1'
 
 export const EventServer = <TData, TResult>(
-  handler: (type: string, data: TData, event: Cloudevent) => TResult,
+  handler: (type: string, data: TData, event: Cloudevent) => Promise<TResult>,
   server: express.Express = express()
 ): express.Express => {
   // Disable x-powered-by header
@@ -25,7 +25,7 @@ export const EventServer = <TData, TResult>(
     try {
       const cloudevent = receiver.parse(req.body, req.headers)
       await logger.info('Processing Cloud Event', cloudevent.format())
-      const result = handler(cloudevent.getType(), cloudevent.getData(), cloudevent)
+      const result = await handler(cloudevent.getType(), cloudevent.getData(), cloudevent)
       return res.status(200).send({ result })
     } catch (error) {
       await logger.error('Error processing Cloud Event', req.body, req.headers)
