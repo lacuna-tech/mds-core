@@ -20,7 +20,8 @@
   ],
   "author": "City of Los Angeles",
   "dependencies": {
-    "@mds-core/mds-event-processor": "0.1.0"
+    "@mds-core/mds-event-processor": "0.1.0",
+    "@mds-core/mds-event-server": "0.1.0"
   },
   "license": "Apache-2.0"
 }

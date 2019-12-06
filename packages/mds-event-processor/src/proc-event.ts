@@ -3,7 +3,6 @@ import cache from '@mds-core/mds-cache'
 import log from '@mds-core/mds-logger'
 
 import {
-  CE_TYPE,
   InboundEvent,
   InboundTelemetry,
   StateEntry,
@@ -17,7 +16,6 @@ import {
   Timestamp
 } from '@mds-core/mds-types'
 import { getAnnotationData, getAnnotationVersion } from './annotation'
-import { dataHandler } from './proc'
 
 /*
     Event processor that runs inside a Kubernetes pod.
@@ -101,7 +99,6 @@ async function processTripTelemetry(deviceState: StateEntry) {
   // Check if associated to an event or telemetry post
   const tripId = type === 'telemetry' ? await getTripId(deviceState) : trip_id
   if (tripId) {
-    console.log('MATCH', tripId)
     const tripsCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
     const trips = tripsCache || {}
     if (!trips[tripId]) {
@@ -110,9 +107,8 @@ async function processTripTelemetry(deviceState: StateEntry) {
     trips[tripId].push(tripTelemetry)
     await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, trips)
     return true
-  } else {
-    return false
   }
+  return false
 }
 
 async function processTripEvent(deviceState: StateEntry) {
@@ -158,12 +154,11 @@ async function processTripEvent(deviceState: StateEntry) {
     await cache.writeTripsEvents(`${provider_id}:${device_id}`, trips)
     await processTripTelemetry(deviceState)
     return true
-  } else {
-    return false
   }
+  return false
 }
 
-async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) {
+export async function eventHandler(type: string, data: InboundEvent & InboundTelemetry) {
   const { timestamp, device_id, provider_id, recorded } = data as {
     timestamp: Timestamp
     device_id: UUID
@@ -254,12 +249,3 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
     }
   }
 }
-
-async function eventHandler() {
-  await dataHandler('event', (type: CE_TYPE, data: any) => {
-    log.info(type, data)
-    return processRaw(type, data)
-  })
-}
-
-export { eventHandler }
