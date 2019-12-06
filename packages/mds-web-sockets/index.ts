@@ -16,13 +16,13 @@ const clients = new Clients()
 
 wss.on('connection', (ws: WebSocket) => {
   console.log('foo')
-  ws.on('message', (data: string) => {
-    if (data === 'boop') {
-      console.log(data)
+  ws.on('message', (data) => {
+    const message = String(data)
+    if (!message.includes('EVENTS') || !message.includes('TELEMETRIES')) {
       writeEvent({ device_id: 'foo', provider_id: 'foo', recorded: 0, timestamp: 0, event_type: 'deregister' })
+    } else {
+      clients.saveClient(message.trim().split(','), ws)
     }
-    console.log(data)
-    clients.saveClient(data.split(','), ws)
   })
 })
 

@@ -4,7 +4,7 @@ export class Clients {
   clientList: { [key: string]: WebSocket[] }
 
   public constructor() {
-    this.clientList = { 'foo': [], 'bar': []}
+    this.clientList = { 'EVENTS': [], 'TELEMETRIES': [] }
     this.saveClient = this.saveClient.bind(this)
   }
 
