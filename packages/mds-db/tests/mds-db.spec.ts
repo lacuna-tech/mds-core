@@ -4,7 +4,15 @@ import assert from 'assert'
 import should from 'should'
 
 import { FeatureCollection } from 'geojson'
-import { Telemetry, Recorded, VehicleEvent, Device, VEHICLE_EVENTS, Geography } from '@mds-core/mds-types'
+import {
+  Telemetry,
+  Recorded,
+  VehicleEvent,
+  Device,
+  VEHICLE_EVENTS,
+  Geography,
+  VEHICLE_TYPES
+} from '@mds-core/mds-types'
 import {
   JUMP_TEST_DEVICE_1,
   makeDevices,
@@ -510,29 +518,29 @@ if (pg_info.database) {
     const end_time = 50
     const provider_id = null
     const geography_id = null
-    await getAllMetrics({ start_time, end_time, provider_id, geography_id })
+    const vehicle_type = null
+    await getAllMetrics({ start_time, end_time, provider_id, geography_id, vehicle_type })
     assert.strictEqual(
       fakeReadOnly.calledOnceWithExactly(
-        `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}  `
+        `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}`
       ),
       true
     )
     Sinon.restore()
   })
 
-  it('Queries metrics with provider_id & geography_id correctly', async () => {
+  it('Queries optional fields correctly', async () => {
     const fakeReadOnly = Sinon.fake.returns('boop')
     Sinon.replace(dbClient, 'makeReadOnlyQuery', fakeReadOnly)
     const start_time = 42
     const end_time = 50
     const provider_id = uuid()
     const geography_id = uuid()
-    await getAllMetrics({ start_time, end_time, provider_id, geography_id })
+    const vehicle_type = VEHICLE_TYPES.scooter
+    await getAllMetrics({ start_time, end_time, provider_id, geography_id, vehicle_type })
     assert.strictEqual(
-      fakeReadOnly.calledOnceWithExactly(
-        `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} AND provider_id = "${provider_id}"  AND geography_id = "${geography_id}" `
-      ),
-      true
+      fakeReadOnly.args[0][0],
+      `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} AND provider_id = "${provider_id}"  AND geography_id = "${geography_id}"  AND vehicle_type = "${vehicle_type}" `
     )
     Sinon.restore()
   })
