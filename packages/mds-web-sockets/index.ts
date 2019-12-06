@@ -29,12 +29,10 @@ function getClient() {
 
 export function writeTelemetry(telemetry: Telemetry) {
   const ws = getClient()
-  ws.emit('TELEMETRIES', telemetry)
-  ws.send(JSON.stringify(telemetry))
+  ws.emit('TELEMETRIES', JSON.stringify(telemetry))
 }
 
 export function writeEvent(event: VehicleEvent) {
   const ws = getClient()
-  ws.emit('EVENTS', event)
-  ws.send(JSON.stringify(event))
+  ws.emit('EVENTS', JSON.stringify(event))
 }
