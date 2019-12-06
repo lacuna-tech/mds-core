@@ -122,31 +122,20 @@ async function processTrip(
     telemetry
   } as TripEntry
 
-  // Insert into PG DB and stream
   log.info('INSERT')
-  try {
-    await db.insertTrips(tripData)
-  } catch (err) {
-    await log.error(err)
-  }
-  // await stream.writeCloudEvent('mds.processed.trip', JSON.stringify(trip_data))
+  await db.insertTrips(tripData)
 
   // Delete all processed telemetry data and update cache
   log.info('DELETE')
-  try {
-    delete tripMap[trip_id]
-    await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, tripMap)
-  } catch (err) {
-    await log.error(err)
-  }
+  delete tripMap[trip_id]
+  await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, tripMap)
   return true
 }
 
 async function tripAggregator() {
   const curTime = new Date().getTime()
   const tripsMap = await cache.readAllTripsEvents()
-  log.info('triggered')
-
+  console.log('triggered')
   /* eslint-reason FIXME use map() */
   /* eslint-disable-next-line guard-for-in */
   for (const vehicleID in tripsMap) {
@@ -179,28 +168,6 @@ async function tripAggregator() {
     }
   }
 }
-
-/*
-function calcTimeIntervals(
-  telemetry: { [x: string]: { [x: string]: { timestamp: number } } },
-  startTime: number
-): number {
-
-  // Not currently used. Allows tracking of time between individual telemetry/event points
-
-  let tempTime = startTime
-  let count = 0
-  // eslint-disable-next-line guard-for-in
-  for (const n in telemetry) {
-    // eslint-disable-next-line guard-for-in
-    for (const m in telemetry[n]) {
-      count += telemetry[n][m].timestamp - tempTime
-      tempTime = telemetry[n][m].timestamp
-    }
-  }
-  return count
-}
-*/
 
 async function tripHandler() {
   await dataHandler('trip', async () => {

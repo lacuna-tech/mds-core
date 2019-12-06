@@ -737,14 +737,14 @@ installNatss() {
     $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
   done
   
-  #for c in controller dispatcher; do
-  #  for t in $(docker images ko.local/channel_${c} --format '{{.Tag}}'); do
-  #    if [ "${t}" != "latest" ]; then
-  #		sed "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
-  #      break
-  #    fi
-  #  done
-  #done
+  for c in controller dispatcher; do
+    for t in $(docker images ko.local/channel_${c} --format '{{.Tag}}'); do
+      if [ "${t}" != "latest" ]; then
+  		sed -i '' "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
+        break
+      fi
+    done
+  done
 
   # # fixme: test for deployment
   kubectl apply -f ${configs[natss]}/natss/config
