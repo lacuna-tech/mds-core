@@ -5,6 +5,7 @@ import assert from 'assert'
 import uuid from 'uuid'
 import * as requestHandlers from '../request-handlers'
 import { MetricsApiRequest, GetAllResponse } from '../types'
+import * as utils from 'packages/mds-utils'
 
 describe('Request handlers', () => {
   it('Dumps the correct metrics without forwarding query params', async () => {
@@ -108,6 +109,9 @@ describe('Request handlers', () => {
 
     assert.strictEqual(status.calledOnceWithExactly(200), true)
     assert.strictEqual(send.calledOnce, true)
+    Sinon.replace(utils, 'getCurrentDate', Sinon.fake.returns(new Date('1995-12-17T03:24:00')))
+    // This test is potentially time-dependent b/c 'today' is relative to current system
+    // This is why we replace the util function to return a specific date...jank, I know
     assert.deepStrictEqual(send.args[0][0].map((entry : { data: unknown }) => entry.data), [
       '"foo"\t"bar"\t"baz"\n10\t11\t12\n1\t2\t3',
       '"foo"\t"bar"\t"baz"\n10\t11\t12\n1\t2\t3',

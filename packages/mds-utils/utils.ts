@@ -693,7 +693,11 @@ const calcDistance = (telemetry: TripTelemetry[][], startGps: GpsData) => {
   return { totalDist: distance, points }
 }
 
-const getLocalTime = () => moment(new Date()).tz(process.env.TIMEZONE || 'America/Los_Angeles')
+const getCurrentDate = () => {
+  return new Date()
+}
+
+const getLocalTime = () => moment(getCurrentDate()).tz(process.env.TIMEZONE || 'America/Los_Angeles')
 
 const parseOperator = (offset: string): '+' | '-' => {
   if (offset === 'today' || offset === 'yesterday' || offset === 'now') {
@@ -883,5 +887,6 @@ export {
   parseOffset,
   parseAnchorPoint,
   parseRelative,
-  parseIsRelative
+  parseIsRelative,
+  getCurrentDate
 }
