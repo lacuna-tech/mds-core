@@ -4,13 +4,20 @@ export class Clients {
   clientList: { [key: string]: WebSocket[] }
 
   public constructor() {
-    this.clientList = {}
+    this.clientList = { 'foo': [], 'bar': []}
     this.saveClient = this.saveClient.bind(this)
   }
 
   public saveClient(entities: string[], client: WebSocket) {
+    console.log(entities.length)
     entities.map(entity => {
-      this.clientList[entity].push(client)
+      console.log(entity)
+      console.log(this.clientList)
+      try {
+        this.clientList[entity].push(client)
+      } catch {
+        console.log(`failed to push ${entity}`)
+      }
     })
   }
 }

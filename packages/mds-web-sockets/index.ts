@@ -15,7 +15,13 @@ const wss = new WebSocket.Server({ server })
 const clients = new Clients()
 
 wss.on('connection', (ws: WebSocket) => {
+  console.log('foo')
   ws.on('message', (data: string) => {
+    if (data === 'boop') {
+      console.log(data)
+      writeEvent({ device_id: 'foo', provider_id: 'foo', recorded: 0, timestamp: 0, event_type: 'deregister' })
+    }
+    console.log(data)
     clients.saveClient(data.split(','), ws)
   })
 })
@@ -23,11 +29,14 @@ wss.on('connection', (ws: WebSocket) => {
 // TODO: Subscribe to telemetry and event streams from KNE, and call writeTelemetry/writeEvent
 
 function pushToClients(entity: string, message: string) {
-  clients.clientList[entity].map(client => {
-    // looks good
-    // if client has subscribed lalalala
-    client.emit(entity, message)
-  })
+  if (clients.clientList[entity]) {
+    clients.clientList[entity].map(client => {
+      // looks good
+      // if client has subscribed lalalala
+      client.send(`${entity}, ${message}`)
+      client.emit(entity, message)
+    })
+  }
 }
 
 function writeTelemetry(telemetry: Telemetry) {
