@@ -11,7 +11,9 @@
     "@mds-core/mds-providers": "0.1.25",
     "@mds-core/mds-types": "0.1.22",
     "@mds-core/mds-utils": "0.1.25",
-    "express": "4.17.1"
+    "@types/json2csv": "4.5.0",
+    "express": "4.17.1",
+    "json2csv": "4.5.4"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

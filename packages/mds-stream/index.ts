@@ -25,7 +25,6 @@ import {
   ReadStreamResult,
   DEVICE_INDEX_STREAM,
   DEVICE_RAW_STREAM,
-  PROVIDER_EVENT_STREAM,
   ReadStreamOptions,
   StreamItemID
 } from './types'
@@ -103,8 +102,7 @@ let cachedClient: redis.RedisClient | null = null
 
 const STREAM_MAXLEN: { [S in Stream]: number } = {
   'device:index': 10_000,
-  'device:raw': 1_000_000,
-  'provider:event': 100_000
+  'device:raw': 1_000_000
 }
 
 async function getClient() {
@@ -176,7 +174,7 @@ async function writeEvent(event: VehicleEvent) {
   if (env.SINK) {
     return writeCloudEvent('mds.event', JSON.stringify(event))
   }
-  return Promise.all([DEVICE_RAW_STREAM, PROVIDER_EVENT_STREAM].map(stream => writeStream(stream, 'event', event)))
+  return writeStream(DEVICE_RAW_STREAM, 'event', event)
 }
 
 // put latest locations in the cache

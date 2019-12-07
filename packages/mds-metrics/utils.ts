@@ -1,6 +1,6 @@
-import { now, yesterday } from '@mds-core/mds-utils'
+import { now, yesterday, hours, days } from '@mds-core/mds-utils'
 
-import { GetTimeBinsParams } from './types'
+import { GetTimeBinsParams, MetricsApiRequest } from './types'
 
 export function getTimeBins({
   start_time = yesterday(),
@@ -13,4 +13,14 @@ export function getTimeBins({
     start: start_time + idx * bin_size,
     end: start_time + (idx + 1) * bin_size
   }))
+}
+
+export function getBinSizeFromQuery(query: MetricsApiRequest['query']) {
+  const bin_size_english: 'hour' | 'day' = query.bin_size || 'hour'
+  const timeToMs = {
+    hour: hours(1),
+    day: days(1)
+  }
+  const bin_size = timeToMs[bin_size_english]
+  return bin_size
 }
