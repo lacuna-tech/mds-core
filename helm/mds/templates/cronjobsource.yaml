@@ -1,0 +1,18 @@
+{{- range $key, $processor := .Values.processors }}
+{{- if and $processor.enabled $processor.triggeredBy.cron }}
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: CronJobSource
+metadata:
+  name: {{ $key }} # better name
+  namespace: {{ $.Release.Namespace }}
+spec:
+  schedule: '* * * * *' #{{ $processor.triggeredBy.cron }}
+  sink:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: {{ $key }}
+    # uri: http://{{ $key }}.{{ $.Release.Namespace }}.svc.cluster.local:4000/
+---
+{{- end }}
+{{- end }}

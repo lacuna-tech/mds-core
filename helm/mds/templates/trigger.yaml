@@ -1,38 +1,23 @@
-{{- range $key, $api := .Values.apis }}
-{{- if $api.triggeredBy }}
-{{- if $api.triggeredBy.trigger }}
-{{- range $index, $value := $api.triggeredBy.trigger }}
+{{- range $key, $processor := .Values.processors }}
+{{- if and $processor.enabled $processor.triggeredBy.trigger }}
+{{- range $index, $trigger := $processor.triggeredBy.trigger }}
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:
-  name: {{ $key }}-{{ $value }}
+  name: {{ $key }}-{{ $trigger }}
   namespace: {{ $.Release.Namespace }}
 spec:
 #  broker: default
   broker: natss
   filter:
     sourceAndType:
-      type: {{ $value }}
+      type: {{ $trigger }}
   subscriber:
-    ref:
-      apiVersion: v1
-      kind: Service
-      name: {{ $key }}
----
-{{- end }}
-{{- end }}
-{{- if $api.triggeredBy.cron }}
-apiVersion: sources.eventing.knative.dev/v1alpha1
-kind: CronJobSource
-metadata:
-  name: {{ $key }}
-  namespace: {{ $.Release.Namespace }}
-spec:
-  schedule: {{ $api.triggeredBy.cron }}
-  sink:
-    apiVersion: v1
-    kind: Service
-    name: {{ $key }}
+   ref:
+     apiVersion: v1
+     kind: Service
+     name: {{ $key }}
+    # uri: http://{{ $key }}.{{ $.Release.Namespace }}.svc.cluster.local:4000/
 ---
 {{- end }}
 {{- end }}

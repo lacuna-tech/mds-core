@@ -44,6 +44,7 @@ apis:
     pathPrefix: /policy-author
     version: latest
     migration: false
+processors:
   mds-event-processor:
     enabled: true
     pathPrefix: /event-processor
@@ -57,19 +58,14 @@ apis:
     version: latest
     migration: false
     triggeredBy:
-      cron: '0 * * * *'
+      cron: '* * * * *'
   mds-provider-processor:
     enabled: true
     pathPrefix: /provider-processor
     version: latest
     migration: false
     triggeredBy:
-      cron: '0 * * * *'
-  mds-config:
-    enabled: true
-    pathPrefix: /config
-    version: latest
-    migration: false
+      cron: '* * * * *'
 useEvents: true
 timezone: America/Los_Angeles
 registry:
@@ -83,20 +79,20 @@ jwt:
   enabled: false
   audiences: []
 postgresql:
-  internal: true # false
-  host: #host.docker.internal
-  hostReader: #host.docker.internal
+  internal: true
+  host:
+  hostReader:
   port: 5432
   existingSecret: mds-secrets
-  password: 'Password123#'
+  password:
   postgresqlUsername: mdsadmin
   postgresqlDatabase: mds
   image:
     repository: postgres
     tag: 10
 redis:
-  internal: true # false
-  host: #host.docker.internal
+  internal: true
+  host:
   port: 6379
   usePassword: false
   cluster:
