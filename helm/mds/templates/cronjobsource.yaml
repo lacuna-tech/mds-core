@@ -6,7 +6,7 @@ metadata:
   name: {{ $key }} # better name
   namespace: {{ $.Release.Namespace }}
 spec:
-  schedule: '* * * * *' #{{ $processor.triggeredBy.cron }}
+  schedule: {{ $processor.triggeredBy.cron }} # '* * * * *'
   sink:
     ref:
       apiVersion: v1
