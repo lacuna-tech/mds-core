@@ -24,11 +24,11 @@ export const EventServer = <TData, TResult>(
   server.post('/', async (req, res) => {
     try {
       const cloudevent = receiver.parse(req.body, req.headers)
-      await logger.info('Processing Cloud Event', cloudevent.format())
+      await logger.info('PARSE Cloud Event', 'BODY:', req.body, 'HEADERS:', req.headers, 'EVENT:', cloudevent.format())
       const result = await handler(cloudevent.getType(), cloudevent.getData(), cloudevent)
       return res.status(200).send({ result })
     } catch (error) {
-      await logger.error('Error processing Cloud Event', req.body, req.headers)
+      await logger.error('ERROR Cloud Event', 'BODY:', req.body, 'HEADERS:', req.headers, 'ERROR:', error)
       return res.status(500).send({ error: new ServerError(error, req.body) })
     }
   })
