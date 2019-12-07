@@ -6,6 +6,7 @@ const { env } = process
 
 async function dataHandler(
   type: string,
+  // eslint-disable-next-line promise/prefer-await-to-callbacks, @typescript-eslint/no-explicit-any
   callback: { (type: any, data: any): Promise<any>; (arg0: any, arg1: any): void }
 ) {
   log.info('Creating server...')

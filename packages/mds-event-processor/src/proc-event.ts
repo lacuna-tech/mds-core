@@ -224,6 +224,7 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry):
         await cache.writeDeviceState(`${provider_id}:${device_id}`, deviceState)
       }
       await db.insertDeviceStates(deviceState)
+      return
     }
 
     case 'mds.telemetry': {
@@ -242,6 +243,7 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry):
       }
       await processTripTelemetry(deviceState)
       await db.insertDeviceStates(deviceState)
+      return
     }
 
     default: {
