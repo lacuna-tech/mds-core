@@ -13,7 +13,7 @@ function getAnnotationData(gps: GpsData): AnnotationData {
   return annotation
 }
 
-function getAnnotationVersion() {
+function getAnnotationVersion(): number {
   /*
     Returns version number of annotation processor to hold a record
     if backprocessing is needed

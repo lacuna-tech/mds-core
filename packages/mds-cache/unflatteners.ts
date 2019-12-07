@@ -42,21 +42,17 @@ function parseDeviceState(deviceState: StringifiedStateEntry): StateEntry {
       provider_id: deviceState.provider_id,
       recorded: Number(deviceState.recorded) as Timestamp,
       annotation_version: Number(deviceState.annotation_version),
-      annotation: deviceState.annotation
-        ? { in_bound: JSON.parse(deviceState.annotation.in_bound), areas: deviceState.annotation.areas }
-        : null,
-      gps: deviceState.gps
-        ? {
-            lat: Number(deviceState.gps.lat),
-            lng: Number(deviceState.gps.lng),
-            altitude: deviceState.gps.altitude ? Number(deviceState.gps.altitude) : null,
-            heading: deviceState.gps.heading ? Number(deviceState.gps.heading) : null,
-            speed: deviceState.gps.speed ? Number(deviceState.gps.speed) : null,
-            accuracy: deviceState.gps.accuracy ? Number(deviceState.gps.accuracy) : null
-          }
-        : null,
+      annotation: { in_bound: JSON.parse(deviceState.annotation.in_bound), areas: deviceState.annotation.areas },
+      gps: {
+        lat: Number(deviceState.gps.lat),
+        lng: Number(deviceState.gps.lng),
+        altitude: deviceState.gps.altitude ? Number(deviceState.gps.altitude) : null,
+        heading: deviceState.gps.heading ? Number(deviceState.gps.heading) : null,
+        speed: deviceState.gps.speed ? Number(deviceState.gps.speed) : null,
+        accuracy: deviceState.gps.accuracy ? Number(deviceState.gps.accuracy) : null
+      },
       service_area_id: deviceState.service_area_id ? (deviceState.service_area_id as UUID) : null,
-      charge: deviceState.charge ? Number(deviceState.charge) : null,
+      charge: Number(deviceState.charge),
       state: deviceState.state ? (deviceState.state as VEHICLE_STATUS) : null,
       event_type: deviceState.event_type ? (deviceState.event_type as VEHICLE_EVENT) : null,
       event_type_reason: deviceState.event_type_reason ? (deviceState.event_type_reason as VEHICLE_REASON) : null,

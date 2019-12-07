@@ -641,24 +641,13 @@ function filterEmptyHelper<T>(warnOnEmpty?: boolean) {
   }
 }
 
-function findServiceAreas(lng: number, lat: number) {
-  const districtAreas: {
-    [key: string]: MultiPolygon
-  } = {}
-
-  /* eslint-reason FIXME use map() */
-  /* eslint-disable-next-line guard-for-in */
-  for (const index in serviceAreaMap) {
-    districtAreas[index] = serviceAreaMap[index].area
-  }
-  const areas = []
+function findServiceAreas(lng: number, lat: number): { id: string; type: string }[] {
   const turfPT = turfPoint([lng, lat])
-  for (const key in districtAreas) {
-    if (turf(turfPT, districtAreas[key])) {
-      areas.push({ id: key, type: 'district' })
-    }
-  }
-  return areas
+  return Object.keys(serviceAreaMap)
+    .filter(i => turf(turfPT, serviceAreaMap[i].area))
+    .map(key => {
+      return { id: key, type: 'district' }
+    })
 }
 
 function moved(latA: number, lngA: number, latB: number, lngB: number) {

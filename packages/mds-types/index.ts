@@ -40,33 +40,33 @@ export const RULE_UNIT_MAP = {
 
 // Event Streaming
 export interface InboundEvent {
-  device_id: string
-  provider_id: string
-  event_type: string
-  event_type_reason: string
+  device_id: UUID
+  provider_id: UUID
+  event_type: VEHICLE_EVENT
+  event_type_reason: VEHICLE_REASON | null
   telemetry: {
-    device_id: string
-    timestamp: number
-    gps: { lat: number; lng: number; altitude: number; heading: number; speed: number; accuracy: number }
+    device_id: UUID
+    timestamp: Timestamp
+    gps: GpsData
     charge: number
-    provider_id: string
+    provider_id: UUID
   }
-  timestamp: number
-  trip_id: string
-  recorded: number
-  telemetry_timestamp: number
-  service_area_id: string
-  id: number
+  timestamp: Timestamp
+  trip_id: UUID
+  recorded: Timestamp
+  telemetry_timestamp: Timestamp
+  service_area_id: UUID
+  id: UUID
 }
 
 export interface InboundTelemetry {
-  device_id: string
-  provider_id: string
-  timestamp: number
+  device_id: UUID
+  provider_id: UUID
+  timestamp: Timestamp
   charge: number
-  gps: { lat: number; lng: number; altitude: number; heading: number; speed: number; accuracy: number }
-  recorded: number
-  id: number
+  gps: GpsData
+  recorded: Timestamp
+  id: UUID
 }
 
 export const CE_TYPES = Enum('mds.event', 'mds.telemetry')
@@ -80,14 +80,14 @@ export interface StateEntry {
   provider_id: UUID
   recorded: Timestamp
   annotation_version: number
-  annotation?: AnnotationData | null
-  gps?: GpsData | null
-  service_area_id?: UUID | null
-  charge?: number | null
-  state?: VEHICLE_STATUS | null
-  event_type?: VEHICLE_EVENT | null
-  event_type_reason?: VEHICLE_REASON | null
-  trip_id?: UUID | null
+  annotation: AnnotationData
+  gps: GpsData
+  service_area_id: UUID | null
+  charge: number
+  state: VEHICLE_STATUS | null // telemetry entries will be null
+  event_type: VEHICLE_EVENT | null // telemetry entries will be null
+  event_type_reason: VEHICLE_REASON | null // telemetry entries will be null
+  trip_id: UUID | null // telemetry entries will be null
 }
 
 export interface AnnotationData {
@@ -100,12 +100,12 @@ export interface AnnotationData {
 export interface TripEvent {
   vehicle_type: VEHICLE_TYPE
   timestamp: Timestamp
-  event_type: VEHICLE_EVENT
-  event_type_reason?: VEHICLE_REASON | null
+  event_type: VEHICLE_EVENT | null // telemetry entries will be null
+  event_type_reason: VEHICLE_REASON | null
   annotation_version: number
   annotation: AnnotationData
   gps: GpsData
-  service_area_id?: UUID | null
+  service_area_id: UUID | null
 }
 
 export type TripsEvents = { [trip_id: string]: TripEvent[] }

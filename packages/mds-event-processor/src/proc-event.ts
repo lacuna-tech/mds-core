@@ -3,16 +3,14 @@ import cache from '@mds-core/mds-cache'
 import log from '@mds-core/mds-logger'
 
 import {
-  CE_TYPE,
   InboundEvent,
   InboundTelemetry,
   StateEntry,
   TripEvent,
   TripTelemetry,
-  Telemetry,
+  CE_TYPE,
   EVENT_STATUS_MAP,
-  VEHICLE_EVENT,
-  VEHICLE_REASON,
+  VEHICLE_TYPE,
   UUID,
   Timestamp
 } from '@mds-core/mds-types'
@@ -67,7 +65,7 @@ async function getTripId(deviceState: StateEntry): Promise<string | null> {
   return match ? match[0] : null
 }
 
-async function processTripTelemetry(deviceState: StateEntry) {
+async function processTripTelemetry(deviceState: StateEntry): Promise<boolean> {
   /*
     Add trip related telemetry to cache (trips:telemetry):
 
@@ -87,21 +85,20 @@ async function processTripTelemetry(deviceState: StateEntry) {
     trip_id
   } = deviceState
 
-  const lat = gps ? gps.lat : null
-  const lng = gps ? gps.lng : null
-  const tripTelemetry = {
+  const lat = gps.lat
+  const lng = gps.lng
+  const tripTelemetry: TripTelemetry = {
     timestamp,
     latitude: lat,
     longitude: lng,
     annotation_version,
     annotation,
     service_area_id
-  } as TripTelemetry
+  }
 
   // Check if associated to an event or telemetry post
-  const tripId = type === 'telemetry' ? await getTripId(deviceState) : trip_id
+  const tripId = type === 'mds.telemetry' ? await getTripId(deviceState) : trip_id
   if (tripId) {
-    console.log('MATCH', tripId)
     const tripsCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
     const trips = tripsCache || {}
     if (!trips[tripId]) {
@@ -110,12 +107,11 @@ async function processTripTelemetry(deviceState: StateEntry) {
     trips[tripId].push(tripTelemetry)
     await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, trips)
     return true
-  } else {
-    return false
   }
+  return false
 }
 
-async function processTripEvent(deviceState: StateEntry) {
+async function processTripEvent(deviceState: StateEntry): Promise<boolean> {
   /*
     Add vehicle events of a trip to cache (trips:events):
 
@@ -136,7 +132,7 @@ async function processTripEvent(deviceState: StateEntry) {
     device_id
   } = deviceState
 
-  const tripEvent = {
+  const tripEvent: TripEvent = {
     vehicle_type: 'scooter',
     timestamp,
     event_type,
@@ -145,7 +141,7 @@ async function processTripEvent(deviceState: StateEntry) {
     annotation,
     gps,
     service_area_id
-  } as TripEvent
+  }
 
   // Either append to existing trip or create new entry
   if (trip_id) {
@@ -158,43 +154,39 @@ async function processTripEvent(deviceState: StateEntry) {
     await cache.writeTripsEvents(`${provider_id}:${device_id}`, trips)
     await processTripTelemetry(deviceState)
     return true
-  } else {
-    return false
   }
+  return false
 }
 
-async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) {
-  const { timestamp, device_id, provider_id, recorded } = data as {
+async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry): Promise<void> {
+  const { timestamp, device_id, provider_id, recorded } = data
+  const lastState = await cache.readDeviceState(`${provider_id}:${device_id}`)
+  // Construct state
+  const baseDeviceState: {
+    vehicle_type: VEHICLE_TYPE
+    type: CE_TYPE
     timestamp: Timestamp
     device_id: UUID
     provider_id: UUID
     recorded: Timestamp
-  }
-  const lastState = await cache.readDeviceState(`${provider_id}:${device_id}`)
-  // Construct state
-  const baseDeviceState = {
+    annotation_version: number
+  } = {
     vehicle_type: 'scooter',
-    type: type.substring(type.lastIndexOf('.') + 1),
+    type: type,
     timestamp,
     device_id,
     provider_id,
     recorded,
     annotation_version: getAnnotationVersion()
-  } as StateEntry
+  }
 
   switch (baseDeviceState.type) {
-    case 'event': {
-      const { event_type, telemetry, event_type_reason, trip_id, service_area_id } = data as {
-        event_type: VEHICLE_EVENT
-        telemetry: Telemetry
-        event_type_reason: VEHICLE_REASON
-        trip_id: UUID
-        service_area_id: UUID
-      }
-      const gps = telemetry?.gps
-      const charge = telemetry?.charge
-      const annotation = gps ? getAnnotationData(gps) : null
-      const deviceState = {
+    case 'mds.event': {
+      const { event_type, telemetry, event_type_reason, trip_id, service_area_id } = data
+      const gps = telemetry.gps
+      const charge = telemetry.charge
+      const annotation = getAnnotationData(gps)
+      const deviceState: StateEntry = {
         ...baseDeviceState,
         annotation,
         gps,
@@ -204,7 +196,7 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
         event_type,
         event_type_reason,
         trip_id
-      } as StateEntry
+      }
       // Take necessary steps on event trasitions
       switch (data.event_type) {
         case 'trip_start': {
@@ -232,21 +224,24 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
         await cache.writeDeviceState(`${provider_id}:${device_id}`, deviceState)
       }
       await db.insertDeviceStates(deviceState)
-      return deviceState
     }
 
-    case 'telemetry': {
+    case 'mds.telemetry': {
       const { gps, charge } = data
       const annotation = getAnnotationData(gps)
-      const deviceState = {
+      const deviceState: StateEntry = {
         ...baseDeviceState,
         annotation,
         gps,
-        charge
-      } as StateEntry
+        charge,
+        service_area_id: null,
+        state: null,
+        event_type: null,
+        event_type_reason: null,
+        trip_id: null
+      }
       await processTripTelemetry(deviceState)
       await db.insertDeviceStates(deviceState)
-      return deviceState
     }
 
     default: {
@@ -256,7 +251,7 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry) 
 }
 
 async function eventHandler() {
-  await dataHandler('event', (type: CE_TYPE, data: any) => {
+  await dataHandler('event', (type: CE_TYPE, data: InboundEvent & InboundTelemetry) => {
     log.info(type, data)
     return processRaw(type, data)
   })
