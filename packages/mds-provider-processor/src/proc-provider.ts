@@ -4,8 +4,6 @@ import { MetricsTableRow, ProviderStreamData } from '@mds-core/mds-types'
 import metric from './metrics'
 import config from './config'
 
-import { dataHandler } from './proc'
-
 /*
     Provider processor that runs inside a Kubernetes pod, activated via cron job.
     Aggregates trips/event data at a set interval. Provider cache is cleaned as data
@@ -73,7 +71,7 @@ async function processProvider(providerID: string, curTime: number): Promise<boo
   return true
 }
 
-async function providerAggregator() {
+export async function providerAggregator() {
   const curTime = new Date().getTime()
   const providersList = config.organization.providers
 
@@ -92,11 +90,3 @@ async function providerAggregator() {
     }
   }
 }
-
-async function providerHandler() {
-  await dataHandler('provider', async () => {
-    await providerAggregator()
-  })
-}
-
-export { providerHandler }

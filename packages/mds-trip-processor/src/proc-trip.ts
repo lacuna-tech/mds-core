@@ -5,7 +5,6 @@ import { calcDistance } from '@mds-core/mds-utils'
 
 import { TripEvent, TripEntry, TripTelemetry } from '@mds-core/mds-types'
 import config from './config'
-import { dataHandler } from './proc'
 
 /*
     Trip processor that runs inside a Kubernetes pod, activated via cron job.
@@ -132,7 +131,7 @@ async function processTrip(
   return true
 }
 
-async function tripAggregator() {
+export async function tripAggregator() {
   const curTime = new Date().getTime()
   const tripsMap = await cache.readAllTripsEvents()
   console.log('triggered')
@@ -168,11 +167,3 @@ async function tripAggregator() {
     }
   }
 }
-
-async function tripHandler() {
-  await dataHandler('trip', async () => {
-    await tripAggregator()
-  })
-}
-
-export { tripHandler }

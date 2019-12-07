@@ -14,8 +14,14 @@
     limitations under the License.
  */
 
-import { main } from '@mds-core/mds-provider-processor'
+import { EventServer } from '@mds-core/mds-event-server'
+import { providerAggregator as handler } from '@mds-core/mds-provider-processor'
+import { env } from '@container-images/env-inject'
 
-/* eslint-reason avoids import of logger */
-/* eslint-disable-next-line no-console */
-main()
+const { npm_package_name, npm_package_version, npm_package_git_commit, PORT = 5001 } = env()
+
+EventServer(handler).listen(PORT, () =>
+  /* eslint-reason avoids import of logger */
+  /* eslint-disable-next-line no-console */
+  console.log(`${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) running on port ${PORT}`)
+)

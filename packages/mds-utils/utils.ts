@@ -728,7 +728,7 @@ const parseCount = (offset: string) => {
   return count
 }
 
-const parseUnit = (offset: string) : 'days' | 'hours' => {
+const parseUnit = (offset: string): 'days' | 'hours' => {
   const shorthand = offset.slice(-1)
   const shorthandToUnit: {
     [key: string]: 'days' | 'hours'
