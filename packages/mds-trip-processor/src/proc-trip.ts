@@ -131,14 +131,14 @@ async function tripAggregator(): Promise<boolean> {
     return false
   }
   await Promise.all(
-    Object.keys(tripsMap).map(vehicleID => {
+    Object.keys(tripsMap).map(async vehicleID => {
       const [provider_id, device_id] = vehicleID.split(':')
       const tripsEvents = tripsMap[vehicleID]
       const unprocessedTripsEvents = tripsEvents
 
-      Promise.all(
-        Object.keys(tripsEvents).map(tripID => {
-          if (processTrip(provider_id, device_id, tripID, tripsEvents[tripID], curTime)) {
+      await Promise.all(
+        Object.keys(tripsEvents).map(async tripID => {
+          if (await processTrip(provider_id, device_id, tripID, tripsEvents[tripID], curTime)) {
             delete unprocessedTripsEvents[tripID]
           }
         })
@@ -155,7 +155,7 @@ async function tripAggregator(): Promise<boolean> {
 }
 
 async function tripHandler() {
-  console.log('triggered')
+  log.info('triggered')
   await dataHandler('trip', async () => {
     await tripAggregator()
   })

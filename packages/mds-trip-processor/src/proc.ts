@@ -25,6 +25,7 @@ async function dataHandler(
 
         if (parsedContentType === 'application/json') {
           // binary
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const ce_data: { [x: string]: any } = {
             type: req.headers['ce-type'],
             specversion: req.headers['ce-specversion'],
