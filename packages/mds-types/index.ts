@@ -132,10 +132,11 @@ export interface TripEntry {
   end_service_area_id?: UUID | null
   duration: number // in milliseconds
   distance: number // default in miles
-  violation_count?: number | null
-  max_violation_dist?: number
-  min_violation_dist?: number
-  avg_violation_dist?: number
+  violation_count: number
+  max_violation_dist: number | null
+  min_violation_dist: number | null
+  avg_violation_dist: number | null
+  events: TripEvent[]
   telemetry: TripTelemetry[][]
 }
 

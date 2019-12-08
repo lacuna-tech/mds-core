@@ -661,13 +661,13 @@ function moved(latA: number, lngA: number, latB: number, lngB: number) {
   return lngDiff > limit || latDiff > limit // very computational efficient basic check (better than sqrts & trig)
 }
 
-const calcDistance = (telemetry: TripTelemetry[][], startGps: GpsData) => {
+const calcDistance = (telemetry: TripTelemetry[][], startGps: GpsData): { distance: number; points: number[] } => {
   let tempX = startGps.lat
   let tempY = startGps.lng
   let distance = 0
   const points: number[] = []
-  for (let n = 0; n < telemetry.length; n++) {
-    for (let m = 0; m < telemetry[n].length; m++) {
+  for (const n in telemetry) {
+    for (const m in telemetry[n]) {
       const currPing = telemetry[n][m]
       const pointDist = routeDistance([
         { lat: currPing.latitude, lng: currPing.longitude },
@@ -679,7 +679,7 @@ const calcDistance = (telemetry: TripTelemetry[][], startGps: GpsData) => {
       tempY = currPing.longitude
     }
   }
-  return { totalDist: distance, points }
+  return { distance, points }
 }
 
 const getCurrentDate = () => {
@@ -717,7 +717,7 @@ const parseCount = (offset: string) => {
   return count
 }
 
-const parseUnit = (offset: string) : 'days' | 'hours' => {
+const parseUnit = (offset: string): 'days' | 'hours' => {
   const shorthand = offset.slice(-1)
   const shorthandToUnit: {
     [key: string]: 'days' | 'hours'
