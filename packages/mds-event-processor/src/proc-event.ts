@@ -46,7 +46,7 @@ async function getTripId(deviceState: StateEntry): Promise<string | null> {
   const { provider_id, device_id, timestamp } = deviceState
   const tripsEvents = await cache.readTripsEvents(`${provider_id}:${device_id}`)
   if (!tripsEvents) {
-    await log.warn('NO PRIOR TRIP EVENTS FOUND')
+    log.warn('NO PRIOR TRIP EVENTS FOUND')
     return null
   }
   const sortedStartEvents = Object.entries(tripsEvents).sort((a, b) =>

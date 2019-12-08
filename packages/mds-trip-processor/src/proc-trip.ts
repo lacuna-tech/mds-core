@@ -54,73 +54,72 @@ async function processTrip(
     return false
   }
 
-  // Get trip metadata
-  const tripStartEvent = events[0]
-  const tripEndEvent = events[events.length - 1]
-  const baseTripData = {
-    vehicle_type: tripStartEvent.vehicle_type,
-    trip_id,
-    device_id,
-    provider_id,
-    start_time: tripStartEvent.timestamp,
-    end_time: tripEndEvent.timestamp,
-    start_service_area_id: tripStartEvent.service_area_id,
-    end_service_area_id: tripEndEvent.service_area_id
-  }
-
   // Calculate event binned trip telemetry data
   const tripMap = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
-  if (!tripMap) {
-    log.warn('NO TELEMETRY FOUND FOR TRIP')
-    return false
-  }
-  const tripTelemetry = tripMap[trip_id]
-  const telemetry: TripTelemetry[][] = []
-  if (tripTelemetry && tripTelemetry.length > 0) {
-    for (let i = 0; i < events.length - 2; i++) {
-      const start_time = events[i].timestamp
-      const end_time = events[i + 1].timestamp
-      // Exclude event telemetry points
-      const tripSegment = tripTelemetry.filter(
-        telemetry_point => telemetry_point.timestamp > start_time && telemetry_point.timestamp < end_time
-      )
-      tripSegment.sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1))
-      telemetry.push(tripSegment)
+  if (tripMap) {
+    // Get trip metadata
+    const tripStartEvent = events[0]
+    const tripEndEvent = events[events.length - 1]
+    const baseTripData = {
+      vehicle_type: tripStartEvent.vehicle_type,
+      trip_id,
+      device_id,
+      provider_id,
+      start_time: tripStartEvent.timestamp,
+      end_time: tripEndEvent.timestamp,
+      start_service_area_id: tripStartEvent.service_area_id,
+      end_service_area_id: tripEndEvent.service_area_id
     }
-  } else {
-    await log.warn('NO TELEMETRY FOUND FOR TRIP')
-    return false
+    const tripTelemetry = tripMap[trip_id]
+    const telemetry: TripTelemetry[][] = []
+    if (tripTelemetry && tripTelemetry.length > 0) {
+      for (let i = 0; i < events.length - 2; i++) {
+        const start_time = events[i].timestamp
+        const end_time = events[i + 1].timestamp
+        // Exclude event telemetry points
+        const tripSegment = tripTelemetry.filter(
+          telemetry_point => telemetry_point.timestamp > start_time && telemetry_point.timestamp < end_time
+        )
+        tripSegment.sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1))
+        telemetry.push(tripSegment)
+      }
+    } else {
+      log.warn('NO TELEMETRY FOUND FOR TRIP')
+      return false
+    }
+
+    // Calculate trip metrics
+    const duration = tripEndEvent.timestamp - tripStartEvent.timestamp
+    const distMeasure = calcDistance(telemetry, tripStartEvent.gps)
+    const distance = distMeasure.distance
+    const distArray = distMeasure.points
+    const violation_count = distMeasure.points.length
+    const max_violation_dist = violation_count ? Math.min(...distArray) : null
+    const min_violation_dist = violation_count ? Math.max(...distArray) : null
+    const avg_violation_dist = violation_count
+      ? distArray.reduce((a, b) => a + b) / distArray.length
+      : null
+
+    const tripData: TripEntry = {
+      ...baseTripData,
+      duration,
+      distance,
+      violation_count,
+      max_violation_dist,
+      min_violation_dist,
+      avg_violation_dist,
+      events,
+      telemetry
+    }
+
+    await db.insertTrips(tripData)
+    // Delete all processed telemetry data and update cache
+    delete tripMap[trip_id]
+    await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, tripMap)
+    return true
   }
-
-  // Calculate trip metrics
-  const duration = tripEndEvent.timestamp - tripStartEvent.timestamp
-  const distMeasure = calcDistance(telemetry, tripStartEvent.gps)
-  const distance = distMeasure.distance
-  const distArray = distMeasure.points
-  const violation_count = distMeasure.points.length
-  const max_violation_dist = violation_count ? Math.min(...distArray) : null
-  const min_violation_dist = violation_count ? Math.max(...distArray) : null
-  const avg_violation_dist = violation_count
-    ? distArray.reduce((a: number, b: number) => a + b) / distArray.length
-    : null
-
-  const tripData: TripEntry = {
-    ...baseTripData,
-    duration,
-    distance,
-    violation_count,
-    max_violation_dist,
-    min_violation_dist,
-    avg_violation_dist,
-    events,
-    telemetry
-  }
-
-  await db.insertTrips(tripData)
-  // Delete all processed telemetry data and update cache
-  delete tripMap[trip_id]
-  await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, tripMap)
-  return true
+  log.warn('NO TELEMETRY FOUND FOR TRIP')
+  return false
 }
 
 async function tripAggregator(): Promise<boolean> {
@@ -145,9 +144,9 @@ async function tripAggregator(): Promise<boolean> {
       )
       // Update or clear cache
       if (Object.keys(unprocessedTripsEvents).length) {
-        cache.writeTripsEvents(vehicleID, unprocessedTripsEvents)
+        await cache.writeTripsEvents(vehicleID, unprocessedTripsEvents)
       } else {
-        cache.deleteTripsEvents(vehicleID)
+        await cache.deleteTripsEvents(vehicleID)
       }
     })
   )

@@ -193,7 +193,7 @@ export interface MetricsTableRow {
   trip_count: number
   /** Number of vehicles with: [0 trips, 1 trip, 2 trips, ...] during bin. */
   // WAS: `trips_count`
-  vehicle_trips_count?: string | null
+  vehicle_trips_count: string | null
   /** Number of events which out of compliance with time SLA. */
   // TODO:  break into object with this binning, other event types not important. (?)
   // WAS: `late_event_count`
