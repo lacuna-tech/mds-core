@@ -26,26 +26,32 @@ async function processProvider(providerID: UUID, curTime: Timestamp): Promise<bo
   // Only processing at organization level for scooters now
   // TODO: add providerMap back when streaming logic is added back to proc-event
   // const providersMap = await cache.hgetall('provider:state')
-  const providersMap = null
-  const providerData: ProviderStreamData = providersMap ? providersMap[providerID] : null
+  // const providerData: ProviderStreamData = providersMap ? providersMap[providerID] : null
 
+  const binStart = curTime - 3600000
+  const binStartYesterday = binStart - 86400000
+  const binEndYesterday = curTime - 86400000
   // TODO: convert hardcoded bin start time, vehicle_type and geography
   const provider_data: MetricsTableRow = {
-    start_time: curTime - 3600000,
+    start_time: binStart,
     bin_size: 'hour',
     geography: null,
     provider_id: providerID,
     vehicle_type: 'scooter',
-    event_counts: await metric.calcEventCounts(providerID),
-    vehicle_counts: await metric.calcVehicleCounts(providerID),
-    trip_count: await metric.calcTripCount(providerID, curTime),
-    vehicle_trips_count: await metric.calcVehicleTripCount(providerID, curTime),
-    event_time_violations: await metric.calcLateEventCount(providerID, curTime),
-    telemetry_distance_violations: await metric.calcTelemDistViolationCount(providerID, curTime),
+    event_counts: await metric.calcEventCounts(providerID, binStart, curTime),
+    vehicle_counts: await metric.calcVehicleCounts(providerID, 0, binStart),
+    trip_count: await metric.calcTripCount(providerID, binStart, curTime),
+    vehicle_trips_count: await metric.calcVehicleTripCount(providerID, binStart, curTime),
+    event_time_violations: await metric.calcLateEventCount(providerID, binStart, curTime),
+    telemetry_distance_violations: await metric.calcTelemDistViolationCount(
+      providerID,
+      binStartYesterday,
+      binEndYesterday
+    ),
     bad_events: {
-      invalid_count: providerData ? providerData.invalidEvents.length : null,
-      duplicate_count: providerData ? providerData.duplicateEvents.length : null,
-      out_of_order_count: providerData ? providerData.outOfOrderEvents.length : null
+      invalid_count: null, // providerData ? providerData.invalidEvents.length : null,
+      duplicate_count: null, //providerData ? providerData.duplicateEvents.length : null,
+      out_of_order_count: null //providerData ? providerData.outOfOrderEvents.length : null
     },
     sla: {
       max_vehicle_cap: 1600, // TODO: import from PCE

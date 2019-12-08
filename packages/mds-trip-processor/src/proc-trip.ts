@@ -93,12 +93,13 @@ async function processTrip(
     const distMeasure = calcDistance(telemetry, tripStartEvent.gps)
     const distance = distMeasure.distance
     const distArray = distMeasure.points
-    const violation_count = distMeasure.points.length
-    const max_violation_dist = violation_count ? Math.min(...distArray) : null
-    const min_violation_dist = violation_count ? Math.max(...distArray) : null
-    const avg_violation_dist = violation_count
-      ? distArray.reduce((a, b) => a + b) / distArray.length
-      : null
+    const violationArray = distArray.filter(dist => {
+      return dist > config.compliance_sla.max_telemetry_distance
+    })
+    const violation_count = violationArray.length
+    const max_violation_dist = violation_count ? Math.min(...violationArray) : null
+    const min_violation_dist = violation_count ? Math.max(...violationArray) : null
+    const avg_violation_dist = violation_count ? violationArray.reduce((a, b) => a + b) / violationArray.length : null
 
     const tripData: TripEntry = {
       ...baseTripData,

@@ -352,7 +352,7 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.type]: 'varchar(31) NOT NULL',
   [COLUMN.vehicle_counts]: 'json',
   [COLUMN.vehicle_id]: 'varchar(255) NOT NULL',
-  [COLUMN.vehicle_trips_count]: 'varchar(31)',
+  [COLUMN.vehicle_trips_count]: 'json',
   [COLUMN.vehicle_type]: 'varchar(31) NOT NULL',
   [COLUMN.violation_count]: 'int',
   [COLUMN.year]: 'smallint'

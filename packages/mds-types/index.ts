@@ -116,7 +116,7 @@ export interface TripTelemetry {
   longitude: number
   annotation_version: number
   annotation: AnnotationData
-  service_area_id?: UUID | null
+  service_area_id: UUID | null
 }
 
 export type TripsTelemetry = { [trip_id: string]: TripTelemetry[] }
@@ -128,8 +128,8 @@ export interface TripEntry {
   provider_id: UUID
   start_time: Timestamp
   end_time: Timestamp
-  start_service_area_id?: UUID | null
-  end_service_area_id?: UUID | null
+  start_service_area_id: UUID | null
+  end_service_area_id: UUID | null
   duration: number // in milliseconds
   distance: number // default in miles
   violation_count: number
@@ -148,9 +148,9 @@ export interface ProviderStreamData {
 
 export interface MetricCount {
   count: number
-  min?: number | null
-  max?: number | null
-  average?: number | null
+  min: number | null
+  max: number | null
+  average: number | null
 }
 export interface LateMetricObj {
   /** Number of trip_start and trip_end events out of compliance with time SLA. */
@@ -163,22 +163,17 @@ export interface LateMetricObj {
 
 export interface VehicleCountMetricObj {
   /** Total number of registered vehicles at start of bin. */
-  // WAS: `registered`
-  registered?: number | null
+  registered: number | null
   /** Total number of vehicles in the right-of-way at start of bin (available, reserved, trip). */
-  // WAS: `cap_count`
-  deployed?: number | null
-  /** Number of vehicles in the right-fo-way with 0 charge at start of bin. */
-  // WAS: `dead_count`
-  dead?: number | null
+  deployed: number | null
+  /** Number of vehicles in the right-of-way with 0 charge at start of bin. */
+  dead: number | null
 }
 
 export interface MetricsTableRow {
   /** Timestamp for start of bin (currently houry bins). */
-  // WAS: `timestamp`
   start_time: Timestamp
   /** Bin size. */
-  // TODO: new column
   bin_size: 'hour' | 'day'
   /** Geography this row applies to.  `null` = the entire organization. */
   geography: null | string // TODO: May be geography 'name', may be 'id'. ???
@@ -188,30 +183,24 @@ export interface MetricsTableRow {
   vehicle_type: VEHICLE_TYPE
   /** Number of events registered within the bin, by type. */
   event_counts: { [S in VEHICLE_EVENT]: number }
-  vehicle_counts?: VehicleCountMetricObj | null
+  vehicle_counts: VehicleCountMetricObj
   /** Number of trips in region, derived from distinct trip ids. */
   trip_count: number
-  /** Number of vehicles with: [0 trips, 1 trip, 2 trips, ...] during bin. */
-  // WAS: `trips_count`
-  vehicle_trips_count: string | null
+  /** Number of vehicles with: {0 trips:count, 1 trip:count, 2 trips:count, ...] during bin. */
+  vehicle_trips_count: { [x: number]: number } | null
   /** Number of events which out of compliance with time SLA. */
   // TODO:  break into object with this binning, other event types not important. (?)
-  // WAS: `late_event_count`
   event_time_violations: LateMetricObj
   /** Number of telemetry events out of compliance with distance SLA. */
-  // WAS: `bad_telem_count`
   telemetry_distance_violations: MetricCount
   /** Number of event anomalies. */
   // TODO:  break into object like so
   bad_events: {
     /** Number of invalid events (not matching event state machine). */
-    // WAS: `invalid_count`
     invalid_count: number | null
     /** Number of duplicate events submitted. */
-    // WAS: `duplicate_count`
     duplicate_count: number | null
     /** Number of out-of-order events submitted (according to state machine). */
-    // WAS: `ooo_count`
     out_of_order_count: number | null
   }
   /** SLA values used in these calculations, as of start of bin. */
