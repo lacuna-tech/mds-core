@@ -14,31 +14,16 @@ const wss = new WebSocket.Server({ server })
 
 const clients = new Clients()
 
-wss.on('connection', (ws: WebSocket) => {
-  console.log('foo')
-  ws.on('message', (data) => {
-    const message = String(data)
-    if (!message.includes('EVENTS') || !message.includes('TELEMETRIES')) {
-      writeEvent({ device_id: 'foo', provider_id: 'foo', recorded: 0, timestamp: 0, event_type: 'deregister' })
-    } else {
-      clients.saveClient(message.trim().split(','), ws)
-    }
-  })
-})
-
-// TODO: Subscribe to telemetry and event streams from KNE, and call writeTelemetry/writeEvent
-
 function pushToClients(entity: string, message: string) {
-  if (clients.clientList[entity]) {
-    clients.clientList[entity].map(client => {
-      // looks good
-      // if client has subscribed lalalala
+  if (clients.subList[entity]) {
+    clients.subList[entity].map(client => {
       client.send(`${entity}, ${message}`)
       client.emit(entity, message)
     })
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function writeTelemetry(telemetry: Telemetry) {
   pushToClients('TELEMETRIES', JSON.stringify(telemetry))
 }
@@ -46,3 +31,25 @@ function writeTelemetry(telemetry: Telemetry) {
 function writeEvent(event: VehicleEvent) {
   pushToClients('EVENTS', JSON.stringify(event))
 }
+
+wss.on('connection', (ws: WebSocket) => {
+  ws.on('message', (data: WebSocket.Data) => {
+    const message = String(data)
+      .trim()
+      .split(',')
+    const [header, ...args] = message
+    if (header === 'PUSH') {
+      writeEvent({ device_id: 'foo', provider_id: 'foo', recorded: 0, timestamp: 0, event_type: 'deregister' })
+    }
+    if (header === 'AUTH') {
+      const token = args[0]
+      if (token) {
+        clients.saveAuth(ws)
+      }
+    } else {
+      clients.saveClient(args, ws)
+    }
+  })
+})
+
+// TODO: Subscribe to telemetry and event streams from KNE, and call writeTelemetry/writeEvent
