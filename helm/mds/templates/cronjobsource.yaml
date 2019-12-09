@@ -3,15 +3,15 @@
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: CronJobSource
 metadata:
-  name: {{ $key }} # better name
+  name: {{ $key }}-cronjobsource
   namespace: {{ $.Release.Namespace }}
 spec:
-  schedule: {{ $processor.triggeredBy.cron | quote }} # '* * * * *'
+  schedule: {{ $processor.triggeredBy.cron | quote }}
   sink:
-    # ref:
-    apiVersion: v1
-    kind: Service
-    name: {{ $key }}
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: {{ $key }}
 ---
 {{- end }}
 {{- end }}

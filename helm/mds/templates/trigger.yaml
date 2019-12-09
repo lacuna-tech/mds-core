@@ -4,10 +4,9 @@
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:
-  name: {{ $key }}-{{ $trigger }}
+  name: {{ $key }}-{{ $trigger }}-trigger
   namespace: {{ $.Release.Namespace }}
 spec:
-#  broker: default
   broker: natss
   filter:
     sourceAndType:
