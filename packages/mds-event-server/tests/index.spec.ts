@@ -18,9 +18,11 @@
 
 import supertest from 'supertest'
 import test from 'unit.js'
-import { EventServer } from '../index'
+import { EventServer, EventHandler } from '../index'
 
-const request = supertest(EventServer(async (type, data) => data))
+const handler: EventHandler<unknown, { handled: unknown }> = async (type, data) => ({ handled: data })
+
+const request = supertest(EventServer(handler))
 
 const APP_JSON = 'application/json; charset=utf-8'
 
@@ -55,6 +57,20 @@ describe('Testing Event Server', () => {
         test.object(result.body).hasProperty('uptime')
         test.object(result.body).hasProperty('status', 'Running')
         done(err)
+      })
+  })
+
+  it('verifies post event', done => {
+    const data = { value: 'value' }
+    request
+      .post('/')
+      .set('ce-source', 'index.spec.ts')
+      .set('ce-type', 'test-event')
+      .send(data)
+      .expect(200)
+      .end((err, result) => {
+        test.object(result.body.result).is({ handled: data })
+        done()
       })
   })
 })
