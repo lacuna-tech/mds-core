@@ -76,7 +76,7 @@ export type GetStateSnapshotResponse = MetricsApiResponse<StateSnapshotResponse[
 export type GetEventsSnapshotResponse = MetricsApiResponse<EventSnapshotResponse[]>
 export type GetTelemetryCountsResponse = MetricsApiResponse<TelemetryCountsResponse[]>
 export type GetEventCountsResponse = MetricsApiResponse<EventCountsResponse[]>
-export type GetAllResponse = MetricsApiResponse<MetricsAllResponse[]>
+export type GetAllResponse = MetricsApiResponse<MetricsAllResponse[] | string>
 
 export const instantiateEventSnapshotResponse = (value: number) =>
   Object.keys(VEHICLE_TYPES).reduce(
