@@ -18,6 +18,7 @@ metadata:
 spec:
   schedule: '* * * * *'
   sink:
-    apiVersion: v1
-    kind: Service
-    name: mds-provider-processor
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: mds-provider-processor

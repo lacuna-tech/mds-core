@@ -88,6 +88,7 @@ const COLUMN = Enum(
   'start_service_area_id',
   'start_time',
   'state',
+  'events',
   'telemetry',
   'telemetry_distance_violations',
   'telemetry_timestamp',
@@ -237,6 +238,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.max_violation_dist,
     COLUMN.min_violoation_dist,
     COLUMN.avg_violation_dist,
+    COLUMN.events,
     COLUMN.telemetry
   ],
   [TABLE.telemetry]: [
@@ -338,6 +340,7 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.start_service_area_id]: 'uuid',
   [COLUMN.start_time]: 'bigint',
   [COLUMN.state]: 'varchar(255)',
+  [COLUMN.events]: 'json[]',
   [COLUMN.telemetry]: 'json[]',
   [COLUMN.telemetry_distance_violations]: 'json',
   [COLUMN.telemetry_timestamp]: 'bigint',
@@ -349,7 +352,7 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.type]: 'varchar(31) NOT NULL',
   [COLUMN.vehicle_counts]: 'json',
   [COLUMN.vehicle_id]: 'varchar(255) NOT NULL',
-  [COLUMN.vehicle_trips_count]: 'varchar(31)',
+  [COLUMN.vehicle_trips_count]: 'json',
   [COLUMN.vehicle_type]: 'varchar(31) NOT NULL',
   [COLUMN.violation_count]: 'int',
   [COLUMN.year]: 'smallint'

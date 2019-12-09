@@ -40,37 +40,34 @@ export const RULE_UNIT_MAP = {
 
 // Event Streaming
 export interface InboundEvent {
-  device_id: string
-  provider_id: string
-  event_type: string
-  event_type_reason: string
+  device_id: UUID
+  provider_id: UUID
+  event_type: VEHICLE_EVENT
+  event_type_reason: VEHICLE_REASON | null
   telemetry: {
-    device_id: string
-    timestamp: number
-    gps: { lat: number; lng: number; altitude: number; heading: number; speed: number; accuracy: number }
+    device_id: UUID
+    timestamp: Timestamp
+    gps: GpsData
     charge: number
-    provider_id: string
+    provider_id: UUID
   }
-  timestamp: number
-  trip_id: string
-  recorded: number
-  telemetry_timestamp: number
-  service_area_id: string
-  id: number
+  timestamp: Timestamp
+  trip_id: UUID
+  recorded: Timestamp
+  telemetry_timestamp: Timestamp
+  service_area_id: UUID
+  id: UUID
 }
 
 export interface InboundTelemetry {
-  device_id: string
-  provider_id: string
-  timestamp: number
+  device_id: UUID
+  provider_id: UUID
+  timestamp: Timestamp
   charge: number
-  gps: { lat: number; lng: number; altitude: number; heading: number; speed: number; accuracy: number }
-  recorded: number
-  id: number
+  gps: GpsData
+  recorded: Timestamp
+  id: UUID
 }
-
-export const CE_TYPES = Enum('mds.event', 'mds.telemetry')
-export type CE_TYPE = keyof typeof CE_TYPES
 
 export interface StateEntry {
   vehicle_type: VEHICLE_TYPE
@@ -80,14 +77,14 @@ export interface StateEntry {
   provider_id: UUID
   recorded: Timestamp
   annotation_version: number
-  annotation?: AnnotationData | null
-  gps?: GpsData | null
-  service_area_id?: UUID | null
-  charge?: number | null
-  state?: VEHICLE_STATUS | null
-  event_type?: VEHICLE_EVENT | null
-  event_type_reason?: VEHICLE_REASON | null
-  trip_id?: UUID | null
+  annotation: AnnotationData
+  gps: GpsData
+  service_area_id: UUID | null
+  charge: number
+  state: VEHICLE_STATUS | null // telemetry entries will be null
+  event_type: VEHICLE_EVENT | null // telemetry entries will be null
+  event_type_reason: VEHICLE_REASON | null // telemetry entries will be null
+  trip_id: UUID | null // telemetry entries will be null
 }
 
 export interface AnnotationData {
@@ -100,12 +97,12 @@ export interface AnnotationData {
 export interface TripEvent {
   vehicle_type: VEHICLE_TYPE
   timestamp: Timestamp
-  event_type: VEHICLE_EVENT
-  event_type_reason?: VEHICLE_REASON | null
+  event_type: VEHICLE_EVENT | null // telemetry entries will be null
+  event_type_reason: VEHICLE_REASON | null
   annotation_version: number
   annotation: AnnotationData
   gps: GpsData
-  service_area_id?: UUID | null
+  service_area_id: UUID | null
 }
 
 export type TripsEvents = { [trip_id: string]: TripEvent[] }
@@ -116,7 +113,7 @@ export interface TripTelemetry {
   longitude: number
   annotation_version: number
   annotation: AnnotationData
-  service_area_id?: UUID | null
+  service_area_id: UUID | null
 }
 
 export type TripsTelemetry = { [trip_id: string]: TripTelemetry[] }
@@ -128,14 +125,15 @@ export interface TripEntry {
   provider_id: UUID
   start_time: Timestamp
   end_time: Timestamp
-  start_service_area_id?: UUID | null
-  end_service_area_id?: UUID | null
+  start_service_area_id: UUID | null
+  end_service_area_id: UUID | null
   duration: number // in milliseconds
   distance: number // default in miles
-  violation_count?: number | null
-  max_violation_dist?: number
-  min_violation_dist?: number
-  avg_violation_dist?: number
+  violation_count: number
+  max_violation_dist: number | null
+  min_violation_dist: number | null
+  avg_violation_dist: number | null
+  events: TripEvent[]
   telemetry: TripTelemetry[][]
 }
 
@@ -147,9 +145,9 @@ export interface ProviderStreamData {
 
 export interface MetricCount {
   count: number
-  min?: number | null
-  max?: number | null
-  average?: number | null
+  min: number | null
+  max: number | null
+  average: number | null
 }
 export interface LateMetricObj {
   /** Number of trip_start and trip_end events out of compliance with time SLA. */
@@ -162,22 +160,17 @@ export interface LateMetricObj {
 
 export interface VehicleCountMetricObj {
   /** Total number of registered vehicles at start of bin. */
-  // WAS: `registered`
-  registered?: number | null
+  registered: number | null
   /** Total number of vehicles in the right-of-way at start of bin (available, reserved, trip). */
-  // WAS: `cap_count`
-  deployed?: number | null
-  /** Number of vehicles in the right-fo-way with 0 charge at start of bin. */
-  // WAS: `dead_count`
-  dead?: number | null
+  deployed: number | null
+  /** Number of vehicles in the right-of-way with 0 charge at start of bin. */
+  dead: number | null
 }
 
 export interface MetricsTableRow {
   /** Timestamp for start of bin (currently houry bins). */
-  // WAS: `timestamp`
   start_time: Timestamp
   /** Bin size. */
-  // TODO: new column
   bin_size: 'hour' | 'day'
   /** Geography this row applies to.  `null` = the entire organization. */
   geography: null | string // TODO: May be geography 'name', may be 'id'. ???
@@ -187,30 +180,24 @@ export interface MetricsTableRow {
   vehicle_type: VEHICLE_TYPE
   /** Number of events registered within the bin, by type. */
   event_counts: { [S in VEHICLE_EVENT]: number }
-  vehicle_counts?: VehicleCountMetricObj | null
+  vehicle_counts: VehicleCountMetricObj
   /** Number of trips in region, derived from distinct trip ids. */
   trip_count: number
-  /** Number of vehicles with: [0 trips, 1 trip, 2 trips, ...] during bin. */
-  // WAS: `trips_count`
-  vehicle_trips_count?: string | null
+  /** Number of vehicles with: {0 trips:count, 1 trip:count, 2 trips:count, ...] during bin. */
+  vehicle_trips_count: { [x: number]: number } | null
   /** Number of events which out of compliance with time SLA. */
   // TODO:  break into object with this binning, other event types not important. (?)
-  // WAS: `late_event_count`
   event_time_violations: LateMetricObj
   /** Number of telemetry events out of compliance with distance SLA. */
-  // WAS: `bad_telem_count`
   telemetry_distance_violations: MetricCount
   /** Number of event anomalies. */
   // TODO:  break into object like so
   bad_events: {
     /** Number of invalid events (not matching event state machine). */
-    // WAS: `invalid_count`
     invalid_count: number | null
     /** Number of duplicate events submitted. */
-    // WAS: `duplicate_count`
     duplicate_count: number | null
     /** Number of out-of-order events submitted (according to state machine). */
-    // WAS: `ooo_count`
     out_of_order_count: number | null
   }
   /** SLA values used in these calculations, as of start of bin. */
