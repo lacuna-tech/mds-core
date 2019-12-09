@@ -67,7 +67,7 @@ function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [v
   try {
     const devices: { [vehicle_id: string]: StateEntry } = {}
     /* eslint-disable-next-line guard-for-in */
-    for (const vehicle_id in allDeviceStates) {
+    for (const vehicle_id in JSON.parse(String(allDeviceStates))) {
       devices[vehicle_id] = parseDeviceState(allDeviceStates[vehicle_id])
     }
     return devices
@@ -160,7 +160,7 @@ async function parseAllTripsEvents(
 
     /* eslint-reason FIXME use map() */
     /* eslint-disable-next-line guard-for-in */
-    for (const vehicle_id in allTripsEvents) {
+    for (const vehicle_id in JSON.parse(String(allTripsEvents)) {
       /* eslint-reason FIXME use Promise.all() */
       /* eslint-disable-next-line no-await-in-loop */
       allTrips[vehicle_id] = await parseTripsEvents(allTripsEvents[vehicle_id])

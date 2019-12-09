@@ -1,7 +1,7 @@
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import log from '@mds-core/mds-logger'
-import { calcDistance } from '@mds-core/mds-utils'
+import { calcDistance, isUUID } from '@mds-core/mds-utils'
 
 import { TripEvent, TripEntry, TripTelemetry, UUID, Timestamp } from '@mds-core/mds-types'
 import config from './config'
@@ -83,8 +83,7 @@ async function processTrip(
         telemetry.push(tripSegment)
       }
     } else {
-      await log.warn('NO TELEMETRY FOUND FOR TRIP')
-      return false
+      throw new Error('TRIP TELEMETRY NOT FOUND')
     }
 
     // Calculate trip metrics
@@ -135,19 +134,23 @@ export async function tripAggregator(): Promise<boolean> {
       const tripsEvents = tripsMap[vehicleID]
       const unprocessedTripsEvents = tripsEvents
 
-      await Promise.all(
+      const results = await Promise.all(
         Object.keys(tripsEvents).map(async tripID => {
-          if (await processTrip(provider_id, device_id, tripID, tripsEvents[tripID], curTime)) {
-            delete unprocessedTripsEvents[tripID]
+          try {
+            return processTrip(provider_id, device_id, tripID, tripsEvents[tripID], curTime)
+          } catch (err) {
+            return log.error(err)
           }
         })
       )
+
+      results.map(tripID => {
+        if (isUUID(tripID) && unprocessedTripsEvents[tripID]) delete unprocessedTripsEvents[tripID]
+      })
+
       // Update or clear cache
-      if (Object.keys(unprocessedTripsEvents).length) {
-        await cache.writeTripsEvents(vehicleID, unprocessedTripsEvents)
-      } else {
-        await cache.deleteTripsEvents(vehicleID)
-      }
+      if (Object.keys(unprocessedTripsEvents).length) return cache.writeTripsEvents(vehicleID, unprocessedTripsEvents)
+      return cache.deleteTripsEvents(vehicleID)
     })
   )
   return true
