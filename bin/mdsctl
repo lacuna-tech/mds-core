@@ -1197,6 +1197,12 @@ preset() {
           is+="${is:+,}presets-mds+=processors.${p}.enabled=true"
         done; unset p
         is+="${is:+,}presets-mds+=useEvents=true";;
+	    data-external)
+	      is+="${is:+,}sets-mds+=postgresql.internal=false"
+		    is+="${is:+,}sets-mds+=postgresql.host=host.docker.internal"
+		    is+="${is:+,}sets-mds+=postgresql.hostReader=host.docker.internal"
+		    is+="${is:+,}sets-mds+=redis.internal=false"
+		    is+="${is:+,}sets-mds+=redis.host=host.docker.internal";;
     esac
   done; unset p
 
