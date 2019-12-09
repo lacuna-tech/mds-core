@@ -381,12 +381,12 @@ async function readDeviceStatus(device_id: UUID) {
     Object.assign(deviceStatusMap[item.device_id], item)
   })
   const statuses = Object.values(deviceStatusMap)
-  const statusesWithTelemetry = statuses.filter((status: any) => status.telemetry)
-  if (statusesWithTelemetry.length === 0) {
+  const statusWithTelemetry = statuses.find((status: any) => status.telemetry)
+  if (statusWithTelemetry === null) {
     log.info('Missing vehicle telemetry', 'device_id', device_id)
     return statuses[0]
   }
-  return statusesWithTelemetry[0]
+  return statusWithTelemetry
 }
 
 /* eslint-reason redis external lib weirdness */

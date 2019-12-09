@@ -14,7 +14,6 @@
     limitations under the License.
  */
 
-import log from '@mds-core/mds-logger'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import {
@@ -174,20 +173,13 @@ export async function getVehicle(provider_id: UUID, vehicle_id: string) {
     return null
   }
   const deviceStatus = (await cache.readDeviceStatus(device.device_id)) as VehicleEvent & Device
-  if (deviceStatus != null) {
+  if (deviceStatus !== null) {
     const status = EVENT_STATUS_MAP[deviceStatus.event_type as VEHICLE_EVENT]
     const updated = deviceStatus.timestamp
     return { ...device, ...deviceStatus, status, updated }
   }
-  log.info(
-    'Missing vehicle status',
-    'provider_id',
-    provider_id,
-    'vehicle_id',
-    vehicle_id,
-    'device_id',
-    device.device_id
-  )
+  const { device_id } = device
+  log.info('Missing vehicle status', { provider_id, vehicle_id, device_id })
   return device
 }
 
