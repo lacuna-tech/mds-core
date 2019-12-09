@@ -246,7 +246,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     })
 
     if (format === 'tsv') {
-      // TODO this branch needs some serious testing
+      // TODO sync up with stub format...should be really basic string-only
       const parser = new Parser({
         delimiter: '\t'
       })
@@ -294,27 +294,5 @@ export async function getAllStubbed(req: MetricsApiRequest, res: GetAllResponse)
     return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
 
   const tsvStub = await fs.readFileSync('./metrics-sample-v1.tsv')
-  const rows = String(tsvStub).split('\n').splice(1)
-
-  try {
-    const bucketedMetrics = slices.map((_, idx) => {
-      return rows[idx % rows.length]
-    })
-
-    const bucketedMetricsWithTimeSlice = bucketedMetrics.map((bucketedMetricsRow, idx) => {
-      const slice = slices[idx]
-      return { data: bucketedMetricsRow, ...slice }
-    })
-
-    if (format === 'tsv') {
-      return res.status(200).send(bucketedMetricsWithTimeSlice)
-    } else if (format === 'json') {
-      return res.status(400).send(new BadParamsError(`Stub method must take TSV`))
-    }
-    // We should never fall out to this case
-    return res.status(500).send(new ServerError('Unexpected error'))
-  } catch (error) {
-    await log.error(error)
-    res.status(500).send(new ServerError(error))
-  }
+  return res.status(200).send(String(tsvStub))
 }
