@@ -293,21 +293,13 @@ export async function getAllStubbed(req: MetricsApiRequest, res: GetAllResponse)
   if (vehicle_type !== null && !Object.values(VEHICLE_TYPES).includes(vehicle_type))
     return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
 
-  const tsvStub = fs.readFileSync('./metrics-sample-v1.tsv')
+  const tsvStub = await fs.readFileSync('./metrics-sample-v1.tsv')
+  const rows = String(tsvStub).split('\n').splice(1)
 
   try {
-    const bucketedMetrics = await Promise.all(
-      slices.map(slice => {
-        const { start, end } = slice
-        return db.getAllMetrics({
-          start_time: start,
-          end_time: end,
-          geography_id: null,
-          provider_id,
-          vehicle_type
-        })
-      })
-    )
+    const bucketedMetrics = slices.map(() => {
+      return rows
+    })
 
     const bucketedMetricsWithTimeSlice = bucketedMetrics.map((bucketedMetricsRow, idx) => {
       const slice = slices[idx]
@@ -327,7 +319,7 @@ export async function getAllStubbed(req: MetricsApiRequest, res: GetAllResponse)
       })
       return res.status(200).send(bucketedMetricsWithTimeSliceWithTsvRows)
     } else if (format === 'json') {
-      return res.status(200).send(bucketedMetricsWithTimeSlice)
+      return res.status(400).send(new BadParamsError(`Stub method must take TSV`))
     }
     // We should never fall out to this case
     return res.status(500).send(new ServerError('Unexpected error'))
