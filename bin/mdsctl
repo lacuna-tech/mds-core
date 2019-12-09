@@ -709,7 +709,7 @@ buildNatss() {
       export GOPATH=${configs[workdir]};
       export KO_DOCKER_REPO=ko.local;
       # fixme: do better
-      ${GO_HOME:-~/go/bin}/ko publish -BL ./cmd/${d})
+      ${GO_HOME:-~/go}/bin/ko publish -BL ./cmd/${d})
   }; unset d
 }
 
