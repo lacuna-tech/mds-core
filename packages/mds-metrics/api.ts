@@ -51,6 +51,12 @@ function api(app: express.Express): express.Express {
     getAll
   )
 
+  app.get(
+    pathsFor('/all_stubbed'),
+    checkAccess(scopes => scopes.includes('admin:all')),
+    getAll
+  )
+
   return app
 }
 

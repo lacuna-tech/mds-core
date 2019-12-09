@@ -2,6 +2,7 @@ import db from '@mds-core/mds-db'
 import { inc, RuntimeError, ServerError, isUUID, BadParamsError, parseRelative } from '@mds-core/mds-utils'
 import { EVENT_STATUS_MAP, VEHICLE_TYPES } from '@mds-core/mds-types'
 import { Parser } from 'json2csv'
+import fs from 'fs'
 
 import log from '@mds-core/mds-logger'
 import {
@@ -224,6 +225,75 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   // TODO test validation
   if (vehicle_type !== null && !Object.values(VEHICLE_TYPES).includes(vehicle_type))
     return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
+
+  try {
+    const bucketedMetrics = await Promise.all(
+      slices.map(slice => {
+        const { start, end } = slice
+        return db.getAllMetrics({
+          start_time: start,
+          end_time: end,
+          geography_id: null,
+          provider_id,
+          vehicle_type
+        })
+      })
+    )
+
+    const bucketedMetricsWithTimeSlice = bucketedMetrics.map((bucketedMetricsRow, idx) => {
+      const slice = slices[idx]
+      return { data: bucketedMetricsRow, ...slice }
+    })
+
+    if (format === 'tsv') {
+      // TODO this branch needs some serious testing
+      const parser = new Parser({
+        delimiter: '\t'
+      })
+      const bucketedMetricsWithTimeSliceWithTsvRows = bucketedMetricsWithTimeSlice.map((bucketedMetricsBundle) => {
+        return {
+          ...bucketedMetricsBundle,
+          data: parser.parse(bucketedMetricsBundle.data)
+        }
+      })
+      return res.status(200).send(bucketedMetricsWithTimeSliceWithTsvRows)
+    } else if (format === 'json') {
+      return res.status(200).send(bucketedMetricsWithTimeSlice)
+    }
+    // We should never fall out to this case
+    return res.status(500).send(new ServerError('Unexpected error'))
+  } catch (error) {
+    await log.error(error)
+    res.status(500).send(new ServerError(error))
+  }
+}
+
+export async function getAllStubbed(req: MetricsApiRequest, res: GetAllResponse) {
+  const { query } = req
+  const bin_size = getBinSizeFromQuery(query)
+
+  const { start_time, end_time } = parseRelative(query.start || 'today', query.end || 'now')
+  const slices = getTimeBins({
+    bin_size,
+    start_time,
+    end_time
+  })
+  const provider_id = query.provider_id || null
+  const vehicle_type = query.vehicle_type || null
+  const format : string | 'json' | 'tsv' = query.format || 'json'
+
+  if (format !== 'json' && format !== 'tsv') {
+    return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
+  }
+
+  if (provider_id !== null && !isUUID(provider_id))
+    return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
+
+  // TODO test validation
+  if (vehicle_type !== null && !Object.values(VEHICLE_TYPES).includes(vehicle_type))
+    return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
+
+  const tsvStub = fs.readFileSync('./metrics-sample-v1.tsv')
 
   try {
     const bucketedMetrics = await Promise.all(
