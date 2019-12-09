@@ -1,10 +1,8 @@
 import db from '@mds-core/mds-db'
 import log from '@mds-core/mds-logger'
-import { MetricsTableRow, ProviderStreamData, UUID, Timestamp } from '@mds-core/mds-types'
+import { MetricsTableRow, UUID, Timestamp } from '@mds-core/mds-types'
 import metric from './metrics'
 import config from './config'
-
-import { dataHandler } from './proc'
 
 /*
     Provider processor that runs inside a Kubernetes pod, activated via cron job.
@@ -50,8 +48,8 @@ async function processProvider(providerID: UUID, curTime: Timestamp): Promise<bo
     ),
     bad_events: {
       invalid_count: null, // providerData ? providerData.invalidEvents.length : null,
-      duplicate_count: null, //providerData ? providerData.duplicateEvents.length : null,
-      out_of_order_count: null //providerData ? providerData.outOfOrderEvents.length : null
+      duplicate_count: null, // providerData ? providerData.duplicateEvents.length : null,
+      out_of_order_count: null // providerData ? providerData.outOfOrderEvents.length : null
     },
     sla: {
       max_vehicle_cap: 1600, // TODO: import from PCE
@@ -69,32 +67,23 @@ async function processProvider(providerID: UUID, curTime: Timestamp): Promise<bo
   try {
     await db.insertMetrics(provider_data)
   } catch (err) {
-    log.error(err)
+    await log.error(err)
     return false
   }
   return true
 }
 
-async function providerAggregator(): Promise<boolean> {
+export async function providerAggregator(): Promise<boolean> {
   const curTime: Timestamp = new Date().getTime()
   const providersList: UUID[] = config.organization.providers
   await Promise.all(
     providersList.map(async provider => {
       if (await processProvider(provider, curTime)) {
-        log.info('PROVIDER PROCESSED')
+        await log.info('PROVIDER PROCESSED')
       } else {
-        log.warn('PROVIDER NOT PROCESSED')
+        await log.warn('PROVIDER NOT PROCESSED')
       }
     })
   )
   return true
 }
-
-async function providerHandler() {
-  log.info('triggered')
-  await dataHandler('provider', async () => {
-    await providerAggregator()
-  })
-}
-
-export { providerHandler }

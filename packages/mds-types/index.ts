@@ -69,9 +69,6 @@ export interface InboundTelemetry {
   id: UUID
 }
 
-export const CE_TYPES = Enum('mds.event', 'mds.telemetry')
-export type CE_TYPE = keyof typeof CE_TYPES
-
 export interface StateEntry {
   vehicle_type: VEHICLE_TYPE
   type: string

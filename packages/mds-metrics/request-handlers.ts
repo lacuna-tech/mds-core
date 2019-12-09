@@ -212,7 +212,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   })
   const provider_id = query.provider_id || null
   const vehicle_type = query.vehicle_type || null
-  const format : string | 'json' | 'tsv' = query.format || 'json'
+  const format: string | 'json' | 'tsv' = query.format || 'json'
 
   if (format !== 'json' && format !== 'tsv') {
     return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
@@ -249,14 +249,15 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
       const parser = new Parser({
         delimiter: '\t'
       })
-      const bucketedMetricsWithTimeSliceWithTsvRows = bucketedMetricsWithTimeSlice.map((bucketedMetricsBundle) => {
+      const bucketedMetricsWithTimeSliceWithTsvRows = bucketedMetricsWithTimeSlice.map(bucketedMetricsBundle => {
         return {
           ...bucketedMetricsBundle,
           data: parser.parse(bucketedMetricsBundle.data)
         }
       })
       return res.status(200).send(bucketedMetricsWithTimeSliceWithTsvRows)
-    } else if (format === 'json') {
+    }
+    if (format === 'json') {
       return res.status(200).send(bucketedMetricsWithTimeSlice)
     }
     // We should never fall out to this case

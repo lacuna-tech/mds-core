@@ -5,7 +5,6 @@ import { calcDistance } from '@mds-core/mds-utils'
 
 import { TripEvent, TripEntry, TripTelemetry, UUID, Timestamp } from '@mds-core/mds-types'
 import config from './config'
-import { dataHandler } from './proc'
 
 /*
     Trip processor that runs inside a Kubernetes pod, activated via cron job.
@@ -84,15 +83,14 @@ async function processTrip(
         telemetry.push(tripSegment)
       }
     } else {
-      log.warn('NO TELEMETRY FOUND FOR TRIP')
+      await log.warn('NO TELEMETRY FOUND FOR TRIP')
       return false
     }
 
     // Calculate trip metrics
     const duration = tripEndEvent.timestamp - tripStartEvent.timestamp
     const distMeasure = calcDistance(telemetry, tripStartEvent.gps)
-    const distance = distMeasure.distance
-    const distArray = distMeasure.points
+    const { distance, points: distArray } = distMeasure
     const violationArray = distArray.filter(dist => {
       return dist > config.compliance_sla.max_telemetry_distance
     })
@@ -119,11 +117,11 @@ async function processTrip(
     await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, tripMap)
     return true
   }
-  log.warn('NO TELEMETRY FOUND FOR TRIP')
+  await log.warn('NO TELEMETRY FOUND FOR TRIP')
   return false
 }
 
-async function tripAggregator(): Promise<boolean> {
+export async function tripAggregator(): Promise<boolean> {
   const curTime = new Date().getTime()
   const tripsMap = await cache.readAllTripsEvents()
   if (!tripsMap) {
@@ -153,12 +151,3 @@ async function tripAggregator(): Promise<boolean> {
   )
   return true
 }
-
-async function tripHandler() {
-  log.info('triggered')
-  await dataHandler('trip', async () => {
-    await tripAggregator()
-  })
-}
-
-export { tripHandler }
