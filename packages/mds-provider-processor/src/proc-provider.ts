@@ -1,10 +1,8 @@
 import db from '@mds-core/mds-db'
 import log from '@mds-core/mds-logger'
-import { MetricsTableRow, ProviderStreamData } from '@mds-core/mds-types'
+import { MetricsTableRow, UUID, Timestamp } from '@mds-core/mds-types'
 import metric from './metrics'
 import config from './config'
-
-import { dataHandler } from './proc'
 
 /*
     Provider processor that runs inside a Kubernetes pod, activated via cron job.
@@ -18,34 +16,40 @@ import { dataHandler } from './proc'
           VALUES = MetricsTableRow
 */
 
-async function processProvider(providerID: string, curTime: number): Promise<boolean> {
+async function processProvider(providerID: UUID, curTime: Timestamp): Promise<boolean> {
   /*
     Add provider metadata into PG database.
     These metrics should be computed here on an interval basis rather than being event triggered.
   */
-  // TODO: decide between seperate aggerator services for vehicle type/jurisdiction.
   // Only processing at organization level for scooters now
+  // TODO: add providerMap back when streaming logic is added back to proc-event
   // const providersMap = await cache.hgetall('provider:state')
-  const providersMap = null
-  const providerData: ProviderStreamData = providersMap ? JSON.parse(providersMap[providerID]) : null
+  // const providerData: ProviderStreamData = providersMap ? providersMap[providerID] : null
 
+  const binStart = curTime - 3600000
+  const binStartYesterday = binStart - 86400000
+  const binEndYesterday = curTime - 86400000
   // TODO: convert hardcoded bin start time, vehicle_type and geography
   const provider_data: MetricsTableRow = {
-    start_time: curTime - 3600000,
+    start_time: binStart,
     bin_size: 'hour',
     geography: null,
     provider_id: providerID,
     vehicle_type: 'scooter',
-    event_counts: await metric.calcEventCounts(providerID),
-    vehicle_counts: await metric.calcVehicleCounts(providerID),
-    trip_count: await metric.calcTripCount(providerID, curTime),
-    vehicle_trips_count: await metric.calcVehicleTripCount(providerID, curTime),
-    event_time_violations: await metric.calcLateEventCount(providerID, curTime),
-    telemetry_distance_violations: await metric.calcTelemDistViolationCount(providerID, curTime),
+    event_counts: await metric.calcEventCounts(providerID, binStart, curTime),
+    vehicle_counts: await metric.calcVehicleCounts(providerID, 0, binStart),
+    trip_count: await metric.calcTripCount(providerID, binStart, curTime),
+    vehicle_trips_count: await metric.calcVehicleTripCount(providerID, binStart, curTime),
+    event_time_violations: await metric.calcLateEventCount(providerID, binStart, curTime),
+    telemetry_distance_violations: await metric.calcTelemDistViolationCount(
+      providerID,
+      binStartYesterday,
+      binEndYesterday
+    ),
     bad_events: {
-      invalid_count: providerData ? providerData.invalidEvents.length : null,
-      duplicate_count: providerData ? providerData.duplicateEvents.length : null,
-      out_of_order_count: providerData ? providerData.outOfOrderEvents.length : null
+      invalid_count: null, // providerData ? providerData.invalidEvents.length : null,
+      duplicate_count: null, // providerData ? providerData.duplicateEvents.length : null,
+      out_of_order_count: null // providerData ? providerData.outOfOrderEvents.length : null
     },
     sla: {
       max_vehicle_cap: 1600, // TODO: import from PCE
@@ -60,43 +64,26 @@ async function processProvider(providerID: string, curTime: number): Promise<boo
     }
   }
 
-  // Insert into PG DB and stream
   try {
     await db.insertMetrics(provider_data)
-    log.info('INSERT')
   } catch (err) {
     await log.error(err)
     return false
   }
-  // await stream.writeCloudEvent('mds.processed.provider', JSON.stringify(provider_data))
-
   return true
 }
 
-async function providerAggregator() {
-  const curTime = new Date().getTime()
-  const providersList = config.organization.providers
-
-  /* eslint-reason FIXME use map() */
-  /* eslint-disable-next-line guard-for-in */
-  for (const id in providersList) {
-    /* eslint-reason FIXME use Promise.all() */
-    /* eslint-disable-next-line no-await-in-loop */
-    const providerProcessed = await processProvider(providersList[id], curTime)
-    if (providerProcessed) {
-      log.info('PROVIDER PROCESSED')
-    } else {
-      /* eslint-reason FIXME use Promise.all() */
-      /* eslint-disable-next-line no-await-in-loop */
-      await log.warn('PROVIDER NOT PROCESSED')
-    }
-  }
+export async function providerAggregator(): Promise<boolean> {
+  const curTime: Timestamp = new Date().getTime()
+  const providersList: UUID[] = config.organization.providers
+  await Promise.all(
+    providersList.map(async provider => {
+      if (await processProvider(provider, curTime)) {
+        await log.info('PROVIDER PROCESSED')
+      } else {
+        await log.warn('PROVIDER NOT PROCESSED')
+      }
+    })
+  )
+  return true
 }
-
-async function providerHandler() {
-  await dataHandler('provider', async () => {
-    await providerAggregator()
-  })
-}
-
-export { providerHandler }

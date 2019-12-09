@@ -8,14 +8,12 @@ import {
   StateEntry,
   TripEvent,
   TripTelemetry,
-  CE_TYPE,
   EVENT_STATUS_MAP,
   VEHICLE_TYPE,
   UUID,
   Timestamp
 } from '@mds-core/mds-types'
 import { getAnnotationData, getAnnotationVersion } from './annotation'
-import { dataHandler } from './proc'
 
 /*
     Event processor that runs inside a Kubernetes pod.
@@ -85,8 +83,7 @@ async function processTripTelemetry(deviceState: StateEntry): Promise<boolean> {
     trip_id
   } = deviceState
 
-  const lat = gps.lat
-  const lng = gps.lng
+  const { lat, lng } = gps
   const tripTelemetry: TripTelemetry = {
     timestamp,
     latitude: lat,
@@ -158,13 +155,13 @@ async function processTripEvent(deviceState: StateEntry): Promise<boolean> {
   return false
 }
 
-async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry): Promise<void> {
+export async function eventHandler(type: string, data: InboundEvent & InboundTelemetry): Promise<void> {
   const { timestamp, device_id, provider_id, recorded } = data
   const lastState = await cache.readDeviceState(`${provider_id}:${device_id}`)
   // Construct state
   const baseDeviceState: {
     vehicle_type: VEHICLE_TYPE
-    type: CE_TYPE
+    type: string
     timestamp: Timestamp
     device_id: UUID
     provider_id: UUID
@@ -172,7 +169,7 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry):
     annotation_version: number
   } = {
     vehicle_type: 'scooter',
-    type: type,
+    type,
     timestamp,
     device_id,
     provider_id,
@@ -183,8 +180,7 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry):
   switch (baseDeviceState.type) {
     case 'mds.event': {
       const { event_type, telemetry, event_type_reason, trip_id, service_area_id } = data
-      const gps = telemetry.gps
-      const charge = telemetry.charge
+      const { gps, charge } = telemetry
       const annotation = getAnnotationData(gps)
       const deviceState: StateEntry = {
         ...baseDeviceState,
@@ -251,12 +247,3 @@ async function processRaw(type: CE_TYPE, data: InboundEvent & InboundTelemetry):
     }
   }
 }
-
-async function eventHandler() {
-  await dataHandler('event', (type: CE_TYPE, data: InboundEvent & InboundTelemetry) => {
-    log.info(type, data)
-    return processRaw(type, data)
-  })
-}
-
-export { eventHandler }

@@ -149,6 +149,7 @@ async function readDeviceState(field: UUID): Promise<StateEntry | null> {
   return deviceState ? parseDeviceState(deviceState as StringifiedStateEntry) : null
 }
 
+// TODO: Increase performance with provider pattern based fetch
 async function readAllDeviceStates(): Promise<{ [vehicle_id: string]: StateEntry } | null> {
   const allDeviceStates = await hgetall('device:state')
   return allDeviceStates ? parseAllDeviceStates(allDeviceStates as StringifiedAllDeviceStates) : null

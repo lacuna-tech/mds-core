@@ -1,18 +1,22 @@
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import {
-  StateEntry,
-  EVENT_STATUS_MAP,
   VEHICLE_STATUSES_ROW,
   VehicleCountMetricObj,
   MetricCount,
   LateMetricObj,
-  VEHICLE_EVENT
+  VEHICLE_EVENT,
+  UUID,
+  Timestamp
 } from '@mds-core/mds-types'
+import config from './config'
 
-// TODO: refactor
-async function calcEventCounts(id: string) {
-  const events = await db.getStates(id)
+async function calcEventCounts(
+  providerID: UUID,
+  startTime: Timestamp,
+  endTime: Timestamp
+): Promise<{ [S in VEHICLE_EVENT]: number }> {
+  const events = await db.getStates(providerID, startTime, endTime)
   const eventCounts: { [S in VEHICLE_EVENT]: number } = {
     service_start: 0,
     provider_drop_off: 0,
@@ -29,122 +33,124 @@ async function calcEventCounts(id: string) {
     deregister: 0,
     agency_pick_up: 0
   }
-
-  /* eslint-reason FIXME use map() */
-  /* eslint-disable-next-line guard-for-in */
-  for (const event_type in EVENT_STATUS_MAP) {
-    eventCounts[event_type as VEHICLE_EVENT] = events.filter((event: StateEntry) => {
-      return event.event_type === event_type
+  Object.keys(eventCounts).map(eventType => {
+    eventCounts[eventType as VEHICLE_EVENT] = events.filter(event => {
+      return event.event_type === eventType
     }).length
-  }
+  })
   return eventCounts
 }
 
-async function calcVehicleCounts(id: string): Promise<VehicleCountMetricObj | null> {
-  const events = await db.getStates(id)
+async function calcVehicleCounts(
+  providerID: UUID,
+  startTime: Timestamp,
+  endTime: Timestamp
+): Promise<VehicleCountMetricObj> {
+  // Calculate total number of registered vehicles at start of bin
+  // TODO: cache value to query only bin size
+  const events = await db.getStates(providerID, startTime, endTime)
+  const histRegistered = events.filter(event => {
+    return event.event_type === 'register'
+  }).length
+  const histDeregistered = events.filter(event => {
+    return event.event_type === 'deregister'
+  }).length
+  const registered = histRegistered && histDeregistered ? histRegistered - histDeregistered : null
+
+  // Calculate total number of vehicle in Right of way
+  // TODO: 48 hour filtering
+  const stateCache = await cache.readAllDeviceStates()
+  const deployed = stateCache
+    ? Object.values(stateCache).filter(vehicle => {
+        return vehicle.provider_id === providerID && VEHICLE_STATUSES_ROW.includes(String(vehicle.state))
+      }).length
+    : null
+
+  const dead = null // TODO: Q1 scoped metric
+  return { registered, deployed, dead }
+}
+
+async function calcTripCount(providerID: UUID, startTime: Timestamp, endTime: Timestamp): Promise<number> {
+  const tripCount = await db.getTripCount(providerID, startTime, endTime)
+  return tripCount[0].count
+}
+
+async function calcVehicleTripCount(
+  providerID: UUID,
+  startTime: Timestamp,
+  endTime: Timestamp
+): Promise<{ [x: number]: number } | null> {
+  const maxTrips = 5
+  const tripCountArray = new Array(maxTrips + 1).fill(0)
+
   const stateCache = await cache.readAllDeviceStates()
   if (!stateCache) {
     return null
   }
-  const recentStates = Object.values(stateCache)
-
-  // Calculate total number of registered vehicles at start of bin
-  const histRegistered = events.filter((event: StateEntry) => {
-    return event.event_type === 'register'
-  }).length
-  const histDeregistered = events.filter((event: StateEntry) => {
-    return event.event_type === 'deregister'
-  }).length
-  const currRegistered = histRegistered - histDeregistered
-
-  // Calculate total number of vehicle in Right of way
-  // TODO: 48 hour filtering
-  let count = 0
-
-  /* eslint-reason FIXME use map() */
-  /* eslint-disable-next-line guard-for-in */
-  for (const i in recentStates) {
-    const deviceState = recentStates[i]
-    if (VEHICLE_STATUSES_ROW.includes(String(deviceState.state))) {
-      count += 1
-    }
-  }
-  // vehicle_counts.deployed = recent_states.filter(function(recent_states: any) {
-  //  return recent_states.state === "available"
-  // }).length
-
-  const vehicleCounts: VehicleCountMetricObj = {
-    registered: currRegistered,
-    deployed: count,
-    dead: null
-  }
-  return vehicleCounts
+  await Promise.all(
+    Object.values(stateCache)
+      .filter(vehicle => {
+        return vehicle.provider_id === providerID
+      })
+      .map(async vehicle => {
+        const tripCount = await db.getVehicleTripCount(vehicle.device_id, startTime, endTime)
+        const tripCountIndex = tripCount[0].count
+        if (tripCountIndex >= maxTrips) {
+          tripCountArray[maxTrips] += 1
+        } else {
+          tripCountArray[tripCountIndex] += 1
+        }
+      })
+  )
+  return { ...tripCountArray }
 }
 
-async function calcTripCount(id: string, curTime: number): Promise<number> {
-  const lastHour = curTime - 3600000
-  const tripCount = await db.getTripCount(id, lastHour, curTime)
-  return tripCount[0].count
+async function calcLateEventCount(providerID: UUID, startTime: Timestamp, endTime: Timestamp): Promise<LateMetricObj> {
+  const se = await db.getLateEventCount(
+    providerID,
+    ['trip_start', 'trip_end'],
+    config.compliance_sla.max_start_end_time,
+    startTime,
+    endTime
+  )
+  const el = await db.getLateEventCount(
+    providerID,
+    ['trip_enter', 'trip_leave'],
+    config.compliance_sla.max_enter_leave_time,
+    startTime,
+    endTime
+  )
+  const t = await db.getLateTelemetryCount(providerID, config.compliance_sla.max_telemetry_time, startTime, endTime)
+
+  const start_end: MetricCount = {
+    count: se[0].count,
+    min: se[0].min,
+    max: se[0].max,
+    average: se[0].average
+  }
+  const enter_leave: MetricCount = {
+    count: el[0].count,
+    min: el[0].min,
+    max: el[0].max,
+    average: el[0].average
+  }
+  const telemetry: MetricCount = {
+    count: t[0].count,
+    min: t[0].min,
+    max: t[0].max,
+    average: t[0].average
+  }
+
+  return { start_end, enter_leave, telemetry }
 }
 
-async function calcVehicleTripCount(id: string, curTime: number): Promise<string | null> {
-  const maxTrips = 5
-  const tripCountArray = new Array(maxTrips + 1).fill(0)
-  const rs = await cache.readAllDeviceStates()
-  if (!rs) {
-    return null
-  }
-  const vehicles = Object.keys(rs)
-  const lastHour = curTime - 3600000
-  // TODO: migrate form inefficient loop once SET is created in cache
-  /* eslint-reason FIXME use map() */
-  /* eslint-disable-next-line guard-for-in */
-  for (const i in vehicles) {
-    const [providerID, deviceID] = vehicles[i].split(':')
-    if (providerID === id) {
-      /* eslint-reason FIXME use Promise.all() */
-      /* eslint-disable-next-line no-await-in-loop */
-      const tripCount = await db.getVehicleTripCount(deviceID, lastHour, curTime)
-      const tripCountIndex = tripCount[0].count
-      if (tripCountIndex >= maxTrips) {
-        tripCountArray[maxTrips] += 1
-      } else {
-        tripCountArray[tripCountIndex] += 1
-      }
-    }
-  }
-  return String(tripCountArray)
-}
-
-async function calcLateEventCount(id: string, curTime: number): Promise<LateMetricObj> {
-  const last_hour = curTime - 3600000
-  const se = await db.getLateEventCount(id, ['trip_start', 'trip_end'], last_hour, curTime)
-  const el = await db.getLateEventCount(id, ['trip_enter', 'trip_leave'], last_hour, curTime)
-  const t = await db.getLateTelemetryCount(id, last_hour, curTime)
-
-  const lateStartEnd = {
-    count: se[0].count
-  } as MetricCount
-  const lateEnterLeave = {
-    count: el[0].count
-  } as MetricCount
-  const lateTelemetry = {
-    count: t[0].count
-  } as MetricCount
-
-  const lateMetric: LateMetricObj = {
-    start_end: lateStartEnd,
-    enter_leave: lateEnterLeave,
-    telemetry: lateTelemetry
-  }
-  return lateMetric
-}
-
-async function calcTelemDistViolationCount(id: string, curTime: number): Promise<MetricCount> {
-  // Calculating for trips that ended 24 hours ago in an hour bin
-  const binEnd = curTime - 86400000
-  const binStart = binEnd - 90000000
-  const trips = await db.getTrips(id, binStart, binEnd)
+async function calcTelemDistViolationCount(
+  providerID: UUID,
+  startTime: Timestamp,
+  endTime: Timestamp
+): Promise<MetricCount> {
+  // Calculating for trips that ended 24 hours ago in bin size
+  const trips = await db.getTrips(providerID, startTime, endTime)
 
   const countArray = trips
     .map(trip => {
@@ -171,11 +177,11 @@ async function calcTelemDistViolationCount(id: string, curTime: number): Promise
     countArray.length > 0
       ? {
           count: countArray.reduce((a, b) => a + b, 0),
-          average: avgArray.reduce((a, b) => a + b, 0) / avgArray.length,
           min: Math.min(...minArray),
-          max: Math.max(...maxArray)
+          max: Math.max(...maxArray),
+          average: avgArray.reduce((a, b) => a + b, 0) / avgArray.length
         }
-      : { count: 0 }
+      : { count: 0, min: null, max: null, average: null }
   return telemViolations
 }
 

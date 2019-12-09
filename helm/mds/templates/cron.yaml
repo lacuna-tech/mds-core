@@ -1,23 +1,24 @@
-# apiVersion: sources.eventing.knative.dev/v1alpha1
-# kind: CronJobSource
-# metadata:
-#   name: trip-cron2
-#   namespace: mds
-# spec:
-#   schedule: '* * * * *'
-#   sink:
-#     apiVersion: v1
-#     kind: Service
-#     name: mds-trip-processor
-# ---
-# apiVersion: sources.eventing.knative.dev/v1alpha1
-# kind: CronJobSource
-# metadata:
-#   name: prov-cron2
-#   namespace: mds
-# spec:
-#   schedule: '* * * * *'
-#   sink:
-#     apiVersion: v1
-#     kind: Service
-#     name: mds-provider-processor
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: CronJobSource
+metadata:
+  name: trip-cron2
+  namespace: mds
+spec:
+  schedule: '* * * * *'
+  sink:
+    apiVersion: v1
+    kind: Service
+    name: mds-trip-processor
+---
+apiVersion: sources.eventing.knative.dev/v1alpha1
+kind: CronJobSource
+metadata:
+  name: prov-cron2
+  namespace: mds
+spec:
+  schedule: '* * * * *'
+  sink:
+    ref:
+      apiVersion: v1
+      kind: Service
+      name: mds-provider-processor
