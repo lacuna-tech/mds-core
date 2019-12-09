@@ -297,8 +297,8 @@ export async function getAllStubbed(req: MetricsApiRequest, res: GetAllResponse)
   const rows = String(tsvStub).split('\n').splice(1)
 
   try {
-    const bucketedMetrics = slices.map(() => {
-      return rows
+    const bucketedMetrics = slices.map((_, idx) => {
+      return rows[idx % rows.length]
     })
 
     const bucketedMetricsWithTimeSlice = bucketedMetrics.map((bucketedMetricsRow, idx) => {
@@ -307,17 +307,7 @@ export async function getAllStubbed(req: MetricsApiRequest, res: GetAllResponse)
     })
 
     if (format === 'tsv') {
-      // TODO this branch needs some serious testing
-      const parser = new Parser({
-        delimiter: '\t'
-      })
-      const bucketedMetricsWithTimeSliceWithTsvRows = bucketedMetricsWithTimeSlice.map((bucketedMetricsBundle) => {
-        return {
-          ...bucketedMetricsBundle,
-          data: parser.parse(bucketedMetricsBundle.data)
-        }
-      })
-      return res.status(200).send(bucketedMetricsWithTimeSliceWithTsvRows)
+      return res.status(200).send(bucketedMetricsWithTimeSlice)
     } else if (format === 'json') {
       return res.status(400).send(new BadParamsError(`Stub method must take TSV`))
     }
