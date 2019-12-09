@@ -17,7 +17,6 @@ spec:
      apiVersion: v1
      kind: Service
      name: {{ $key }}
-    # uri: http://{{ $key }}.{{ $.Release.Namespace }}.svc.cluster.local:4000/
 ---
 {{- end }}
 {{- end }}

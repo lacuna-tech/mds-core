@@ -1,98 +1,87 @@
-{{- range $key, $processor := .Values.processors }}
-{{- if and $processor.enabled $processor.triggeredBy.cron }}
-apiVersion: batch/v1beta1
-kind: CronJob
-metadata:
-  name: {{ $key }} # better name
-  namespace: {{ $.Release.Namespace }}
-spec:
-  schedule: "* * * * *"
-  jobTemplate:
-    spec:
-      template:
-        spec:
-          containers:
-          - name: {{ $key }}
-            {{- if $.Values.registry }}
-            image: {{ $.Values.registry }}/{{ $key }}:{{ $processor.version }}
-            {{- else }}
-            image: {{ $key }}:{{ $processor.version }}
-            imagePullPolicy: IfNotPresent
-            {{- end }}
-            # resources:
-            #   limits:
-            #     cpu: {{ $processor.resourcesLimitsCpu | default ($.Values.resourcesLimitsCpu | default "500m") }}
-            #     memory: {{ $processor.resourcesLimitsMemory | default ($.Values.resourcesLimitsMemory | default "512Mi") }}
-            #   requests:
-            #     cpu: {{ $processor.resourcesRequestsCpu | default ($.Values.resourcesRequestsCpu | default "50m") }}
-            #     memory: {{ $processor.resourcesRequestsMemory | default ($.Values.resourcesRequestsMemory | default "128Mi") }}
-            # ports:
-            # - containerPort: 80
-            #   name: user-port
-            #   protocol: TCP
-            env:
-            - name: PORT
-              value: "80"
-            - name: PATH_PREFIX
-              value: {{ $processor.pathPrefix }}
-            - name: TIMEZONE
-              value: {{ $.Values.timezone }}
-            - name: PG_USER
-              value: {{ $.Values.postgresql.postgresqlUsername }}
-            - name: PG_NAME
-              value: {{ $.Values.postgresql.postgresqlDatabase }}
-            - name: PG_PASS
-              valueFrom:
-                secretKeyRef:
-                  name: mds-secrets
-                  key: postgresql-password
-            - name: PG_HOST
-              {{- if $.Values.postgresql.internal }}
-              value: mds-postgresql.{{ $.Release.Namespace }}.svc.cluster.local
-              {{- else }}
-              value: {{ $.Values.postgresql.host }}
-              {{- end }}
-            {{- if $.Values.postgresql.hostReader }}
-            - name: PG_HOST_READER
-              value: {{ $.Values.postgresql.hostReader }}
-            {{- end }}
-            {{- if $.Values.postgresql.port }}
-            - name: PG_PORT
-              value: {{ $.Values.postgresql.port | quote }}
-            {{- end}}
-            {{- if $processor.migration }}
-            - name: PG_MIGRATIONS
-              value: {{ $processor.migration | quote }}
-            {{- end }}
-            - name: REDIS_HOST
-              {{- if $.Values.redis.internal }}
-              value: mds-redis-master.{{ $.Release.Namespace }}.svc.cluster.local
-              {{- else }}
-              value: {{ $.Values.redis.host }}
-              {{- end }}
-            - name: REDIS_PORT
-              value: {{ $.Values.redis.port | quote }}
-            {{- if $.Values.useEvents }}
-            - name: EVENT_SOURCE
-              value: cloudevents
-            - name: CE_NAME
-              value: {{ $key }}
-            - name: SINK
-              value: http://natss-broker.mds.svc.cluster.local
-            {{- end }}
-            {{- if $.Values.slack.channel }}
-            - name: SLACK_CHANNEL
-              value: {{ $.Values.slack.channel }}
-            - name: SLACK_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: mds-secrets
-                  key: slack-token
-            {{- end }}
-            {{- if $processor.env }}
-{{ toYaml $processor.env | indent 12 }}
-            {{- end }}
-          restartPolicy: OnFailure
----
-{{- end }}
-{{- end }}
+# {{- range $key, $processor := .Values.processors }}
+# {{- if and $processor.enabled $processor.triggeredBy.cron }}
+# apiVersion: batch/v1beta1
+# kind: CronJob
+# metadata:
+#   name: {{ $key }} # better name
+#   namespace: {{ $.Release.Namespace }}
+# spec:
+#   schedule: "* * * * *"
+#   jobTemplate:
+#     spec:
+#       template:
+#         spec:
+#           containers:
+#           - name: {{ $key }}
+#             {{- if $.Values.registry }}
+#             image: {{ $.Values.registry }}/{{ $key }}:{{ $processor.version }}
+#             {{- else }}
+#             image: {{ $key }}:{{ $processor.version }}
+#             imagePullPolicy: IfNotPresent
+#             {{- end }}
+#             env:
+#             - name: PORT
+#               value: "80"
+#             - name: PATH_PREFIX
+#               value: {{ $processor.pathPrefix }}
+#             - name: TIMEZONE
+#               value: {{ $.Values.timezone }}
+#             - name: PG_USER
+#               value: {{ $.Values.postgresql.postgresqlUsername }}
+#             - name: PG_NAME
+#               value: {{ $.Values.postgresql.postgresqlDatabase }}
+#             - name: PG_PASS
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: mds-secrets
+#                   key: postgresql-password
+#             - name: PG_HOST
+#               {{- if $.Values.postgresql.internal }}
+#               value: mds-postgresql.{{ $.Release.Namespace }}.svc.cluster.local
+#               {{- else }}
+#               value: {{ $.Values.postgresql.host }}
+#               {{- end }}
+#             {{- if $.Values.postgresql.hostReader }}
+#             - name: PG_HOST_READER
+#               value: {{ $.Values.postgresql.hostReader }}
+#             {{- end }}
+#             {{- if $.Values.postgresql.port }}
+#             - name: PG_PORT
+#               value: {{ $.Values.postgresql.port | quote }}
+#             {{- end}}
+#             {{- if $processor.migration }}
+#             - name: PG_MIGRATIONS
+#               value: {{ $processor.migration | quote }}
+#             {{- end }}
+#             - name: REDIS_HOST
+#               {{- if $.Values.redis.internal }}
+#               value: mds-redis-master.{{ $.Release.Namespace }}.svc.cluster.local
+#               {{- else }}
+#               value: {{ $.Values.redis.host }}
+#               {{- end }}
+#             - name: REDIS_PORT
+#               value: {{ $.Values.redis.port | quote }}
+#             {{- if $.Values.useEvents }}
+#             - name: EVENT_SOURCE
+#               value: cloudevents
+#             - name: CE_NAME
+#               value: {{ $key }}
+#             - name: SINK
+#               value: http://natss-broker.mds.svc.cluster.local
+#             {{- end }}
+#             {{- if $.Values.slack.channel }}
+#             - name: SLACK_CHANNEL
+#               value: {{ $.Values.slack.channel }}
+#             - name: SLACK_TOKEN
+#               valueFrom:
+#                 secretKeyRef:
+#                   name: mds-secrets
+#                   key: slack-token
+#             {{- end }}
+#             {{- if $processor.env }}
+# {{ toYaml $processor.env | indent 12 }}
+#             {{- end }}
+#           restartPolicy: OnFailure
+# ---
+# {{- end }}
+# {{- end }}
