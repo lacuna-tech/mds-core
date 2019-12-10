@@ -382,7 +382,7 @@ async function readDeviceStatus(device_id: UUID) {
   })
   const statuses = Object.values(deviceStatusMap)
   const statusWithTelemetry = statuses.find((status: any) => status.telemetry)
-  if (statusWithTelemetry === null) {
+  if (statusWithTelemetry === undefined) {
     log.info('Missing vehicle telemetry', 'device_id', device_id)
     return statuses[0]
   }
