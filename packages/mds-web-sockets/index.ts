@@ -44,7 +44,7 @@ wss.on('connection', (ws: WebSocket) => {
     if (header === 'AUTH') {
       const token = args[0]
       if (token) {
-        clients.saveAuth(ws)
+        clients.saveAuth(token, ws)
       }
     } else {
       clients.saveClient(args, ws)

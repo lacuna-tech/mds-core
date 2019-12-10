@@ -1,4 +1,5 @@
 import WebSocket from 'ws'
+import {BearerApiAuthorizer} from '@mds-core/mds-api-authorizer'
 
 export class Clients {
   authenticatedClients: WebSocket[]
@@ -29,7 +30,13 @@ export class Clients {
     })
   }
 
-  public saveAuth(client: WebSocket) {
-    this.authenticatedClients.push(client)
+  public saveAuth(token: string, client: WebSocket) {
+    console.log(`Saving auth`)
+    try {
+      BearerApiAuthorizer(token)
+      this.authenticatedClients.push(client)
+    } catch (err) {
+      client.send(JSON.stringify(err))
+    }
   }
 }

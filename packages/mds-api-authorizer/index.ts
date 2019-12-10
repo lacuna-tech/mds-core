@@ -48,7 +48,6 @@ export const AuthorizationHeaderApiAuthorizer: ApiAuthorizer = req => {
 export const BearerApiAuthorizer: ApiAuthorizer = jwt => {
   if (typeof jwt === 'string') {
     const [scheme, token] = jwt.split(' ')
-
     const decoders: { [scheme: string]: () => ApiAuthorizerClaims } = {
       bearer: () => {
         const {
