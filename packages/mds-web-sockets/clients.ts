@@ -1,5 +1,6 @@
 import WebSocket from 'ws'
 import {BearerApiAuthorizer} from '@mds-core/mds-api-authorizer'
+import { string } from '@hapi/joi'
 
 export class Clients {
   authenticatedClients: WebSocket[]
@@ -17,11 +18,13 @@ export class Clients {
 
   public saveClient(entities: string[], client: WebSocket) {
     if (!this.authenticatedClients.includes(client)) {
-      console.log('Client is not authenticated!')
+      client.send('Not authenticated!')
       return
     }
 
-    entities.map(entity => {
+    const trimmedEntities = entities.map(entity => entity.trim())
+
+    trimmedEntities.map(entity => {
       try {
         this.subList[entity].push(client)
       } catch {
@@ -31,10 +34,13 @@ export class Clients {
   }
 
   public saveAuth(token: string, client: WebSocket) {
-    console.log(`Saving auth`)
     try {
-      BearerApiAuthorizer(token)
-      this.authenticatedClients.push(client)
+      const auth = BearerApiAuthorizer(token)
+      if (auth) {
+        this.authenticatedClients.push(client)
+        client.send('Authentication success!')
+      }
+      else client.send('JWT has either expired or is invalid. Please fetch a new JWT.')
     } catch (err) {
       client.send(JSON.stringify(err))
     }

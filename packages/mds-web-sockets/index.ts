@@ -17,7 +17,7 @@ const clients = new Clients()
 function pushToClients(entity: string, message: string) {
   if (clients.subList[entity]) {
     clients.subList[entity].map(client => {
-      client.send(`${entity}, ${message}`)
+      client.send(`${entity},${message}`)
       client.emit(entity, message)
     })
   }
