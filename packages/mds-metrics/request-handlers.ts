@@ -251,7 +251,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
       const parser = new Parser({
         delimiter: '\t'
       })
-      const metricsRows = db.getAllMetrics({
+      const metricsRows = await db.getAllMetrics({
         start_time,
         end_time,
         geography_id: null,
