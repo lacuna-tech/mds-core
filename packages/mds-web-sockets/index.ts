@@ -39,16 +39,18 @@ wss.on('connection', (ws: WebSocket) => {
       .split(',')
     const [header, ...args] = message
     if (header === 'PUSH') {
-      writeEvent({ device_id: 'foo', provider_id: 'foo', recorded: 0, timestamp: 0, event_type: 'deregister' })
+      return writeEvent({ device_id: 'foo', provider_id: 'foo', recorded: 0, timestamp: 0, event_type: 'deregister' })
     }
     if (header === 'AUTH') {
       const token = args[0]
       if (token) {
-        clients.saveAuth(token, ws)
+        return clients.saveAuth(token, ws)
       }
-    } else {
-      clients.saveClient(args, ws)
     }
+    if (header === 'SUB') {
+      return clients.saveClient(args, ws)
+    }
+    return ws.send('Invalid request!')
   })
 })
 
