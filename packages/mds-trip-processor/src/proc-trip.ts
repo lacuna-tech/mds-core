@@ -88,9 +88,10 @@ async function processTrip(
 
     // Calculate trip metrics
     const duration = tripEndEvent.timestamp - tripStartEvent.timestamp
-    const distMeasure = calcDistance(telemetry, tripStartEvent.gps)
-    const { distance, points: distArray } = distMeasure
-    const violationArray = distArray.filter(dist => {
+    const distMeasure = tripStartEvent.gps ? calcDistance(telemetry, tripStartEvent.gps) : null
+    const distance = distMeasure ? distMeasure.distance : null
+    const points = distMeasure ? distMeasure.points : []
+    const violationArray = points.filter(dist => {
       return dist > config.compliance_sla.max_telemetry_distance
     })
     const violation_count = violationArray.length
@@ -121,7 +122,7 @@ async function processTrip(
 }
 
 export async function tripAggregator(): Promise<boolean> {
-  log.info("trigger YEAH BOI")
+  log.info('trigger YEAH BOI')
   const curTime = new Date().getTime()
   const tripsMap = await cache.readAllTripsEvents()
   if (!tripsMap) {

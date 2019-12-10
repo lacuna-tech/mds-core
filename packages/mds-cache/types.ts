@@ -34,8 +34,8 @@ export type StringifiedStateEntry = Stringify<Omit<Omit<StateEntry, 'annotation'
 }
 export type StringifiedAllDeviceStates = { [vehicle_id: string]: StringifiedStateEntry }
 export type StringifiedTripEvent = Stringify<Omit<Omit<TripEvent, 'annotation'>, 'gps'>> & {
-  annotation: Stringify<AnnotationData>
-  gps: Stringify<GpsData>
+  annotation: Stringify<AnnotationData> | null
+  gps: Stringify<GpsData> | null
 }
 export type StringifiedTripsEvents = { [trip_id: string]: StringifiedTripEvent[] }
 export type StringifiedAllTripsEvents = { [vehicle_id: string]: StringifiedTripsEvents }

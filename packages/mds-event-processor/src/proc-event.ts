@@ -83,7 +83,8 @@ async function processTripTelemetry(deviceState: StateEntry): Promise<boolean> {
     trip_id
   } = deviceState
 
-  const { lat, lng } = gps
+  const lng = gps ? gps.lng : null
+  const lat = gps ? gps.lat : null
   const tripTelemetry: TripTelemetry = {
     timestamp,
     latitude: lat,
@@ -180,8 +181,9 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
   switch (baseDeviceState.type) {
     case 'mds.event': {
       const { event_type, telemetry, event_type_reason, trip_id, service_area_id } = data
-      const { gps, charge } = telemetry
-      const annotation = getAnnotationData(gps)
+      const gps = telemetry ? telemetry.gps : null
+      const charge = telemetry ? telemetry.charge : null
+      const annotation = gps ? getAnnotationData(gps) : null
       const deviceState: StateEntry = {
         ...baseDeviceState,
         annotation,

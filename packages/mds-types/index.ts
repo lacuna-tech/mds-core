@@ -50,13 +50,13 @@ export interface InboundEvent {
     gps: GpsData
     charge: number
     provider_id: UUID
-  }
+  } | null
   timestamp: Timestamp
   trip_id: UUID
   recorded: Timestamp
   telemetry_timestamp: Timestamp
   service_area_id: UUID
-  id: UUID
+  id: number
 }
 
 export interface InboundTelemetry {
@@ -66,7 +66,7 @@ export interface InboundTelemetry {
   charge: number
   gps: GpsData
   recorded: Timestamp
-  id: UUID
+  id: number
 }
 
 export interface StateEntry {
@@ -77,10 +77,10 @@ export interface StateEntry {
   provider_id: UUID
   recorded: Timestamp
   annotation_version: number
-  annotation: AnnotationData
-  gps: GpsData
+  annotation: AnnotationData | null
+  gps: GpsData | null
   service_area_id: UUID | null
-  charge: number
+  charge: number | null
   state: VEHICLE_STATUS | null // telemetry entries will be null
   event_type: VEHICLE_EVENT | null // telemetry entries will be null
   event_type_reason: VEHICLE_REASON | null // telemetry entries will be null
@@ -100,8 +100,8 @@ export interface TripEvent {
   event_type: VEHICLE_EVENT | null // telemetry entries will be null
   event_type_reason: VEHICLE_REASON | null
   annotation_version: number
-  annotation: AnnotationData
-  gps: GpsData
+  annotation: AnnotationData | null
+  gps: GpsData | null
   service_area_id: UUID | null
 }
 
@@ -109,10 +109,10 @@ export type TripsEvents = { [trip_id: string]: TripEvent[] }
 
 export interface TripTelemetry {
   timestamp: Timestamp
-  latitude: number
-  longitude: number
+  latitude: number | null
+  longitude: number | null
   annotation_version: number
-  annotation: AnnotationData
+  annotation: AnnotationData | null
   service_area_id: UUID | null
 }
 
@@ -128,7 +128,7 @@ export interface TripEntry {
   start_service_area_id: UUID | null
   end_service_area_id: UUID | null
   duration: number // in milliseconds
-  distance: number // default in miles
+  distance: number | null // default in miles
   violation_count: number
   max_violation_dist: number | null
   min_violation_dist: number | null

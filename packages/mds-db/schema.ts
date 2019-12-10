@@ -305,7 +305,7 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.event_time_violations]: 'json',
   [COLUMN.event_type]: 'varchar(31)',
   [COLUMN.event_type_reason]: 'varchar(31)',
-  [COLUMN.geography]: 'varchar(31)',
+  [COLUMN.geography]: 'varchar(64)',
   [COLUMN.geography_id]: 'uuid NOT NULL',
   [COLUMN.geography_json]: 'json NOT NULL',
   [COLUMN.geography_metadata]: 'json',

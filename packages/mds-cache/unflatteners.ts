@@ -42,17 +42,21 @@ function parseDeviceState(deviceState: StringifiedStateEntry): StateEntry {
       provider_id: deviceState.provider_id,
       recorded: Number(deviceState.recorded) as Timestamp,
       annotation_version: Number(deviceState.annotation_version),
-      annotation: { in_bound: JSON.parse(deviceState.annotation.in_bound), areas: deviceState.annotation.areas },
-      gps: {
-        lat: Number(deviceState.gps.lat),
-        lng: Number(deviceState.gps.lng),
-        altitude: deviceState.gps.altitude ? Number(deviceState.gps.altitude) : null,
-        heading: deviceState.gps.heading ? Number(deviceState.gps.heading) : null,
-        speed: deviceState.gps.speed ? Number(deviceState.gps.speed) : null,
-        accuracy: deviceState.gps.accuracy ? Number(deviceState.gps.accuracy) : null
-      },
+      annotation: deviceState.annotation
+        ? { in_bound: JSON.parse(deviceState.annotation.in_bound), areas: deviceState.annotation.areas }
+        : null,
+      gps: deviceState.gps
+        ? {
+            lat: Number(deviceState.gps.lat),
+            lng: Number(deviceState.gps.lng),
+            altitude: deviceState.gps.altitude ? Number(deviceState.gps.altitude) : null,
+            heading: deviceState.gps.heading ? Number(deviceState.gps.heading) : null,
+            speed: deviceState.gps.speed ? Number(deviceState.gps.speed) : null,
+            accuracy: deviceState.gps.accuracy ? Number(deviceState.gps.accuracy) : null
+          }
+        : null,
       service_area_id: deviceState.service_area_id ? (deviceState.service_area_id as UUID) : null,
-      charge: Number(deviceState.charge),
+      charge: deviceState.charge ? Number(deviceState.charge) : null,
       state: deviceState.state ? (deviceState.state as VEHICLE_STATUS) : null,
       event_type: deviceState.event_type ? (deviceState.event_type as VEHICLE_EVENT) : null,
       event_type_reason: deviceState.event_type_reason ? (deviceState.event_type_reason as VEHICLE_REASON) : null,
@@ -67,7 +71,7 @@ function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [v
   try {
     const devices: { [vehicle_id: string]: StateEntry } = {}
     /* eslint-disable-next-line guard-for-in */
-    for (const vehicle_id in JSON.parse(String(allDeviceStates))) {
+    for (const vehicle_id in allDeviceStates) {
       devices[vehicle_id] = parseDeviceState(allDeviceStates[vehicle_id])
     }
     return devices
@@ -157,10 +161,9 @@ async function parseAllTripsEvents(
 }> {
   try {
     const allTrips: { [vehicle_id: string]: TripsEvents } = {}
-
     /* eslint-reason FIXME use map() */
     /* eslint-disable-next-line guard-for-in */
-    for (const vehicle_id in JSON.parse(String(allTripsEvents)) {
+    for (const vehicle_id in allTripsEvents) {
       /* eslint-reason FIXME use Promise.all() */
       /* eslint-disable-next-line no-await-in-loop */
       allTrips[vehicle_id] = await parseTripsEvents(allTripsEvents[vehicle_id])
