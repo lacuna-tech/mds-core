@@ -121,6 +121,7 @@ async function processTrip(
 }
 
 export async function tripAggregator(): Promise<boolean> {
+  log.info("trigger YEAH BOI")
   const curTime = new Date().getTime()
   const tripsMap = await cache.readAllTripsEvents()
   if (!tripsMap) {

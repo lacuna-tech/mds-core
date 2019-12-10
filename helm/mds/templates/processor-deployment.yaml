@@ -1,10 +1,10 @@
-{{- range $name, $api := .Values.apis }}
-  {{- if $api.enabled }}
+{{- range $name, $processor := .Values.processors }}
+  {{- if $processor.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ $name }}
+  name: {{ $name }} # beter name
   labels:
     app: {{ $name }}
   namespace: {{ $.Release.Namespace }}
@@ -27,27 +27,27 @@ spec:
       containers:
       - name: {{ $name }}
         {{- if $.Values.registry }}
-        image: {{ $.Values.registry }}/{{ $name }}:{{ $api.version }}
+        image: {{ $.Values.registry }}/{{ $name }}:{{ $processor.version }}
         {{- else }}
-        image: {{ $name }}:{{ $api.version }}
+        image: {{ $name }}:{{ $processor.version }}
         imagePullPolicy: IfNotPresent
         {{- end }}
         resources:
           limits:
-            cpu: {{ $api.resourcesLimitsCpu | default ($.Values.resourcesLimitsCpu | default "500m") }}
-            memory: {{ $api.resourcesLimitsMemory | default ($.Values.resourcesLimitsMemory | default "512Mi") }}
+            cpu: {{ $processor.resourcesLimitsCpu | default ($.Values.resourcesLimitsCpu | default "500m") }}
+            memory: {{ $processor.resourcesLimitsMemory | default ($.Values.resourcesLimitsMemory | default "512Mi") }}
           requests:
-            cpu: {{ $api.resourcesRequestsCpu | default ($.Values.resourcesRequestsCpu | default "50m") }}
-            memory: {{ $api.resourcesRequestsMemory | default ($.Values.resourcesRequestsMemory | default "128Mi") }}
+            cpu: {{ $processor.resourcesRequestsCpu | default ($.Values.resourcesRequestsCpu | default "50m") }}
+            memory: {{ $processor.resourcesRequestsMemory | default ($.Values.resourcesRequestsMemory | default "128Mi") }}
         ports:
-        - containerPort: 4000
+        - containerPort: 80
           name: user-port
           protocol: TCP
         env:
           - name: PORT
-            value: "4000"
+            value: "80"
           - name: PATH_PREFIX
-            value: {{ $api.pathPrefix }}
+            value: {{ $processor.pathPrefix }}
           - name: TIMEZONE
             value: {{ $.Values.timezone }}
           - name: PG_USER
@@ -73,9 +73,9 @@ spec:
           - name: PG_PORT
             value: {{ $.Values.postgresql.port | quote }}
           {{- end}}
-          {{- if $api.migration }}
+          {{- if $processor.migration }}
           - name: PG_MIGRATIONS
-            value: {{ $api.migration | quote }}
+            value: {{ $processor.migration | quote }}
           {{- end }}
           - name: REDIS_HOST
           {{- if $.Values.redis.internal }}
@@ -102,22 +102,8 @@ spec:
                 name: mds-secrets
                 key: slack-token
           {{- end }}
-          {{- if $api.env }}
-{{ toYaml $api.env | indent 10 }}
+          {{- if $processor.env }}
+{{ toYaml $processor.env | indent 10 }}
           {{- end }}
   {{- end }}
 {{- end }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: mds-secrets
-  namespace: {{ $.Release.Namespace }}
-data:
-  {{- if .Values.slack.channel }}
-  slack-token: {{ .Values.slack.token | b64enc }}
-  {{- end }}
-  {{- if .Values.postgresql.password }}
-  postgresql-password: {{ .Values.postgresql.password | b64enc }}
-  {{- end }}
-type: Opaque

@@ -1,17 +1,17 @@
-{{- range $key, $api := .Values.apis }}
-{{- if $api.enabled }}
+{{- range $key, $processor := .Values.processors }}
+{{- if $processor.enabled }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ $key }}
+  name: {{ $key }} # better name
   namespace: {{ $.Release.Namespace }}
 spec:
   selector:
     app: {{ $key }}
   ports:
   - name: http-{{ $key }}
-    port: 4000
+    port: 80
 #    targetPort: 80
 {{- end }}
 {{- end }}
