@@ -227,38 +227,40 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
 
   try {
-    const bucketedMetrics = await Promise.all(
-      slices.map(slice => {
-        const { start, end } = slice
-        return db.getAllMetrics({
-          start_time: start,
-          end_time: end,
-          geography_id: null,
-          provider_id,
-          vehicle_type
+    if (format === 'json') {
+      const bucketedMetrics = await Promise.all(
+        slices.map(slice => {
+          const { start, end } = slice
+          return db.getAllMetrics({
+            start_time: start,
+            end_time: end,
+            geography_id: null,
+            provider_id,
+            vehicle_type
+          })
         })
+      )
+
+      const bucketedMetricsWithTimeSlice = bucketedMetrics.map((bucketedMetricsRow, idx) => {
+        const slice = slices[idx]
+        return { data: bucketedMetricsRow, ...slice }
       })
-    )
 
-    const bucketedMetricsWithTimeSlice = bucketedMetrics.map((bucketedMetricsRow, idx) => {
-      const slice = slices[idx]
-      return { data: bucketedMetricsRow, ...slice }
-    })
-
-    if (format === 'tsv') {
-      // TODO sync up with stub format...should be really basic string-only
+      return res.status(200).send(bucketedMetricsWithTimeSlice)
+    } else if (format === 'tsv') {
       const parser = new Parser({
         delimiter: '\t'
       })
-      const bucketedMetricsWithTimeSliceWithTsvRows = bucketedMetricsWithTimeSlice.map((bucketedMetricsBundle) => {
-        return {
-          ...bucketedMetricsBundle,
-          data: parser.parse(bucketedMetricsBundle.data)
-        }
+      const metricsRows = db.getAllMetrics({
+        start_time,
+        end_time,
+        geography_id: null,
+        provider_id,
+        vehicle_type
       })
-      return res.status(200).send(bucketedMetricsWithTimeSliceWithTsvRows)
-    } else if (format === 'json') {
-      return res.status(200).send(bucketedMetricsWithTimeSlice)
+      const metricsRowsTsv = parser.parse(metricsRows)
+
+      return res.status(200).send(metricsRowsTsv)
     }
     // We should never fall out to this case
     return res.status(500).send(new ServerError('Unexpected error'))
