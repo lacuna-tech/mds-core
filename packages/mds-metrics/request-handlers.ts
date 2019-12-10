@@ -293,6 +293,6 @@ export async function getAllStubbed(req: MetricsApiRequest, res: GetAllResponse)
   if (vehicle_type !== null && !Object.values(VEHICLE_TYPES).includes(vehicle_type))
     return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
 
-  const tsvStub = await fs.readFileSync('./metrics-sample-v1.tsv')
-  return res.status(200).send(String(tsvStub))
+  const tsvStub = fs.readFileSync('./metrics-sample-v1.tsv').toString()
+  return res.status(200).send(tsvStub)
 }
