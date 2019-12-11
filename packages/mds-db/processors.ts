@@ -8,7 +8,7 @@ import {
   VEHICLE_TYPE,
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
-import schema, { TABLE_NAME } from './schema'
+import schema from './schema'
 import { vals_sql, cols_sql, vals_list, logSql } from './sql-utils'
 import { getWriteableClient, makeReadOnlyQuery } from './client'
 
@@ -129,12 +129,4 @@ export async function getAllMetrics({
   const vehicleTypeSegment = vehicle_type !== null ? ` AND vehicle_type = "${vehicle_type}" ` : ''
   const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}${providerSegment}${geographySegment}${vehicleTypeSegment}`
   return makeReadOnlyQuery(query)
-}
-
-// Temporarily keep for testing
-export async function resetTable(table_name: TABLE_NAME) {
-  const query = `TRUNCATE ${String(table_name)}`
-  const client = await getWriteableClient()
-  const results = await client.query(query)
-  return results.rows
 }

@@ -70,10 +70,9 @@ function parseDeviceState(deviceState: StringifiedStateEntry): StateEntry {
 function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [vehicle_id: string]: StateEntry } {
   try {
     const devices: { [vehicle_id: string]: StateEntry } = {}
-    /* eslint-disable-next-line guard-for-in */
-    for (const vehicle_id in allDeviceStates) {
+    Object.keys(allDeviceStates).map(vehicle_id => {
       devices[vehicle_id] = parseDeviceState(allDeviceStates[vehicle_id])
-    }
+    })
     return devices
   } catch (err) {
     throw new ParseError(`unable to parse allDeviceStates`)
@@ -83,39 +82,37 @@ function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [v
 async function parseTripsEvents(tripsEventsStr: StringifiedTripsEvents): Promise<TripsEvents> {
   try {
     const trips: TripsEvents = {}
-    // Need some help here
-    const tripsEvents = JSON.parse(String(tripsEventsStr))
-    /* eslint-reason FIXME use map() */
-    /* eslint-disable-next-line guard-for-in */
-    for (const trip_id in tripsEvents) {
-      for (let i = 0; i < tripsEvents[trip_id].length; i++) {
-        trips[trip_id] = []
+    // TODO: fix awkward cast/parsing, should be unnecessary with typing
+    const tripsEvents: StringifiedTripsEvents = JSON.parse(String(tripsEventsStr))
+    Object.keys(tripsEvents).map(trip_id => {
+      trips[trip_id] = []
+      tripsEvents[trip_id].map(tripEvent => {
         trips[trip_id].push({
-          vehicle_type: tripsEvents[trip_id][i].vehicle_type as VEHICLE_TYPE,
-          timestamp: Number(tripsEvents[trip_id][i].timestamp) as Timestamp,
-          event_type: tripsEvents[trip_id][i].event_type as VEHICLE_EVENT,
-          event_type_reason: tripsEvents[trip_id][i].event_type_reason
-            ? (tripsEvents[trip_id][i].event_type_reason as VEHICLE_REASON)
+          vehicle_type: tripEvent.vehicle_type as VEHICLE_TYPE,
+          timestamp: Number(tripEvent.timestamp) as Timestamp,
+          event_type: tripEvent.event_type as VEHICLE_EVENT,
+          event_type_reason: tripEvent.event_type_reason ? (tripEvent.event_type_reason as VEHICLE_REASON) : null,
+          annotation_version: Number(tripEvent.annotation_version),
+          annotation: tripEvent.annotation
+            ? {
+                in_bound: JSON.parse(tripEvent.annotation.in_bound),
+                areas: tripEvent.annotation.areas
+              }
             : null,
-          annotation_version: Number(tripsEvents[trip_id][i].annotation_version),
-          annotation: {
-            in_bound: JSON.parse(tripsEvents[trip_id][i].annotation.in_bound),
-            areas: tripsEvents[trip_id][i].annotation.areas
-          },
-          gps: {
-            lat: Number(tripsEvents[trip_id][i].gps.lat),
-            lng: Number(tripsEvents[trip_id][i].gps.lng),
-            altitude: tripsEvents[trip_id][i].gps.altitude ? Number(tripsEvents[trip_id][i].gps.altitude) : null,
-            heading: tripsEvents[trip_id][i].gps.heading ? Number(tripsEvents[trip_id][i].gps.heading) : null,
-            speed: tripsEvents[trip_id][i].gps.speed ? Number(tripsEvents[trip_id][i].gps.speed) : null,
-            accuracy: tripsEvents[trip_id][i].gps.accuracy ? Number(tripsEvents[trip_id][i].gps.accuracy) : null
-          },
-          service_area_id: tripsEvents[trip_id][i].service_area_id
-            ? (tripsEvents[trip_id][i].service_area_id as UUID)
-            : null
+          gps: tripEvent.gps
+            ? {
+                lat: Number(tripEvent.gps.lat),
+                lng: Number(tripEvent.gps.lng),
+                altitude: tripEvent.gps.altitude ? Number(tripEvent.gps.altitude) : null,
+                heading: tripEvent.gps.heading ? Number(tripEvent.gps.heading) : null,
+                speed: tripEvent.gps.speed ? Number(tripEvent.gps.speed) : null,
+                accuracy: tripEvent.gps.accuracy ? Number(tripEvent.gps.accuracy) : null
+              }
+            : null,
+          service_area_id: tripEvent.service_area_id ? (tripEvent.service_area_id as UUID) : null
         })
-      }
-    }
+      })
+    })
     return trips
   } catch (err) {
     await log.error(err)
@@ -126,27 +123,25 @@ async function parseTripsEvents(tripsEventsStr: StringifiedTripsEvents): Promise
 async function parseTripsTelemetry(tripsTelemetryStr: StringifiedTripsTelemetry): Promise<TripsTelemetry> {
   try {
     const trips: TripsTelemetry = {}
-    const tripsTelemetry = JSON.parse(String(tripsTelemetryStr))
-    /* eslint-reason FIXME use map() */
-    /* eslint-disable-next-line guard-for-in */
-    for (const trip_id in tripsTelemetry) {
-      for (let i = 0; i < tripsTelemetry[trip_id].length; i++) {
-        trips[trip_id] = []
+    const tripsTelemetry: StringifiedTripsTelemetry = JSON.parse(String(tripsTelemetryStr))
+    Object.keys(tripsTelemetry).map(trip_id => {
+      trips[trip_id] = []
+      tripsTelemetry[trip_id].map(tripTelemetry => {
         trips[trip_id].push({
-          timestamp: Number(tripsTelemetry[trip_id][i].timestamp) as Timestamp,
-          latitude: Number(tripsTelemetry[trip_id][i].latitude),
-          longitude: Number(tripsTelemetry[trip_id][i].longitude),
-          annotation_version: Number(tripsTelemetry[trip_id][i].annotation_version),
-          annotation: {
-            in_bound: JSON.parse(tripsTelemetry[trip_id][i].annotation.in_bound),
-            areas: tripsTelemetry[trip_id][i].annotation.areas
-          },
-          service_area_id: tripsTelemetry[trip_id][i].service_area_id
-            ? (tripsTelemetry[trip_id][i].service_area_id as UUID)
-            : null
+          timestamp: Number(tripTelemetry.timestamp) as Timestamp,
+          latitude: tripTelemetry.latitude ? Number(tripTelemetry.latitude) : null,
+          longitude: tripTelemetry.longitude ? Number(tripTelemetry.longitude) : null,
+          annotation_version: Number(tripTelemetry.annotation_version),
+          annotation: tripTelemetry.annotation
+            ? {
+                in_bound: JSON.parse(tripTelemetry.annotation.in_bound),
+                areas: tripTelemetry.annotation.areas
+              }
+            : null,
+          service_area_id: tripTelemetry.service_area_id ? (tripTelemetry.service_area_id as UUID) : null
         })
-      }
-    }
+      })
+    })
     return trips
   } catch (err) {
     await log.error(err)
@@ -161,13 +156,11 @@ async function parseAllTripsEvents(
 }> {
   try {
     const allTrips: { [vehicle_id: string]: TripsEvents } = {}
-    /* eslint-reason FIXME use map() */
-    /* eslint-disable-next-line guard-for-in */
-    for (const vehicle_id in allTripsEvents) {
-      /* eslint-reason FIXME use Promise.all() */
-      /* eslint-disable-next-line no-await-in-loop */
-      allTrips[vehicle_id] = await parseTripsEvents(allTripsEvents[vehicle_id])
-    }
+    await Promise.all(
+      Object.keys(allTripsEvents).map(async vehicle_id => {
+        allTrips[vehicle_id] = await parseTripsEvents(allTripsEvents[vehicle_id] as StringifiedTripsEvents)
+      })
+    )
     return allTrips
   } catch (err) {
     throw new ParseError(`unable to parse allTripsEvents`)

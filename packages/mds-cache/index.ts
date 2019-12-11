@@ -29,7 +29,8 @@ import {
   StateEntry,
   BoundingBox,
   EVENT_STATUS_MAP,
-  VEHICLE_STATUSES
+  VEHICLE_STATUSES,
+  VEHICLE_TYPE
 } from '@mds-core/mds-types'
 import redis from 'redis'
 import bluebird from 'bluebird'
@@ -132,7 +133,6 @@ async function hget(key: string, field: UUID): Promise<CachedItem | CachedHashIt
     return unflatten(flat)
   }
   return null
-  // throw new Error(`${field} not found in ${key}`)
 }
 
 async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null> {
@@ -141,7 +141,11 @@ async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null>
     return unflatten(flat)
   }
   return null
-  // throw new Error(`${key} not found`)
+}
+
+async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE> {
+  // TODO: Fix type entry into cache so we don't need to do this unkown conversion
+  return ((await getClient()).hgetAsync(`device:${keyID}:device`, 'type') as unknown) as VEHICLE_TYPE
 }
 
 async function readDeviceState(field: UUID): Promise<StateEntry | null> {
@@ -184,11 +188,6 @@ async function readTripsTelemetry(field: UUID): Promise<TripsTelemetry | null> {
 
 async function writeTripsTelemetry(field: UUID, data: TripsTelemetry) {
   return (await getClient()).hsetAsync('trips:telemetry', field, JSON.stringify(data))
-}
-
-// Exposing temporarily for testing purposes
-async function delCache(key: string) {
-  await (await getClient()).delAsync(key)
 }
 
 // update the ordered list of (device_id, timestamp) tuples
@@ -642,6 +641,7 @@ export = {
   initialize,
   health,
   info,
+  getVehicleType,
   readDeviceState,
   readAllDeviceStates,
   writeDeviceState,
@@ -651,7 +651,6 @@ export = {
   deleteTripsEvents,
   readTripsTelemetry,
   writeTripsTelemetry,
-  delCache,
   seed,
   reset,
   startup,

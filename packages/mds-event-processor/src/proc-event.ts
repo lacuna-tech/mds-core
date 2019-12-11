@@ -118,6 +118,7 @@ async function processTripEvent(deviceState: StateEntry): Promise<boolean> {
 
   */
   const {
+    vehicle_type,
     timestamp,
     event_type,
     event_type_reason,
@@ -131,7 +132,7 @@ async function processTripEvent(deviceState: StateEntry): Promise<boolean> {
   } = deviceState
 
   const tripEvent: TripEvent = {
-    vehicle_type: 'scooter',
+    vehicle_type,
     timestamp,
     event_type,
     event_type_reason,
@@ -169,7 +170,7 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
     recorded: Timestamp
     annotation_version: number
   } = {
-    vehicle_type: 'scooter',
+    vehicle_type: await cache.getVehicleType(device_id),
     type,
     timestamp,
     device_id,
