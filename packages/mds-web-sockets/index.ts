@@ -1,4 +1,6 @@
 import log from '@mds-core/mds-logger'
+import { makeDevices, makeEventsWithTelemetry, makeTelemetry } from '@mds-core/mds-test-data'
+import { now } from '@mds-core/mds-utils'
 import WebSocket from 'ws'
 import { Telemetry, VehicleEvent } from '@mds-core/mds-types'
 import { ApiServer } from '@mds-core/mds-api-server'
@@ -13,6 +15,8 @@ const server = ApiServer(app => app).listen(PORT, () => log.info(`${npm_package_
 const wss = new WebSocket.Server({ server })
 
 const clients = new Clients()
+
+const CITY_OF_LA = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 
 function pushToClients(entity: string, message: string) {
   if (clients.subList[entity]) {
@@ -38,8 +42,15 @@ wss.on('connection', (ws: WebSocket) => {
       .trim()
       .split(',')
     const [header, ...args] = message
+
+    // FIXME: Remove before merging. Used to get some outbound data in-lieu of KNE.
     if (header === 'PUSH') {
-      return writeEvent({ device_id: 'foo', provider_id: 'foo', recorded: 0, timestamp: 0, event_type: 'deregister' })
+      const devices = makeDevices(200, now())
+      const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_start')
+      const telemetries = makeTelemetry(devices, now())
+      events.forEach(writeEvent)
+      telemetries.forEach(writeTelemetry)
+      return
     }
     if (header === 'AUTH') {
       const token = args[0]
