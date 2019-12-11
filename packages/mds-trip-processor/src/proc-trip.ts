@@ -24,7 +24,7 @@ async function processTrip(
   trip_id: UUID,
   events: TripEvent[],
   curTime: Timestamp
-): Promise<boolean> {
+): Promise<UUID | null> {
   /*
     Add telemetry and meta data into database when a trip ends
 
@@ -41,7 +41,7 @@ async function processTrip(
   // Validation steps
   if (events.length < 2) {
     log.info('NO TRIP END SEEN')
-    return false
+    return trip_id
   }
 
   // Process anything where the last event timestamp is more than 24 hours old
@@ -50,7 +50,7 @@ async function processTrip(
   const latestTime = events[events.length - 1].timestamp
   if (latestTime + timeSLA > curTime) {
     log.info('TRIPS ENDED LESS THAN 24HRS AGO')
-    return false
+    return trip_id
   }
 
   // Calculate event binned trip telemetry data
@@ -83,7 +83,8 @@ async function processTrip(
         telemetry.push(tripSegment)
       }
     } else {
-      throw new Error('TRIP TELEMETRY NOT FOUND')
+      await log.error(`No trip telemetry found for ${trip_id}`)
+      return trip_id
     }
 
     // Calculate trip metrics
@@ -115,10 +116,10 @@ async function processTrip(
     // Delete all processed telemetry data and update cache
     delete tripMap[trip_id]
     await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, tripMap)
-    return true
+    return null
   }
   await log.warn('NO TELEMETRY FOUND FOR TRIP')
-  return false
+  return trip_id
 }
 
 export async function tripAggregator(): Promise<boolean> {
