@@ -632,8 +632,8 @@ installSimulator() {
   fi
 
   (cd ${configs[simulator]};
-    #git pull;
-    #docker build -t trackgen .;
+    git pull;
+    docker build -t trackgen .;
     helm install ${configs[simulator]}/helm --name trackgen \
       ${configs[namespace-simulator]:+--namespace ${configs[namespace-simulator]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
