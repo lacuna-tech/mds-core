@@ -213,7 +213,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   })
   const provider_id = query.provider_id || null
   const vehicle_type = query.vehicle_type || null
-  const format : string | 'json' | 'tsv' = query.format || 'json'
+  const format: string | 'json' | 'tsv' = query.format || 'json'
 
   if (format !== 'json' && format !== 'tsv') {
     return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
@@ -247,7 +247,8 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
       })
 
       return res.status(200).send(bucketedMetricsWithTimeSlice)
-    } else if (format === 'tsv') {
+    }
+    if (format === 'tsv') {
       const parser = new Parser({
         delimiter: '\t'
       })
@@ -272,17 +273,17 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
 
 export async function getAllStubbed(req: MetricsApiRequest, res: GetAllResponse) {
   const { query } = req
-  const bin_size = getBinSizeFromQuery(query)
+  // const bin_size = getBinSizeFromQuery(query)
 
-  const { start_time, end_time } = parseRelative(query.start || 'today', query.end || 'now')
-  const slices = getTimeBins({
-    bin_size,
-    start_time,
-    end_time
-  })
+  // const { start_time, end_time } = parseRelative(query.start || 'today', query.end || 'now')
+  // const slices = getTimeBins({
+  //   bin_size,
+  //   start_time,
+  //   end_time
+  // })
   const provider_id = query.provider_id || null
   const vehicle_type = query.vehicle_type || null
-  const format : string | 'json' | 'tsv' = query.format || 'json'
+  const format: string | 'json' | 'tsv' = query.format || 'json'
 
   if (format !== 'json' && format !== 'tsv') {
     return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))

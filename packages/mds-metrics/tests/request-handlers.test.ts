@@ -111,7 +111,7 @@ describe('Request handlers', () => {
     assert.strictEqual(status.calledOnceWithExactly(200), true)
     assert.strictEqual(send.calledOnce, true)
     Sinon.replace(utils, 'getCurrentDate', Sinon.fake.returns(new Date('1995-12-17T03:24:00')))
-    assert.deepStrictEqual(send.args[0][0], ['"foo"\t"bar"\t"baz"\n10\t11\t12\n1\t2\t3'])
+    assert.deepStrictEqual(send.args[0], ['"foo"\t"bar"\t"baz"\n10\t11\t12\n1\t2\t3'])
 
     Sinon.restore()
   })
