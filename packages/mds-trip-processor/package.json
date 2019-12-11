@@ -24,7 +24,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@mds-core/mds-types": "0.1.22",
+    "@mds-core/mds-types": "0.1.23",
     "@turf/boolean-point-in-polygon": "6.0.1",
     "@turf/helpers": "6.1.4",
     "cloudevents-sdk": "1.0.0",
