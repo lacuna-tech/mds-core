@@ -243,7 +243,7 @@ export type PROPULSION_TYPE = keyof typeof PROPULSION_TYPES
 export const VEHICLE_STATUSES = Enum('available', 'reserved', 'unavailable', 'removed', 'inactive', 'trip', 'elsewhere')
 export type VEHICLE_STATUS = keyof typeof VEHICLE_STATUSES
 
-export const VEHICLE_STATUSES_ROW = ['available', 'reserved', 'unavailable', 'trip']
+export const RIGHT_OF_WAY_STATUSES = ['available', 'reserved', 'unavailable', 'trip']
 
 export const VEHICLE_EVENTS = Enum(
   'register',

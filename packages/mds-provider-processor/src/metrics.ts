@@ -1,7 +1,7 @@
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import {
-  VEHICLE_STATUSES_ROW,
+  RIGHT_OF_WAY_STATUSES,
   VehicleCountMetricObj,
   MetricCount,
   LateMetricObj,
@@ -62,7 +62,7 @@ async function calcVehicleCounts(
   const stateCache = await cache.readAllDeviceStates()
   const deployed = stateCache
     ? Object.values(stateCache).filter(vehicle => {
-        return vehicle.provider_id === providerID && VEHICLE_STATUSES_ROW.includes(String(vehicle.state))
+        return vehicle.provider_id === providerID && RIGHT_OF_WAY_STATUSES.includes(String(vehicle.state))
       }).length
     : null
 
@@ -71,8 +71,8 @@ async function calcVehicleCounts(
 }
 
 async function calcTripCount(providerID: UUID, startTime: Timestamp, endTime: Timestamp): Promise<number> {
-  const tripCount = await db.getTripCount(providerID, startTime, endTime)
-  return tripCount[0].count
+  const [tripCount] = await db.getTripCount(providerID, startTime, endTime)
+  return tripCount.count
 }
 
 async function calcVehicleTripCount(
@@ -106,39 +106,44 @@ async function calcVehicleTripCount(
 }
 
 async function calcLateEventCount(providerID: UUID, startTime: Timestamp, endTime: Timestamp): Promise<LateMetricObj> {
-  const se = await db.getLateEventCount(
+  const startEndList = await db.getLateEventCount(
     providerID,
     ['trip_start', 'trip_end'],
     config.compliance_sla.max_start_end_time,
     startTime,
     endTime
   )
-  const el = await db.getLateEventCount(
+  const enterLeaveList = await db.getLateEventCount(
     providerID,
     ['trip_enter', 'trip_leave'],
     config.compliance_sla.max_enter_leave_time,
     startTime,
     endTime
   )
-  const t = await db.getLateTelemetryCount(providerID, config.compliance_sla.max_telemetry_time, startTime, endTime)
+  const telemetryList = await db.getLateTelemetryCount(
+    providerID,
+    config.compliance_sla.max_telemetry_time,
+    startTime,
+    endTime
+  )
 
   const start_end: MetricCount = {
-    count: se[0].count,
-    min: se[0].min,
-    max: se[0].max,
-    average: se[0].average
+    count: startEndList[0].count,
+    min: startEndList[0].min,
+    max: startEndList[0].max,
+    average: startEndList[0].average
   }
   const enter_leave: MetricCount = {
-    count: el[0].count,
-    min: el[0].min,
-    max: el[0].max,
-    average: el[0].average
+    count: enterLeaveList[0].count,
+    min: enterLeaveList[0].min,
+    max: enterLeaveList[0].max,
+    average: enterLeaveList[0].average
   }
   const telemetry: MetricCount = {
-    count: t[0].count,
-    min: t[0].min,
-    max: t[0].max,
-    average: t[0].average
+    count: telemetryList[0].count,
+    min: telemetryList[0].min,
+    max: telemetryList[0].max,
+    average: telemetryList[0].average
   }
 
   return { start_end, enter_leave, telemetry }
