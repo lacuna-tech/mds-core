@@ -46,6 +46,8 @@ export const WebSocketServer = () => {
     Object.keys(clients.subList).map(entityKey => {
       clients.subList[entityKey] = clients.subList[entityKey].filter(client => !staleClients.includes(client))
     })
+
+    staleClients.forEach(client => client.close())
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
