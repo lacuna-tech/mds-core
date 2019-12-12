@@ -14,6 +14,6 @@
     limitations under the License.
  */
 
-import server from '@mds-core/mds-web-sockets'
+import { WebSocketServer } from '@mds-core/mds-web-sockets'
 
-server()
+WebSocketServer()
