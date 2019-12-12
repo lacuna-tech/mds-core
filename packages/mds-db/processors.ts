@@ -67,7 +67,7 @@ export async function getLateTelemetryCount(
 
 export async function getTrips(
   provider_id: UUID,
-  vehicleType: VEHICLE_TYPE = 'scooter',
+  vehicleType: VEHICLE_TYPE,
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
 ): Promise<TripEntry[]> {
