@@ -15,11 +15,13 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@mds-core/mds-logger": "0.1.23",
-    "@mds-core/mds-types": "0.1.22"
+    "@mds-core/mds-types": "0.1.22",
+    "ws-heartbeat": "1.1.0"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "start": "yarn watch index",
+    "server": "yarn watch server",
+    "client": "yarn watch client",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
     "test:unit": "exit 0",

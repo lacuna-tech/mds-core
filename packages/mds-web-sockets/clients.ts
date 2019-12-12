@@ -1,6 +1,5 @@
 import WebSocket from 'ws'
-import {BearerApiAuthorizer} from '@mds-core/mds-api-authorizer'
-import { string } from '@hapi/joi'
+import { BearerApiAuthorizer } from '@mds-core/mds-api-authorizer'
 
 export class Clients {
   authenticatedClients: WebSocket[]
@@ -11,6 +10,10 @@ export class Clients {
     this.subList = { EVENTS: [], TELEMETRIES: [] }
     this.authenticatedClients = []
     this.saveClient = this.saveClient.bind(this)
+  }
+
+  public isAuthenticated(client: WebSocket) {
+    return this.authenticatedClients.includes(client)
   }
 
   public saveClient(entities: string[], client: WebSocket) {

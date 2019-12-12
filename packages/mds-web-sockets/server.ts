@@ -2,6 +2,7 @@ import log from '@mds-core/mds-logger'
 import { makeDevices, makeEventsWithTelemetry, makeTelemetry } from '@mds-core/mds-test-data'
 import { now } from '@mds-core/mds-utils'
 import WebSocket from 'ws'
+import { setWsHeartbeat } from 'ws-heartbeat/server'
 import { Telemetry, VehicleEvent } from '@mds-core/mds-types'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { Clients } from './clients'
@@ -13,6 +14,12 @@ const {
 const server = ApiServer(app => app).listen(PORT, () => log.info(`${npm_package_name} running on port ${PORT}`))
 
 const wss = new WebSocket.Server({ server })
+
+setWsHeartbeat(wss, (ws, data) => {
+  if (data === 'PING') {
+    ws.send('PONG')
+  }
+}, 60000)
 
 const clients = new Clients()
 
@@ -43,24 +50,45 @@ wss.on('connection', (ws: WebSocket) => {
       .split(',')
     const [header, ...args] = message
 
-    // FIXME: Remove before merging. Used to get some outbound data in-lieu of KNE.
     if (header === 'PUSH') {
-      const devices = makeDevices(200, now())
-      const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_start')
-      const telemetries = makeTelemetry(devices, now())
-      events.forEach(writeEvent)
-      telemetries.forEach(writeTelemetry)
-      return
+      if (clients.isAuthenticated(ws)) {
+        if (args.length === 2) {
+        const [entity, data] = args
+        switch (entity) {
+          case ('EVENTS'): {
+            const event = JSON.parse(data)
+            return writeEvent(event)
+          }
+          case ('TELEMETRIES'): {
+            const telemetry = JSON.parse(data)
+            return writeTelemetry(telemetry)
+          }
+          default: {
+            return ws.send(`Invalid entity: ${entity}`)
+          }
+        }
+      } /* FIXME: Remove before merging. Used for testing only. */  else {
+        const devices = makeDevices(200, now())
+        const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_start')
+        const telemetries = makeTelemetry(devices, now())
+        events.forEach(writeEvent)
+        telemetries.forEach(writeTelemetry)
+        return
+      }
+      }
     }
+
     if (header === 'AUTH') {
       const [token] = args
       if (token) {
         return clients.saveAuth(token, ws)
       }
     }
+
     if (header === 'SUB') {
       return clients.saveClient(args, ws)
     }
+
     return ws.send('Invalid request!')
   })
 })
