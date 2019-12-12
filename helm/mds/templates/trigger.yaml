@@ -9,7 +9,9 @@ metadata:
 spec:
   broker: natss
   filter:
-    sourceAndType:
+    # sourceAndType:
+    #   type: {{ $trigger }}
+    attributes:
       type: {{ $trigger }}
   subscriber:
    ref:
