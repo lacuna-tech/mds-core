@@ -7,12 +7,9 @@ export class Clients {
 
   subList: { [key: string]: WebSocket[] }
 
-  authenticated: boolean
-
   public constructor() {
     this.subList = { EVENTS: [], TELEMETRIES: [] }
     this.authenticatedClients = []
-    this.authenticated = false
     this.saveClient = this.saveClient.bind(this)
   }
 
@@ -24,7 +21,7 @@ export class Clients {
 
     const trimmedEntities = entities.map(entity => entity.trim())
 
-    trimmedEntities.map(entity => {
+    trimmedEntities.forEach(entity => {
       try {
         this.subList[entity].push(client)
       } catch {
@@ -40,7 +37,7 @@ export class Clients {
         this.authenticatedClients.push(client)
         client.send('Authentication success!')
       }
-      else client.send('JWT has either expired or is invalid. Please fetch a new JWT.')
+      else client.send(AuthorizationError())
     } catch (err) {
       client.send(JSON.stringify(err))
     }
