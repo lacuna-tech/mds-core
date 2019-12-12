@@ -1,6 +1,6 @@
 import test from 'unit.js'
 import { NotFoundError } from '@mds-core/mds-utils'
-import client from '../index'
+import { client } from '../client'
 
 describe('Test Config Client', () => {
   before(() => {

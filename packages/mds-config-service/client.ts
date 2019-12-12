@@ -1,5 +1,5 @@
 import fs from 'fs'
-import { format } from 'path'
+import { format, normalize } from 'path'
 import { homedir } from 'os'
 import { promisify } from 'util'
 import { NotFoundError, UnsupportedTypeError } from '@mds-core/mds-utils'
@@ -18,9 +18,9 @@ const statFile = async (path: string): Promise<string | null> => {
 
 const getFilePath = async (property: string): Promise<string> => {
   const { MDS_CONFIG_PATH = '/mds-config' } = process.env
-  const dir = (MDS_CONFIG_PATH.endsWith('/') ? MDS_CONFIG_PATH : `${MDS_CONFIG_PATH}/`).replace('~', homedir())
-  const json5 = await statFile(format({ dir, name: property, ext: '.json5' }))
-  return json5 ?? format({ dir, name: property, ext: '.json' })
+  const dir = MDS_CONFIG_PATH.replace('~', homedir())
+  const json5 = await statFile(normalize(format({ dir, name: property, ext: '.json5' })))
+  return json5 ?? normalize(format({ dir, name: property, ext: '.json' }))
 }
 
 const readFileAsync = promisify(fs.readFile)
@@ -48,7 +48,9 @@ const readJsonFile = async <TSettings extends {}>(property: string): Promise<TSe
   return asJson<TSettings>(file)
 }
 
-export const getSettings = async <TConfig extends {} = {}>(...properties: string[]) => {
-  const settings = await Promise.all(properties.map(property => readJsonFile(property)))
-  return settings.reduce<TConfig>((config, setting) => Object.assign(config, setting), {} as TConfig)
+export const client = {
+  getSettings: async <TConfig extends {} = {}>(...properties: string[]) => {
+    const settings = await Promise.all(properties.map(property => readJsonFile(property)))
+    return settings.reduce<TConfig>((config, setting) => Object.assign(config, setting), {} as TConfig)
+  }
 }

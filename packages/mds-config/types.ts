@@ -19,4 +19,6 @@ import { Params, ParamsDictionary } from 'express-serve-static-core'
 export type ConfigApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
 export type ConfigApiResponse = ApiResponse
 
-export type ConfigApiGetSettingsRequest = ConfigApiRequest<{ properties: string }>
+export interface ConfigApiGetSettingsRequest extends ConfigApiRequest {
+  query: Partial<{ [P in 'p']: string | string[] }>
+}

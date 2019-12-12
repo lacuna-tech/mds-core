@@ -22,10 +22,16 @@ import { api } from '../api'
 
 const request = supertest(ApiServer(api))
 
+const { MDS_CONFIG_PATH } = process.env
+
 describe('Testing API', () => {
+  before(() => {
+    process.env.MDS_CONFIG_PATH = './'
+  })
+
   it(`Single Settings File (404)`, done => {
     request
-      .get(`/config/settings/missing`)
+      .get(`/config/settings?p=missing`)
       .expect(404)
       .end((err, result) => {
         test.value(result.body.name).is('NotFoundError')
@@ -34,9 +40,8 @@ describe('Testing API', () => {
   })
 
   it(`Single Settings File (200)`, done => {
-    process.env.MDS_CONFIG_PATH = './'
     request
-      .get(`/config/settings/package`)
+      .get(`/config/settings?p=package`)
       .expect(200)
       .end((err, result) => {
         test.value(result.body.name).is('@mds-core/mds-config')
@@ -46,7 +51,7 @@ describe('Testing API', () => {
 
   it(`Multiple Settings File (404)`, done => {
     request
-      .get(`/config/settings/package,missing`)
+      .get(`/config/settings?p=package&p=missing`)
       .expect(404)
       .end((err, result) => {
         test.value(result.body.name).is('NotFoundError')
@@ -55,13 +60,16 @@ describe('Testing API', () => {
   })
 
   it(`Multiple Settings Files (200)`, done => {
-    process.env.MDS_CONFIG_PATH = './'
     request
-      .get(`/config/settings/package,tsconfig.build`)
+      .get(`/config/settings?p=package&p=tsconfig.build`)
       .expect(200)
       .end((err, result) => {
         test.value(result.body.name).is('@mds-core/mds-config')
         done(err)
       })
+  })
+
+  after(() => {
+    process.env.MDS_CONFIG_PATH = MDS_CONFIG_PATH
   })
 })
