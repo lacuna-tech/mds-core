@@ -19,4 +19,4 @@ import { Params, ParamsDictionary } from 'express-serve-static-core'
 export type ConfigApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
 export type ConfigApiResponse = ApiResponse
 
-export type ConfigApiGetSettingsRequest = ConfigApiRequest<{ name: string }>
+export type ConfigApiGetSettingsRequest = ConfigApiRequest<{ properties: string }>

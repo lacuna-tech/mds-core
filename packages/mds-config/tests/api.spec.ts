@@ -23,7 +23,7 @@ import { api } from '../api'
 const request = supertest(ApiServer(api))
 
 describe('Testing API', () => {
-  it(`Missing Config File`, done => {
+  it(`Single Settings File (404)`, done => {
     request
       .get(`/config/settings/missing`)
       .expect(404)
@@ -33,10 +33,31 @@ describe('Testing API', () => {
       })
   })
 
-  it(`Read Config File`, done => {
+  it(`Single Settings File (200)`, done => {
     process.env.MDS_CONFIG_PATH = './'
     request
       .get(`/config/settings/package`)
+      .expect(200)
+      .end((err, result) => {
+        test.value(result.body.name).is('@mds-core/mds-config')
+        done(err)
+      })
+  })
+
+  it(`Multiple Settings File (404)`, done => {
+    request
+      .get(`/config/settings/package,missing`)
+      .expect(404)
+      .end((err, result) => {
+        test.value(result.body.name).is('NotFoundError')
+        done(err)
+      })
+  })
+
+  it(`Multiple Settings Files (200)`, done => {
+    process.env.MDS_CONFIG_PATH = './'
+    request
+      .get(`/config/settings/package,tsconfig.build`)
       .expect(200)
       .end((err, result) => {
         test.value(result.body.name).is('@mds-core/mds-config')

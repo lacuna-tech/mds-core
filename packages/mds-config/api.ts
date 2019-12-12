@@ -20,13 +20,16 @@ import client from '@mds-core/mds-config-service'
 import { ConfigApiGetSettingsRequest, ConfigApiResponse } from './types'
 
 function api(app: express.Express): express.Express {
-  app.get(pathsFor('/settings/:name?'), async (req: ConfigApiGetSettingsRequest, res: ConfigApiResponse) => {
-    const { name } = req.params
+  app.get(pathsFor('/settings/:properties?'), async (req: ConfigApiGetSettingsRequest, res: ConfigApiResponse) => {
+    const properties = (req.params.properties ?? 'settings')
+      .toLowerCase()
+      .replace(' ', '')
+      .split(',')
     try {
-      const settings = await client.getSettings(name)
+      const settings = await client.getSettings(...properties)
       return res.status(200).send(settings)
     } catch (error) {
-      return res.status(error instanceof NotFoundError ? 404 : 500).send({ ...error, settings: name })
+      return res.status(error instanceof NotFoundError ? 404 : 500).send({ ...error, properties })
     }
   })
 
