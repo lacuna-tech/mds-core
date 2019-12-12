@@ -26,13 +26,15 @@ export class Clients {
 
     const trimmedEntities = entities.map(entity => entity.trim())
 
-    trimmedEntities.forEach(async entity => {
-      try {
-        this.subList[entity].push(client)
-      } catch {
-        await log.error(`failed to push ${entity}`)
-      }
-    })
+    return Promise.all(
+      trimmedEntities.map(entity => {
+        try {
+          this.subList[entity].push(client)
+        } catch {
+          return log.error(`failed to push ${entity}`)
+        }
+      })
+    )
   }
 
   public saveAuth(token: string, client: WebSocket) {

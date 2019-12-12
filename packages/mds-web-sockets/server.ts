@@ -49,7 +49,7 @@ function writeEvent(event: VehicleEvent) {
 }
 
 wss.on('connection', (ws: WebSocket) => {
-  ws.on('message', (data: WebSocket.Data) => {
+  ws.on('message', async (data: WebSocket.Data) => {
     const message = data
       .toString()
       .trim()
