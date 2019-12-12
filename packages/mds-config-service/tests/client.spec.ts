@@ -2,6 +2,8 @@ import test from 'unit.js'
 import { NotFoundError } from '@mds-core/mds-utils'
 import { client } from '../client'
 
+const { MDS_CONFIG_PATH } = process.env
+
 describe('Test Config Client', () => {
   before(() => {
     process.env.MDS_CONFIG_PATH = './'
@@ -39,5 +41,9 @@ describe('Test Config Client', () => {
     test.value(config).isNot(null)
     test.value(config.name).is('@mds-core/mds-config-service')
     test.value(config.compilerOptions?.outDir).is('dist')
+  })
+
+  after(() => {
+    process.env.MDS_CONFIG_PATH = MDS_CONFIG_PATH
   })
 })
