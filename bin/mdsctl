@@ -563,6 +563,7 @@ installMds() {
     # labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
     [ -z "${configs[image-repository]}" ] &&
       configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
+
     # fixme: do better, push these to helm/mds/templates
     for t in ingress filter; do
       kubectl -n ${configs[namespace-mds]} create serviceaccount eventing-broker-${t}
@@ -576,7 +577,7 @@ installMds() {
     # fixme: do better
     pause 12
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
-    helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
+	  helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
       ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
@@ -1069,8 +1070,8 @@ configure() {
     for c in $(echo ${1} | tr ',' ' '); do
       k=$(echo ${c} | cut -d '=' -f 1)
       v=$(echo ${c} | cut -d '=' -f 2-)
-
-      [[ "${k}" == *"+" ]] && configs[${k%+}]+="${configs[${k%+}]:+,}${v}" || configs[${k}]="${v}"
+      [[ "${k}" == *"+" ]] && configs[${k%+}]+="${configs[${k%+}]:+,}${v}" ||
+	  configs[${k}]="${v}"
     done; unset c k v
   else
     configs[${1}]=
