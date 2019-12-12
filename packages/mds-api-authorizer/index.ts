@@ -45,8 +45,8 @@ export const AuthorizationHeaderApiAuthorizer: ApiAuthorizer = req => {
   return null
 }
 
-export const WebSocketAuthorizer: WsAuthorizer = jwt => {
-  const [scheme, token] = jwt.split(' ')
+export const WebSocketAuthorizer: WsAuthorizer = authorization => {
+  const [scheme, token] = authorization.split(' ')
   const decoder = decoders[scheme.toLowerCase()]
   return decoder ? decoder(token) : null
 }

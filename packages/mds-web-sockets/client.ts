@@ -5,9 +5,7 @@ import { setWsHeartbeat, WebSocketBase } from 'ws-heartbeat/client'
 
 const url = 'ws://localhost:4001'
 
-const { env } = process
-
-const { TOKEN } = env
+const { TOKEN } = process.env
 
 let connection: WebSocket = new WebSocket(url)
 
