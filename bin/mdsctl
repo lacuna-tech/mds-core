@@ -503,12 +503,20 @@ imageVersion() {
 
 installMds() {
   check ${FUNCNAME[0]}
-
   installFallbackCertificate
+  
+  # if the image-repository command is passed in, use the default latest image
+  # otherwise configure image versions via the env variables
+  if ! [ -z "${configs[image-repository]}" ] 
+  then
+    configure sets-mds+=registry=${configs[image-repository]}
+  else
+    configure $(imageVersion)
+  fi
+
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
-    configure $(imageVersion)
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
@@ -518,7 +526,7 @@ installMds() {
       ${configs[sets-mds]:+$(helmOptions set ${configs[sets-mds]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-mds]:+$(helmOptions set-file ${configs[setfiles-mds]})} \
-      ${configs[dryrun]:+--dry-run --debug}
+      ${configs[dryrun]:+--dry-run --debug} 
     pause 12
   }
 }
