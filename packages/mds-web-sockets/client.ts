@@ -18,7 +18,7 @@ function getClient() {
   connection = new WebSocket(url)
 
   do {
-    log.info('Awaiting connection...')
+    log.info('Establishing connection...')
   } while (connection.readyState !== 1)
 
   return connection
