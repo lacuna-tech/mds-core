@@ -297,7 +297,7 @@ getBranchSuffix() {
   case "$(git rev-parse --abbrev-ref HEAD)" in
     master) suffix="";;
     develop) suffix="-prerelease";;
-    *) suffix="-unstable";;
+    *) suffix="-git";;
   esac
 
   echo ${suffix}
@@ -504,15 +504,8 @@ imageVersion() {
 installMds() {
   check ${FUNCNAME[0]}
   installFallbackCertificate
-  
-  # if the image-repository command is passed in, use the default latest image
-  # otherwise configure image versions via the env variables
-  if ! [ -z "${configs[image-repository]}" ] 
-  then
-    configure sets-mds+=registry=${configs[image-repository]}
-  else
-    configure $(imageVersion)
-  fi
+
+  [ -z "${configs[image-repository]}" ] && configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]} && configure $(imageVersion)
 
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
