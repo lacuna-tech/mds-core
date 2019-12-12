@@ -13,12 +13,18 @@
     See the License for the specific language governing permissions and
     limitations under the License.
  */
-import { ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiResponse, ApiResponseLocals } from '@mds-core/mds-api-server'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
 
 export type ConfigApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
-export type ConfigApiResponse = ApiResponse
+export interface ConfigApiResponse extends ApiResponse {
+  locals: ApiResponseLocals & {
+    properties: string[]
+  }
+}
 
-export interface ConfigApiGetSettingsRequest extends ConfigApiRequest {
+export type ConfigApiGetSettingsRequest = ConfigApiRequest<{ property: string }>
+
+export interface ConfigApiGetMergedSettingsRequest extends ConfigApiRequest {
   query: Partial<{ [P in 'p']: string | string[] }>
 }

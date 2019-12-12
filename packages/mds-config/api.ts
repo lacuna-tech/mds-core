@@ -17,18 +17,45 @@
 import express from 'express'
 import { pathsFor, NotFoundError } from '@mds-core/mds-utils'
 import { client } from '@mds-core/mds-config-service'
-import { ConfigApiGetSettingsRequest, ConfigApiResponse } from './types'
+import {
+  ConfigApiGetSettingsRequest,
+  ConfigApiResponse,
+  ConfigApiGetMergedSettingsRequest,
+  ConfigApiRequest
+} from './types'
+
+const getSettings = async (req: ConfigApiRequest, res: ConfigApiResponse) => {
+  const { properties } = res.locals
+  try {
+    const settings = await client.getSettings(...properties)
+    return res.status(200).send(settings)
+  } catch (error) {
+    return res.status(error instanceof NotFoundError ? 404 : 500).send({ ...error, properties })
+  }
+}
 
 function api(app: express.Express): express.Express {
-  app.get(pathsFor('/settings'), async (req: ConfigApiGetSettingsRequest, res: ConfigApiResponse) => {
-    const { p: properties = ['settings'] } = req.query
-    try {
-      const settings = await client.getSettings(...(Array.isArray(properties) ? properties : [properties]))
-      return res.status(200).send(settings)
-    } catch (error) {
-      return res.status(error instanceof NotFoundError ? 404 : 500).send({ ...error, properties })
-    }
-  })
+  // Return multiple settings properties specified in the query string merged into a single object
+  app.get(
+    pathsFor('/settings'),
+    async (req: ConfigApiGetMergedSettingsRequest, res: ConfigApiResponse, next: express.NextFunction) => {
+      const { p: properties = ['settings'] } = req.query
+      res.locals.properties = Array.isArray(properties) ? properties : [properties]
+      return next()
+    },
+    getSettings
+  )
+
+  // Return a single settings property specified as a route parameter
+  app.get(
+    pathsFor('/settings/:property'),
+    async (req: ConfigApiGetSettingsRequest, res: ConfigApiResponse, next: express.NextFunction) => {
+      const { property } = req.params
+      res.locals.properties = [property]
+      return next()
+    },
+    getSettings
+  )
 
   return app
 }

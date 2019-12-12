@@ -31,7 +31,7 @@ describe('Testing API', () => {
 
   it(`Single Settings File (404)`, done => {
     request
-      .get(`/config/settings?p=missing`)
+      .get(`/config/settings/missing`)
       .expect(404)
       .end((err, result) => {
         test.value(result.body.name).is('NotFoundError')
@@ -41,7 +41,7 @@ describe('Testing API', () => {
 
   it(`Single Settings File (200)`, done => {
     request
-      .get(`/config/settings?p=package`)
+      .get(`/config/settings/package`)
       .expect(200)
       .end((err, result) => {
         test.value(result.body.name).is('@mds-core/mds-config')
