@@ -14,60 +14,39 @@ const {
   TOKEN_USER_EMAIL_CLAIM = 'https://ladot.io/user_email'
 } = process.env
 
-export type ApiAuthorizer = (req: express.Request | string) => ApiAuthorizerClaims | null
+export type ApiAuthorizer = (req: express.Request) => ApiAuthorizerClaims | null
+export type WsAuthorizer = (req: string) => ApiAuthorizerClaims | null
+
+const decoders: { [scheme: string]: (token: string) => ApiAuthorizerClaims } = {
+  bearer: (token: string) => {
+    const {
+      sub: principalId,
+      scope,
+      [TOKEN_PROVIDER_ID_CLAIM]: provider_id = null,
+      [TOKEN_USER_EMAIL_CLAIM]: user_email = null,
+      ...claims
+    } = decode(token)
+    return { principalId, scope, provider_id, user_email, ...claims }
+  },
+  basic: (token: string) => {
+    const [principalId, scope] = Buffer.from(token, 'base64')
+      .toString()
+      .split('|')
+    return { principalId, scope, provider_id: principalId, user_email: null }
+  }
+}
 
 export const AuthorizationHeaderApiAuthorizer: ApiAuthorizer = req => {
-  if (typeof req !== 'string') {
-    if (req.headers && req.headers.authorization) {
-      const [scheme, token] = req.headers.authorization.split(' ')
-      const decoders: { [scheme: string]: () => ApiAuthorizerClaims } = {
-        bearer: () => {
-          const {
-            sub: principalId,
-            scope,
-            [TOKEN_PROVIDER_ID_CLAIM]: provider_id = null,
-            [TOKEN_USER_EMAIL_CLAIM]: user_email = null,
-            ...claims
-          } = decode(token)
-          return { principalId, scope, provider_id, user_email, ...claims }
-        },
-        basic: () => {
-          const [principalId, scope] = Buffer.from(token, 'base64')
-            .toString()
-            .split('|')
-          return { principalId, scope, provider_id: principalId, user_email: null }
-        }
-      }
-      const decoder = decoders[scheme.toLowerCase()]
-      return decoder ? decoder() : null
-    }
+  if (req.headers && req.headers.authorization) {
+    const [scheme, token] = req.headers.authorization.split(' ')
+    const decoder = decoders[scheme.toLowerCase()]
+    return decoder ? decoder(token) : null
   }
   return null
 }
 
-export const BearerApiAuthorizer: ApiAuthorizer = jwt => {
-  if (typeof jwt === 'string') {
-    const [scheme, token] = jwt.split(' ')
-    const decoders: { [scheme: string]: () => ApiAuthorizerClaims } = {
-      bearer: () => {
-        const {
-          sub: principalId,
-          scope,
-          [TOKEN_PROVIDER_ID_CLAIM]: provider_id = null,
-          [TOKEN_USER_EMAIL_CLAIM]: user_email = null,
-          ...claims
-        } = decode(token)
-        return { principalId, scope, provider_id, user_email, ...claims }
-      },
-      basic: () => {
-        const [principalId, scope] = Buffer.from(token, 'base64')
-          .toString()
-          .split('|')
-        return { principalId, scope, provider_id: principalId, user_email: null }
-      }
-    }
-    const decoder = decoders[scheme.toLowerCase()]
-    return decoder ? decoder() : null
-  }
-  return null
+export const BearerApiAuthorizer: WsAuthorizer = jwt => {
+  const [scheme, token] = jwt.split(' ')
+  const decoder = decoders[scheme.toLowerCase()]
+  return decoder ? decoder(token) : null
 }
