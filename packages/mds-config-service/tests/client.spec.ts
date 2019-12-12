@@ -26,7 +26,7 @@ describe('Test Config Client', () => {
 
   it('Multiple Settings File (missing)', async () => {
     try {
-      const settings = await client.getSettings('package', 'missing')
+      const settings = await client.getSettings(['package', 'missing'])
       test.value(settings).is(null)
     } catch (error) {
       test.value(error instanceof NotFoundError).is(true)
@@ -34,10 +34,10 @@ describe('Test Config Client', () => {
   })
 
   it('Multiple Settings File', async () => {
-    const config = await client.getSettings<{ name?: string; compilerOptions?: { outDir?: string } }>(
+    const config = await client.getSettings<{ name?: string; compilerOptions?: { outDir?: string } }>([
       'package',
       'tsconfig.build'
-    )
+    ])
     test.value(config).isNot(null)
     test.value(config.name).is('@mds-core/mds-config-service')
     test.value(config.compilerOptions?.outDir).is('dist')

@@ -49,8 +49,10 @@ const readJsonFile = async <TSettings extends {}>(property: string): Promise<TSe
 }
 
 export const client = {
-  getSettings: async <TConfig extends {} = {}>(...properties: string[]) => {
-    const settings = await Promise.all(properties.map(property => readJsonFile(property)))
+  getSettings: async <TConfig extends {} = {}>(properties: string | string[]) => {
+    const settings = await Promise.all(
+      (Array.isArray(properties) ? properties : [properties]).map(property => readJsonFile(property))
+    )
     return settings.reduce<TConfig>((config, setting) => Object.assign(config, setting), {} as TConfig)
   }
 }
