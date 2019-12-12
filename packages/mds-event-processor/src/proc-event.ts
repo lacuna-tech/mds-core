@@ -37,7 +37,7 @@ import { getAnnotationData, getAnnotationVersion } from './annotation'
           VALUES = deviceState
 */
 
-async function getTripId(deviceState: StateEntry): Promise<string | null> {
+export async function getTripId(deviceState: StateEntry): Promise<string | null> {
   /*
     Return trip_id for telemetery entry by associating timestamps
   */
