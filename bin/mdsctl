@@ -71,10 +71,10 @@ declare -A configs=(
   ["istio-version"]="${MDS_ISTIO_VERSION:-1.3.3}" #1.4.0}" #1.3.5}" #1.2.6}"
   ["istio-profile"]="${MDS_ISTIO_PROFILE:-}" #-istio-sds-auth}" # todo: looks to fail when installing istio-nodeagent
   ["istio"]="${MDS_ISTIO_PATH:-${configs[workdir]}/istio-${configs[istio-version]}}"
-  ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/src/knative.dev/eventing-contrib}"
-  ["natss-version"]="${MDS_NATSS_VERSION:-0.10.2}"
-  ["knative-version"]="${MDS_KNATIVE_VERSION:-0.10.2}" # 0.10.1}"
+  ["knative-version"]="${MDS_KNATIVE_VERSION:-0.11.0}" # 0.10.1}"
   ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-eventing}" # serving monitoring"}
+  ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/src/knative.dev/eventing-contrib}"
+  ["natss-version"]="${MDS_NATSS_VERSION:-${configs[knative-version]}}"
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
   ["ingress-gateway-key-path"]="${MDS_INGRESS_GATEWAY_KEY_PATH:-}"
@@ -278,11 +278,12 @@ build() {
   check ${FUNCNAME[0]}
 
   for s in $(services) $(processors); do
-    si=$(docker images --filter=reference="${s}" -q)
-    [ ${#si} -ge 1 ] && docker rmi -f ${si}
-  done; unset s si
+    for i in $(docker images --filter=reference="${s}" -q); do
+      [ ${#i} -ge 1 ] && docker rmi -f ${i}
+    done; unset i
+  done; unset s
 
-# todo: provide build-config-option for progressive builds, ie no-clean
+  # todo: provide build-config-option for progressive builds, ie no-clean
   (cd ${configs[home]};
     yarn clean;
     yarn;
@@ -560,8 +561,8 @@ installMds() {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
     # labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
-    configure $(imageVersion)
-    [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
+    [ -z "${configs[image-repository]}" ] &&
+      configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
     # fixme: do better, push these to helm/mds/templates
     for t in ingress filter; do
       kubectl -n ${configs[namespace-mds]} create serviceaccount eventing-broker-${t}
@@ -628,11 +629,12 @@ installSimulator() {
   if [[ ! -d ${configs[simulator]} ]]; then
     mkdir -p ${configs[workdir]}
     (cd ${configs[workdir]};
-      git clone ${configs[simulator-repository]} ${configs[simulator]})
+      git clone ${configs[simulator-repository]} ${configs[simulator]};
+      cd ${configs[simulator]};
+      git pull)
   fi
 
   (cd ${configs[simulator]};
-    git pull;
     docker build -t trackgen .;
     helm install ${configs[simulator]}/helm --name trackgen \
       ${configs[namespace-simulator]:+--namespace ${configs[namespace-simulator]}} \
