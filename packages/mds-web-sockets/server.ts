@@ -32,12 +32,20 @@ export const WebSocketServer = () => {
   const CITY_OF_LA = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 
   function pushToClients(entity: ENTITY_TYPE, message: string) {
+    const staleClients: WebSocket[] = []
     if (clients.subList[entity]) {
-      clients.subList[entity].map(client => {
-        client.send(`${entity}%${message}`)
-        client.emit(entity, message)
+      clients.subList[entity].forEach(client => {
+        if (client.readyState !== 1) staleClients.push(client)
+        else {
+          client.send(`${entity}%${message}`)
+          client.emit(entity, message)
+        }
       })
     }
+
+    Object.keys(clients.subList).map(entityKey => {
+      clients.subList[entityKey] = clients.subList[entityKey].filter(client => !staleClients.includes(client))
+    })
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
