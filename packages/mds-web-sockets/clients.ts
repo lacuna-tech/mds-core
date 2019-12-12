@@ -1,7 +1,7 @@
 import WebSocket from 'ws'
 import { BearerApiAuthorizer } from '@mds-core/mds-api-authorizer'
 import { AuthorizationError } from '@mds-core/mds-utils'
-
+import log from '@mds-core/mds-logger'
 export class Clients {
   authenticatedClients: WebSocket[]
 
@@ -29,7 +29,7 @@ export class Clients {
       try {
         this.subList[entity].push(client)
       } catch {
-        console.log(`failed to push ${entity}`)
+        log.error(`failed to push ${entity}`)
       }
     })
   }
