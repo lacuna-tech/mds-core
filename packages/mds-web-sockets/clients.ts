@@ -1,5 +1,5 @@
 import WebSocket from 'ws'
-import { BearerApiAuthorizer } from '@mds-core/mds-api-authorizer'
+import { WebSocketAuthorizer } from '@mds-core/mds-api-authorizer'
 import { AuthorizationError } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 
@@ -37,7 +37,7 @@ export class Clients {
 
   public saveAuth(token: string, client: WebSocket) {
     try {
-      const auth = BearerApiAuthorizer(token)
+      const auth = WebSocketAuthorizer(token)
       if (auth) {
         this.authenticatedClients.push(client)
         client.send('Authentication success!')
