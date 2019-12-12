@@ -19,7 +19,7 @@ import {
   UUID
 } from '@mds-core/mds-types'
 import urls from 'url'
-import socket from '@mds-core/mds-web-sockets'
+import { writeEvent as socketWriteEvent, writeTelemetry as socketWriteTelemetry } from '@mds-core/mds-web-sockets'
 import {
   badDevice,
   getVehicles,
@@ -333,7 +333,7 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
       await Promise.all([
         cache.writeEvent(recorded_event),
         stream.writeEvent(recorded_event),
-        socket.writeEvent(recorded_event)
+        socketWriteEvent(recorded_event)
       ])
       await finish()
     } catch (err) {
@@ -406,7 +406,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
       const recorded_telemetry = await writeTelemetry(valid)
 
       try {
-        socket.writeTelemetry(recorded_telemetry)
+        await Promise.all(recorded_telemetry.map(socketWriteTelemetry))
       } catch (err) {
         await log.error('Failed to write telemetry to socket', err)
       }

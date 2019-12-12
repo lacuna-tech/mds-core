@@ -8,7 +8,12 @@ const url = 'ws://localhost:4001'
 
 const { TOKEN } = process.env
 
-let connection: WebSocket = new WebSocket(url)
+let connection: WebSocket
+
+/* Authenticate */
+async function sendAuth() {
+  return connection.send(`AUTH%Bearer ${TOKEN}`)
+}
 
 function getClient() {
   if (connection && connection.readyState === 1) {
@@ -16,22 +21,17 @@ function getClient() {
   }
   connection = new WebSocket(url)
 
-  do {
-    log.info('Establishing connection...')
-  } while (connection.readyState !== 1)
+  setWsHeartbeat(connection as WebSocketBase, 'PING')
+
+  connection.onopen = async () => {
+    await sendAuth()
+  }
+
+  connection.onerror = async err => {
+    return log.error(err)
+  }
 
   return connection
-}
-
-/* Authenticate */
-async function sendAuth() {
-  return connection.send(`AUTH%Bearer ${TOKEN}`)
-}
-
-setWsHeartbeat(connection as WebSocketBase, 'PING')
-
-connection.onopen = async () => {
-  await sendAuth()
 }
 
 /* Force test event to be send back to client */
@@ -46,4 +46,8 @@ export function writeTelemetry(telemetry: Telemetry) {
 
 export function writeEvent(event: VehicleEvent) {
   return sendPush('EVENTS', event)
+}
+
+export function shutdown() {
+  connection.close()
 }

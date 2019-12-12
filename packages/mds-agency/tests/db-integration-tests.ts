@@ -41,6 +41,7 @@ import {
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
+import { shutdown as socketShutdown } from '@mds-core/mds-web-sockets'
 import { makeDevices, makeEvents } from '@mds-core/mds-test-data'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID } from '@mds-core/mds-providers'
@@ -127,7 +128,7 @@ before(async () => {
 })
 
 after(async () => {
-  await Promise.all([db.shutdown(), cache.shutdown(), stream.shutdown()])
+  await Promise.all([db.shutdown(), cache.shutdown(), stream.shutdown(), socketShutdown()])
 })
 
 describe('Tests API', () => {
