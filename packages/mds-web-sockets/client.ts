@@ -2,6 +2,7 @@ import WebSocket from 'ws'
 import { VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import log from '@mds-core/mds-logger'
 import { setWsHeartbeat, WebSocketBase } from 'ws-heartbeat/client'
+import { ENTITY } from './types'
 
 const url = 'ws://localhost:4001'
 
@@ -34,7 +35,7 @@ connection.onopen = async () => {
 }
 
 /* Force test event to be send back to client */
-async function sendPush(entity: string, data: VehicleEvent | Telemetry) {
+async function sendPush(entity: ENTITY, data: VehicleEvent | Telemetry) {
   const client = getClient()
   return client.send(`PUSH%${entity}%${JSON.stringify(data)}`)
 }

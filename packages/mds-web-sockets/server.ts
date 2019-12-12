@@ -1,11 +1,12 @@
 import log from '@mds-core/mds-logger'
 import { makeDevices, makeEventsWithTelemetry, makeTelemetry } from '@mds-core/mds-test-data'
-import { now } from '@mds-core/mds-utils'
+import { now, seconds } from '@mds-core/mds-utils'
 import WebSocket from 'ws'
 import { setWsHeartbeat } from 'ws-heartbeat/server'
 import { Telemetry, VehicleEvent } from '@mds-core/mds-types'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { Clients } from './clients'
+import { ENTITY } from './types'
 
 const {
   env: { npm_package_name, PORT = 4001 }
@@ -22,14 +23,14 @@ setWsHeartbeat(
       ws.send('PONG')
     }
   },
-  60000
+  seconds(60)
 )
 
 const clients = new Clients()
 
 const CITY_OF_LA = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 
-function pushToClients(entity: string, message: string) {
+function pushToClients(entity: ENTITY, message: string) {
   if (clients.subList[entity]) {
     clients.subList[entity].map(client => {
       client.send(`${entity}%${message}`)
@@ -49,7 +50,8 @@ function writeEvent(event: VehicleEvent) {
 
 wss.on('connection', (ws: WebSocket) => {
   ws.on('message', (data: WebSocket.Data) => {
-    const message = String(data)
+    const message = data
+      .toString()
       .trim()
       .split('%')
     const [header, ...args] = message
