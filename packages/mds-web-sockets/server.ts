@@ -28,7 +28,7 @@ const CITY_OF_LA = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 function pushToClients(entity: string, message: string) {
   if (clients.subList[entity]) {
     clients.subList[entity].map(client => {
-      client.send(`${entity},${message}`)
+      client.send(`${entity}%${message}`)
       client.emit(entity, message)
     })
   }
@@ -47,7 +47,7 @@ wss.on('connection', (ws: WebSocket) => {
   ws.on('message', (data: WebSocket.Data) => {
     const message = String(data)
       .trim()
-      .split(',')
+      .split('%')
     const [header, ...args] = message
 
     if (header === 'PUSH') {

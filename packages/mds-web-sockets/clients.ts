@@ -1,5 +1,6 @@
 import WebSocket from 'ws'
 import { BearerApiAuthorizer } from '@mds-core/mds-api-authorizer'
+import { AuthorizationError } from '@mds-core/mds-utils'
 
 export class Clients {
   authenticatedClients: WebSocket[]
@@ -40,7 +41,7 @@ export class Clients {
         this.authenticatedClients.push(client)
         client.send('Authentication success!')
       }
-      else client.send(AuthorizationError())
+      else client.send(new AuthorizationError())
     } catch (err) {
       client.send(JSON.stringify(err))
     }
