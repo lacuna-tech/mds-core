@@ -191,6 +191,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
   [TABLE.policy_metadata]: [COLUMN.id, COLUMN.policy_id, COLUMN.policy_metadata],
   [TABLE.reports_device_states]: [
     COLUMN.id,
+    COLUMN.vehicle_type,
     COLUMN.type,
     COLUMN.timestamp,
     COLUMN.device_id,

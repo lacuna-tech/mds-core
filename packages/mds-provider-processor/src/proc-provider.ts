@@ -30,40 +30,55 @@ async function processProvider(providerID: UUID, curTime: Timestamp) {
   const binStartYesterday = binStart - 86400000
   const binEndYesterday = curTime - 86400000
   try {
-    const provider_data: MetricsTableRow = {
-      start_time: binStart,
-      bin_size: 'hour',
-      geography: null,
-      provider_id: providerID,
-      vehicle_type: config.organization.vehicleTypes as VEHICLE_TYPE,
-      event_counts: await metric.calcEventCounts(providerID, binStart, curTime),
-      vehicle_counts: await metric.calcVehicleCounts(providerID, 0, binStart),
-      trip_count: await metric.calcTripCount(providerID, binStart, curTime),
-      vehicle_trips_count: await metric.calcVehicleTripCount(providerID, binStart, curTime),
-      event_time_violations: await metric.calcLateEventCount(providerID, binStart, curTime),
-      telemetry_distance_violations: await metric.calcTelemDistViolationCount(
-        providerID,
-        binStartYesterday,
-        binEndYesterday
-      ),
-      bad_events: {
-        invalid_count: null, // providerData ? providerData.invalidEvents.length : null,
-        duplicate_count: null, // providerData ? providerData.duplicateEvents.length : null,
-        out_of_order_count: null // providerData ? providerData.outOfOrderEvents.length : null
-      },
-      sla: {
-        max_vehicle_cap: 1600, // TODO: import from PCE
-        min_registered: config.compliance_sla.min_registered,
-        min_trip_start_count: config.compliance_sla.min_trip_start_count,
-        min_trip_end_count: config.compliance_sla.min_trip_end_count,
-        min_telemetry_count: config.compliance_sla.min_telemetry_count,
-        max_start_end_time: config.compliance_sla.max_start_end_time,
-        max_enter_leave_time: config.compliance_sla.max_enter_leave_time,
-        max_telemetry_time: config.compliance_sla.max_telemetry_time,
-        max_telemetry_distance: config.compliance_sla.max_telemetry_distance
-      }
-    }
-    await db.insertMetrics(provider_data)
+    await Promise.all(
+      config.organization.vehicleTypes.map(async vehicleType => {
+        const provider_data: MetricsTableRow = {
+          start_time: binStart,
+          bin_size: 'hour',
+          geography: null,
+          provider_id: providerID,
+          vehicle_type: vehicleType as VEHICLE_TYPE,
+          event_counts: await metric.calcEventCounts(providerID, vehicleType as VEHICLE_TYPE, binStart, curTime),
+          vehicle_counts: await metric.calcVehicleCounts(providerID, vehicleType as VEHICLE_TYPE, 0, binStart),
+          trip_count: await metric.calcTripCount(providerID, vehicleType as VEHICLE_TYPE, binStart, curTime),
+          vehicle_trips_count: await metric.calcVehicleTripCount(
+            providerID,
+            vehicleType as VEHICLE_TYPE,
+            binStart,
+            curTime
+          ),
+          event_time_violations: await metric.calcLateEventCount(
+            providerID,
+            vehicleType as VEHICLE_TYPE,
+            binStart,
+            curTime
+          ),
+          telemetry_distance_violations: await metric.calcTelemDistViolationCount(
+            providerID,
+            vehicleType as VEHICLE_TYPE,
+            binStartYesterday,
+            binEndYesterday
+          ),
+          bad_events: {
+            invalid_count: null, // providerData ? providerData.invalidEvents.length : null,
+            duplicate_count: null, // providerData ? providerData.duplicateEvents.length : null,
+            out_of_order_count: null // providerData ? providerData.outOfOrderEvents.length : null
+          },
+          sla: {
+            max_vehicle_cap: 1600, // TODO: import from PCE
+            min_registered: config.compliance_sla.min_registered,
+            min_trip_start_count: config.compliance_sla.min_trip_start_count,
+            min_trip_end_count: config.compliance_sla.min_trip_end_count,
+            min_telemetry_count: config.compliance_sla.min_telemetry_count,
+            max_start_end_time: config.compliance_sla.max_start_end_time,
+            max_enter_leave_time: config.compliance_sla.max_enter_leave_time,
+            max_telemetry_time: config.compliance_sla.max_telemetry_time,
+            max_telemetry_distance: config.compliance_sla.max_telemetry_distance
+          }
+        }
+        await db.insertMetrics(provider_data)
+      })
+    )
   } catch (err) {
     await log.error(err)
     throw new Error(err)
