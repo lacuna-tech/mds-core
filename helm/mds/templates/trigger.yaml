@@ -1,10 +1,10 @@
-{{- range $key, $processor := .Values.processors }}
+{{- range $name, $processor := .Values.processors }}
 {{- if and $processor.enabled $processor.triggeredBy.trigger }}
 {{- range $index, $trigger := $processor.triggeredBy.trigger }}
 apiVersion: eventing.knative.dev/v1alpha1
 kind: Trigger
 metadata:
-  name: {{ $key }}-{{ $trigger }}-trigger
+  name: {{ $name }}-{{ $trigger }}-trigger
   namespace: {{ $.Release.Namespace }}
 spec:
   broker: natss
@@ -17,7 +17,7 @@ spec:
    ref:
      apiVersion: v1
      kind: Service
-     name: {{ $key }}
+     name: {{ $name }}
 ---
 {{- end }}
 {{- end }}

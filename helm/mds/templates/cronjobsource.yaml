@@ -1,9 +1,9 @@
-{{- range $key, $processor := .Values.processors }}
+{{- range $name, $processor := .Values.processors }}
 {{- if and $processor.enabled $processor.triggeredBy.cron }}
 apiVersion: sources.eventing.knative.dev/v1alpha1
 kind: CronJobSource
 metadata:
-  name: {{ $key }}-cronjobsource
+  name: {{ $name }}-cronjobsource
   namespace: {{ $.Release.Namespace }}
 spec:
   schedule: {{ $processor.triggeredBy.cron | quote }}
@@ -11,7 +11,7 @@ spec:
     ref:
       apiVersion: v1
       kind: Service
-      name: {{ $key }}
+      name: {{ $name }}
 ---
 {{- end }}
 {{- end }}

@@ -5,6 +5,7 @@ import {
   VehicleCountMetricObj,
   MetricCount,
   LateMetricObj,
+  VEHICLE_METRIC_EVENT,
   VEHICLE_EVENT,
   VEHICLE_TYPE,
   UUID,
@@ -14,10 +15,10 @@ import config from './config'
 
 async function calcEventCounts(
   providerID: UUID,
-  vehicleType: VEHICLE_TYPE = 'scooter',
+  vehicleType: VEHICLE_TYPE,
   startTime: Timestamp,
   endTime: Timestamp
-): Promise<{ [S in VEHICLE_EVENT]: number }> {
+): Promise<{ [S in VEHICLE_METRIC_EVENT]: number }> {
   const events = await db.getStates(providerID, vehicleType, startTime, endTime)
   const eventCounts: { [S in VEHICLE_EVENT]: number } = {
     service_start: 0,
@@ -40,12 +41,15 @@ async function calcEventCounts(
       return event.event_type === eventType
     }).length
   })
-  return eventCounts
+  const telemetryCount = events.filter(event => {
+    return event.type === 'mds.telemetry'
+  }).length
+  return { ...eventCounts, telemetry: telemetryCount }
 }
 
 async function calcVehicleCounts(
   providerID: UUID,
-  vehicleType: VEHICLE_TYPE = 'scooter',
+  vehicleType: VEHICLE_TYPE,
   startTime: Timestamp,
   endTime: Timestamp
 ): Promise<VehicleCountMetricObj> {
@@ -79,7 +83,7 @@ async function calcVehicleCounts(
 
 async function calcTripCount(
   providerID: UUID,
-  vehicleType: VEHICLE_TYPE = 'scooter',
+  vehicleType: VEHICLE_TYPE,
   startTime: Timestamp,
   endTime: Timestamp
 ): Promise<number> {
@@ -89,7 +93,7 @@ async function calcTripCount(
 
 async function calcVehicleTripCount(
   providerID: UUID,
-  vehicleType: VEHICLE_TYPE = 'scooter',
+  vehicleType: VEHICLE_TYPE,
   startTime: Timestamp,
   endTime: Timestamp
 ): Promise<{ [x: number]: number } | null> {
@@ -120,7 +124,7 @@ async function calcVehicleTripCount(
 
 async function calcLateEventCount(
   providerID: UUID,
-  vehicleType: VEHICLE_TYPE = 'scooter',
+  vehicleType: VEHICLE_TYPE,
   startTime: Timestamp,
   endTime: Timestamp
 ): Promise<LateMetricObj> {
@@ -172,7 +176,7 @@ async function calcLateEventCount(
 
 async function calcTelemDistViolationCount(
   providerID: UUID,
-  vehicleType: VEHICLE_TYPE = 'scooter',
+  vehicleType: VEHICLE_TYPE,
   startTime: Timestamp,
   endTime: Timestamp
 ): Promise<MetricCount> {
