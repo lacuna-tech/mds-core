@@ -690,7 +690,7 @@ installNatss() {
       git clone ${configs[natss-repository]} .;
       git remote add upstream ${configs[natss-repository]};
       git remote set-url --push upstream no_push
-      sed -i "s/image: nats-streaming:.*$/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
+      sed -i.bak "s/image: nats-streaming:.*$/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
   fi
 
   # fixme: classic install
@@ -709,7 +709,7 @@ installNatss() {
   for c in controller dispatcher; do
     for t in $(docker images ko.local/channel_${c} --format '{{.Tag}}'); do
       if [ "${t}" != "latest" ]; then
-		sed -i "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
+		    sed -i.bak "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
         break
       fi
     done; unset t
@@ -1111,12 +1111,12 @@ preset() {
           is+="${is:+,}presets-mds+=processors.${p}.enabled=true"
         done; unset p
         is+="${is:+,}presets-mds+=useEvents=true";;
-	  data-external)
-	    is+="${is:+,}sets-mds+=postgresql.internal=false"
-		is+="${is:+,}sets-mds+=postgresql.host=host.docker.internal"
-		is+="${is:+,}sets-mds+=postgresql.hostReader=host.docker.internal"
-		is+="${is:+,}sets-mds+=redis.internal=false"
-		is+="${is:+,}sets-mds+=redis.host=host.docker.internal";;
+      data-external)
+        is+="${is:+,}sets-mds+=postgresql.internal=false"
+        is+="${is:+,}sets-mds+=postgresql.host=host.docker.internal"
+        is+="${is:+,}sets-mds+=postgresql.hostReader=host.docker.internal"
+        is+="${is:+,}sets-mds+=redis.internal=false"
+        is+="${is:+,}sets-mds+=redis.host=host.docker.internal";;
     esac
   done; unset p
 
