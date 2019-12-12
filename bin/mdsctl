@@ -297,7 +297,7 @@ getBranchSuffix() {
   case "$(git rev-parse --abbrev-ref HEAD)" in
     master) suffix="";;
     develop) suffix="-prerelease";;
-    *) suffix="-git";;
+    *) suffix="-unstable";;
   esac
 
   echo ${suffix}
