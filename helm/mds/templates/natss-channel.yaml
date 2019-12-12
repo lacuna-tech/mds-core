@@ -2,3 +2,5 @@ apiVersion: messaging.knative.dev/v1alpha1
 kind: NatssChannel
 metadata:
   name: natss
+  # fixme: ?can we ns scope the channel?
+  namespace: {{ $.Release.Namespace }}

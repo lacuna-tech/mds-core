@@ -91,7 +91,7 @@ spec:
           - name: CE_NAME
             value: {{ $name }}
           - name: SINK
-            value: http://natss-broker.mds.svc.cluster.local
+            value: http://natss-broker.{{ $.Release.Namespace }}.svc.cluster.local
           {{- end }}
           {{- if $.Values.slack.channel }}
           - name: SLACK_CHANNEL
