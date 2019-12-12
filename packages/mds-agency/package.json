@@ -14,6 +14,7 @@
     "@mds-core/mds-stream": "0.1.25",
     "@mds-core/mds-types": "0.1.22",
     "@mds-core/mds-utils": "0.1.25",
+    "@mds-core/mds-web-sockets": "0.0.1",
     "express": "4.17.1",
     "ladot-service-areas": "0.1.9",
     "uuid": "3.3.3"
