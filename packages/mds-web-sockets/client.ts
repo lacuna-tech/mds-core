@@ -1,5 +1,6 @@
 import WebSocket from 'ws'
 import { VehicleEvent, Telemetry } from '@mds-core/mds-types'
+import log from '@mds-core/mds-logger'
 import { setWsHeartbeat, WebSocketBase } from 'ws-heartbeat/client'
 
 const url = 'ws://localhost:4001'
@@ -11,10 +12,14 @@ const { TOKEN } = env
 let connection: WebSocket = new WebSocket(url)
 
 function getClient() {
-  if (connection) {
+  if (connection && connection.readyState === 1) {
     return connection
   }
   connection = new WebSocket(url)
+
+  do {
+    log.info('Awaiting connection...')
+  } while (connection.readyState !== 1)
 
   return connection
 }
