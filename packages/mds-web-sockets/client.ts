@@ -21,7 +21,7 @@ function getClient() {
 
 /* Authenticate */
 async function sendAuth() {
-  return connection.send(`AUTH&Bearer ${TOKEN}`)
+  return connection.send(`AUTH%Bearer ${TOKEN}`)
 }
 
 setWsHeartbeat(connection as WebSocketBase, 'PING')
