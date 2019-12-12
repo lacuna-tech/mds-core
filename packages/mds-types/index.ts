@@ -179,7 +179,7 @@ export interface MetricsTableRow {
   /** Vehicle type. */
   vehicle_type: VEHICLE_TYPE
   /** Number of events registered within the bin, by type. */
-  event_counts: { [S in VEHICLE_EVENT]: number }
+  event_counts: { [S in VEHICLE_METRIC_EVENT]: number }
   vehicle_counts: VehicleCountMetricObj
   /** Number of trips in region, derived from distinct trip ids. */
   trip_count: number
@@ -261,7 +261,12 @@ export const VEHICLE_EVENTS = Enum(
   'trip_end',
   'deregister'
 )
+
+export const VEHICLE_METRIC_EVENTS = { ...VEHICLE_EVENTS, telemetry: 'telemetry' }
+
 export type VEHICLE_EVENT = keyof typeof VEHICLE_EVENTS
+
+export type VEHICLE_METRIC_EVENT = keyof typeof VEHICLE_METRIC_EVENTS
 
 export const VEHICLE_REASONS = Enum(
   'battery_charged',

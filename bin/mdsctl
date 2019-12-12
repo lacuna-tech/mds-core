@@ -278,9 +278,10 @@ build() {
   check ${FUNCNAME[0]}
 
   for s in $(services) $(processors); do
-    si=$(docker images --filter=reference="${s}" -q)
-    [ ${#si} -ge 1 ] && docker rmi -f ${si}
-  done; unset s si
+    for i in $(docker images --filter=reference="${s}" -q); do
+      [ ${#i} -ge 1 ] && docker rmi -f ${i}
+    done; unset i
+  done; unset s
 
 # todo: provide build-config-option for progressive builds, ie no-clean
   (cd ${configs[home]};
@@ -560,7 +561,7 @@ installMds() {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
     # labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
-    configure $(imageVersion)
+	  configure $(imageVersion)
     [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
     # fixme: do better, push these to helm/mds/templates
     for t in ingress filter; do
@@ -575,7 +576,7 @@ installMds() {
     # fixme: do better
     pause 12
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
-    helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
+	  helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
       ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
@@ -628,11 +629,12 @@ installSimulator() {
   if [[ ! -d ${configs[simulator]} ]]; then
     mkdir -p ${configs[workdir]}
     (cd ${configs[workdir]};
-      git clone ${configs[simulator-repository]} ${configs[simulator]})
+      git clone ${configs[simulator-repository]} ${configs[simulator]};
+      cd ${configs[simulator]};
+      git pull)
   fi
 
   (cd ${configs[simulator]};
-    git pull;
     docker build -t trackgen .;
     helm install ${configs[simulator]}/helm --name trackgen \
       ${configs[namespace-simulator]:+--namespace ${configs[namespace-simulator]}} \
@@ -687,7 +689,7 @@ installNatss() {
       git clone ${configs[natss-repository]} .;
       git remote add upstream ${configs[natss-repository]};
       git remote set-url --push upstream no_push
-      sed -i "s/image: nats-streaming:.*$/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
+      sed -i.bak "s/image: nats-streaming:.*$/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
   fi
 
   # fixme: classic install
@@ -706,7 +708,7 @@ installNatss() {
   for c in controller dispatcher; do
     for t in $(docker images ko.local/channel_${c} --format '{{.Tag}}'); do
       if [ "${t}" != "latest" ]; then
-		sed -i "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
+		    sed -i.bak "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
         break
       fi
     done; unset t
@@ -1067,8 +1069,8 @@ configure() {
     for c in $(echo ${1} | tr ',' ' '); do
       k=$(echo ${c} | cut -d '=' -f 1)
       v=$(echo ${c} | cut -d '=' -f 2-)
-
-      [[ "${k}" == *"+" ]] && configs[${k%+}]+="${configs[${k%+}]:+,}${v}" || configs[${k}]="${v}"
+      [[ "${k}" == *"+" ]] && configs[${k%+}]+="${configs[${k%+}]:+,}${v}" ||
+	  configs[${k}]="${v}"
     done; unset c k v
   else
     configs[${1}]=
@@ -1108,12 +1110,12 @@ preset() {
           is+="${is:+,}presets-mds+=processors.${p}.enabled=true"
         done; unset p
         is+="${is:+,}presets-mds+=useEvents=true";;
-	  data-external)
-	    is+="${is:+,}sets-mds+=postgresql.internal=false"
-		is+="${is:+,}sets-mds+=postgresql.host=host.docker.internal"
-		is+="${is:+,}sets-mds+=postgresql.hostReader=host.docker.internal"
-		is+="${is:+,}sets-mds+=redis.internal=false"
-		is+="${is:+,}sets-mds+=redis.host=host.docker.internal";;
+      data-external)
+        is+="${is:+,}sets-mds+=postgresql.internal=false"
+        is+="${is:+,}sets-mds+=postgresql.host=host.docker.internal"
+        is+="${is:+,}sets-mds+=postgresql.hostReader=host.docker.internal"
+        is+="${is:+,}sets-mds+=redis.internal=false"
+        is+="${is:+,}sets-mds+=redis.host=host.docker.internal";;
     esac
   done; unset p
 
