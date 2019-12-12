@@ -278,9 +278,10 @@ build() {
   check ${FUNCNAME[0]}
 
   for s in $(services) $(processors); do
-    si=$(docker images --filter=reference="${s}" -q)
-    [ ${#si} -ge 1 ] && docker rmi -f ${si}
-  done; unset s si
+    for i in $(docker images --filter=reference="${s}" -q); do
+      [ ${#i} -ge 1 ] && docker rmi -f ${i}
+    done; unset i
+  done; unset s
 
 # todo: provide build-config-option for progressive builds, ie no-clean
   (cd ${configs[home]};
@@ -560,7 +561,7 @@ installMds() {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
     # labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
-	configure $(imageVersion)
+	  configure $(imageVersion)
     [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
     # fixme: do better, push these to helm/mds/templates
     for t in ingress filter; do
@@ -575,16 +576,13 @@ installMds() {
     # fixme: do better
     pause 12
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
-	helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
+	  helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
       ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
       ${configs[presets-mds]:+$(helmOptions set ${configs[presets-mds]})} \
       ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
       ${configs[sets-mds]:+$(helmOptions set ${configs[sets-mds]})} \
-	  --set processors.mds-event-processor.version=0.1.0-unstable \
-	  --set processors.mds-trip-processor.version=0.1.0-unstable \
-	  --set processors.mds-provider-processor.version=0.1.0-unstable \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-mds]:+$(helmOptions set-file ${configs[setfiles-mds]})} \
       ${configs[dryrun]:+--dry-run --debug}
@@ -631,12 +629,13 @@ installSimulator() {
   if [[ ! -d ${configs[simulator]} ]]; then
     mkdir -p ${configs[workdir]}
     (cd ${configs[workdir]};
-      git clone ${configs[simulator-repository]} ${configs[simulator]})
+      git clone ${configs[simulator-repository]} ${configs[simulator]};
+      cd ${configs[simulator]};
+      git pull)
   fi
 
   (cd ${configs[simulator]};
-    #git pull;
-    #docker build -t trackgen .;
+    docker build -t trackgen .;
     helm install ${configs[simulator]}/helm --name trackgen \
       ${configs[namespace-simulator]:+--namespace ${configs[namespace-simulator]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -1070,7 +1069,7 @@ configure() {
     for c in $(echo ${1} | tr ',' ' '); do
       k=$(echo ${c} | cut -d '=' -f 1)
       v=$(echo ${c} | cut -d '=' -f 2-)
-      [[ "${k}" == *"+" ]] && configs[${k%+}]+="${configs[${k%+}]:+,}${v}" || 
+      [[ "${k}" == *"+" ]] && configs[${k%+}]+="${configs[${k%+}]:+,}${v}" ||
 	  configs[${k}]="${v}"
     done; unset c k v
   else
