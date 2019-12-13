@@ -12,7 +12,8 @@ spec:
     # sourceAndType:
     #   type: {{ $trigger }}
     attributes:
-      type: {{ $trigger }}
+      type: {{ default "mds" $.Values.tenantId }}.{{ $trigger }}
+    # fixme: unable to leverage other cloud-events field, eg: extensions
   subscriber:
    ref:
      apiVersion: v1

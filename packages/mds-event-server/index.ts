@@ -6,6 +6,8 @@ import Cloudevent, { event as cloudevent, BinaryHTTPReceiver } from 'cloudevents
 
 export type EventHandler<TData, TResult> = (type: string, data: TData, event: Cloudevent) => Promise<TResult>
 
+const { env } = process
+
 export const EventServer = <TData, TResult>(
   handler: EventHandler<TData, TResult>,
   server: express.Express = express()
@@ -21,9 +23,10 @@ export const EventServer = <TData, TResult>(
     } catch (error) {
       const [source, type] = [req.header('ce-source'), req.header('ce-type')]
       if (source && type) {
+        // fixme: unable to set-and-propgate additional ce headers, eg: ce.addExtension('foo', 'bar')
         return cloudevent()
           .source(source)
-          .type(type)
+          .type(`${env.TENANT_ID ? env.TENANT_ID : 'mds'}.${type}`)
           .data(req.body)
       }
       /* istanbul ignore next */

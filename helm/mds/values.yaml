@@ -56,7 +56,7 @@ processors:
     version: latest
     migration: false
     triggeredBy:
-      trigger: [mds.event, mds.telemetry]
+      trigger: [event, telemetry]
   mds-trip-processor:
     enabled: true
     pathPrefix: /trip-processor
@@ -71,7 +71,7 @@ processors:
     migration: false
     triggeredBy:
       cron: '* * * * *'
-tenantId:
+tenantId: foo
 timezone: America/Los_Angeles
 registry:
 useLatestImage: true
