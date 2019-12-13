@@ -455,16 +455,16 @@ export const registerStop = async (req: AgencyApiRequest, res: AgencyApiResponse
   try {
     isValidStop(stop)
     const recorded_stop = await db.writeStop(stop)
-    res.status(201).send(recorded_stop)
+    return res.status(201).send(recorded_stop)
   } catch (err) {
     if (err instanceof NotFoundError) {
-      res.status(404).send(err.message)
+      return res.status(404).send(err.message)
     }
     if (err instanceof ValidationError) {
-      res.status(400).send({ error: err })
+      return res.status(400).send({ error: err })
     }
 
-    res.status(500).send(new ServerError())
+    return res.status(500).send(new ServerError())
   }
 }
 

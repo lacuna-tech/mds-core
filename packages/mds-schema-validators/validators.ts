@@ -212,7 +212,7 @@ const auditNoteSchema = stringSchema.max(255)
 
 const vehicleTypesCountMapSchema = Joi.object().keys({
   scooter: Joi.number(),
-  bike: Joi.number(),
+  bicycle: Joi.number(),
   car: Joi.number(),
   moped: Joi.number()
 })

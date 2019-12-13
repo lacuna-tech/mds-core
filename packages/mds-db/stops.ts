@@ -23,7 +23,7 @@ export async function writeStop(stop: Stop): Promise<Recorded<Stop>> {
 export async function readStop(stop_id: UUID): Promise<Recorded<Stop>> {
   const client = await getReadOnlyClient()
   const vals = new SqlVals()
-  const sql = `SELECT * FROM ${schema.TABLE.stops} WHERE ${schema.COLUMN.stop_id} = '${vals.add(stop_id)}'`
+  const sql = `SELECT * FROM ${schema.TABLE.stops} WHERE ${schema.COLUMN.stop_id} = ${vals.add(stop_id)}`
   const values = vals.values()
   await logSql(sql, values)
   const {
