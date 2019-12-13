@@ -520,7 +520,12 @@ if (pg_info.database) {
     const geography_id = null
     const vehicle_type = null
     await getAllMetrics({ start_time, end_time, provider_id, geography_id, vehicle_type })
-    assert.strictEqual(fakeReadOnly.args[0][0], `SELECT * FROM reports_providers WHERE start_time BETWEEN $1 AND $2`)
+    assert.strictEqual(
+      fakeReadOnly.calledOnceWithExactly(
+        `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}`
+      ),
+      true
+    )
     Sinon.restore()
   })
 
@@ -535,7 +540,7 @@ if (pg_info.database) {
     await getAllMetrics({ start_time, end_time, provider_id, geography_id, vehicle_type })
     assert.strictEqual(
       fakeReadOnly.args[0][0],
-      `SELECT * FROM reports_providers WHERE start_time BETWEEN $4 AND $5 AND provider_id = "$1"  AND geography_id = "$2"  AND vehicle_type = "$3" `
+      `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} AND provider_id = "${provider_id}"  AND geography_id = "${geography_id}"  AND vehicle_type = "${vehicle_type}" `
     )
     Sinon.restore()
   })
