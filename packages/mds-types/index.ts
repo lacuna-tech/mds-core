@@ -27,7 +27,7 @@ export const Enum = <T extends string>(...keys: T[]) =>
 export const isEnum = (enums: { [key: string]: string }, value: unknown) =>
   typeof value === 'string' && typeof enums === 'object' && enums[value] === value
 
-export const VEHICLE_TYPES = Enum('car', 'bicycle', 'scooter', 'recumbent')
+export const VEHICLE_TYPES = Enum('car', 'bicycle', 'scooter', 'moped', 'recumbent')
 export type VEHICLE_TYPE = keyof typeof VEHICLE_TYPES
 
 export const RULE_TYPES = Enum('count', 'speed', 'time', 'user')
@@ -631,4 +631,28 @@ export interface Provider {
   url?: string
   mds_api_url?: string
   gbfs_api_url?: string
+}
+
+export interface Stop {
+  stop_id: UUID
+  stop_name: string
+  short_name?: string
+  platform_code?: string
+  geography_id?: UUID
+  lat: number
+  lng: number
+  zone_id?: UUID
+  address?: string
+  post_code?: string
+  rental_methods?: string // TOOD: enum?
+  capacity: Partial<{ [S in VEHICLE_TYPE]: number }>
+  location_type?: string // TODO: enum?
+  timezone?: string
+  cross_street?: string
+  num_vehicles_available: Partial<{ [S in VEHICLE_TYPE]: number }>
+  num_vehicles_disabled?: Partial<{ [S in VEHICLE_TYPE]: number }>
+  num_spots_available: Partial<{ [S in VEHICLE_TYPE]: number }>
+  num_spots_disabled?: Partial<{ [S in VEHICLE_TYPE]: number }>
+  wheelchair_boarding?: boolean
+  reservation_cost?: Partial<{ [S in VEHICLE_TYPE]: number }> // Cost to reserve a spot per vehicle_type
 }
