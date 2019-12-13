@@ -214,7 +214,8 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.num_spots_available,
     COLUMN.num_spots_disabled,
     COLUMN.wheelchair_boarding,
-    COLUMN.reservation_cost
+    COLUMN.reservation_cost,
+    COLUMN.recorded
   ]
 }
 
