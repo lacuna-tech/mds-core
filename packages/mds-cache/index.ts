@@ -362,19 +362,16 @@ async function readDeviceStatus(device_id: UUID) {
       }
     })
   )
-  return await Promise.all(promises)
-    .then((results: any) => {
-      const deviceStatusMap: { [device_id: string]: CachedItem | {} } = {}
-      results
-        .filter((item: any) => item !== undefined)
-        .map((item: any) => {
-          deviceStatusMap[item.device_id] = deviceStatusMap[item.device_id] || {}
-          Object.assign(deviceStatusMap[item.device_id], item)
-        })
-      const statuses = Object.values(deviceStatusMap)
-      return statuses.find((status: any) => status.telemetry) || statuses[0] || null
+  const results = await Promise.all(promises).catch(err => log.error('Error reading device status', err))
+  const deviceStatusMap: { [device_id: string]: CachedItem | {} } = {}
+  results
+    .filter((item: CachedItem) => item !== undefined)
+    .map((item: CachedItem) => {
+      deviceStatusMap[item.device_id] = deviceStatusMap[item.device_id] || {}
+      Object.assign(deviceStatusMap[item.device_id], item)
     })
-    .catch(err => log.error('Error reading device status', err))
+  const statuses = Object.values(deviceStatusMap)
+  return statuses.find((status: any) => status.telemetry) || statuses[0] || null
 }
 
 /* eslint-reason redis external lib weirdness */
