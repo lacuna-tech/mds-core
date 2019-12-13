@@ -37,7 +37,8 @@ import {
   Timestamp,
   Device,
   VehicleEvent,
-  Geography
+  Geography,
+  Stop
 } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
@@ -1541,26 +1542,29 @@ describe('Tests pagination', async () => {
 })
 
 describe('Tests Stops', async () => {
-  const TEST_STOP = {
+  const TEST_STOP: Stop = {
     stop_id: '821f8dee-dd43-4f03-99d4-3cf761f4fe7e',
     stop_name: 'LA Stop',
     geography_id: GEOGRAPHY_UUID,
     lat: 34.0522,
     lng: -118.2437,
     capacity: {
-      bike: 10,
+      bicycle: 10,
       scooter: 10,
-      carshare: 5
+      car: 5,
+      moped: 3
     },
     num_vehicles_available: {
-      bike: 3,
+      bicycle: 3,
       scooter: 7,
-      carshare: 0
+      car: 0,
+      moped: 1
     },
     num_spots_available: {
-      bike: 7,
+      bicycle: 7,
       scooter: 3,
-      carshare: 5
+      car: 5,
+      moped: 2
     }
   }
 
