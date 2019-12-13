@@ -14,8 +14,8 @@ const TABLE = Enum(
   'migrations',
   'policies',
   'policy_metadata',
-  'telemetry',
-  'stops'
+  'stops',
+  'telemetry'
 )
 export type TABLE_NAME = keyof typeof TABLE
 const TABLES = Object.keys(TABLE) as TABLE_NAME[]
@@ -195,6 +195,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.recorded
   ],
   [TABLE.stops]: [
+    COLUMN.id,
     COLUMN.stop_id,
     COLUMN.stop_name,
     COLUMN.short_name,
