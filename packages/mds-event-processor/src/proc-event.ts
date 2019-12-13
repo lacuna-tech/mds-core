@@ -14,6 +14,7 @@ import {
   Timestamp
 } from '@mds-core/mds-types'
 import { getAnnotationData, getAnnotationVersion } from './annotation'
+import { getTripId } from './utils'
 
 /*
     Event processor that runs inside a Kubernetes pod.
@@ -37,33 +38,7 @@ import { getAnnotationData, getAnnotationVersion } from './annotation'
           VALUES = deviceState
 */
 
-export async function getTripId(deviceState: StateEntry): Promise<string | null> {
-  /*
-    Return trip_id for telemetery entry by associating timestamps
-  */
-  const { provider_id, device_id, timestamp } = deviceState
-  const tripsEvents = await cache.readTripsEvents(`${provider_id}:${device_id}`)
-  if (!tripsEvents) {
-    await log.warn('NO PRIOR TRIP EVENTS FOUND')
-    return null
-  }
-  const sortedStartEvents = Object.entries(tripsEvents).sort((a, b) =>
-    b[1].filter(tripEvent => {
-      return tripEvent.event_type === 'trip_start' || tripEvent.event_type === 'trip_enter'
-    })[0].timestamp >
-    a[1].filter(tripEvent => {
-      return tripEvent.event_type === 'trip_start' || tripEvent.event_type === 'trip_enter'
-    })[0].timestamp
-      ? 1
-      : -1
-  )
-  const match = sortedStartEvents.find(x => {
-    return timestamp >= x[1][0].timestamp
-  })
-  return match ? match[0] : null
-}
-
-async function processTripTelemetry(deviceState: StateEntry): Promise<boolean> {
+export async function processTripTelemetry(deviceState: StateEntry): Promise<boolean> {
   /*
     Add trip related telemetry to cache (trips:telemetry):
 
