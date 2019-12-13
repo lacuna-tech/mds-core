@@ -49,5 +49,5 @@ export function writeEvent(event: VehicleEvent) {
 }
 
 export function shutdown() {
-  connection.close()
+  if (connection) connection.close()
 }
