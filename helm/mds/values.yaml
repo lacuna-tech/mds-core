@@ -71,7 +71,7 @@ processors:
     migration: false
     triggeredBy:
       cron: '* * * * *'
-tenantId: foo
+tenantId:
 timezone: America/Los_Angeles
 registry:
 useLatestImage: true
