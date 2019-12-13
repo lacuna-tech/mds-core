@@ -474,21 +474,25 @@ export const readStop = async (req: AgencyApiRequest, res: AgencyApiResponse) =>
     const recorded_stop = await db.readStop(stop_id)
 
     if (!recorded_stop) {
-      throw new NotFoundError()
+      return res.status(404).send(new NotFoundError())
     }
 
     res.status(200).send(recorded_stop)
   } catch (err) {
-    res.status(404).send(err)
+    res.status(500).send(new ServerError())
   }
 }
 
 export const readStops = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
-  const stops = await db.readStops()
+  try {
+    const stops = await db.readStops()
 
-  if (!stops) {
-    res.status(404).send(new NotFoundError())
+    if (!stops) {
+      return res.status(404).send(new NotFoundError())
+    }
+
+    res.status(200).send(stops)
+  } catch (err) {
+    return res.status(500).send(new ServerError())
   }
-
-  res.status(200).send(stops)
 }
