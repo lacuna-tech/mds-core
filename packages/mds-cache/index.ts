@@ -353,37 +353,28 @@ async function readDevices(device_ids: UUID[]) {
 }
 
 async function readDeviceStatus(device_id: UUID) {
-  let ret: {} | null = null
-  const promises = [readEvent(device_id), readDevice(device_id)]
-  // Catch all NotFoundErrors
-  await Promise.all(
-    promises.map(p =>
-      p.catch(err => {
-        if (err.name !== 'NotFoundError') {
-          throw err
-        }
-      })
-    )
-  )
-    .then(results => {
-      const deviceStatusMap: { [device_id: string]: CachedItem | {} } = {}
-      results.map(item => {
-        if (item !== undefined) {
-          deviceStatusMap[item.device_id] = deviceStatusMap[item.device_id] || {}
-          Object.assign(deviceStatusMap[item.device_id], item)
-        }
-      })
-      const statuses = Object.values(deviceStatusMap)
-      const statusWithTelemetry = statuses.find((status: any) => status.telemetry)
-      /* eslint-disable-next-line promise/always-return */
-      if (statusWithTelemetry === undefined && statuses.length > 0) {
-        ;[ret] = statuses
-      } else if (statusWithTelemetry !== undefined) {
-        ret = statusWithTelemetry
+  // Read event and device in parallel, catching NotFoundErrors
+  const promises = [readEvent(device_id), readDevice(device_id)].map(p =>
+    /* eslint-disable-next-line promise/prefer-await-to-callbacks */
+    p.catch((err: Error) => {
+      if (err.name !== 'NotFoundError') {
+        throw err
       }
     })
+  )
+  return await Promise.all(promises)
+    .then((results: any) => {
+      const deviceStatusMap: { [device_id: string]: CachedItem | {} } = {}
+      results
+        .filter((item: any) => item !== undefined)
+        .map((item: any) => {
+          deviceStatusMap[item.device_id] = deviceStatusMap[item.device_id] || {}
+          Object.assign(deviceStatusMap[item.device_id], item)
+        })
+      const statuses = Object.values(deviceStatusMap)
+      return statuses.find((status: any) => status.telemetry) || statuses[0] || null
+    })
     .catch(err => log.error('Error reading device status', err))
-  return ret
 }
 
 /* eslint-reason redis external lib weirdness */
