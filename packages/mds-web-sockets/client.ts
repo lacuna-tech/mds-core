@@ -4,9 +4,7 @@ import log from '@mds-core/mds-logger'
 import { setWsHeartbeat, WebSocketBase } from 'ws-heartbeat/client'
 import { ENTITY_TYPE } from './types'
 
-const url = 'ws://localhost:4001'
-
-const { TOKEN } = process.env
+const { TOKEN, URL = 'ws://mds-web-sockets:4000' } = process.env
 
 let connection: WebSocket
 
@@ -19,7 +17,7 @@ function getClient() {
   if (connection && connection.readyState === 1) {
     return connection
   }
-  connection = new WebSocket(url)
+  connection = new WebSocket(URL)
 
   setWsHeartbeat(connection as WebSocketBase, 'PING')
 
