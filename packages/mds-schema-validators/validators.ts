@@ -214,7 +214,7 @@ const vehicleTypesCountMapSchema = Joi.object().keys({
   scooter: Joi.number(),
   bike: Joi.number(),
   car: Joi.number(),
-  moped: Joi.number()
+  moped: Joi.number(
 })
 
 const stopSchema = Joi.object().keys({
