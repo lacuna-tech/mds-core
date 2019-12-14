@@ -12,7 +12,8 @@ import {
   VEHICLE_EVENTS,
   Geography,
   VEHICLE_TYPES,
-  UUID
+  UUID,
+  VEHICLE_TYPE
 } from '@mds-core/mds-types'
 import {
   JUMP_TEST_DEVICE_1,
@@ -38,7 +39,7 @@ import MDSDBPostgres from '../index'
 
 import { dropTables, createTables, updateSchema } from '../migration'
 import { Trip } from '../types'
-import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
+import { configureClient, MDSPostgresClient, PGInfo, arrayToInQueryFormat } from '../sql-utils'
 import { getAllMetrics } from '../processors'
 import * as dbClient from '../client'
 
@@ -519,7 +520,7 @@ if (pg_info.database) {
     const end_time = 50
     const provider_id: UUID[] = []
     const geography_id = null
-    const vehicle_type = null
+    const vehicle_type: VEHICLE_TYPE[] = []
     await getAllMetrics({ start_time, end_time, provider_id, geography_id, vehicle_type })
     assert.strictEqual(
       fakeReadOnly.args[0][0],
@@ -535,13 +536,13 @@ if (pg_info.database) {
     const end_time = 50
     const provider_id = [uuid(), uuid()]
     const geography_id = uuid()
-    const vehicle_type = VEHICLE_TYPES.scooter
+    const vehicle_type = [VEHICLE_TYPES.scooter]
     await getAllMetrics({ start_time, end_time, provider_id, geography_id, vehicle_type })
     assert.strictEqual(
       fakeReadOnly.args[0][0],
-      `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} AND provider_id IN (${provider_id.map(
-        currId => `"${currId}"`
-      )})  AND geography_id = "${geography_id}"  AND vehicle_type = "${vehicle_type}" `
+      `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} AND provider_id IN ${arrayToInQueryFormat(
+        provider_id
+      )}  AND geography_id = "${geography_id}"  AND vehicle_type IN ${arrayToInQueryFormat(vehicle_type)} `
     )
     Sinon.restore()
   })

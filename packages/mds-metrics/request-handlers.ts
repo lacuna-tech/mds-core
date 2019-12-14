@@ -1,6 +1,6 @@
 import db from '@mds-core/mds-db'
 import { inc, RuntimeError, ServerError, isUUID, BadParamsError, parseRelative } from '@mds-core/mds-utils'
-import { EVENT_STATUS_MAP, VEHICLE_TYPES, UUID } from '@mds-core/mds-types'
+import { EVENT_STATUS_MAP, VEHICLE_TYPES, UUID, VEHICLE_TYPE } from '@mds-core/mds-types'
 import { Parser } from 'json2csv'
 import fs from 'fs'
 
@@ -219,19 +219,24 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
       return prevSlices.concat(currSlices)
     }, [])
   const provider_id: UUID[] = normalizeToArray<UUID>(query.provider_id)
-  const vehicle_type = query.vehicle_type || null
+  const vehicle_type = normalizeToArray<VEHICLE_TYPE>(query.vehicle_type)
   const format: string | 'json' | 'tsv' = query.format || 'json'
 
   if (format !== 'json' && format !== 'tsv') {
     return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
   }
 
-  // if (provider_id !== null && !isUUID(provider_id))
-  //   return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
+  for (const currProviderId of provider_id) {
+    if (!isUUID(currProviderId)) {
+      return res.status(400).send(new BadParamsError(`provider_id ${currProviderId} is not a UUID`))
+    }
+  }
 
-  // TODO test validation
-  // if (vehicle_type !== null && !Object.values(VEHICLE_TYPES).includes(vehicle_type))
-  //   return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
+  for (const currVehicleType of vehicle_type) {
+    if (!Object.values(VEHICLE_TYPES).includes(currVehicleType)) {
+      return res.status(400).send(new BadParamsError(`vehicle_type ${currVehicleType} is not a valid vehicle type`))
+    }
+  }
 
   try {
     if (format === 'json') {
