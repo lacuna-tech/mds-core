@@ -1,6 +1,6 @@
 import db from '@mds-core/mds-db'
 import { inc, RuntimeError, ServerError, isUUID, BadParamsError, parseRelative } from '@mds-core/mds-utils'
-import { EVENT_STATUS_MAP, VEHICLE_TYPES } from '@mds-core/mds-types'
+import { EVENT_STATUS_MAP, VEHICLE_TYPES, UUID } from '@mds-core/mds-types'
 import { Parser } from 'json2csv'
 import fs from 'fs'
 
@@ -211,7 +211,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     start_time,
     end_time
   })
-  const provider_id = query.provider_id || null
+  const provider_id: UUID[] = query.provider_id || []
   const vehicle_type = query.vehicle_type || null
   const format: string | 'json' | 'tsv' = query.format || 'json'
 

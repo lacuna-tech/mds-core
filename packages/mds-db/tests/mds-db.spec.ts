@@ -11,7 +11,8 @@ import {
   Device,
   VEHICLE_EVENTS,
   Geography,
-  VEHICLE_TYPES
+  VEHICLE_TYPES,
+  UUID
 } from '@mds-core/mds-types'
 import {
   JUMP_TEST_DEVICE_1,
@@ -516,15 +517,13 @@ if (pg_info.database) {
     Sinon.replace(dbClient, 'makeReadOnlyQuery', fakeReadOnly)
     const start_time = 42
     const end_time = 50
-    const provider_id = null
+    const provider_id: UUID[] = []
     const geography_id = null
     const vehicle_type = null
     await getAllMetrics({ start_time, end_time, provider_id, geography_id, vehicle_type })
     assert.strictEqual(
-      fakeReadOnly.calledOnceWithExactly(
-        `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}`
-      ),
-      true
+      fakeReadOnly.args[0][0],
+      `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}`
     )
     Sinon.restore()
   })
@@ -534,13 +533,15 @@ if (pg_info.database) {
     Sinon.replace(dbClient, 'makeReadOnlyQuery', fakeReadOnly)
     const start_time = 42
     const end_time = 50
-    const provider_id = uuid()
+    const provider_id = [uuid(), uuid()]
     const geography_id = uuid()
     const vehicle_type = VEHICLE_TYPES.scooter
     await getAllMetrics({ start_time, end_time, provider_id, geography_id, vehicle_type })
     assert.strictEqual(
       fakeReadOnly.args[0][0],
-      `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} AND provider_id = "${provider_id}"  AND geography_id = "${geography_id}"  AND vehicle_type = "${vehicle_type}" `
+      `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} AND provider_id IN (${provider_id.map(
+        currId => `"${currId}"`
+      )})  AND geography_id = "${geography_id}"  AND vehicle_type = "${vehicle_type}" `
     )
     Sinon.restore()
   })
