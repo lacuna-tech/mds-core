@@ -5,6 +5,7 @@ import { Parser } from 'json2csv'
 import fs from 'fs'
 
 import log from '@mds-core/mds-logger'
+import { isArray } from 'util'
 import {
   MetricsApiRequest,
   instantiateEventSnapshotResponse,
@@ -16,9 +17,10 @@ import {
   TelemetryCountsResponse,
   StateSnapshot,
   EventSnapshot,
-  GetAllResponse
+  GetAllResponse,
+  GetAllMetricsApiRequest
 } from './types'
-import { getTimeBins, getBinSizeFromQuery } from './utils'
+import { getTimeBins, getBinSizeFromQuery, getProviderIdArray } from './utils'
 
 export async function getStateSnapshot(req: MetricsApiRequest, res: GetStateSnapshotResponse) {
   const { body } = req
@@ -201,7 +203,8 @@ export async function getEventCounts(req: MetricsApiRequest, res: GetEventCounts
 
   **Note: unlike the above methods, this method exclusively uses URL query params**
 */
-export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
+
+export async function getAll(req: GetAllMetricsApiRequest, res: GetAllResponse) {
   const { query } = req
   const bin_size = getBinSizeFromQuery(query)
 
@@ -211,7 +214,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     start_time,
     end_time
   })
-  const provider_id: UUID[] = query.provider_id || []
+  const provider_id: UUID[] = getProviderIdArray(query.provider_id)
   const vehicle_type = query.vehicle_type || null
   const format: string | 'json' | 'tsv' = query.format || 'json'
 

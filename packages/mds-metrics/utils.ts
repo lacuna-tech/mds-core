@@ -1,5 +1,7 @@
 import { now, yesterday, hours, days } from '@mds-core/mds-utils'
 
+import { UUID } from '@mds-core/mds-types'
+import { isArray } from 'util'
 import { GetTimeBinsParams, MetricsApiRequest } from './types'
 
 export function getTimeBins({
@@ -23,4 +25,16 @@ export function getBinSizeFromQuery(query: MetricsApiRequest['query']) {
   }
   const bin_size = timeToMs[bin_size_english]
   return bin_size
+}
+
+export function getProviderIdArray(passedProviderId: UUID | UUID[] | undefined): UUID[] {
+  let provider_id: UUID[]
+  if (passedProviderId === undefined) {
+    provider_id = []
+  } else if (isArray(passedProviderId)) {
+    provider_id = passedProviderId
+  } else {
+    provider_id = [passedProviderId]
+  }
+  return provider_id
 }
