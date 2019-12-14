@@ -36,3 +36,12 @@ export function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[
   }
   return normalizedArray
 }
+
+export function getBinSize(binSizeFromQuery: HourOrDay | HourOrDay[] | undefined) {
+  if (binSizeFromQuery === undefined) {
+    return [convertBinSizeFromEnglishToMs('hour')]
+  }
+  const bin_size_english = normalizeToArray<HourOrDay>(binSizeFromQuery)
+  const bin_size = bin_size_english.map(currBinSizeEnglish => convertBinSizeFromEnglishToMs(currBinSizeEnglish))
+  return bin_size
+}

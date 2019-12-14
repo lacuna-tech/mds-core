@@ -16,10 +16,9 @@ import {
   TelemetryCountsResponse,
   StateSnapshot,
   EventSnapshot,
-  GetAllResponse,
-  HourOrDay
+  GetAllResponse
 } from './types'
-import { getTimeBins, getBinSizeFromQuery, normalizeToArray, convertBinSizeFromEnglishToMs } from './utils'
+import { getTimeBins, normalizeToArray, getBinSize } from './utils'
 
 export async function getStateSnapshot(req: MetricsApiRequest, res: GetStateSnapshotResponse) {
   const { body } = req
@@ -205,8 +204,7 @@ export async function getEventCounts(req: MetricsApiRequest, res: GetEventCounts
 
 export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   const { query } = req
-  const bin_size_english = normalizeToArray<HourOrDay>(query.bin_size)
-  const bin_size = bin_size_english.map(currBinSizeEnglish => convertBinSizeFromEnglishToMs(currBinSizeEnglish))
+  const bin_size = getBinSize(query.bin_size)
 
   const { start_time, end_time } = parseRelative(query.start || 'today', query.end || 'now')
   const slices = bin_size
@@ -228,12 +226,12 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
   }
 
-  if (provider_id !== null && !isUUID(provider_id))
-    return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
+  // if (provider_id !== null && !isUUID(provider_id))
+  //   return res.status(400).send(new BadParamsError(`provider_id ${provider_id} is not a UUID`))
 
   // TODO test validation
-  if (vehicle_type !== null && !Object.values(VEHICLE_TYPES).includes(vehicle_type))
-    return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
+  // if (vehicle_type !== null && !Object.values(VEHICLE_TYPES).includes(vehicle_type))
+  //   return res.status(400).send(new BadParamsError(`vehicle_type ${vehicle_type} is not a valid vehicle type`))
 
   try {
     if (format === 'json') {

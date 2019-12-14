@@ -18,7 +18,14 @@ import express from 'express'
 
 import { pathsFor } from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
-import { getStateSnapshot, getEventSnapshot, getTelemetryCounts, getEventCounts, getAll, getAllStubbed } from './request-handlers'
+import {
+  getStateSnapshot,
+  getEventSnapshot,
+  getTelemetryCounts,
+  getEventCounts,
+  getAll,
+  getAllStubbed
+} from './request-handlers'
 
 function api(app: express.Express): express.Express {
   app.get(
@@ -47,7 +54,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/all'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    // checkAccess(scopes => scopes.includes('admin:all')),
     getAll
   )
 
