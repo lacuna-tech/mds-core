@@ -71,15 +71,13 @@ export interface MetricsApiRequest extends ApiRequest {
   body: Partial<GetTimeBinsParams & { provider_id: UUID }>
 }
 
-export interface GetAllMetricsApiRequest extends MetricsApiRequest {
-  body: Partial<GetTimeBinsParams & { provider_id: UUID | UUID[] }>
-}
-
 export type MetricsApiResponse<T> = ApiResponse<T | Error>
 export type GetStateSnapshotResponse = MetricsApiResponse<StateSnapshotResponse[]>
 export type GetEventsSnapshotResponse = MetricsApiResponse<EventSnapshotResponse[]>
 export type GetTelemetryCountsResponse = MetricsApiResponse<TelemetryCountsResponse[]>
 export type GetEventCountsResponse = MetricsApiResponse<EventCountsResponse[]>
+
+export type HourOrDay = 'hour' | 'day'
 
 // This will send either JSON bucketed rows with start/end,
 // or a totally flat tsv string blob

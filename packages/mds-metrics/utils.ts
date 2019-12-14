@@ -1,8 +1,7 @@
 import { now, yesterday, hours, days } from '@mds-core/mds-utils'
 
-import { UUID } from '@mds-core/mds-types'
 import { isArray } from 'util'
-import { GetTimeBinsParams, MetricsApiRequest } from './types'
+import { GetTimeBinsParams, HourOrDay } from './types'
 
 export function getTimeBins({
   start_time = yesterday(),
@@ -17,8 +16,7 @@ export function getTimeBins({
   }))
 }
 
-export function getBinSizeFromQuery(query: MetricsApiRequest['query']) {
-  const bin_size_english: 'hour' | 'day' = query.bin_size || 'hour'
+export function convertBinSizeFromEnglishToMs(bin_size_english: HourOrDay) {
   const timeToMs = {
     hour: hours(1),
     day: days(1)
@@ -27,14 +25,14 @@ export function getBinSizeFromQuery(query: MetricsApiRequest['query']) {
   return bin_size
 }
 
-export function getProviderIdArray(passedProviderId: UUID | UUID[] | undefined): UUID[] {
-  let provider_id: UUID[]
-  if (passedProviderId === undefined) {
-    provider_id = []
-  } else if (isArray(passedProviderId)) {
-    provider_id = passedProviderId
+export function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[] {
+  let normalizedArray: T[]
+  if (elementToNormalize === undefined) {
+    normalizedArray = []
+  } else if (isArray(elementToNormalize)) {
+    normalizedArray = elementToNormalize
   } else {
-    provider_id = [passedProviderId]
+    normalizedArray = [elementToNormalize]
   }
-  return provider_id
+  return normalizedArray
 }

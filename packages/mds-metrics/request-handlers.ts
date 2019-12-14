@@ -5,7 +5,6 @@ import { Parser } from 'json2csv'
 import fs from 'fs'
 
 import log from '@mds-core/mds-logger'
-import { isArray } from 'util'
 import {
   MetricsApiRequest,
   instantiateEventSnapshotResponse,
@@ -18,9 +17,9 @@ import {
   StateSnapshot,
   EventSnapshot,
   GetAllResponse,
-  GetAllMetricsApiRequest
+  HourOrDay
 } from './types'
-import { getTimeBins, getBinSizeFromQuery, getProviderIdArray } from './utils'
+import { getTimeBins, getBinSizeFromQuery, normalizeToArray, convertBinSizeFromEnglishToMs } from './utils'
 
 export async function getStateSnapshot(req: MetricsApiRequest, res: GetStateSnapshotResponse) {
   const { body } = req
@@ -204,17 +203,24 @@ export async function getEventCounts(req: MetricsApiRequest, res: GetEventCounts
   **Note: unlike the above methods, this method exclusively uses URL query params**
 */
 
-export async function getAll(req: GetAllMetricsApiRequest, res: GetAllResponse) {
+export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   const { query } = req
-  const bin_size = getBinSizeFromQuery(query)
+  const bin_size_english = normalizeToArray<HourOrDay>(query.bin_size)
+  const bin_size = bin_size_english.map(currBinSizeEnglish => convertBinSizeFromEnglishToMs(currBinSizeEnglish))
 
   const { start_time, end_time } = parseRelative(query.start || 'today', query.end || 'now')
-  const slices = getTimeBins({
-    bin_size,
-    start_time,
-    end_time
-  })
-  const provider_id: UUID[] = getProviderIdArray(query.provider_id)
+  const slices = bin_size
+    .map(currBinSize => {
+      return getTimeBins({
+        bin_size: currBinSize,
+        start_time,
+        end_time
+      })
+    })
+    .reduce((prevSlices, currSlices) => {
+      return prevSlices.concat(currSlices)
+    }, [])
+  const provider_id: UUID[] = normalizeToArray<UUID>(query.provider_id)
   const vehicle_type = query.vehicle_type || null
   const format: string | 'json' | 'tsv' = query.format || 'json'
 
