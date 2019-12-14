@@ -11,7 +11,10 @@ import {
   UUID,
   Timestamp
 } from '@mds-core/mds-types'
+// import { tenantId } from '@mds-core/mds-utils'
 import config from './config'
+
+const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
 
 async function calcEventCounts(
   providerID: UUID,
@@ -42,7 +45,7 @@ async function calcEventCounts(
     }).length
   })
   const telemetryCount = events.filter(event => {
-    return event.type === 'mds.telemetry'
+    return event.type === `${tenantId}.telemetry`
   }).length
   return { ...eventCounts, telemetry: telemetryCount }
 }

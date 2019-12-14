@@ -8,9 +8,12 @@ import {
   VEHICLE_TYPE,
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
+// import { tenantId } from '@mds-core/mds-utils'
 import schema from './schema'
 import { vals_sql, cols_sql, vals_list, logSql, SqlVals } from './sql-utils'
 import { getWriteableClient, makeReadOnlyQuery } from './client'
+
+const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
 
 export async function getStates(
   provider_id: UUID,
@@ -36,7 +39,7 @@ export async function getTripCount(
   const vals = new SqlVals()
   const query = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE provider_id = '${vals.add(
     provider_id
-  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND type = 'mds.event' AND recorded BETWEEN ${vals.add(
+  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND type = '${tenantId}.event' AND recorded BETWEEN ${vals.add(
     start_time
   )} AND ${vals.add(end_time)}`
   return makeReadOnlyQuery(query, vals.values())
@@ -50,7 +53,7 @@ export async function getVehicleTripCount(
   const vals = new SqlVals()
   const query = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE device_id = '${vals.add(
     device_id
-  )}' AND type = 'mds.event' AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)}`
+  )}' AND type = '${tenantId}.event' AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)}`
   return makeReadOnlyQuery(query, vals.values())
 }
 
@@ -66,7 +69,7 @@ export async function getLateEventCount(
   const eventList = `'${events.join("','")}'`
   const query = `SELECT count(*), min(recorded-timestamp), max(recorded-timestamp), avg(recorded-timestamp) FROM reports_device_states WHERE provider_id = '${vals.add(
     provider_id
-  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND type = 'mds.event' AND event_type IN (${vals.add(
+  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND type = '${tenantId}.event' AND event_type IN (${vals.add(
     eventList
   )}) AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)} AND recorded-timestamp <= ${vals.add(SLA)}`
   return makeReadOnlyQuery(query, vals.values())
@@ -82,7 +85,7 @@ export async function getLateTelemetryCount(
   const vals = new SqlVals()
   const query = `SELECT count(*)  FROM reports_device_states WHERE provider_id = '${vals.add(
     provider_id
-  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND type = 'mds.telemetry' AND recorded BETWEEN ${vals.add(
+  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND type = '${tenantId}.telemetry' AND recorded BETWEEN ${vals.add(
     start_time
   )} AND ${vals.add(end_time)} AND recorded-timestamp <= ${vals.add(SLA)}`
   return makeReadOnlyQuery(query, vals.values())

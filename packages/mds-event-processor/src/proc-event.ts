@@ -13,7 +13,10 @@ import {
   UUID,
   Timestamp
 } from '@mds-core/mds-types'
+// import { tenantId } from '@mds-core/mds-utils'
 import { getAnnotationData, getAnnotationVersion } from './annotation'
+
+const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
 
 /*
     Event processor that runs inside a Kubernetes pod.
@@ -95,7 +98,7 @@ async function processTripTelemetry(deviceState: StateEntry): Promise<boolean> {
   }
 
   // Check if associated to an event or telemetry post
-  const tripId = type === 'mds.telemetry' ? await getTripId(deviceState) : trip_id
+  const tripId = type === `${tenantId}.telemetry` ? await getTripId(deviceState) : trip_id
   if (tripId) {
     const tripsCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
     const trips = tripsCache || {}
@@ -180,7 +183,7 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
   }
 
   switch (baseDeviceState.type) {
-    case 'mds.event': {
+    case `${tenantId}.event`: {
       const { event_type, telemetry, event_type_reason, trip_id, service_area_id } = data
       const gps = telemetry ? telemetry.gps : null
       const charge = telemetry ? telemetry.charge : null
@@ -226,7 +229,7 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
       return
     }
 
-    case 'mds.telemetry': {
+    case `${tenantId}.telemetry`: {
       const { gps, charge } = data
       const annotation = getAnnotationData(gps)
       const deviceState: StateEntry = {
