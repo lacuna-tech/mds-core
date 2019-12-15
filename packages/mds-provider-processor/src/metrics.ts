@@ -11,7 +11,6 @@ import {
   UUID,
   Timestamp
 } from '@mds-core/mds-types'
-// import { tenantId } from '@mds-core/mds-utils'
 import config from './config'
 
 const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'

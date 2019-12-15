@@ -827,10 +827,6 @@ const parseRelative = (
   throw new BadParamsError(`Both start_offset and end_offset cannot be relative to each other`)
 }
 
-// const tenantId = () => {
-//   return process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
-// }
-
 export {
   UUID_REGEX,
   isUUID,
@@ -883,5 +879,4 @@ export {
   parseRelative,
   parseIsRelative,
   getCurrentDate
-  // tenantId
 }

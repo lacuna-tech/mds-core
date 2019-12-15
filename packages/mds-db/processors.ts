@@ -8,7 +8,6 @@ import {
   VEHICLE_TYPE,
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
-// import { tenantId } from '@mds-core/mds-utils'
 import schema from './schema'
 import { vals_sql, cols_sql, vals_list, logSql, SqlVals } from './sql-utils'
 import { getWriteableClient, makeReadOnlyQuery } from './client'

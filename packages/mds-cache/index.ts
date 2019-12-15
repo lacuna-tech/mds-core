@@ -490,7 +490,6 @@ async function readDevicesStatus(query: { since?: number; skip?: number; take?: 
   const geoStart = now()
   const { bbox } = query
   const deviceIdsInBbox = await getEventsInBBox(bbox)
-  // fixme: tenantId
   const deviceIdsRes =
     deviceIdsInBbox.length === 0 ? await client.zrangebyscoreAsync(`${tenantId}device-ids`, start, stop) : deviceIdsInBbox
   const skip = query.skip || 0
