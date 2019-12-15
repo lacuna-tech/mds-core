@@ -578,7 +578,7 @@ installMds() {
     # fixme: do better
     pause 12
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
-	  helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
+    helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
       ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
@@ -656,18 +656,34 @@ labelNamespaceKnativeEventingInjection() {
 installKnative() {
   check ${FUNCNAME[0]}
 
-  for s in knative.dev/crd-install=true ''; do
-    for c in ${configs[knative-components]}; do
-      kubectl get namespace knative-${c} > /dev/null 2>&1 || {
-        [[ "${c}" == eventing ]] && cy=release || unset cy
-        [[ "${c}" == monitoring ]] && { cy=${c}; c=serving; }
-        kubectl apply ${s:+--selector ${s}} \
-          --filename https://github.com/knative/${c}/releases/download/v${configs[knative-version]}/${cy:-${c}}.yaml \
-          ${configs[dryrun]:+--dry-run --debug}
-        pause 5
-      }
-    done; unset c
-  done; unset s
+  for c in ${configs[knative-components]}; do
+    case "${c}" in
+      eventing)
+        kubectl get namespace knative-eventing > /dev/null 2>&1 || {
+          if [ -d ${configs[home]}/helm/knative-eventing/${configs[knative-version]} ]; then
+            helm install ${configs[home]}/helm/knative-eventing/${configs[knative-version]} \
+              --name knative-eventing #--namespace knative-eventing \
+              ${configs[values]:+$(helmOptions values ${configs[values]})} \
+              ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+              ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+              ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+              ${configs[dryrun]:+--dry-run --debug}
+          else
+            for s in knative.dev/crd-install=true ''; do
+              kubectl get namespace knative-eventing > /dev/null 2>&1 || {
+                # [[ "${c}" == eventing ]] && cy=release || unset cy
+                # [[ "${c}" == monitoring ]] && { cy=${c}; c=serving; }
+                kubectl apply ${s:+--selector ${s}} \
+                  --filename https://github.com/knative/eventing/releases/download/v${configs[knative-version]}/release.yaml \
+                    ${configs[dryrun]:+--dry-run --debug}
+                pause 5
+              }
+            done; unset s
+          fi
+        };;
+    esac
+  done; unset c
+
   pause 8
 }
 
@@ -685,39 +701,62 @@ buildNatss() {
 installNatss() {
   check ${FUNCNAME[0]}
 
-  if [ ! -d ${configs[natss]} ]; then
-    mkdir -p ${configs[natss]}
-    (cd ${configs[natss]};
-      git clone ${configs[natss-repository]} .;
-      git remote add upstream ${configs[natss-repository]};
-      git remote set-url --push upstream no_push
-      sed -i.bak "s/image: nats-streaming:.*$/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
-  fi
-
-  # fixme: classic install
   kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 || {
-    installNamespace ${configs[namespace-natss]}
-    # kubectl label namespace ${configs[namespace-natss]} knative-eventing-injection=enabled
+    if [ -d ${configs[home]}/helm/natss/${configs[natss-version]} ]; then
+      helm install ${configs[home]}/helm/natss/${configs[natss-version]} \
+        --name natss \
+        ${configs[values]:+$(helmOptions values ${configs[values]})} \
+        ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+        ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+        ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+        ${configs[dryrun]:+--dry-run --debug}
+    else
+      if [ ! -d ${configs[natss]} ]; then
+        mkdir -p ${configs[natss]}
+        (cd ${configs[natss]};
+          git clone ${configs[natss-repository]} .;
+          git remote add upstream ${configs[natss-repository]};
+          git remote set-url --push upstream no_push
+          sed -i.bak "s/image: nats-streaming:.*$/image: nats-streaming:0.16.2/" ${configs[natss]}/natss/config/broker/natss.yaml)
+      fi
+
+      # fixme: classic install
+      kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 || {
+        installNamespace ${configs[namespace-natss]}
+        # kubectl label namespace ${configs[namespace-natss]} knative-eventing-injection=enabled
+      }
+
+      # kubectl apply -n ${configs[namespace-natss]} -f ${configs[natss]}/natss/config/broker/natss.yaml
+      kubectl apply -f ${configs[natss]}/natss/config/broker/natss.yaml
+    fi
+
+    if [ -d ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} ]; then
+      helm install ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} \
+        --name knative-eventing-contrib-natss \
+        ${configs[values]:+$(helmOptions values ${configs[values]})} \
+        ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+        ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+        ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+        ${configs[dryrun]:+--dry-run --debug}
+    else
+      for d in $(find ${configs[natss]}/natss/cmd/* -type d -maxdepth 1 -exec sh -c 'echo $(basename {})' \;); do
+        $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
+      done; unset d
+
+      for c in controller dispatcher; do
+        for t in $(docker images ko.local/channel_${c} --format '{{.Tag}}'); do
+          if [ "${t}" != "latest" ]; then
+            sed -i.bak "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
+            break
+          fi
+        done; unset t
+      done; unset c
+
+      # # fixme: test for deployment
+      kubectl apply -f ${configs[natss]}/natss/config
+    fi
   }
 
-  # kubectl apply -n ${configs[namespace-natss]} -f ${configs[natss]}/natss/config/broker/natss.yaml
-  kubectl apply -f ${configs[natss]}/natss/config/broker/natss.yaml
-
-  for d in $(find ${configs[natss]}/natss/cmd/* -type d -maxdepth 1 -exec sh -c 'echo $(basename {})' \;); do
-    $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
-  done; unset d
-
-  for c in controller dispatcher; do
-    for t in $(docker images ko.local/channel_${c} --format '{{.Tag}}'); do
-      if [ "${t}" != "latest" ]; then
-		    sed -i.bak "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
-        break
-      fi
-    done; unset t
-  done; unset c
-
-  # # fixme: test for deployment
-  kubectl apply -f ${configs[natss]}/natss/config
   # fixme: do better
   pause 7
 }
@@ -878,31 +917,51 @@ uninstallKnative() {
   check ${FUNCNAME[0]}
 
   for c in ${configs[knative-components]}; do
-    kubectl get namespace knative-${c} > /dev/null 2>&1 && {
-      [[ "${c}" == eventing ]] && cy=release || unset cy
-      [[ "${c}" == monitoring ]] && { cy=${c}; c=serving; }
-      kubectl delete \
-        --filename https://github.com/knative/${c}/releases/download/v${configs[knative-version]}/${cy:-${c}}.yaml \
-        ${configs[dryrun]:+--dry-run --debug}
-    }
+    case "${c}" in
+      eventing)
+        kubectl get namespace knative-eventing > /dev/null 2>&1 && {
+          if [ -d ${configs[home]}/helm/knative-eventing/${configs[knative-version]} ]; then
+            helm delete --purge knative-eventing ${configs[dryrun]:+--dry-run --debug}
+          else
+            for s in knative.dev/crd-install=true ''; do
+              kubectl delete ${s:+--selector ${s}} \
+                --filename https://github.com/knative/eventing/releases/download/v${configs[knative-version]}/release.yaml \
+                ${configs[dryrun]:+--dry-run --debug}
+              pause 5
+            done; unset s
+          fi
+        };;
+    esac
   done; unset c
 }
 
 uninstallNatss() {
   check ${FUNCNAME[0]}
 
-  kubectl delete namespace natss
-  kubectl delete -f ${configs[natss]}/natss/config
-  # fixme: knative-eventing failed to resoncile with distinct namespace deployments
-  # helm delete --purge ${configs[namespace-natss]}-nats
-  # helm delete --purge ${configs[namespace-nats-knative]}-nats-knative
-  # helm delete --purge ${configs[namespace-nats-tenant]}-nats-tenant
+  kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 && {
+    if [ -d ${configs[home]}/helm/natss/${configs[natss-version]} ]; then
+      helm delete --purge natss
+    else
+      kubectl delete namespace natss
+      [ -d ${configs[natss]} ] && /bin/rm -rf ${configs[natss]}
+    fi
 
-  # # fixme: deleteing a shared namespace is not right
-  # for ns in ${configs[namespace-natss]} ${configs[namespace-tenant]}; do # ${configs[namespace-nats-knative]}; do
-  #   [ "${ns}" != "${configs[namespace-mds]}" ] && uninstallNamespace ${ns}
-  # done; unset ns
-  [ -d ${configs[natss]} ] && /bin/rm -rf ${configs[natss]}
+    if [ -d ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} ]; then
+      helm delete --purge knative-eventing-contrib-natss
+    else
+      kubectl delete -f ${configs[natss]}/natss/config
+      # fixme: knative-eventing failed to resoncile with distinct namespace deployments
+      # helm delete --purge ${configs[namespace-natss]}-nats
+      # helm delete --purge ${configs[namespace-nats-knative]}-nats-knative
+      # helm delete --purge ${configs[namespace-nats-tenant]}-nats-tenant
+
+      # # fixme: deleteing a shared namespace is not right
+      # for ns in ${configs[namespace-natss]} ${configs[namespace-tenant]}; do # ${configs[namespace-nats-knative]}; do
+      #   [ "${ns}" != "${configs[namespace-mds]}" ] && uninstallNamespace ${ns}
+      # done; unset ns
+      [ -d ${configs[natss]} ] && /bin/rm -rf ${configs[natss]}
+    fi
+  }
 }
 
 uninstallMetrics() {
