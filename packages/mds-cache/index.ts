@@ -62,6 +62,7 @@ import {
 } from './types'
 
 const { env } = process
+const tenantId = env.TENANT_ID ? `${env.TENANT_ID}:` : ''
 
 const { unflatten } = flatten
 
@@ -128,7 +129,7 @@ async function info() {
 }
 
 async function hget(key: string, field: UUID): Promise<CachedItem | CachedHashItem | null> {
-  const flat = await (await getClient()).hgetAsync(key, field)
+  const flat = await (await getClient()).hgetAsync(`${tenantId}${key}`, field)
   if (flat) {
     return unflatten(flat)
   }
@@ -136,7 +137,7 @@ async function hget(key: string, field: UUID): Promise<CachedItem | CachedHashIt
 }
 
 async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null> {
-  const flat = await (await getClient()).hgetallAsync(key)
+  const flat = await (await getClient()).hgetallAsync(`${tenantId}${key}`)
   if (flat) {
     return unflatten(flat)
   }
@@ -145,7 +146,7 @@ async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null>
 
 async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE> {
   // TODO: Fix type entry into cache so we don't need to do this unkown conversion
-  return ((await getClient()).hgetAsync(`device:${keyID}:device`, 'type') as unknown) as VEHICLE_TYPE
+  return ((await getClient()).hgetAsync(`${tenantId}device:${keyID}:device`, 'type') as unknown) as VEHICLE_TYPE
 }
 
 async function readDeviceState(field: UUID): Promise<StateEntry | null> {
@@ -160,11 +161,11 @@ async function readAllDeviceStates(): Promise<{ [vehicle_id: string]: StateEntry
 }
 
 async function writeDeviceState(field: UUID, data: StateEntry) {
-  return (await getClient()).hsetAsync('device:state', field, JSON.stringify(data))
+  return (await getClient()).hsetAsync(`${tenantId}device:state`, field, JSON.stringify(data))
 }
 
 async function readTripsEvents(field: UUID): Promise<TripsEvents | null> {
-  const tripsEvents = await hget('trips:events', field)
+  const tripsEvents = await hget(`${tenantId}trips:events`, field)
   return tripsEvents ? parseTripsEvents(tripsEvents as StringifiedTripsEvents) : null
 }
 
@@ -174,20 +175,20 @@ async function readAllTripsEvents(): Promise<{ [vehicle_id: string]: TripsEvents
 }
 
 async function writeTripsEvents(field: UUID, data: TripsEvents) {
-  return (await getClient()).hsetAsync('trips:events', field, JSON.stringify(data))
+  return (await getClient()).hsetAsync(`${tenantId}trips:events`, field, JSON.stringify(data))
 }
 
 async function deleteTripsEvents(field: UUID) {
-  return (await getClient()).hdelAsync('trips:events', field)
+  return (await getClient()).hdelAsync(`${tenantId}trips:events`, field)
 }
 
 async function readTripsTelemetry(field: UUID): Promise<TripsTelemetry | null> {
-  const tripsTelemetry = await hget('trips:telemetry', field)
+  const tripsTelemetry = await hget(`${tenantId}trips:telemetry`, field)
   return tripsTelemetry ? parseTripsTelemetry(tripsTelemetry as StringifiedTripsTelemetry) : null
 }
 
 async function writeTripsTelemetry(field: UUID, data: TripsTelemetry) {
-  return (await getClient()).hsetAsync('trips:telemetry', field, JSON.stringify(data))
+  return (await getClient()).hsetAsync(`${tenantId}trips:telemetry}`, field, JSON.stringify(data))
 }
 
 // update the ordered list of (device_id, timestamp) tuples
@@ -195,14 +196,14 @@ async function writeTripsTelemetry(field: UUID, data: TripsTelemetry) {
 async function updateVehicleList(device_id: UUID, timestamp?: Timestamp) {
   const when = timestamp || now()
   // log.info('redis zadd', device_id, when)
-  return (await getClient()).zaddAsync('device-ids', when, device_id)
+  return (await getClient()).zaddAsync(`${tenantId}device-ids`, when, device_id)
 }
 async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
   if (!device_id) {
     throw new Error(`hread: tried to read ${suffix} for device_id ${device_id}`)
   }
-  const key = `device:${device_id}:${suffix}`
-  const flat = await (await getClient()).hgetallAsync(key)
+  const key = `device:${tenantId}${device_id}:${suffix}`
+  const flat = await (await getClient()).hgetallAsync(`${tenantId}${key}`)
   if (flat) {
     return unflatten({ ...flat, device_id })
   }
@@ -213,7 +214,7 @@ async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
 async function addGeospatialHash(device_id: UUID, coordinates: [number, number]) {
   const client = await getClient()
   const [lat, lng] = coordinates
-  const res = await client.geoadd('locations', lng, lat, device_id)
+  const res = await client.geoadd(`${tenantId}locations`, lng, lat, device_id)
   return res
 }
 
@@ -226,7 +227,8 @@ async function getEventsInBBox(bbox: BoundingBox) {
   })
   const [lng, lat] = [(pt1[0] + pt2[0]) / 2, (pt1[1] + pt2[1]) / 2]
   const radius = routeDistance(points)
-  const events = client.georadiusAsync('locations', lng, lat, radius, 'm')
+  // fixme: multi-tenant
+  const events = client.georadiusAsync(`${tenantId}locations`, lng, lat, radius, 'm')
   const finish = now()
   const timeElapsed = finish - start
   log.info(`MDS-CACHE getEventsInBBox ${JSON.stringify(bbox)} time elapsed: ${timeElapsed}ms`)
@@ -247,7 +249,7 @@ async function hreads(
   // bleah
   const multi = (await getClient()).multi()
 
-  suffixes.map(suffix => ids.map(id => multi.hgetall(`${prefix}:${id}:${suffix}`)))
+  suffixes.map(suffix => ids.map(id => multi.hgetall(`${tenantId}${prefix}:${id}:${suffix}`)))
 
   /* eslint-reason external lib weirdness */
   /* eslint-disable-next-line promise/avoid-new */
@@ -289,7 +291,7 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
   if (nulls.length > 0) {
     // redis doesn't store null keys, so we have to delete them
     // TODO unit-test
-    await (await getClient()).hdelAsync(key, ...nulls)
+    await (await getClient()).hdelAsync(`${tenantId}key`, ...nulls)
   }
 
   const client = await getClient()
@@ -312,7 +314,7 @@ async function writeDevice(device: Device) {
 }
 
 async function readKeys(pattern: string) {
-  return (await getClient()).keysAsync(pattern)
+  return (await getClient()).keysAsync(`${tenantId}${pattern}`)
 }
 
 async function getMostRecentEventByProvider(): Promise<{ provider_id: string; max: number }[]> {
@@ -328,7 +330,7 @@ async function getMostRecentEventByProvider(): Promise<{ provider_id: string; ma
 }
 
 async function wipeDevice(device_id: UUID) {
-  const keys = [`device:${device_id}:event`, `device:${device_id}:telemetry`, `device:${device_id}:device`]
+  const keys = [`${tenantId}device:${device_id}:event`, `${tenantId}device:${device_id}:telemetry`, `${tenantId}device:${device_id}:device`]
   if (keys.length > 0) {
     log.info('del', ...keys)
     return (await getClient()).delAsync(...keys)
@@ -488,8 +490,9 @@ async function readDevicesStatus(query: { since?: number; skip?: number; take?: 
   const geoStart = now()
   const { bbox } = query
   const deviceIdsInBbox = await getEventsInBBox(bbox)
+  // fixme: tenantId
   const deviceIdsRes =
-    deviceIdsInBbox.length === 0 ? await client.zrangebyscoreAsync('device-ids', start, stop) : deviceIdsInBbox
+    deviceIdsInBbox.length === 0 ? await client.zrangebyscoreAsync(`${tenantId}device-ids`, start, stop) : deviceIdsInBbox
   const skip = query.skip || 0
   const take = query.take || 100000000000
   const deviceIds = deviceIdsRes.slice(skip, skip + take)
