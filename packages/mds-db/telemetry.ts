@@ -101,7 +101,9 @@ export async function getTelemetryCountsPerProviderSince(
   const vals = new SqlVals()
   const sql = `select provider_id, count(*), count(case when ((recorded-timestamp) > ${vals.add(
     one_day
-  )}) then 1 else null end) as slacount from telemetry where recorded > ${start} and recorded < ${stop} group by provider_id`
+  )}) then 1 else null end) as slacount from telemetry where recorded > ${vals.add(start)} and recorded < ${vals.add(
+    stop
+  )} group by provider_id`
   return makeReadOnlyQuery(sql, vals)
 }
 
