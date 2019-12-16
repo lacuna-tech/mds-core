@@ -679,6 +679,13 @@ installKnative() {
       eventing)
         kubectl get namespace knative-eventing > /dev/null 2>&1 || {
           if [ -d ${configs[home]}/helm/knative-eventing/${configs[knative-version]} ]; then
+            helm install ${configs[home]}/helm/knative-eventing-init/${configs[knative-version]} \
+              --name knative-eventing-init #--namespace knative-eventing \
+              ${configs[values]:+$(helmOptions values ${configs[values]})} \
+              ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+              ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+              ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+              ${configs[dryrun]:+--dry-run --debug}
             helm install ${configs[home]}/helm/knative-eventing/${configs[knative-version]} \
               --name knative-eventing #--namespace knative-eventing \
               ${configs[values]:+$(helmOptions values ${configs[values]})} \
