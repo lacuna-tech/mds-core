@@ -2,7 +2,8 @@ import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import log from '@mds-core/mds-logger'
 import { calcDistance, isUUID } from '@mds-core/mds-utils'
-import { TripEvent, TripEntry, TripTelemetry, UUID, Timestamp } from '@mds-core/mds-types'
+import { TripEvent, TripEntry, UUID, Timestamp } from '@mds-core/mds-types'
+import { eventValidation, createTelemetryMap } from './utils'
 import config from './config'
 
 /*
@@ -37,24 +38,15 @@ async function processTrip(
     We must compute these metrics here due to the potential of up to 24hr delay of telemetry data
   */
 
-  // Validation steps
-  if (events.length < 2) {
-    log.info('NO TRIP_END EVENT SEEN')
-    return null
-  }
-
-  // Process anything where the last event timestamp is more than 24 hours old
-  events.sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1))
-  const timeSLA = config.compliance_sla.max_telemetry_time
-  const latestTime = events[events.length - 1].timestamp
-  if (latestTime + timeSLA > curTime) {
-    log.info('TRIPS ENDED LESS THAN 24HRS AGO')
+  // Validation
+  events.sort((a, b) => a.timestamp - b.timestamp)
+  if (!eventValidation(events, curTime)) {
     return null
   }
 
   // Calculate event binned trip telemetry data
-  const tripMap = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
-  if (tripMap) {
+  const telemetryMap = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
+  if (telemetryMap) {
     // Get trip metadata
     const tripStartEvent = events[0]
     const tripEndEvent = events[events.length - 1]
@@ -68,25 +60,8 @@ async function processTrip(
       start_service_area_id: tripStartEvent.service_area_id,
       end_service_area_id: tripEndEvent.service_area_id
     }
-    const tripTelemetry = tripMap[trip_id]
-    const telemetry: TripTelemetry[][] = []
-    if (tripTelemetry && tripTelemetry.length > 0) {
-      for (let i = 0; i < events.length - 2; i++) {
-        const start_time = events[i].timestamp
-        const end_time = events[i + 1].timestamp
-        // Exclude event telemetry points
-        const tripSegment = tripTelemetry.filter(
-          telemetry_point => telemetry_point.timestamp > start_time && telemetry_point.timestamp < end_time
-        )
-        tripSegment.sort((a, b) => (a.timestamp > b.timestamp ? 1 : -1))
-        telemetry.push(tripSegment)
-      }
-    } else {
-      await log.error('TRIP TELEMETRY NOT FOUND')
-      throw new Error('TRIP TELEMETRY NOT FOUND')
-    }
-
     // Calculate trip metrics
+    const telemetry = createTelemetryMap(events, telemetryMap, trip_id)
     const duration = tripEndEvent.timestamp - tripStartEvent.timestamp
     const distMeasure = tripStartEvent.gps ? calcDistance(telemetry, tripStartEvent.gps) : null
     const distance = distMeasure ? distMeasure.distance : null
@@ -113,11 +88,11 @@ async function processTrip(
 
     await db.insertTrips(tripData)
     // Delete all processed telemetry data and update cache
-    delete tripMap[trip_id]
-    await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, tripMap)
+    delete telemetryMap[trip_id]
+    await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, telemetryMap)
+
     return trip_id
   }
-  await log.error('TELEMETRY NOT FOUND')
   throw new Error('TELEMETRY NOT FOUND')
 }
 
