@@ -218,21 +218,21 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     .reduce((prevSlices, currSlices) => {
       return prevSlices.concat(currSlices)
     }, [])
-  const provider_id: UUID[] = normalizeToArray<UUID>(query.provider_id)
-  const vehicle_type = normalizeToArray<VEHICLE_TYPE>(query.vehicle_type)
+  const provider_ids = normalizeToArray<UUID>(query.provider_id)
+  const vehicle_types = normalizeToArray<VEHICLE_TYPE>(query.vehicle_type)
   const format: string | 'json' | 'tsv' = query.format || 'json'
 
   if (format !== 'json' && format !== 'tsv') {
     return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
   }
 
-  for (const currProviderId of provider_id) {
+  for (const currProviderId of provider_ids) {
     if (!isUUID(currProviderId)) {
       return res.status(400).send(new BadParamsError(`provider_id ${currProviderId} is not a UUID`))
     }
   }
 
-  for (const currVehicleType of vehicle_type) {
+  for (const currVehicleType of vehicle_types) {
     if (!Object.values(VEHICLE_TYPES).includes(currVehicleType)) {
       return res.status(400).send(new BadParamsError(`vehicle_type ${currVehicleType} is not a valid vehicle type`))
     }
@@ -247,8 +247,8 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
             start_time: start,
             end_time: end,
             geography_id: null,
-            provider_id,
-            vehicle_type
+            provider_ids,
+            vehicle_types
           })
         })
       )
@@ -268,8 +268,8 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
         start_time,
         end_time,
         geography_id: null,
-        provider_id,
-        vehicle_type
+        provider_ids,
+        vehicle_types
       })
       const metricsRowsTsv = parser.parse(metricsRows)
 
