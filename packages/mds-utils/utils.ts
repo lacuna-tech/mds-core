@@ -669,10 +669,10 @@ const calcDistance = (telemetry: TripTelemetry[][], startGps: GpsData): { distan
   for (let n = 0; n < telemetry.length; n++) {
     for (let m = 0; m < telemetry[n].length; m++) {
       const currPing = telemetry[n][m]
-      if (currPing.latitude && currPing.longitude) {
+      if (currPing.latitude !== null && currPing.longitude !== null) {
         const pointDist = routeDistance([
-          { lat: currPing.latitude, lng: currPing.longitude },
-          { lat: tempX, lng: tempY }
+          { lat: tempX, lng: tempY },
+          { lat: currPing.latitude, lng: currPing.longitude }
         ])
         distance += pointDist
         points.push(pointDist)

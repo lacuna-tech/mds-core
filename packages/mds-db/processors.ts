@@ -9,10 +9,8 @@ import {
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
 import schema from './schema'
-import { vals_sql, cols_sql, vals_list, logSql, SqlVals } from './sql-utils'
+import { vals_sql, cols_sql, vals_list, logSql } from './sql-utils'
 import { getWriteableClient, makeReadOnlyQuery } from './client'
-
-const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
 
 export async function getStates(
   provider_id: UUID,
@@ -20,13 +18,8 @@ export async function getStates(
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
 ): Promise<StateEntry[]> {
-  const vals = new SqlVals()
-  const query = `SELECT * FROM reports_device_states WHERE provider_id = '${vals.add(
-    provider_id
-  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(
-    end_time
-  )}`
-  return makeReadOnlyQuery(query, vals.values())
+  const query = `SELECT * FROM reports_device_states WHERE provider_id = '${provider_id}' AND vehicle_type = '${vehicleType}' AND recorded BETWEEN ${start_time} AND ${end_time}`
+  return makeReadOnlyQuery(query)
 }
 
 export async function getTripCount(
@@ -35,13 +28,8 @@ export async function getTripCount(
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
 ): Promise<Array<{ count: number }>> {
-  const vals = new SqlVals()
-  const query = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE provider_id = '${vals.add(
-    provider_id
-  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND type = '${tenantId}.event' AND recorded BETWEEN ${vals.add(
-    start_time
-  )} AND ${vals.add(end_time)}`
-  return makeReadOnlyQuery(query, vals.values())
+  const query = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE provider_id = '${provider_id}' AND vehicle_type = '${vehicleType}' AND type = 'event' AND recorded BETWEEN ${start_time} AND ${end_time}`
+  return makeReadOnlyQuery(query)
 }
 
 export async function getVehicleTripCount(
@@ -49,11 +37,8 @@ export async function getVehicleTripCount(
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
 ): Promise<Array<{ [count: string]: number }>> {
-  const vals = new SqlVals()
-  const query = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE device_id = '${vals.add(
-    device_id
-  )}' AND type = '${tenantId}.event' AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)}`
-  return makeReadOnlyQuery(query, vals.values())
+  const query = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE device_id = '${device_id}' AND type = 'event' AND recorded BETWEEN ${start_time} AND ${end_time}`
+  return makeReadOnlyQuery(query)
 }
 
 export async function getLateEventCount(
@@ -64,14 +49,9 @@ export async function getLateEventCount(
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
 ): Promise<Array<{ count: number; min: Timestamp; max: Timestamp; average: Timestamp }>> {
-  const vals = new SqlVals()
   const eventList = `'${events.join("','")}'`
-  const query = `SELECT count(*), min(recorded-timestamp), max(recorded-timestamp), avg(recorded-timestamp) FROM reports_device_states WHERE provider_id = '${vals.add(
-    provider_id
-  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND type = '${tenantId}.event' AND event_type IN (${vals.add(
-    eventList
-  )}) AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)} AND recorded-timestamp <= ${vals.add(SLA)}`
-  return makeReadOnlyQuery(query, vals.values())
+  const query = `SELECT count(*), min(recorded-timestamp), max(recorded-timestamp), avg(recorded-timestamp) FROM reports_device_states WHERE provider_id = '${provider_id}' AND vehicle_type = '${vehicleType}' AND type = 'event' AND event_type IN (${eventList}) AND recorded BETWEEN ${start_time} AND ${end_time} AND recorded-timestamp <= ${SLA}`
+  return makeReadOnlyQuery(query)
 }
 
 export async function getLateTelemetryCount(
@@ -81,13 +61,8 @@ export async function getLateTelemetryCount(
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
 ): Promise<Array<{ count: number; min: Timestamp; max: Timestamp; average: Timestamp }>> {
-  const vals = new SqlVals()
-  const query = `SELECT count(*)  FROM reports_device_states WHERE provider_id = '${vals.add(
-    provider_id
-  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND type = '${tenantId}.telemetry' AND recorded BETWEEN ${vals.add(
-    start_time
-  )} AND ${vals.add(end_time)} AND recorded-timestamp <= ${vals.add(SLA)}`
-  return makeReadOnlyQuery(query, vals.values())
+  const query = `SELECT count(*)  FROM reports_device_states WHERE provider_id = '${provider_id}' AND vehicle_type = '${vehicleType}' AND type = 'telemetry' AND recorded BETWEEN ${start_time} AND ${end_time} AND recorded-timestamp <= ${SLA}`
+  return makeReadOnlyQuery(query)
 }
 
 export async function getTrips(
@@ -96,13 +71,8 @@ export async function getTrips(
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
 ): Promise<TripEntry[]> {
-  const vals = new SqlVals()
-  const query = `SELECT * FROM reports_trips WHERE provider_id = '${vals.add(
-    provider_id
-  )}' AND vehicle_type = '${vals.add(vehicleType)}' AND end_time BETWEEN ${vals.add(start_time)} AND ${vals.add(
-    end_time
-  )}`
-  return makeReadOnlyQuery(query, vals.values())
+  const query = `SELECT * FROM reports_trips WHERE provider_id = '${provider_id}' AND vehicle_type = '${vehicleType}' AND end_time BETWEEN ${start_time} AND ${end_time}`
+  return makeReadOnlyQuery(query)
 }
 
 export async function insertDeviceStates(state: StateEntry) {
@@ -159,12 +129,9 @@ export async function getAllMetrics({
   geography_id,
   vehicle_type
 }: GetAllMetricsArgs): Promise<Array<MetricsTableRow>> {
-  const vals = new SqlVals()
-  const providerSegment = provider_id !== null ? ` AND provider_id = "${vals.add(provider_id)}" ` : ''
-  const geographySegment = geography_id !== null ? ` AND geography_id = "${vals.add(geography_id)}" ` : ''
-  const vehicleTypeSegment = vehicle_type !== null ? ` AND vehicle_type = "${vals.add(vehicle_type)}" ` : ''
-  const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${vals.add(start_time)} AND ${vals.add(
-    end_time
-  )}${providerSegment}${geographySegment}${vehicleTypeSegment}`
-  return makeReadOnlyQuery(query, vals.values())
+  const providerSegment = provider_id !== null ? ` AND provider_id = "${provider_id}" ` : ''
+  const geographySegment = geography_id !== null ? ` AND geography_id = "${geography_id}" ` : ''
+  const vehicleTypeSegment = vehicle_type !== null ? ` AND vehicle_type = "${vehicle_type}" ` : ''
+  const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}${providerSegment}${geographySegment}${vehicleTypeSegment}`
+  return makeReadOnlyQuery(query)
 }

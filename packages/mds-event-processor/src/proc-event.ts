@@ -14,8 +14,7 @@ import {
   Timestamp
 } from '@mds-core/mds-types'
 import { getAnnotationData, getAnnotationVersion } from './annotation'
-
-const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
+import { getTripId } from './utils'
 
 /*
     Event processor that runs inside a Kubernetes pod.
@@ -39,33 +38,7 @@ const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
           VALUES = deviceState
 */
 
-async function getTripId(deviceState: StateEntry): Promise<string | null> {
-  /*
-    Return trip_id for telemetery entry by associating timestamps
-  */
-  const { provider_id, device_id, timestamp } = deviceState
-  const tripsEvents = await cache.readTripsEvents(`${provider_id}:${device_id}`)
-  if (!tripsEvents) {
-    await log.warn('NO PRIOR TRIP EVENTS FOUND')
-    return null
-  }
-  const sortedStartEvents = Object.entries(tripsEvents).sort((a, b) =>
-    b[1].filter(tripEvent => {
-      return tripEvent.event_type === 'trip_start' || tripEvent.event_type === 'trip_enter'
-    })[0].timestamp >
-    a[1].filter(tripEvent => {
-      return tripEvent.event_type === 'trip_start' || tripEvent.event_type === 'trip_enter'
-    })[0].timestamp
-      ? 1
-      : -1
-  )
-  const match = sortedStartEvents.find(x => {
-    return timestamp >= x[1][0].timestamp
-  })
-  return match ? match[0] : null
-}
-
-async function processTripTelemetry(deviceState: StateEntry): Promise<boolean> {
+export async function processTripTelemetry(deviceState: StateEntry): Promise<boolean> {
   /*
     Add trip related telemetry to cache (trips:telemetry):
 
@@ -97,7 +70,7 @@ async function processTripTelemetry(deviceState: StateEntry): Promise<boolean> {
   }
 
   // Check if associated to an event or telemetry post
-  const tripId = type === `${tenantId}.telemetry` ? await getTripId(deviceState) : trip_id
+  const tripId = type === 'mds.telemetry' ? await getTripId(deviceState) : trip_id
   if (tripId) {
     const tripsCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
     const trips = tripsCache || {}
@@ -111,7 +84,7 @@ async function processTripTelemetry(deviceState: StateEntry): Promise<boolean> {
   return false
 }
 
-async function processTripEvent(deviceState: StateEntry): Promise<boolean> {
+export async function processTripEvent(deviceState: StateEntry): Promise<boolean> {
   /*
     Add vehicle events of a trip to cache (trips:events):
 
@@ -153,7 +126,6 @@ async function processTripEvent(deviceState: StateEntry): Promise<boolean> {
     }
     trips[trip_id].push(tripEvent)
     await cache.writeTripsEvents(`${provider_id}:${device_id}`, trips)
-    await processTripTelemetry(deviceState)
     return true
   }
   return false
@@ -182,7 +154,7 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
   }
 
   switch (baseDeviceState.type) {
-    case `${tenantId}.event`: {
+    case 'mds.event': {
       const { event_type, telemetry, event_type_reason, trip_id, service_area_id } = data
       const gps = telemetry ? telemetry.gps : null
       const charge = telemetry ? telemetry.charge : null
@@ -202,18 +174,22 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
       switch (data.event_type) {
         case 'trip_start': {
           await processTripEvent(deviceState)
+          await processTripTelemetry(deviceState)
           break
         }
         case 'trip_enter': {
           await processTripEvent(deviceState)
+          await processTripTelemetry(deviceState)
           break
         }
         case 'trip_leave': {
           await processTripEvent(deviceState)
+          await processTripTelemetry(deviceState)
           break
         }
         case 'trip_end': {
           await processTripEvent(deviceState)
+          await processTripTelemetry(deviceState)
           break
         }
         default: {
@@ -228,7 +204,7 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
       return
     }
 
-    case `${tenantId}.telemetry`: {
+    case 'mds.telemetry': {
       const { gps, charge } = data
       const annotation = getAnnotationData(gps)
       const deviceState: StateEntry = {
