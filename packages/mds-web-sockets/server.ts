@@ -28,8 +28,6 @@ export const WebSocketServer = () => {
 
   const clients = new Clients()
 
-  const CITY_OF_LA = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
-
   function pushToClients(entity: ENTITY_TYPE, message: string) {
     const staleClients: WebSocket[] = []
     if (clients.subList[entity]) {
