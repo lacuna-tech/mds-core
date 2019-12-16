@@ -9,8 +9,8 @@ import {
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
 import schema from './schema'
-import { vals_sql, cols_sql, vals_list, logSql } from './sql-utils'
-import { getWriteableClient, makeReadOnlyQuery } from './client'
+import { vals_sql, cols_sql, vals_list, logSql, SqlVals } from './sql-utils'
+import { getReadOnlyClient, getWriteableClient } from './client'
 
 export async function getStates(
   provider_id: UUID,
@@ -18,8 +18,14 @@ export async function getStates(
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
 ): Promise<StateEntry[]> {
-  const query = `SELECT * FROM reports_device_states WHERE provider_id = '${provider_id}' AND vehicle_type = '${vehicleType}' AND recorded BETWEEN ${start_time} AND ${end_time}`
-  return makeReadOnlyQuery(query)
+  const client = await getReadOnlyClient()
+  const vals = new SqlVals()
+  const sql = `SELECT * FROM ${schema.TABLE.reports_device_states} WHERE provider_id=${vals.add(
+    provider_id
+  )} AND vehicle_type = ${vals.add(vehicleType)} AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)}`
+  const values = vals.values()
+  const res = await client.query(sql, values)
+  return res.rows
 }
 
 export async function getTripCount(
@@ -27,18 +33,32 @@ export async function getTripCount(
   vehicleType: VEHICLE_TYPE,
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
-): Promise<Array<{ count: number }>> {
-  const query = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE provider_id = '${provider_id}' AND vehicle_type = '${vehicleType}' AND type = 'mds.event' AND recorded BETWEEN ${start_time} AND ${end_time}`
-  return makeReadOnlyQuery(query)
+): Promise<number> {
+  const client = await getReadOnlyClient()
+  const vals = new SqlVals()
+  const sql = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE provider_id = ${vals.add(
+    provider_id
+  )} AND vehicle_type = ${vals.add(vehicleType)} AND type = 'mds.event' AND recorded BETWEEN ${vals.add(
+    start_time
+  )} AND ${vals.add(end_time)}`
+  const values = vals.values()
+  const res = await client.query(sql, values)
+  return res.rows[0].count
 }
 
 export async function getVehicleTripCount(
   device_id: UUID,
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
-): Promise<Array<{ [count: string]: number }>> {
-  const query = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE device_id = '${device_id}' AND type = 'mds.event' AND recorded BETWEEN ${start_time} AND ${end_time}`
-  return makeReadOnlyQuery(query)
+): Promise<number> {
+  const client = await getReadOnlyClient()
+  const vals = new SqlVals()
+  const sql = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE device_id = ${vals.add(
+    device_id
+  )} AND type = 'mds.event' AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)}`
+  const values = vals.values()
+  const res = await client.query(sql, values)
+  return res.rows[0].count
 }
 
 export async function getLateEventCount(
@@ -48,10 +68,18 @@ export async function getLateEventCount(
   SLA: number,
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
-): Promise<Array<{ count: number; min: Timestamp; max: Timestamp; average: Timestamp }>> {
+): Promise<{ count: number; min: Timestamp; max: Timestamp; average: Timestamp }> {
+  const client = await getReadOnlyClient()
+  const vals = new SqlVals()
   const eventList = `'${events.join("','")}'`
-  const query = `SELECT count(*), min(recorded-timestamp), max(recorded-timestamp), avg(recorded-timestamp) FROM reports_device_states WHERE provider_id = '${provider_id}' AND vehicle_type = '${vehicleType}' AND type = 'mds.event' AND event_type IN (${eventList}) AND recorded BETWEEN ${start_time} AND ${end_time} AND recorded-timestamp <= ${SLA}`
-  return makeReadOnlyQuery(query)
+  const sql = `SELECT count(*), min(recorded-timestamp), max(recorded-timestamp), avg(recorded-timestamp) FROM reports_device_states WHERE provider_id = ${vals.add(
+    provider_id
+  )} AND vehicle_type = ${vals.add(vehicleType)} AND type = 'mds.event' AND event_type IN (${vals.add(
+    eventList
+  )}) AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)} AND recorded-timestamp <= ${vals.add(SLA)}`
+  const values = vals.values()
+  const res = await client.query(sql, values)
+  return res.rows[0]
 }
 
 export async function getLateTelemetryCount(
@@ -60,9 +88,17 @@ export async function getLateTelemetryCount(
   SLA: number,
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
-): Promise<Array<{ count: number; min: Timestamp; max: Timestamp; average: Timestamp }>> {
-  const query = `SELECT count(*)  FROM reports_device_states WHERE provider_id = '${provider_id}' AND vehicle_type = '${vehicleType}' AND type = 'mds.telemetry' AND recorded BETWEEN ${start_time} AND ${end_time} AND recorded-timestamp <= ${SLA}`
-  return makeReadOnlyQuery(query)
+): Promise<{ count: number; min: Timestamp; max: Timestamp; average: Timestamp }> {
+  const client = await getReadOnlyClient()
+  const vals = new SqlVals()
+  const sql = `SELECT count(*)  FROM reports_device_states WHERE provider_id = ${vals.add(
+    provider_id
+  )} AND vehicle_type = ${vals.add(vehicleType)} AND type = 'mds.telemetry' AND recorded BETWEEN ${vals.add(
+    start_time
+  )} AND ${vals.add(end_time)} AND recorded-timestamp <= ${vals.add(SLA)}`
+  const values = vals.values()
+  const res = await client.query(sql, values)
+  return res.rows[0]
 }
 
 export async function getTrips(
@@ -71,8 +107,14 @@ export async function getTrips(
   start_time: Timestamp = 0,
   end_time: Timestamp = Date.now()
 ): Promise<TripEntry[]> {
-  const query = `SELECT * FROM reports_trips WHERE provider_id = '${provider_id}' AND vehicle_type = '${vehicleType}' AND end_time BETWEEN ${start_time} AND ${end_time}`
-  return makeReadOnlyQuery(query)
+  const client = await getReadOnlyClient()
+  const vals = new SqlVals()
+  const sql = `SELECT * FROM reports_trips WHERE provider_id = ${vals.add(provider_id)} AND vehicle_type = ${vals.add(
+    vehicleType
+  )} AND end_time BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)}`
+  const values = vals.values()
+  const res = await client.query(sql, values)
+  return res.rows
 }
 
 export async function insertDeviceStates(state: StateEntry) {
@@ -129,9 +171,15 @@ export async function getAllMetrics({
   geography_id,
   vehicle_type
 }: GetAllMetricsArgs): Promise<Array<MetricsTableRow>> {
-  const providerSegment = provider_id !== null ? ` AND provider_id = "${provider_id}" ` : ''
-  const geographySegment = geography_id !== null ? ` AND geography_id = "${geography_id}" ` : ''
-  const vehicleTypeSegment = vehicle_type !== null ? ` AND vehicle_type = "${vehicle_type}" ` : ''
-  const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}${providerSegment}${geographySegment}${vehicleTypeSegment}`
-  return makeReadOnlyQuery(query)
+  const client = await getWriteableClient()
+  const vals = new SqlVals()
+  const providerSegment = provider_id !== null ? ` AND provider_id = ${vals.add(provider_id)} ` : ''
+  const geographySegment = geography_id !== null ? ` AND geography_id = ${vals.add(geography_id)} ` : ''
+  const vehicleTypeSegment = vehicle_type !== null ? ` AND vehicle_type = ${vals.add(vehicle_type)} ` : ''
+  const sql = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${vals.add(start_time)} AND ${vals.add(
+    end_time
+  )}${providerSegment}${geographySegment}${vehicleTypeSegment}`
+  const values = vals.values()
+  const res = await client.query(sql, values)
+  return res.rows
 }
