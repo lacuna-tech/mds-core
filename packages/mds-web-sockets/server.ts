@@ -1,6 +1,5 @@
 import log from '@mds-core/mds-logger'
-import { makeDevices, makeEventsWithTelemetry, makeTelemetry } from '@mds-core/mds-test-data'
-import { now, seconds } from '@mds-core/mds-utils'
+import { seconds } from '@mds-core/mds-utils'
 import WebSocket from 'ws'
 import { setWsHeartbeat } from 'ws-heartbeat/server'
 import { Telemetry, VehicleEvent } from '@mds-core/mds-types'
@@ -84,13 +83,6 @@ export const WebSocketServer = () => {
                 return ws.send(`Invalid entity: ${entity}`)
               }
             }
-          } /* FIXME: Remove before merging. Used for testing only. */ else {
-            const devices = makeDevices(200, now())
-            const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_start')
-            const telemetries = makeTelemetry(devices, now())
-            events.forEach(writeEvent)
-            telemetries.forEach(writeTelemetry)
-            return
           }
         }
       }
