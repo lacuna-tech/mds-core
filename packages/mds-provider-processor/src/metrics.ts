@@ -7,6 +7,7 @@ import {
   LateMetricObj,
   VEHICLE_METRIC_EVENT,
   VEHICLE_EVENT,
+  VEHICLE_EVENTS,
   VEHICLE_TYPE,
   UUID,
   Timestamp
@@ -57,10 +58,10 @@ async function calcVehicleCounts(
   // TODO: cache value to query only bin size
   const events = await db.getStates(providerID, vehicleType, startTime, endTime)
   const histRegistered = events.filter(event => {
-    return event.event_type === 'register'
+    return event.event_type === VEHICLE_EVENTS.register
   }).length
   const histDeregistered = events.filter(event => {
-    return event.event_type === 'deregister'
+    return event.event_type === VEHICLE_EVENTS.deregister
   }).length
   const registered = histRegistered && histDeregistered ? histRegistered - histDeregistered : null
 
@@ -131,7 +132,7 @@ async function calcLateEventCount(
   const startEndList = await db.getLateEventCount(
     providerID,
     vehicleType,
-    ['trip_start', 'trip_end'],
+    [VEHICLE_EVENTS.trip_start, VEHICLE_EVENTS.trip_end],
     config.compliance_sla.max_start_end_time,
     startTime,
     endTime
@@ -139,7 +140,7 @@ async function calcLateEventCount(
   const enterLeaveList = await db.getLateEventCount(
     providerID,
     vehicleType,
-    ['trip_enter', 'trip_leave'],
+    [VEHICLE_EVENTS.trip_enter, VEHICLE_EVENTS.trip_leave],
     config.compliance_sla.max_enter_leave_time,
     startTime,
     endTime
