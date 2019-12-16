@@ -26,22 +26,20 @@ export function convertBinSizeFromEnglishToMs(bin_size_english: HourOrDay) {
 }
 
 export function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[] {
-  let normalizedArray: T[]
   if (elementToNormalize === undefined) {
-    normalizedArray = []
-  } else if (isArray(elementToNormalize)) {
-    normalizedArray = elementToNormalize
-  } else {
-    normalizedArray = [elementToNormalize]
+    return []
   }
-  return normalizedArray
+  if (isArray(elementToNormalize)) {
+    return elementToNormalize
+  }
+  return [elementToNormalize]
 }
 
 export function getBinSize(binSizeFromQuery: HourOrDay | HourOrDay[] | undefined) {
   if (binSizeFromQuery === undefined) {
     return [convertBinSizeFromEnglishToMs('hour')]
   }
-  const bin_size_english = normalizeToArray<HourOrDay>(binSizeFromQuery)
-  const bin_size = bin_size_english.map(currBinSizeEnglish => convertBinSizeFromEnglishToMs(currBinSizeEnglish))
-  return bin_size
+  return normalizeToArray<HourOrDay>(binSizeFromQuery).map(currBinSizeEnglish =>
+    convertBinSizeFromEnglishToMs(currBinSizeEnglish)
+  )
 }
