@@ -713,6 +713,7 @@ installNatss() {
     else
       if [ ! -d ${configs[natss]} ]; then
         mkdir -p ${configs[natss]}
+        # fixme: https://github.com/knative/eventing-contrib/releases/tag/v0.11.0
         (cd ${configs[natss]};
           git clone ${configs[natss-repository]} .;
           git remote add upstream ${configs[natss-repository]};
