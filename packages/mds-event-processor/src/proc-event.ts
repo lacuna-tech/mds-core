@@ -84,7 +84,7 @@ export async function processTripTelemetry(deviceState: StateEntry): Promise<boo
   return false
 }
 
-async function processTripEvent(deviceState: StateEntry): Promise<boolean> {
+export async function processTripEvent(deviceState: StateEntry): Promise<boolean> {
   /*
     Add vehicle events of a trip to cache (trips:events):
 
@@ -126,7 +126,6 @@ async function processTripEvent(deviceState: StateEntry): Promise<boolean> {
     }
     trips[trip_id].push(tripEvent)
     await cache.writeTripsEvents(`${provider_id}:${device_id}`, trips)
-    await processTripTelemetry(deviceState)
     return true
   }
   return false
@@ -175,18 +174,22 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
       switch (data.event_type) {
         case 'trip_start': {
           await processTripEvent(deviceState)
+          await processTripTelemetry(deviceState)
           break
         }
         case 'trip_enter': {
           await processTripEvent(deviceState)
+          await processTripTelemetry(deviceState)
           break
         }
         case 'trip_leave': {
           await processTripEvent(deviceState)
+          await processTripTelemetry(deviceState)
           break
         }
         case 'trip_end': {
           await processTripEvent(deviceState)
+          await processTripTelemetry(deviceState)
           break
         }
         default: {

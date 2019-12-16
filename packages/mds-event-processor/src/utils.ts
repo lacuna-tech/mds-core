@@ -7,7 +7,7 @@ export const findTripStart = (tripEvents: TripEvent[]): TripEvent => {
     return tripEvent.event_type === 'trip_start' || tripEvent.event_type === 'trip_enter'
   })
   if (result === undefined) {
-    throw new Error('No trip start found')
+    throw new Error('NO TRIP START FOUND')
   }
   return result
 }

@@ -47,13 +47,13 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/all'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    //checkAccess(scopes => scopes.includes('admin:all')),
     getAll
   )
 
   app.get(
     pathsFor('/all_stubbed'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    //checkAccess(scopes => scopes.includes('admin:all')),
     getAllStubbed
   )
 

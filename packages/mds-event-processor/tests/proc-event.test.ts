@@ -111,7 +111,7 @@ describe('Proc Event', () => {
       Sinon.restore()
     })
 
-    it('Writes to trip map hash', async () => {
+    it('Writes to trip map', async () => {
       const fakeGetTripId = Sinon.fake.resolves('fake-trip-id')
       Sinon.replace(procEventUtils, 'getTripId', fakeGetTripId)
 
@@ -129,17 +129,65 @@ describe('Proc Event', () => {
       } as StateEntry
       const result = await procEvent.processTripTelemetry(fakeDeviceState)
       assert.strictEqual(result, true)
-      assert.strictEqual(fakeWriteTripsTelemetry.args[0][0], `${fakeDeviceState.provider_id}:${fakeDeviceState.device_id}`)
+      assert.strictEqual(
+        fakeWriteTripsTelemetry.args[0][0],
+        `${fakeDeviceState.provider_id}:${fakeDeviceState.device_id}`
+      )
       const expected = {
-        'fake-trip-id':
-        [ { timestamp: 41,
+        'fake-trip-id': [
+          {
+            timestamp: 41,
             latitude: null,
             longitude: null,
             annotation_version: undefined,
             annotation: undefined,
-            service_area_id: undefined } ]
+            service_area_id: undefined
+          }
+        ]
       }
       assert.deepStrictEqual(fakeWriteTripsTelemetry.args[0][1], expected)
+      Sinon.restore()
+    })
+  })
+  describe('processTripEvent()', () => {
+    it('Returns false if unable to match', async () => {
+      const fakeDeviceState: StateEntry = {
+        trip_id: null
+      } as StateEntry
+      const result = await procEvent.processTripEvent(fakeDeviceState)
+      assert.strictEqual(result, false)
+    })
+
+    it('Writes to event map', async () => {
+      const fakeReadTripsEvents = Sinon.fake.resolves(null)
+      Sinon.replace(cache, 'readTripsEvents', fakeReadTripsEvents)
+
+      const fakeWriteTripsEvents = Sinon.fake.resolves('foo')
+      Sinon.replace(cache, 'writeTripsEvents', fakeWriteTripsEvents)
+
+      const fakeDeviceState: StateEntry = {
+        trip_id: 'fake-trip-id',
+        provider_id: 'fake-provider-id',
+        device_id: 'fake-device-id'
+      } as StateEntry
+      const result = await procEvent.processTripEvent(fakeDeviceState)
+      assert.strictEqual(result, true)
+      assert.strictEqual(fakeWriteTripsEvents.args[0][0], `${fakeDeviceState.provider_id}:${fakeDeviceState.device_id}`)
+      const expected = {
+        'fake-trip-id': [
+          {
+            vehicle_type: undefined,
+            timestamp: undefined,
+            event_type: undefined,
+            event_type_reason: undefined,
+            annotation_version: undefined,
+            annotation: undefined,
+            gps: undefined,
+            service_area_id: undefined
+          }
+        ]
+      }
+      assert.deepStrictEqual(fakeWriteTripsEvents.args[0][1], expected)
       Sinon.restore()
     })
   })
