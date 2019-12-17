@@ -7,6 +7,7 @@ import {
   LateMetricObj,
   VEHICLE_METRIC_EVENT,
   VEHICLE_EVENT,
+  VEHICLE_EVENTS,
   VEHICLE_TYPE,
   UUID,
   Timestamp
@@ -57,10 +58,10 @@ async function calcVehicleCounts(
   // TODO: cache value to query only bin size
   const events = await db.getStates(providerID, vehicleType, startTime, endTime)
   const histRegistered = events.filter(event => {
-    return event.event_type === 'register'
+    return event.event_type === VEHICLE_EVENTS.register
   }).length
   const histDeregistered = events.filter(event => {
-    return event.event_type === 'deregister'
+    return event.event_type === VEHICLE_EVENTS.deregister
   }).length
   const registered = histRegistered && histDeregistered ? histRegistered - histDeregistered : null
 
@@ -87,8 +88,8 @@ async function calcTripCount(
   startTime: Timestamp,
   endTime: Timestamp
 ): Promise<number> {
-  const [tripCount] = await db.getTripCount(providerID, vehicleType, startTime, endTime)
-  return tripCount.count
+  const tripCount = await db.getTripCount(providerID, vehicleType, startTime, endTime)
+  return tripCount
 }
 
 async function calcVehicleTripCount(
@@ -111,7 +112,7 @@ async function calcVehicleTripCount(
       })
       .map(async vehicle => {
         const tripCount = await db.getVehicleTripCount(vehicle.device_id, startTime, endTime)
-        const tripCountIndex = tripCount[0].count
+        const tripCountIndex = tripCount
         if (tripCountIndex >= maxTrips) {
           tripCountArray[maxTrips] += 1
         } else {
@@ -131,7 +132,7 @@ async function calcLateEventCount(
   const startEndList = await db.getLateEventCount(
     providerID,
     vehicleType,
-    ['trip_start', 'trip_end'],
+    [VEHICLE_EVENTS.trip_start, VEHICLE_EVENTS.trip_end],
     config.compliance_sla.max_start_end_time,
     startTime,
     endTime
@@ -139,7 +140,7 @@ async function calcLateEventCount(
   const enterLeaveList = await db.getLateEventCount(
     providerID,
     vehicleType,
-    ['trip_enter', 'trip_leave'],
+    [VEHICLE_EVENTS.trip_enter, VEHICLE_EVENTS.trip_leave],
     config.compliance_sla.max_enter_leave_time,
     startTime,
     endTime
@@ -153,22 +154,22 @@ async function calcLateEventCount(
   )
 
   const start_end: MetricCount = {
-    count: startEndList[0].count,
-    min: startEndList[0].min,
-    max: startEndList[0].max,
-    average: startEndList[0].average
+    count: startEndList.count,
+    min: startEndList.min,
+    max: startEndList.max,
+    average: startEndList.average
   }
   const enter_leave: MetricCount = {
-    count: enterLeaveList[0].count,
-    min: enterLeaveList[0].min,
-    max: enterLeaveList[0].max,
-    average: enterLeaveList[0].average
+    count: enterLeaveList.count,
+    min: enterLeaveList.min,
+    max: enterLeaveList.max,
+    average: enterLeaveList.average
   }
   const telemetry: MetricCount = {
-    count: telemetryList[0].count,
-    min: telemetryList[0].min,
-    max: telemetryList[0].max,
-    average: telemetryList[0].average
+    count: telemetryList.count,
+    min: telemetryList.min,
+    max: telemetryList.max,
+    average: telemetryList.average
   }
 
   return { start_end, enter_leave, telemetry }

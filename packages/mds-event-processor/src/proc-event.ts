@@ -10,6 +10,7 @@ import {
   TripTelemetry,
   EVENT_STATUS_MAP,
   VEHICLE_TYPE,
+  VEHICLE_EVENTS,
   UUID,
   Timestamp
 } from '@mds-core/mds-types'
@@ -170,24 +171,24 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
         event_type_reason,
         trip_id
       }
-      // Take necessary steps on event transitions
+      // Take necessary steps on event trasitions
       switch (data.event_type) {
-        case 'trip_start': {
+        case VEHICLE_EVENTS.trip_start: {
           await processTripEvent(deviceState)
           await processTripTelemetry(deviceState)
           break
         }
-        case 'trip_enter': {
+        case VEHICLE_EVENTS.trip_enter: {
           await processTripEvent(deviceState)
           await processTripTelemetry(deviceState)
           break
         }
-        case 'trip_leave': {
+        case VEHICLE_EVENTS.trip_leave: {
           await processTripEvent(deviceState)
           await processTripTelemetry(deviceState)
           break
         }
-        case 'trip_end': {
+        case VEHICLE_EVENTS.trip_end: {
           await processTripEvent(deviceState)
           await processTripTelemetry(deviceState)
           break

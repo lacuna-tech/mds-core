@@ -52,22 +52,19 @@ apis:
 processors:
   mds-event-processor:
     enabled: true
-    pathPrefix: /event-processor
-    version: latest
+    version: ${EVENT_PROCESSOR_VERSION}
     migration: false
     triggeredBy:
       trigger: [event, telemetry]
   mds-trip-processor:
     enabled: true
-    pathPrefix: /trip-processor
-    version: latest
+    version: ${TRIP_PROCESSOR_VERSION}
     migration: false
     triggeredBy:
       cron: '* * * * *'
   mds-provider-processor:
     enabled: true
-    pathPrefix: /provider-processor
-    version: latest
+    version: ${PROVIDER_PROCESSOR_VERSION}
     migration: false
     triggeredBy:
       cron: '* * * * *'
