@@ -40,7 +40,7 @@ export async function getTripId(deviceState: StateEntry): Promise<string | null>
     })
     return match?.tripId || null
   } catch (err) {
-    await log.warn('NO PRIOR TRIP EVENTS FOUND')
+    await log.error(err)
     return null
   }
 }
