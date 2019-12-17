@@ -55,7 +55,7 @@ processors:
     version: latest
     migration: false
     triggeredBy:
-      trigger: [mds.event, mds.telemetry]
+      trigger: [event, telemetry]
   mds-trip-processor:
     enabled: true
     version: latest
@@ -74,6 +74,7 @@ processors:
     version: latest
     migration: false
 useEvents: true
+tenantId:
 timezone: America/Los_Angeles
 registry:
 useLatestImage: true

@@ -45,8 +45,9 @@ async function writeCloudEvent(type: string, data: string) {
     return
   }
 
+  // fixme: unable to set-and-propgate additional ce headers, eg: ce.addExtension('foo', 'bar')
   const event = cloudevent()
-    .type(type)
+    .type(`${env.TENANT_ID ?? 'mds'}.${type}`)
     .source(env.CE_NAME)
     .data(data)
 
@@ -165,14 +166,14 @@ async function writeStreamBatch(stream: Stream, field: string, values: unknown[]
 // put basics of vehicle in the cache
 async function writeDevice(device: Device) {
   if (env.SINK) {
-    return writeCloudEvent('mds.device', JSON.stringify(device))
+    return writeCloudEvent('device', JSON.stringify(device))
   }
   return writeStream(DEVICE_INDEX_STREAM, 'data', device)
 }
 
 async function writeEvent(event: VehicleEvent) {
   if (env.SINK) {
-    return writeCloudEvent('mds.event', JSON.stringify(event))
+    return writeCloudEvent('event', JSON.stringify(event))
   }
   return writeStream(DEVICE_RAW_STREAM, 'event', event)
 }
@@ -180,7 +181,7 @@ async function writeEvent(event: VehicleEvent) {
 // put latest locations in the cache
 async function writeTelemetry(telemetry: Telemetry[]) {
   if (env.SINK) {
-    await Promise.all(telemetry.map(item => writeCloudEvent('mds.telemetry', JSON.stringify(item))))
+    await Promise.all(telemetry.map(item => writeCloudEvent('telemetry', JSON.stringify(item))))
     return
   }
   const start = now()

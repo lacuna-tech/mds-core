@@ -44,18 +44,24 @@ apis:
     pathPrefix: /policy-author
     version: ${POLICY_AUTHOR_VERSION}
     migration: false
+  mds-config:
+    enabled: true
+    pathPrefix: /config
+    version: ${CONFIG_VERSION}
+    migration: false
+processors:
   mds-event-processor:
     enabled: true
     version: ${EVENT_PROCESSOR_VERSION}
     migration: false
     triggeredBy:
-      trigger: [mds.event, mds.telemetry]
+      trigger: [event, telemetry]
   mds-trip-processor:
     enabled: true
     version: ${TRIP_PROCESSOR_VERSION}
     migration: false
     triggeredBy:
-      cron: '0 * * * *'
+      cron: '* * * * *'
   mds-provider-processor:
     enabled: true
     version: ${PROVIDER_PROCESSOR_VERSION}
@@ -72,3 +78,4 @@ apis:
     pathPrefix: /web-sockets
     version: ${WEB_SOCKETS_VERSION}
     migration: false
+      cron: '* * * * *'
