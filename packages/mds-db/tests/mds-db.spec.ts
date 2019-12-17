@@ -4,15 +4,7 @@ import assert from 'assert'
 import should from 'should'
 
 import { FeatureCollection } from 'geojson'
-import {
-  Telemetry,
-  Recorded,
-  VehicleEvent,
-  Device,
-  VEHICLE_EVENTS,
-  Geography,
-  VEHICLE_TYPES
-} from '@mds-core/mds-types'
+import { Telemetry, Recorded, VehicleEvent, Device, VEHICLE_EVENTS, Geography } from '@mds-core/mds-types'
 import {
   JUMP_TEST_DEVICE_1,
   makeDevices,
@@ -31,15 +23,11 @@ import {
 import { now, clone, NotFoundError } from '@mds-core/mds-utils'
 
 import { isNullOrUndefined } from 'util'
-import Sinon from 'sinon'
-import uuid from 'uuid'
 import MDSDBPostgres from '../index'
 
 import { dropTables, createTables, updateSchema } from '../migration'
 import { Trip } from '../types'
 import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
-import { getAllMetrics } from '../processors'
-import * as dbClient from '../client'
 
 const { env } = process
 
