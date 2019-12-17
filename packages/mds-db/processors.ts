@@ -61,11 +61,10 @@ export async function getLateEventCount(
   end_time: Timestamp = Date.now()
 ): Promise<Array<{ count: number; min: Timestamp; max: Timestamp; average: Timestamp }>> {
   const vals = new SqlVals()
-  const eventList = `'${events.join("','")}'`
   const query = `SELECT count(*), min(recorded-timestamp), max(recorded-timestamp), avg(recorded-timestamp) FROM reports_device_states WHERE provider_id = ${vals.add(
     provider_id
-  )} AND vehicle_type = ${vals.add(vehicleType)} AND type = 'mds.event' AND event_type IN (${vals.add(
-    eventList
+  )} AND vehicle_type = ${vals.add(vehicleType)} AND type = 'mds.event' AND event_type IN (${events.map(event =>
+    vals.add(event)
   )}) AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)} AND recorded-timestamp <= ${vals.add(SLA)}`
   return makeReadOnlyQuery(query, vals)
 }
