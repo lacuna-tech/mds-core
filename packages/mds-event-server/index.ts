@@ -6,7 +6,7 @@ import Cloudevent, { event as cloudevent, BinaryHTTPReceiver } from 'cloudevents
 
 export type EventHandler<TData, TResult> = (type: string, data: TData, event: Cloudevent) => Promise<TResult>
 
-const { env } = process
+const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
 
 export const EventServer = <TData, TResult>(
   handler: EventHandler<TData, TResult>,
@@ -23,10 +23,9 @@ export const EventServer = <TData, TResult>(
     } catch (error) {
       const [source, type] = [req.header('ce-source'), req.header('ce-type')]
       if (source && type) {
-        // fixme: unable to set-and-propgate additional ce headers, eg: ce.addExtension('foo', 'bar')
         return cloudevent()
           .source(source)
-          .type(`${env.TENANT_ID ? env.TENANT_ID : 'mds'}.${type}`)
+          .type(type)
           .data(req.body)
       }
       /* istanbul ignore next */
@@ -46,7 +45,11 @@ export const EventServer = <TData, TResult>(
     try {
       const event = parseCloudEvent(req)
       await logger.info('PARSE Cloud Event', 'BODY:', req.body, 'HEADERS:', req.headers, 'EVENT:', event.format())
-      const result = await handler(event.getType(), event.getData(), event)
+      // fixme: regex failed me; event.getType().replace(/^`${tenantId}`./, '')
+      const x = event.getType().startsWith(`${tenantId}.`)
+        ? event.getType().substring(tenantId.length + 1)
+        : event.getType()
+      const result = await handler(x, event.getData(), event)
       return res.status(200).send({ result })
     } catch (error) /* istanbul ignore next */ {
       await logger.error('ERROR Cloud Event', 'BODY:', req.body, 'HEADERS:', req.headers, 'ERROR:', error)

@@ -13,8 +13,6 @@ import {
 } from '@mds-core/mds-types'
 import config from './config'
 
-const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
-
 async function calcEventCounts(
   providerID: UUID,
   vehicleType: VEHICLE_TYPE,
@@ -44,7 +42,7 @@ async function calcEventCounts(
     }).length
   })
   const telemetryCount = events.filter(event => {
-    return event.type === `${tenantId}.telemetry`
+    return event.type === `telemetry`
   }).length
   return { ...eventCounts, telemetry: telemetryCount }
 }
