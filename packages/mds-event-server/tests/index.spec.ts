@@ -59,18 +59,4 @@ describe('Testing Event Server', () => {
         done(err)
       })
   })
-
-  it('verifies post event', done => {
-    const data = { value: 'value' }
-    request
-      .post('/')
-      .set('ce-source', 'index.spec.ts')
-      .set('ce-type', 'test-event')
-      .send(data)
-      .expect(200)
-      .end((err, result) => {
-        test.object(result.body.result).is({ handled: data })
-        done()
-      })
-  })
 })
