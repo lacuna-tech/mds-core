@@ -309,12 +309,7 @@ installImages() {
 
   if [ "${configs[image-repository]}" ]; then
     for i in $(docker images --filter "reference=mds-*" --format '{{.Repository}}:{{.Tag}}'); do
-      # fixme: likely will not require a provider switch
-      case "${configs[provider],,}" in
-        # fixme: verify
-        gcp) docker tag ${i} ${configs[image-repository]}/${i};;
-        *) warn "bad provider: ${configs[provider]}";;
-      esac
+      docker tag ${i} ${configs[image-repository]}/${i}
       docker push ${configs[image-repository]}/${i}
     done; unset i
   fi
@@ -738,7 +733,6 @@ installNatss() {
     else
       if [ ! -d ${configs[natss]} ]; then
         mkdir -p ${configs[natss]}
-        # fixme: https://github.com/knative/eventing-contrib/releases/tag/v0.11.0
         (cd ${configs[natss]};
           git clone ${configs[natss-repository]} .;
           git remote add upstream ${configs[natss-repository]};
@@ -757,6 +751,7 @@ installNatss() {
     fi
 
     if [ -d ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} ]; then
+      # fixme: r0.11.0 https://github.com/knative/eventing-contrib/releases/download/v0.11.0/natss-channel.yaml
       helm install ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} \
         --name knative-eventing-contrib-natss \
         ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -778,7 +773,7 @@ installNatss() {
         done; unset t
       done; unset c
 
-      # # fixme: test for deployment
+      # fixme: test for deployment
       kubectl apply -f ${configs[natss]}/natss/config
     fi
   }
