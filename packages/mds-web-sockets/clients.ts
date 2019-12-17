@@ -41,7 +41,7 @@ export class Clients {
     try {
       const auth = WebSocketAuthorizer(token)
       const scopes = auth?.scope.split(' ') ?? []
-      if (auth && scopes.includes('admin:all')) {
+      if (scopes.includes('admin:all')) {
         this.authenticatedClients.push(client)
         client.send('Authentication success!')
       } else client.send(new AuthorizationError())
