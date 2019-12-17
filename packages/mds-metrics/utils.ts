@@ -1,6 +1,7 @@
 import { now, yesterday, hours, days } from '@mds-core/mds-utils'
 
-import { GetTimeBinsParams, MetricsApiRequest } from './types'
+import { isArray } from 'util'
+import { GetTimeBinsParams, HourOrDay } from './types'
 
 export function getTimeBins({
   start_time = yesterday(),
@@ -15,12 +16,27 @@ export function getTimeBins({
   }))
 }
 
-export function getBinSizeFromQuery(query: MetricsApiRequest['query']) {
-  const bin_size_english: 'hour' | 'day' = query.bin_size || 'hour'
+export function convertBinSizeFromEnglishToMs(bin_size_english: HourOrDay) {
   const timeToMs = {
     hour: hours(1),
     day: days(1)
   }
   const bin_size = timeToMs[bin_size_english]
   return bin_size
+}
+
+export function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[] {
+  if (elementToNormalize === undefined) {
+    return []
+  }
+  if (isArray(elementToNormalize)) {
+    return elementToNormalize
+  }
+  return [elementToNormalize]
+}
+
+export function getBinSize(binSizeFromQuery: HourOrDay | HourOrDay[] | undefined = ['hour']) {
+  return normalizeToArray<HourOrDay>(binSizeFromQuery).map(currBinSizeEnglish =>
+    convertBinSizeFromEnglishToMs(currBinSizeEnglish)
+  )
 }

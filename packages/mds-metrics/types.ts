@@ -77,6 +77,8 @@ export type GetEventsSnapshotResponse = MetricsApiResponse<EventSnapshotResponse
 export type GetTelemetryCountsResponse = MetricsApiResponse<TelemetryCountsResponse[]>
 export type GetEventCountsResponse = MetricsApiResponse<EventCountsResponse[]>
 
+export type HourOrDay = 'hour' | 'day'
+
 // This will send either JSON bucketed rows with start/end,
 // or a totally flat tsv string blob
 export type GetAllResponse = MetricsApiResponse<MetricsAllResponse[] | string>

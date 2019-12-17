@@ -29,7 +29,7 @@ describe('Request handlers', () => {
     Sinon.replace(db, 'getAllMetrics', fakeGetAll)
     await requestHandlers.getAll(req, res)
     assert.deepStrictEqual(fakeGetAll.args[0][0].geography_id, null)
-    assert.deepStrictEqual(fakeGetAll.args[0][0].provider_id, null)
+    assert.deepStrictEqual(fakeGetAll.args[0][0].provider_ids, [])
 
     assert.strictEqual(status.calledOnceWithExactly(200), true)
     assert.strictEqual(send.calledOnce, true)
@@ -61,7 +61,7 @@ describe('Request handlers', () => {
     Sinon.replace(db, 'getAllMetrics', fakeGetAll)
     await requestHandlers.getAll(req, res)
     assert.deepStrictEqual(fakeGetAll.args[0][0].geography_id, null)
-    assert.deepStrictEqual(fakeGetAll.args[0][0].provider_id, provider_id)
+    assert.deepStrictEqual(fakeGetAll.args[0][0].provider_ids, [provider_id])
 
     assert.strictEqual(status.calledOnceWithExactly(200), true)
     assert.strictEqual(send.calledOnce, true)
@@ -106,7 +106,7 @@ describe('Request handlers', () => {
     Sinon.replace(db, 'getAllMetrics', fakeGetAll)
     await requestHandlers.getAll(req, res)
     assert.deepStrictEqual(fakeGetAll.args[0][0].geography_id, null)
-    assert.deepStrictEqual(fakeGetAll.args[0][0].provider_id, provider_id)
+    assert.deepStrictEqual(fakeGetAll.args[0][0].provider_ids, [provider_id])
 
     assert.strictEqual(status.calledOnceWithExactly(200), true)
     assert.strictEqual(send.calledOnce, true)

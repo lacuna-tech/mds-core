@@ -140,24 +140,26 @@ export async function insertMetrics(metric: MetricsTableRow) {
 interface GetAllMetricsArgs {
   start_time: Timestamp
   end_time: Timestamp
-  provider_id: UUID | null
+  provider_ids: UUID[]
   geography_id: UUID | null
-  vehicle_type: VEHICLE_TYPE | null
+  vehicle_types: VEHICLE_TYPE[]
 }
 
 export async function getAllMetrics({
   start_time,
   end_time,
-  provider_id,
+  provider_ids,
   geography_id,
-  vehicle_type
+  vehicle_types
 }: GetAllMetricsArgs): Promise<Array<MetricsTableRow>> {
   const vals = new SqlVals()
-  const providerSegment = provider_id !== null ? ` AND provider_id = ${vals.add(provider_id)} ` : ''
-  const geographySegment = geography_id !== null ? ` AND geography_id = ${vals.add(geography_id)} ` : ''
-  const vehicleTypeSegment = vehicle_type !== null ? ` AND vehicle_type = ${vals.add(vehicle_type)} ` : ''
-  const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${vals.add(start_time)} AND ${vals.add(
-    end_time
-  )}${providerSegment}${geographySegment}${vehicleTypeSegment}`
+  const providerSegment =
+    provider_ids.length !== 0 ? ` AND provider_id IN (${provider_ids.map(provider_id => vals.add(provider_id))}) ` : ''
+  const geographySegment = geography_id !== null ? ` AND geography_id = "${geography_id}" ` : ''
+  const vehicleTypeSegment =
+    vehicle_types.length !== 0
+      ? ` AND vehicle_type IN (${vehicle_types.map(vehicle_type => vals.add(vehicle_type))}) `
+      : ''
+  const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}${providerSegment}${geographySegment}${vehicleTypeSegment}`
   return makeReadOnlyQuery(query, vals)
 }
