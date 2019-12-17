@@ -9,8 +9,11 @@ metadata:
 spec:
   broker: natss
   filter:
-    sourceAndType:
-      type: {{ $trigger }}
+    # sourceAndType:
+    #   type: {{ $trigger }}
+    attributes:
+      type: {{ default "mds" $.Values.tenantId }}.{{ $trigger }}
+    # fixme: unable to leverage other cloud-events field, eg: extensions
   subscriber:
    ref:
      apiVersion: v1

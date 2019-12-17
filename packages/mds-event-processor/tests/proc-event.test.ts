@@ -104,7 +104,7 @@ describe('Proc Event', () => {
       Sinon.replace(procEventUtils, 'getTripId', fakeGetTripId)
       const fakeDeviceState: StateEntry = {
         timestamp: 41,
-        type: 'mds.telemetry'
+        type: 'telemetry'
       } as StateEntry
       const result = await procEvent.processTripTelemetry(fakeDeviceState)
       assert.strictEqual(result, false)
@@ -123,7 +123,7 @@ describe('Proc Event', () => {
 
       const fakeDeviceState: StateEntry = {
         timestamp: 41,
-        type: 'mds.telemetry',
+        type: 'telemetry',
         provider_id: 'fake-provider-id',
         device_id: 'fake-device-id'
       } as StateEntry

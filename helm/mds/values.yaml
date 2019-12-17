@@ -52,26 +52,29 @@ apis:
 processors:
   mds-event-processor:
     enabled: true
-    pathPrefix: /event-processor
     version: latest
     migration: false
     triggeredBy:
-      trigger: [mds.event, mds.telemetry]
+      trigger: [event, telemetry]
   mds-trip-processor:
     enabled: true
-    pathPrefix: /trip-processor
     version: latest
     migration: false
     triggeredBy:
       cron: '* * * * *'
   mds-provider-processor:
     enabled: true
-    pathPrefix: /provider-processor
     version: latest
     migration: false
     triggeredBy:
       cron: '* * * * *'
+  mds-web-sockets:
+    enabled: true
+    pathPrefix: /web-sockets
+    version: latest
+    migration: false
 useEvents: true
+tenantId:
 timezone: America/Los_Angeles
 registry:
 useLatestImage: true

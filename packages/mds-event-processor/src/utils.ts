@@ -1,10 +1,10 @@
-import { StateEntry, TripEvent, TripsEvents } from '@mds-core/mds-types'
+import { StateEntry, TripEvent, TripsEvents, VEHICLE_EVENTS } from '@mds-core/mds-types'
 import cache from '@mds-core/mds-cache'
 import log from '@mds-core/mds-logger'
 
 export const findTripStart = (tripEvents: TripEvent[]): TripEvent => {
   const result = tripEvents.find(tripEvent => {
-    return tripEvent.event_type === 'trip_start' || tripEvent.event_type === 'trip_enter'
+    return tripEvent.event_type === VEHICLE_EVENTS.trip_start || tripEvent.event_type === VEHICLE_EVENTS.trip_enter
   })
   if (result === undefined) {
     throw new Error('NO TRIP START FOUND')
@@ -40,7 +40,7 @@ export async function getTripId(deviceState: StateEntry): Promise<string | null>
     })
     return match?.tripId || null
   } catch (err) {
-    await log.warn('NO PRIOR TRIP EVENTS FOUND')
+    await log.error(err)
     return null
   }
 }

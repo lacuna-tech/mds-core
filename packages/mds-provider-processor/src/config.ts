@@ -18,7 +18,7 @@ export default {
       'e714f168-ce56-4b41-81b7-0b6a4bd26128',
       'd73fcf80-22b1-450f-b535-042b4e30aac7'
     ],
-    vehicleTypes: ['scooter','bicycle'],
+    vehicleTypes: ['scooter', 'bicycle'],
     // Used to determine "day" for the provider, e.g. for metrics reporting.
     // TODO: assuming one timezone per organization. ???
     timezone: 'America/Los_Angeles',

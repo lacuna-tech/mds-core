@@ -10,6 +10,7 @@ import {
   TripTelemetry,
   EVENT_STATUS_MAP,
   VEHICLE_TYPE,
+  VEHICLE_EVENTS,
   UUID,
   Timestamp
 } from '@mds-core/mds-types'
@@ -70,7 +71,7 @@ export async function processTripTelemetry(deviceState: StateEntry): Promise<boo
   }
 
   // Check if associated to an event or telemetry post
-  const tripId = type === 'mds.telemetry' ? await getTripId(deviceState) : trip_id
+  const tripId = type === 'telemetry' ? await getTripId(deviceState) : trip_id
   if (tripId) {
     const tripsCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
     const trips = tripsCache || {}
@@ -154,7 +155,7 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
   }
 
   switch (baseDeviceState.type) {
-    case 'mds.event': {
+    case 'event': {
       const { event_type, telemetry, event_type_reason, trip_id, service_area_id } = data
       const gps = telemetry ? telemetry.gps : null
       const charge = telemetry ? telemetry.charge : null
@@ -172,22 +173,22 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
       }
       // Take necessary steps on event trasitions
       switch (data.event_type) {
-        case 'trip_start': {
+        case VEHICLE_EVENTS.trip_start: {
           await processTripEvent(deviceState)
           await processTripTelemetry(deviceState)
           break
         }
-        case 'trip_enter': {
+        case VEHICLE_EVENTS.trip_enter: {
           await processTripEvent(deviceState)
           await processTripTelemetry(deviceState)
           break
         }
-        case 'trip_leave': {
+        case VEHICLE_EVENTS.trip_leave: {
           await processTripEvent(deviceState)
           await processTripTelemetry(deviceState)
           break
         }
-        case 'trip_end': {
+        case VEHICLE_EVENTS.trip_end: {
           await processTripEvent(deviceState)
           await processTripTelemetry(deviceState)
           break
@@ -204,7 +205,7 @@ export async function eventHandler(type: string, data: InboundEvent & InboundTel
       return
     }
 
-    case 'mds.telemetry': {
+    case 'telemetry': {
       const { gps, charge } = data
       const annotation = getAnnotationData(gps)
       const deviceState: StateEntry = {
