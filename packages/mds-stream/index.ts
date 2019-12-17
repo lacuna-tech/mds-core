@@ -31,14 +31,17 @@ import {
 
 const { env } = process
 
-const binding: BinaryHTTPEmitter | null = null
+let binding: BinaryHTTPEmitter | null = null
 
-const getBinding = () =>
-  binding ??
-  new BinaryHTTPEmitter({
-    method: 'POST',
-    url: env.SINK
-  })
+const getBinding = () => {
+  if (!binding) {
+    binding = new BinaryHTTPEmitter({
+      method: 'POST',
+      url: env.SINK
+    })
+  }
+  return binding
+}
 
 async function writeCloudEvent(type: string, data: string) {
   if (!env.SINK || !env.CE_NAME) {
