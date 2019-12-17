@@ -6,7 +6,7 @@ import Cloudevent, { event as cloudevent, BinaryHTTPReceiver } from 'cloudevents
 
 export type EventHandler<TData, TResult> = (type: string, data: TData, event: Cloudevent) => Promise<TResult>
 
-const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
+const tenantId = process.env.TENANT_ID ?? 'mds'
 
 function decorateEventType(eventType: string) : string {
   // fixme: regex failed me; event.getType().replace(/^`${tenantId}`./, '')

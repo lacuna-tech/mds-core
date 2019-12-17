@@ -47,7 +47,7 @@ async function writeCloudEvent(type: string, data: string) {
 
   // fixme: unable to set-and-propgate additional ce headers, eg: ce.addExtension('foo', 'bar')
   const event = cloudevent()
-    .type(`${env.TENANT_ID ? env.TENANT_ID : 'mds'}.${type}`)
+    .type(`${env.TENANT_ID ?? 'mds'}.${type}`)
     .source(env.CE_NAME)
     .data(data)
 
