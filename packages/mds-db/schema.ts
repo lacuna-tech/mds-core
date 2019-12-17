@@ -397,7 +397,6 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.short_name]: 'varchar(31)',
   [COLUMN.sla]: 'json',
   [COLUMN.speed]: 'real',
-  [COLUMN.speed]: 'real',
   [COLUMN.start_service_area_id]: 'uuid',
   [COLUMN.start_time]: 'bigint',
   [COLUMN.state]: 'varchar(255)',

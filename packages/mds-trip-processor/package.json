@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "MDS Trip Processor",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "files": [
     "dist/"
   ],
