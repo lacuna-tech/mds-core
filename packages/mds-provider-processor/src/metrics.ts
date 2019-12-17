@@ -43,7 +43,7 @@ async function calcEventCounts(
     }).length
   })
   const telemetryCount = events.filter(event => {
-    return event.type === 'mds.telemetry'
+    return event.type === `telemetry`
   }).length
   return { ...eventCounts, telemetry: telemetryCount }
 }
