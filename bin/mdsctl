@@ -751,7 +751,6 @@ installNatss() {
     fi
 
     if [ -d ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} ]; then
-      # fixme: r0.11.0 https://github.com/knative/eventing-contrib/releases/download/v0.11.0/natss-channel.yaml
       helm install ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} \
         --name knative-eventing-contrib-natss \
         ${configs[values]:+$(helmOptions values ${configs[values]})} \
