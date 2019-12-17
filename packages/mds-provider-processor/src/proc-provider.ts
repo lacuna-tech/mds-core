@@ -1,5 +1,4 @@
 import db from '@mds-core/mds-db'
-import log from '@mds-core/mds-logger'
 import { MetricsTableRow, UUID, Timestamp, VEHICLE_TYPE } from '@mds-core/mds-types'
 import metric from './metrics'
 import config from './config'

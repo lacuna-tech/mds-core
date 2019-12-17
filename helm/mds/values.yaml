@@ -68,6 +68,12 @@ processors:
     migration: false
     triggeredBy:
       cron: '* * * * *'
+  mds-web-sockets:
+    enabled: true
+    pathPrefix: /web-sockets
+    version: latest
+    migration: false
+useEvents: true
 tenantId:
 timezone: America/Los_Angeles
 registry:
