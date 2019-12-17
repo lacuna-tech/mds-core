@@ -8,6 +8,11 @@ export type EventHandler<TData, TResult> = (type: string, data: TData, event: Cl
 
 const tenantId = process.env.TENANT_ID ? process.env.TENANT_ID : 'mds'
 
+function decorateEventType(eventType: string) : string {
+  // fixme: regex failed me; event.getType().replace(/^`${tenantId}`./, '')
+  return eventType.startsWith(`${tenantId}.`) ? eventType.substring(tenantId.length + 1) : eventType
+}
+
 export const EventServer = <TData, TResult>(
   handler: EventHandler<TData, TResult>,
   server: express.Express = express()
@@ -45,11 +50,7 @@ export const EventServer = <TData, TResult>(
     try {
       const event = parseCloudEvent(req)
       await logger.info('PARSE Cloud Event', 'BODY:', req.body, 'HEADERS:', req.headers, 'EVENT:', event.format())
-      // fixme: regex failed me; event.getType().replace(/^`${tenantId}`./, '')
-      const x = event.getType().startsWith(`${tenantId}.`)
-        ? event.getType().substring(tenantId.length + 1)
-        : event.getType()
-      const result = await handler(x, event.getData(), event)
+      const result = await handler(decorateEventType(event.getType()), event.getData(), event)
       return res.status(200).send({ result })
     } catch (error) /* istanbul ignore next */ {
       await logger.error('ERROR Cloud Event', 'BODY:', req.body, 'HEADERS:', req.headers, 'ERROR:', error)
