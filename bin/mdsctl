@@ -570,22 +570,10 @@ installMds() {
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
-    # labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
+    labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
     [ -z "${configs[image-repository]}" ] &&
       configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
-
-    # fixme: do better, push these to helm/mds/templates
-    for t in ingress filter; do
-      kubectl -n ${configs[namespace-mds]} create serviceaccount eventing-broker-${t}
-      kubectl -n ${configs[namespace-mds]} create rolebinding eventing-broker-${t} \
-        --clusterrole=eventing-broker-${t} \
-        --serviceaccount=${configs[namespace-mds]}:eventing-broker-${t}
-      kubectl -n ${configs[namespace-knative]} create rolebinding eventing-config-reader-mds-eventing-broker-${t} \
-        --clusterrole=eventing-config-reader \
-        --serviceaccount=${configs[namespace-mds]}:eventing-broker-${t}
-    done; unset t
-    # fixme: do better
-    pause 12
+    pause 5
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
     helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
