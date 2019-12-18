@@ -43,6 +43,16 @@ apis:
     pathPrefix: /policy-author
     version: latest
     migration: false
+  mds-config:
+    enabled: true
+    pathPrefix: /config
+    version: latest
+    migration: false
+  mds-web-sockets:
+    enabled: true
+    pathPrefix: /web-sockets
+    version: latest
+    migration: false
 useEvents: false
 timezone: America/Los_Angeles
 registry:

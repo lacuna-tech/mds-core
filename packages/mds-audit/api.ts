@@ -22,6 +22,14 @@ import urls from 'url'
 import {
   pathsFor,
   seconds,
+  AuthorizationError,
+  ConflictError,
+  NotFoundError,
+  ServerError,
+  UnsupportedTypeError
+} from '@mds-core/mds-utils'
+
+import {
   isValidAuditDeviceId,
   isValidAuditEventId,
   isValidAuditEventType,
@@ -33,13 +41,9 @@ import {
   isValidVehicleEventType,
   isValidAuditIssueCode,
   isValidAuditNote,
-  ValidationError,
-  AuthorizationError,
-  ConflictError,
-  NotFoundError,
-  ServerError,
-  UnsupportedTypeError
-} from '@mds-core/mds-utils'
+  ValidationError
+} from '@mds-core/mds-schema-validators'
+
 import { providerName } from '@mds-core/mds-providers' // map of uuids -> obj
 import {
   AUDIT_EVENT_TYPES,
@@ -646,6 +650,7 @@ function api(app: express.Express): express.Express {
     async (req, res) => {
       const { skip, take } = { skip: 0, take: 10000 }
       const bbox = JSON.parse(req.query.bbox)
+      const strict = JSON.parse(req.query.strict || true)
 
       const url = urls.format({
         protocol: req.get('x-forwarded-proto') || req.protocol,
@@ -656,7 +661,7 @@ function api(app: express.Express): express.Express {
       const { provider_id } = req.query
 
       try {
-        const response = await getVehicles(skip, take, url, provider_id, req.query, bbox)
+        const response = await getVehicles(skip, take, url, provider_id, req.query, bbox, strict)
         return res.status(200).send(response)
       } catch (err) {
         await log.error('getVehicles fail', err)
