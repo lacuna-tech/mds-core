@@ -1,5 +1,6 @@
 import db from '@mds-core/mds-db'
 import { MetricsTableRow, UUID, Timestamp, VEHICLE_TYPE } from '@mds-core/mds-types'
+import { now } from '@mds-core/mds-utils'
 import metric from './metrics'
 import config from './config'
 
@@ -81,7 +82,7 @@ async function processProvider(providerID: UUID, curTime: Timestamp) {
 }
 
 export async function providerAggregator() {
-  const curTime: Timestamp = new Date().getTime()
+  const curTime: Timestamp = now()
   const providersList: UUID[] = config.organization.providers
   await Promise.all(
     providersList.map(provider => {

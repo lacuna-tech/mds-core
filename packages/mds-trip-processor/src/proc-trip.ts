@@ -1,7 +1,7 @@
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import log from '@mds-core/mds-logger'
-import { calcDistance, isUUID } from '@mds-core/mds-utils'
+import { calcDistance, isUUID, now } from '@mds-core/mds-utils'
 import { TripEvent, TripEntry, UUID, Timestamp } from '@mds-core/mds-types'
 import { eventValidation, createTelemetryMap } from './utils'
 import config from './config'
@@ -55,7 +55,7 @@ async function processTrip(
       trip_id,
       device_id,
       provider_id,
-      recorded: new Date().getTime(),
+      recorded: curTime,
       start_time: tripStartEvent.timestamp,
       end_time: tripEndEvent.timestamp,
       start_service_area_id: tripStartEvent.service_area_id,
@@ -98,7 +98,7 @@ async function processTrip(
 }
 
 export async function tripAggregator() {
-  const curTime = new Date().getTime()
+  const curTime = now()
   const tripsMap = await cache.readAllTripsEvents()
   if (!tripsMap) {
     log.info('NO TRIP EVENTS FOUND')
