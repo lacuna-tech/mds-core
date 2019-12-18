@@ -79,7 +79,7 @@ export interface StateEntry {
   annotation_version: number
   annotation: AnnotationData | null
   gps: GpsData | null
-  service_area_id: UUID | null
+  service_area_id: UUID | null // telemetry entries will be null
   charge: number | null
   state: VEHICLE_STATUS | null // telemetry entries will be null
   event_type: VEHICLE_EVENT | null // telemetry entries will be null
