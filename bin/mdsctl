@@ -64,7 +64,6 @@ declare -A configs=(
   ["test"]="${MDS_TEST:-unit,integration}"
   ["uninstall"]="${MDS_UNINSTALL:-logging,mds,istio,helm}"
   ["forward"]="${MDS_FORWARD:-default}"
-  ["token"]="${MDS_TOKEN:-dashboard}"
   ["reinstall"]="${MDS_REINSTALL:-mds}"
   ["pause"]="${MDS_PAUSE:-3}"
   ["istio-version"]="${MDS_ISTIO_VERSION:-1.2.6}" #3.0}" # fixme: 1.3.0 istio-system pods stop at INIT at times
@@ -76,7 +75,6 @@ declare -A configs=(
   ["ingress-gateway-certificate-path"]="${MDS_INGRESS_GATEWAY_CERTIFICATE_PATH:-}"
   ["namespace"]="${MDS_NAMESPACE:-default}"
   ["namespace-metrics-adapter"]="${MDS_NAMESPACE_METRICS_ADAPTER:-util}"
-  ["namespace-dashboard"]="${MDS_NAMESPACE_LOGGING:-dashboard}"
   ["namespace-logging"]="${MDS_NAMESPACE_LOGGING:-util}"
   ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
   ["values"]="${MDS_VALUES:-}"
@@ -107,7 +105,6 @@ declare -A apps=(
   ["mds-policy-author"]="https://localhost:[port]/policy-author,mds,app"
   ["mds-postgresql"]="https://localhost:[port]/postgresql,mds,app,postgresql"
   ["mds-redis"]="https://localhost:[port]/redis,mds,app,redis"
-  ["dashboard"]="https://localhost:[port],dashboard,k8s-app,kubernetes-dashboard"
   ["grafana"]="http://localhost:[port]/dashboard/db/istio-mesh-dashboard,istio-system,app"
   ["kibana"]="http://localhost:[port],util,app"
   ["prometheus"]="http://localhost:[port],istio-system,app"
@@ -167,7 +164,6 @@ commands:
   install[:{service[,{service}]}]                     : install specified service; default: ${configs[install]}
   test[:unit,integration]                             : preform specified tests; default: ${configs[test]}
   open:[app[,{app}]]                                  : opens a browser for the provided application(s)
-  token[:dashboard]                                   : get specified token, copied to copy-paste buffer for ${os[osx]}; default: ${configs[token]}
   forward[:{app[,{app}]}]                             : register port-forwarding for the provided application(s); default: ${configs[forward]}
   unforward[:{app[,{app}]}]                           : deregister port-forwarding for the provided application(s)
   cli:[postgresql,redis]                              : create a cli console for the provided service
@@ -178,7 +174,6 @@ commands:
 
 where service in:
   helm
-  dashboard
   kiali
   istio
   mds
@@ -199,7 +194,6 @@ where app in:
   mds-policy-author
   mds-postgresql
   mds-redis-headless
-  dashboard                                           : kubernetes dashboard; see https://github.com/kubernetes/dashboard
   grafana                                             : grafana; see: https://grafana.com
   kibana                                              : kibana; see https://www.elastic.co/products/kibana
   prometheus                                          : prometheus; see https://prometheus.io
@@ -410,16 +404,6 @@ EOF
     helm init --service-account tiller --upgrade
     pause 5
   fi
-}
-
-installDashboard() {
-  check ${FUNCNAME[0]}
-
-  helm install ${configs[home]}/helm/dashboard --name dashboard --namespace ${configs[namespace-dashboard]} \
-    ${configs[values]:+$(helmOptions values ${configs[values]})} \
-    ${configs[setfiles]:+$(helmOptions set ${configs[setfiles]})} \
-    ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-    ${configs[dryrun]:+--dry-run}
 }
 
 installNamespace() {
@@ -647,18 +631,6 @@ unforward() {
   done; unset ua
 }
 
-tokenDashboard() {
-  check ${FUNCNAME[0]}
-
-  case "${configs[os]}" in
-    ${os[osx]}) kubectl -n dashboard describe secret $(kubectl -n dashboard get secret | \
-      grep admin-user | awk '{print $1}') | grep ^token | cut -d: -f2 | tr -d '[:space:]' | \
-      pbcopy;;
-    *) kubectl -n dashboard describe secret $(kubectl -n dashboard get secret | \
-      grep admin-user | awk '{print $1}') | grep ^token | cut -d: -f2 | tr -d '[:space:]';;
-  esac
-}
-
 getApp() {
   ga=${apps[${1}]}
   gu=$(get ${ga} 1)
@@ -693,7 +665,9 @@ app() {
 }
 
 cliPostgresql() {
+  echo cli.0
   check ${FUNCNAME[0]}
+  echo cli.1
   pgcli postgres://mdsadmin@localhost:5432/mds
 }
 
@@ -786,17 +760,6 @@ uninstallIstio() {
   [[ -d ${configs[istio]} && -z "${configs[dryrun]}" ]] && echo "/bin/rm -rf ${configs[istio]}"
 }
 
-uninstallDashboard() {
-  check ${FUNCNAME[0]}
-
-  unforward dashboard
-  helm delete --purge dashboard
-  uninstallNamespace dashboard
-  kubectl delete secrets kubernetes-dashboard-key-holder -n kube-system ${configs[dryrun]:+--dry-run}
-  kubectl get namespace dashboard > /dev/null 2>&1 && kubectl delete namespace dashboard \
-    ${configs[dryrun]:+--dry-run}
-}
-
 uninstallTiller() {
   check ${FUNCNAME[0]}
 
@@ -840,6 +803,7 @@ getPort() {
 forwardIfNeeded() {
   gp=$(getPort ${1})
 
+echo "gp>$gp"
   if [ ${gp} -eq "-1" ]; then
     hash install${1^} > /dev/null 2>&1 && invoke install ${1}
     pause 3
@@ -864,8 +828,12 @@ context() {
 }
 
 check() {
+  echo "check:${1}"
+  # fixme: do always
+  # * | install* | uninstall*) echo "tam.1"; context;&
   case "${1}" in
     $(basename ${0}))
+    echo "tam.0"
       for rc in ${configs[rc]}; do
         if [[ -f ${rc} && $(grep -q "\\\*${configs[home]}/bin\\\*" ${rc}; echo $?) != 0 ]]; then
             echo "export PATH=${configs[home]}/bin:\${PATH}" >> ${rc}
@@ -877,28 +845,35 @@ check() {
       done; unset d;;
       # todo: include cluster connection check where needed if not globally
       #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
-    * | install* | uninstall*) context;&
+    # * | install* | uninstall*) echo "tam.1"; context;&
     build | testIntegration)
+    echo "tam.2"
       hash yarn > /dev/null 2>&1 || bootstrap;;
-    installHelm | installBookinfo) ;;
-    installDashboard | installMetrics | installMds)
+    installHelm | installBookinfo) echo "tam.3";;
+    installMetrics | installMds)
+    echo "tam.4"
       kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installLogging | installMetricsAdapter)
+    echo "tam.5"
       hash helm > /dev/null 2>&1 && updateHelmDependencies || installHelm;;
     installImages)
+    echo "tam.6"
       [ "${configs[image-repository]}" ] || \
         warn "configure an image-repository; eg ' ... -c:image-repository=[image-repository-url] ...'";;
-    installIstio | testUnit | \
-      uninstallDashboard | uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)
+    installIstio | testUnit | uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)
+    echo "tam.7"
       hash helm > /dev/null 2>&1 || installHelm;;
     installSimulator)
+    echo "tam.8"
       [ ! "${configs[simulator-repository]}" ] && usage "unspecified simulator repository";;
-    forward) ;;
-    app:*) forwardIfNeeded ${1##*:};;
+    forward) echo "tam.9";;
+    app:*) echo "tam.10"; forwardIfNeeded ${1##*:};;
     cliPostgresql)
+      echo "tam.11"
       hash pgcli > /dev/null 2>&1 || bootstrap
       forwardIfNeeded mds-postgresql;;
     cliRedis)
+    echo "tam.12"
       hash redis-cli > /dev/null 2>&1 || bootstrap
       forwardIfNeeded mds-redis;;
   esac
@@ -1008,8 +983,6 @@ for arg in "${@:$OPTIND}"; do
     forward:*) forward "$(normalize ${arg})";;
     unforward) unforward;;
     unforward:*) unforward "$(normalize ${arg})";;
-    token) arg="${configs[token]}";&
-    token:*) invoke token "$(normalize ${arg})";;
     open) usage "specify an application(s) to open";;
     open:*) app "$(normalize ${arg})";;
     cli:*) invoke cli "$(normalize ${arg})";;
