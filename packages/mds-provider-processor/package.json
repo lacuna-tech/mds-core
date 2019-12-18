@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "start": "yarn watch server --type=provider",
+    "start": "yarn watch server",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
     "test:unit": "DOTENV_CONFIG_PATH=../../.env nyc --lines 80 ts-mocha --project ../../tsconfig.json",
@@ -26,6 +26,7 @@
   "license": "ISC",
   "dependencies": {
     "@mds-core/mds-cache": "0.1.26",
+    "@mds-core/mds-config-service": "0.0.2",
     "@mds-core/mds-db": "0.1.26",
     "@mds-core/mds-logger": "0.1.24",
     "@mds-core/mds-types": "0.1.23",

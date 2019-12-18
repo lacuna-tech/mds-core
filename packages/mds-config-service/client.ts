@@ -56,3 +56,15 @@ export const client = {
     return settings.reduce<TConfig>((config, setting) => Object.assign(config, setting), {} as TConfig)
   }
 }
+
+export const ConfigManager = <TConfig extends {} = {}>(properties: string | string[]) => {
+  let config: TConfig | null = null
+  return {
+    getConfig: async (): Promise<TConfig> => {
+      if (config === null) {
+        config = await client.getSettings<TConfig>(properties)
+      }
+      return config
+    }
+  }
+}
