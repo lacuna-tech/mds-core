@@ -40,6 +40,7 @@ REPORTS_TRIPS:
 | trip_id (UUID) | unique ID of trip |
 | device_id (UUID) | unique ID of device |
 | provider_id (UUID) | unique ID associated with a provider |
+| recorded (BIGINT) | time of insert into DB |
 | start_time (BIGINT) | time of trip start | 
 | end_time (BIGINT) | time of trip end |
 | start_service_area_id (UUID) | service_area_id of trip start |
@@ -48,7 +49,7 @@ REPORTS_TRIPS:
 | distance (DOUBLE PRECISION) | length of trip |
 | violation_count (INT) | number of tlemetry distance violations for a trip |
 | max_violation_dist (DOUBLE PRECISION) | maximum violation distance |
-| mix_violation_dist (DOUBLE PRECISION) | minimum violation distance |
+| min_violation_dist (DOUBLE PRECISION) | minimum violation distance |
 | avg_violation_dist (DOUBLE PRECISION) | average violation distance |
 | events (JSON[]) | list of event object associated with a trip |
 | telemetry (JSON[]) | list of telemetry objects associated with a trip | 
