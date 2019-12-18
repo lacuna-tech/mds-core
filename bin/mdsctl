@@ -294,7 +294,7 @@ buildImage() {
 }
 
 getBranchSuffix() {
-  git rev-parse --abbrev-ref HEAD | sed -r -e 's/[^-a-zA-Z0-9]/-/g' -e 's/^/-/'
+  git rev-parse --abbrev-ref HEAD | sed -E -e 's/[^-a-zA-Z0-9]/-/g' -e 's/^/-/'
 }
 
 # TODO: DRY
