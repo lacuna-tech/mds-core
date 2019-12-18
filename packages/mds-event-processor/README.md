@@ -50,9 +50,9 @@ REPORTS_DEVICE_STATES:
 | annotation_version (SMALLINT) | version of geo service |
 | annotation (JSON) | result of geo service that calculates service area based on lat/lng coords |
 | gps (JSON) | gps data including: {lat, lng, altitude, heading, speed, accuracy} |
-| service_area_id (UUID | null) | (EVENT SPECIFIC) unique ID associated with service area |
+| service_area_id (UUID or null) | (EVENT SPECIFIC) unique ID associated with service area |
 | charge (REAL) | charge of to battery on a 0 to 1 scale |
-| state (VARCHAR | null) | (EVENT SPECIFIC) state of device, possibilites defined in EVENT_STATUS_MAP |
-| event_type (VARCHAR | null) | (EVENT SPECIFIC) one of the possibilities defined in EVENT_STATUS_MAP |
-| event_type_reason (VARCHAR | null) | (EVENT SPECIFIC) associated decorator of event_type |
+| state (VARCHAR or null) | (EVENT SPECIFIC) state of device, possibilites defined in EVENT_STATUS_MAP |
+| event_type (VARCHAR or null) | (EVENT SPECIFIC) one of the possibilities defined in EVENT_STATUS_MAP |
+| event_type_reason (VARCHAR or null) | (EVENT SPECIFIC) associated decorator of event_type |
 | trip_id (UUID) | (EVENT SPECIFIC) unique ID of trip |
