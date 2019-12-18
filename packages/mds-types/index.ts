@@ -123,6 +123,7 @@ export interface TripEntry {
   trip_id: UUID
   device_id: UUID
   provider_id: UUID
+  recorded: Timestamp
   start_time: Timestamp
   end_time: Timestamp
   start_service_area_id: UUID | null
@@ -168,6 +169,7 @@ export interface VehicleCountMetricObj {
 }
 
 export interface MetricsTableRow {
+  recorded: Timestamp
   /** Timestamp for start of bin (currently houry bins). */
   start_time: Timestamp
   /** Bin size. */

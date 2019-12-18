@@ -31,6 +31,7 @@ async function processProvider(providerID: UUID, curTime: Timestamp) {
   await Promise.all(
     config.organization.vehicleTypes.map(async vehicleType => {
       const provider_data: MetricsTableRow = {
+        recorded: curTime,
         start_time: binStart,
         bin_size: 'hour',
         geography: null,

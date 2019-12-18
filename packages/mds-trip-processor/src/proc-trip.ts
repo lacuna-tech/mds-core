@@ -55,6 +55,7 @@ async function processTrip(
       trip_id,
       device_id,
       provider_id,
+      recorded: new Date().getTime(),
       start_time: tripStartEvent.timestamp,
       end_time: tripEndEvent.timestamp,
       start_service_area_id: tripStartEvent.service_area_id,

@@ -229,6 +229,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
   ],
   [TABLE.reports_providers]: [
     COLUMN.id,
+    COLUMN.recorded,
     COLUMN.start_time,
     COLUMN.bin_size,
     COLUMN.geography,
@@ -249,6 +250,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.trip_id,
     COLUMN.device_id,
     COLUMN.provider_id,
+    COLUMN.recorded,
     COLUMN.start_time,
     COLUMN.end_time,
     COLUMN.start_service_area_id,
