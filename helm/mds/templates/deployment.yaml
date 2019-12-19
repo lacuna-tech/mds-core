@@ -105,6 +105,9 @@ spec:
                 name: mds-secrets
                 key: slack-token
           {{- end }}
+          {{- if $api.env }}
+{{ toYaml $api.env | indent 10 }}
+          {{- end }}
   {{- end }}
 {{- end }}
 ---
