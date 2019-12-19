@@ -4,7 +4,7 @@ apiVersion: batch/v1beta1
 kind: CronJob
 metadata:
   name: metrics-sheet
-  namespace: {{ $.Release.Namespace }}
+  namespace: {{ $.Values.namespace | default "mds" }}
 spec:
   schedule: "*/1 * * * *"
   jobTemplate:
@@ -39,7 +39,7 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: metrics-sheet
-  namespace: {{ $.Release.Namespace }}
+  namespace: {{ $.Values.namespace | default "mds" }}
 type: Opaque
 data:
   CLIENT_SECRET: {{ $.Values.clientSecret | b64enc }}

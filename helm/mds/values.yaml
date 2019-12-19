@@ -53,6 +53,7 @@ apis:
     pathPrefix: /web-sockets
     version: latest
     migration: false
+namespace:
 useEvents: false
 timezone: America/Los_Angeles
 registry:

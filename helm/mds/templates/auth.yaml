@@ -6,7 +6,7 @@ apiVersion: authentication.istio.io/v1alpha1
 kind: Policy
 metadata:
   name: {{ $key }}-auth
-  namespace: {{ $.Release.Namespace }}
+  namespace: {{ $.Values.namespace | default "mds" }}
 spec:
   targets:
   - name: {{ $key }}

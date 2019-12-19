@@ -4,7 +4,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: VirtualService
 metadata:
   name: {{ $key }}-route
-  namespace: {{ $.Release.Namespace }}
+  namespace: {{ $.Values.namespace | default "mds" }}
 spec:
   hosts:
   - {{ $.Values.domain | quote }}
@@ -16,7 +16,7 @@ spec:
         regex: {{ printf "^%s($|/.*$)" $api.pathPrefix | quote }}
     route:
     - destination:
-        host: {{ $key }}.{{ $.Release.Namespace}}.svc.cluster.local
+        host: {{ $key }}.{{ $.Values.namespace | default "mds" }}.svc.cluster.local
         port:
           number: 4000
     corsPolicy:
@@ -42,7 +42,7 @@ apiVersion: networking.istio.io/v1alpha3
 kind: Gateway
 metadata:
   name: mds-gateway
-  namespace: {{ .Release.Namespace }}
+  namespace: {{ $.Values.namespace | default "mds" }}
 spec:
   selector:
     istio: ingressgateway # use Istio default gateway implementation
