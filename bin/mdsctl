@@ -665,9 +665,7 @@ app() {
 }
 
 cliPostgresql() {
-  echo cli.0
   check ${FUNCNAME[0]}
-  echo cli.1
   pgcli postgres://mdsadmin@localhost:5432/mds
 }
 
@@ -803,7 +801,6 @@ getPort() {
 forwardIfNeeded() {
   gp=$(getPort ${1})
 
-echo "gp>$gp"
   if [ ${gp} -eq "-1" ]; then
     hash install${1^} > /dev/null 2>&1 && invoke install ${1}
     pause 3
@@ -828,12 +825,10 @@ context() {
 }
 
 check() {
-  echo "check:${1}"
-  # fixme: do always
-  # * | install* | uninstall*) echo "tam.1"; context;&
+  context
+
   case "${1}" in
     $(basename ${0}))
-    echo "tam.0"
       for rc in ${configs[rc]}; do
         if [[ -f ${rc} && $(grep -q "\\\*${configs[home]}/bin\\\*" ${rc}; echo $?) != 0 ]]; then
             echo "export PATH=${configs[home]}/bin:\${PATH}" >> ${rc}
@@ -845,35 +840,26 @@ check() {
       done; unset d;;
       # todo: include cluster connection check where needed if not globally
       #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
-    # * | install* | uninstall*) echo "tam.1"; context;&
     build | testIntegration)
-    echo "tam.2"
       hash yarn > /dev/null 2>&1 || bootstrap;;
-    installHelm | installBookinfo) echo "tam.3";;
+    installHelm | installBookinfo) ;;
     installMetrics | installMds)
-    echo "tam.4"
       kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installLogging | installMetricsAdapter)
-    echo "tam.5"
       hash helm > /dev/null 2>&1 && updateHelmDependencies || installHelm;;
     installImages)
-    echo "tam.6"
       [ "${configs[image-repository]}" ] || \
         warn "configure an image-repository; eg ' ... -c:image-repository=[image-repository-url] ...'";;
     installIstio | testUnit | uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)
-    echo "tam.7"
       hash helm > /dev/null 2>&1 || installHelm;;
     installSimulator)
-    echo "tam.8"
       [ ! "${configs[simulator-repository]}" ] && usage "unspecified simulator repository";;
-    forward) echo "tam.9";;
-    app:*) echo "tam.10"; forwardIfNeeded ${1##*:};;
+    forward) ;;
+    app:*) forwardIfNeeded ${1##*:};;
     cliPostgresql)
-      echo "tam.11"
       hash pgcli > /dev/null 2>&1 || bootstrap
       forwardIfNeeded mds-postgresql;;
     cliRedis)
-    echo "tam.12"
       hash redis-cli > /dev/null 2>&1 || bootstrap
       forwardIfNeeded mds-redis;;
   esac
