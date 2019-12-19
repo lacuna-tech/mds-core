@@ -15,7 +15,7 @@ import config from './config'
 
         REPORTS_DEVICE_TRIPS:
           PRIMARY KEY = (provider_id, device_id, trip_id)
-          VALUES = trip_data
+          VALUES = tripData
 */
 
 async function processTrip(

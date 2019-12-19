@@ -28,9 +28,8 @@ import { getTripId } from './utils'
     Processed events/telemetry are added to various caches keyed as follows:
 
         1) device:state (latest event/telemetry for a device)
-        2) trip:events (events linked to trips of a device)
-        3) device:ID:trips (all telemetry linked to all trips of a device)
-            - ID is the combination 'provider_id:device_id'
+        2) trips:events (events linked to trips of a device)
+        3) trips:telemetry (all telemetry linked to all trips of a device)
 
     A Postgres table is also populated to store historical states:
 

@@ -11,12 +11,13 @@ export default {
     // List of active providers for this organization.
     // TODO: server return format is UUIDs or all provider data?
     providers: [
+      '2411d395-04f2-47c9-ab66-d09e9e3c3251',
       'c20e08cf-8488-46a6-a66c-5d8fb827f7e0',
       '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
-      '2411d395-04f2-47c9-ab66-d09e9e3c3251',
-      '6ddcc0ad-1d66-4046-bba4-d1d96bb8ca4d',
       'e714f168-ce56-4b41-81b7-0b6a4bd26128',
-      'd73fcf80-22b1-450f-b535-042b4e30aac7'
+      '3c95765d-4da6-41c6-b61e-1954472ec6c9',
+      '70aa475d-1fcd-4504-b69c-2eeb2107f7be',
+      'b79f8687-526d-4ae6-80bf-89b4c44dc071'
     ],
     vehicleTypes: ['scooter', 'bicycle'],
     // Used to determine "day" for the provider, e.g. for metrics reporting.
@@ -53,6 +54,15 @@ export default {
   // Technical compliance SLA thresholds for metrics
   // Needed by metrics service/pipeline, Audit and Console aps.
   compliance_sla: {
+    cap_count: {
+      '2411d395-04f2-47c9-ab66-d09e9e3c3251': 6500,
+      'c20e08cf-8488-46a6-a66c-5d8fb827f7e0': 5500,
+      '63f13c48-34ff-49d2-aca7-cf6a5b6171c3': 5500,
+      'e714f168-ce56-4b41-81b7-0b6a4bd26128': 4000,
+      '3c95765d-4da6-41c6-b61e-1954472ec6c9': 670,
+      '70aa475d-1fcd-4504-b69c-2eeb2107f7be': 10500,
+      'b79f8687-526d-4ae6-80bf-89b4c44dc071': 3000
+    },
     /** vehicles: Minimum number of registered vehicles for provider. */
     min_registered: 100,
     /** events: Minumum number of trip_start events per day. */

@@ -65,7 +65,7 @@ async function processProvider(providerID: UUID, curTime: Timestamp) {
           out_of_order_count: null // providerData ? providerData.outOfOrderEvents.length : null
         },
         sla: {
-          max_vehicle_cap: 1600, // TODO: import from PCE
+          max_vehicle_cap: (config.compliance_sla.cap_count as { [provider: string]: number })[providerID],
           min_registered: config.compliance_sla.min_registered,
           min_trip_start_count: config.compliance_sla.min_trip_start_count,
           min_trip_end_count: config.compliance_sla.min_trip_end_count,
