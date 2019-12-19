@@ -240,6 +240,7 @@ bootstrap() {
         gettext)
           brew link --force gettext
           export PATH=$(brew --prefix gettext)/bin:${PATH};;
+        helm@2) export PATH=$(brew --prefix helm@2)/bin:${PATH};;
       esac
     }
   done; unset l
