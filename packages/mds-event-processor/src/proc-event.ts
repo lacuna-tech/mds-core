@@ -3,8 +3,8 @@ import cache from '@mds-core/mds-cache'
 import log from '@mds-core/mds-logger'
 
 import {
-  InboundEvent,
-  InboundTelemetry,
+  VehicleEvent,
+  Telemetry,
   StateEntry,
   TripEvent,
   TripTelemetry,
@@ -131,7 +131,7 @@ export async function processTripEvent(deviceState: StateEntry): Promise<boolean
   return false
 }
 
-export async function eventHandler(type: string, data: InboundEvent & InboundTelemetry): Promise<void> {
+export async function eventHandler(type: string, data: VehicleEvent & Telemetry): Promise<void> {
   const { timestamp, device_id, provider_id, recorded } = data
   const lastState = await cache.readDeviceState(`${provider_id}:${device_id}`)
   // Construct state

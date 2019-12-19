@@ -39,36 +39,6 @@ export const RULE_UNIT_MAP = {
 }
 
 // Event Streaming
-export interface InboundEvent {
-  device_id: UUID
-  provider_id: UUID
-  event_type: VEHICLE_EVENT
-  event_type_reason: VEHICLE_REASON | null
-  telemetry: {
-    device_id: UUID
-    timestamp: Timestamp
-    gps: GpsData
-    charge: number
-    provider_id: UUID
-  } | null
-  timestamp: Timestamp
-  trip_id: UUID
-  recorded: Timestamp
-  telemetry_timestamp: Timestamp
-  service_area_id: UUID
-  id: number
-}
-
-export interface InboundTelemetry {
-  device_id: UUID
-  provider_id: UUID
-  timestamp: Timestamp
-  charge: number
-  gps: GpsData
-  recorded: Timestamp
-  id: number
-}
-
 export interface StateEntry {
   vehicle_type: VEHICLE_TYPE
   type: string
@@ -78,13 +48,13 @@ export interface StateEntry {
   recorded: Timestamp
   annotation_version: number
   annotation: AnnotationData | null
-  gps: GpsData | null
-  service_area_id: UUID | null // telemetry entries will be null
-  charge: number | null
+  gps?: GpsData | null
+  service_area_id?: UUID | null // telemetry entries will be null
+  charge?: number | null
   state: VEHICLE_STATUS | null // telemetry entries will be null
   event_type: VEHICLE_EVENT | null // telemetry entries will be null
-  event_type_reason: VEHICLE_REASON | null // telemetry entries will be null
-  trip_id: UUID | null // telemetry entries will be null
+  event_type_reason?: VEHICLE_REASON | null // telemetry entries will be null
+  trip_id?: UUID | null // telemetry entries will be null
 }
 
 export interface AnnotationData {
@@ -98,11 +68,11 @@ export interface TripEvent {
   vehicle_type: VEHICLE_TYPE
   timestamp: Timestamp
   event_type: VEHICLE_EVENT | null // telemetry entries will be null
-  event_type_reason: VEHICLE_REASON | null
+  event_type_reason?: VEHICLE_REASON | null
   annotation_version: number
   annotation: AnnotationData | null
-  gps: GpsData | null
-  service_area_id: UUID | null
+  gps?: GpsData | null
+  service_area_id?: UUID | null
 }
 
 export type TripsEvents = { [trip_id: string]: TripEvent[] }
@@ -113,7 +83,7 @@ export interface TripTelemetry {
   longitude: number | null
   annotation_version: number
   annotation: AnnotationData | null
-  service_area_id: UUID | null
+  service_area_id?: UUID | null
 }
 
 export type TripsTelemetry = { [trip_id: string]: TripTelemetry[] }
@@ -126,8 +96,8 @@ export interface TripEntry {
   recorded: Timestamp
   start_time: Timestamp
   end_time: Timestamp
-  start_service_area_id: UUID | null
-  end_service_area_id: UUID | null
+  start_service_area_id?: UUID | null
+  end_service_area_id?: UUID | null
   duration: number // in milliseconds
   distance: number | null // default in miles
   violation_count: number
@@ -400,7 +370,7 @@ export interface TelemetryData {
   charge?: number | null
 }
 
-export type GpsData = Omit<TelemetryData, 'charge' | 'hdop' | 'satellites'>
+export type GpsData = Omit<TelemetryData, 'charge'>
 
 // While telemetry data is stored in a flattened format, when passed as a parameter it has
 // a different shape: { gps: { lat, lng, speed, heading, accurace, altitude } charge }. This
