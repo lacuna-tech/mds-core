@@ -3,4 +3,5 @@ kind: Namespace
 metadata:
   labels:
     istio-injection: enabled
+    knative-eventing-injection: enabled
   name: {{ $.Values.namespace | default "mds" }}

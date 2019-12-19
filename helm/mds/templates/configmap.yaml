@@ -4,4 +4,4 @@ metadata:
   name: mds-config-files
   namespace: {{ $.Values.namespace | default "mds" }}
 data:
-{{ (.Files.Glob (printf "files/mds-config/%s/*.{json,json5}" ( $.Values.Namespace | default "mds" )) ).AsConfig | indent 2 }}
+{{ (.Files.Glob (printf "files/mds-config/%s/*.{json,json5}" ( $.Values.namespace | default "mds" )) ).AsConfig | indent 2 }}
