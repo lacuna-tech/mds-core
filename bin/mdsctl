@@ -56,7 +56,7 @@ declare -A configs=(
   ["rc"]="${MDS_RC:-~/.bashrc ~/.zshrc}"
   ["workdir"]="/tmp/mds/tools"
   ["brew"]="${MDS_BREW:-oq jq gettext yarn nvm kubernetes-helm k9s pgcli redis git}"
-  ["tools"]="${MDS_TOOLCHAIN:-kubernetes-helm,pgcli}"
+  ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
   ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio}"
@@ -216,7 +216,6 @@ bootstrap() {
   for l in ${configs[brew]}; do
     lc=${l}
     case ${l} in
-      kubernetes-helm) lc=helm;;
       gettext) lc=envsubst;;
       oq) brew tap blacksmoke16/tap;;
     esac
@@ -348,12 +347,6 @@ updateHelmDependencies() {
 
 installHelm() {
   check ${FUNCNAME[0]}
-
-  hash helm > /dev/null 2>&1 ||
-    case "${configs[os]}" in
-      ${os[osx]} | ${os[linux]}) brew install kubernetes-helm;;
-      *) usage "unsupported os: ${configs[os]}";;
-    esac
 
   helm init --upgrade || usage "helm intialization failure"
   pause 5
@@ -771,16 +764,6 @@ uninstallTiller() {
   fi
 }
 
-#todo: purge
-uninstallHelm() {
-  check ${FUNCNAME[0]}
-
-  case "${configs[os]}" in
-    ${os[osx]}) ;; #brew uninstall kubernetes-helm;;
-    *) usage "unsupported os: ${configs[os]}";;
-  esac
-}
-
 getPort() {
   if [ ${apps[${1}]+_} ]; then
     ga=${apps[${1}]}
@@ -843,18 +826,16 @@ check() {
       #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
     build | testIntegration)
       hash yarn > /dev/null 2>&1 || bootstrap;;
-    installHelm | installBookinfo) ;;
     installMetrics | installMds)
       kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
-    installLogging | installMetricsAdapter)
-      hash helm > /dev/null 2>&1 && updateHelmDependencies || installHelm;;
     installImages)
       [ "${configs[image-repository]}" ] || \
         warn "configure an image-repository; eg ' ... -c:image-repository=[image-repository-url] ...'";;
-    installIstio | testUnit | uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)
-      hash helm > /dev/null 2>&1 || installHelm;;
     installSimulator)
-      [ ! "${configs[simulator-repository]}" ] && usage "unspecified simulator repository";;
+      [ ! "${configs[simulator-repository]}" ] && usage "unspecified simulator repository";&
+    installHelm | installIstio | installLogging | installMetricsAdapter | installMds | testUnit | \
+      uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)
+      hash helm > /dev/null 2>&1 || bootstrap;;
     forward) ;;
     app:*) forwardIfNeeded ${1##*:};;
     cliPostgresql)
@@ -938,7 +919,7 @@ while getopts ":w:s:c:p:q-:h-:" opt; do
         sleep=*) configs[pause]="${OPTARG#*=}";;
         quiet) confgs[quiet]=true;;
         help) usage;;
-        *) [ "${OPTERR}" = 1 ] && [ "${optspec:0:1}" != ":" ] && echo "unknown option --${OPTARG}";;
+        *) [ "${OPTERR}" = 1 ] && [ "${optspec:0:1}" != ":" ] && error "unknown option --${OPTARG}";;
       esac;;
     c) configure "$(echo ${OPTARG} | cut -d ':' -f 2-)";;
     p) preset "$(normalize ${OPTARG})";;
@@ -947,7 +928,7 @@ while getopts ":w:s:c:p:q-:h-:" opt; do
     q) configs[quiet]=true;;
     h) usage;;
     :) usage "option -${OPTARG} requires an argument" 1;;
-    \?) [ "${OPTERR}" != 1 ] || [ "${optspec:0:1}" = ":" ] && usage "unknown option -${OPTARG}" 1;;
+    \?) [ "${OPTERR}" != 1 ] || [ "${optspec:0:1}" = ":" ] && error "unknown option -${OPTARG}" 1;;
   esac
 done
 
@@ -982,6 +963,6 @@ for arg in "${@:$OPTIND}"; do
     invoke install "$(normalize ${arg})";;
     home) echo ${configs[home]};;
     completion) cat ${configs[home]}/bin/mdsctl-completion.bash;;
-    *) usage "unknown command: ${arg}"
+    *) error "unknown command: ${arg}"
   esac
 done; unset arg
