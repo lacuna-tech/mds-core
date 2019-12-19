@@ -41,6 +41,7 @@ async function seedDeviceStates() {
 describe('Proc Metrics', () => {
   before(async () => {
     await db.initialize()
+    await cache.initialize()
     await seedDeviceStates()
   })
 
