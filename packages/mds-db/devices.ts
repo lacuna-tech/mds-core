@@ -9,11 +9,11 @@ import { vals_sql, cols_sql, vals_list, logSql, SqlVals, MDSPostgresClient } fro
 
 import { getReadOnlyClient, getWriteableClient, makeReadOnlyQuery } from './client'
 
-export async function readDeviceByVehicleId(
+export async function readDevicesByVehicleId(
   provider_id: UUID,
   vehicle_id: UUID,
   ...alternate_vehicle_ids: UUID[]
-): Promise<Recorded<Device>> {
+): Promise<Recorded<Device>[]> {
   const client = await getReadOnlyClient()
   const vehicle_ids = [...new Set([vehicle_id, ...alternate_vehicle_ids])]
   const vals = new SqlVals()
@@ -35,7 +35,7 @@ export async function readDeviceByVehicleId(
   if (result.rows.length === 0) {
     throw new NotFoundError('No device found', { provider_id, vehicle_ids })
   }
-  return result.rows[0] as Recorded<Device>
+  return result.rows as Recorded<Device>[]
 }
 
 export async function readDeviceIds(provider_id?: UUID, skip?: number, take?: number): Promise<DeviceID[]> {
