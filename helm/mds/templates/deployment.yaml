@@ -18,12 +18,10 @@ spec:
       labels:
         app: {{ $name }}
     spec:
-      {{- if (eq $name "mds-config") }}
       volumes:
         - name: mds-config-files
           configMap:
             name: mds-config-files
-      {{- end }}
       containers:
       - name: {{ $name }}
         {{- if $.Values.registry }}
@@ -43,11 +41,9 @@ spec:
         - containerPort: 4000
           name: user-port
           protocol: TCP
-        {{- if (eq $name "mds-config") }}
         volumeMounts:
         - name: mds-config-files
           mountPath: /mds-config/
-        {{- end }}
         env:
           - name: PORT
             value: "4000"
