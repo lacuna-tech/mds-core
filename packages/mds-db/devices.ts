@@ -26,13 +26,13 @@ export async function readDeviceByVehicleId(
   const values = vals.values()
   await logSql(sql, values)
   const result = await client.query(sql, values)
-  if (result.rows.length != 1) {
+  if (result.rows.length !== 1) {
     const error = `device associated with vehicle ${
       vehicle_ids.length === 1 ? vehicle_id : `(${csv(vehicle_ids)})`
     } for provider ${provider_id}: rows=${result.rows.length}`
     await log.warn(error)
   }
-  if (result.rows.length == 0) {
+  if (result.rows.length === 0) {
     throw new NotFoundError('No device found', { provider_id, vehicle_ids })
   }
   return result.rows[0] as Recorded<Device>
