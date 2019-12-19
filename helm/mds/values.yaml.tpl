@@ -66,7 +66,7 @@ processors:
     version: ${TRIP_PROCESSOR_VERSION}
     migration: false
     triggeredBy:
-      cron: '* * * * *'
+      cron: '0 * * * *'
   mds-provider-processor:
     enabled: true
     version: ${PROVIDER_PROCESSOR_VERSION}
