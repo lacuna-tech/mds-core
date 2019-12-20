@@ -2,7 +2,7 @@ import assert from 'assert'
 import { TripEvent, Timestamp, TripTelemetry, GpsData } from '@mds-core/mds-types'
 import { calcDistance, routeDistance } from '@mds-core/mds-utils'
 import * as procTripUtils from '../src/utils'
-import config from '../src/config'
+import { getConfig } from '../src/config'
 
 const getMockedTripEvent = (event_type: string, timestamp: Timestamp) => {
   const tripStartA = ({ event_type, timestamp } as unknown) as TripEvent
@@ -52,20 +52,27 @@ const getMockedTripTelemetryMap = () => {
 describe('Proc Trip', () => {
   describe('eventValidation()', () => {
     it('Returns false if only one trip event is found (incomplete trip)', async () => {
+      const config = await getConfig()
       const events = [getMockedTripEvent('trip_start', 42)]
-      const result = procTripUtils.eventValidation(events, 42)
+      const result = procTripUtils.eventValidation(events, 42, config.compliance_sla.max_telemetry_time)
       assert.strictEqual(result, false)
     })
 
-    it('Returns false if trip_end is less than SLA delay', () => {
+    it('Returns false if trip_end is less than SLA delay', async () => {
+      const config = await getConfig()
       const events = [getMockedTripEvent('trip_end', 42), getMockedTripEvent('trip_start', 0)]
-      const result = procTripUtils.eventValidation(events, 42)
+      const result = procTripUtils.eventValidation(events, 42, config.compliance_sla.max_telemetry_time)
       assert.strictEqual(result, false)
     })
 
-    it('Check if validation steps pass', () => {
+    it('Check if validation steps pass', async () => {
+      const config = await getConfig()
       const events = [getMockedTripEvent('trip_end', 42), getMockedTripEvent('trip_start', 0)]
-      const result = procTripUtils.eventValidation(events, 43 + config.compliance_sla.max_telemetry_time)
+      const result = procTripUtils.eventValidation(
+        events,
+        43 + config.compliance_sla.max_telemetry_time,
+        config.compliance_sla.max_telemetry_time
+      )
       assert.strictEqual(result, true)
     })
   })
