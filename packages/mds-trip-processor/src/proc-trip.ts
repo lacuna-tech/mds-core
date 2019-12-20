@@ -4,7 +4,7 @@ import log from '@mds-core/mds-logger'
 import { calcDistance, isUUID, now } from '@mds-core/mds-utils'
 import { TripEvent, TripEntry, UUID, Timestamp } from '@mds-core/mds-types'
 import { eventValidation, createTelemetryMap } from './utils'
-import { getConfig } from './config'
+import { getConfig } from './configuration'
 
 /*
     Trip processor that runs inside a Kubernetes pod, activated via cron job.

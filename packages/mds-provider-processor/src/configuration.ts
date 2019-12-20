@@ -1,4 +1,4 @@
-import { ConfigManager } from '@mds-core/mds-config-service'
+import { ConfigurationManager } from '@mds-core/mds-config-service'
 import { VEHICLE_TYPE, UUID } from '@mds-core/mds-types'
 
 interface ProviderProcessorConfig {
@@ -22,6 +22,6 @@ interface ProviderProcessorConfig {
   }
 }
 
-const manager = ConfigManager<ProviderProcessorConfig>(['organization', 'providers', 'compliance_sla'])
+const manager = ConfigurationManager<ProviderProcessorConfig>(['organization', 'providers', 'compliance_sla'])
 
-export const getConfig = async () => manager.getConfig()
+export const getConfig = async () => manager.configuration()

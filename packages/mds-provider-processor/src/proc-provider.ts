@@ -2,7 +2,7 @@ import db from '@mds-core/mds-db'
 import { MetricsTableRow, UUID, Timestamp, VEHICLE_TYPE } from '@mds-core/mds-types'
 import { now } from '@mds-core/mds-utils'
 import metric from './metrics'
-import { getConfig } from './config'
+import { getConfig } from './configuration'
 
 /*
     Provider processor that runs inside a Kubernetes pod, activated via cron job.

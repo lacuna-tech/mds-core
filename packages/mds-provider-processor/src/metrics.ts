@@ -12,7 +12,7 @@ import {
   UUID,
   Timestamp
 } from '@mds-core/mds-types'
-import { getConfig } from './config'
+import { getConfig } from './configuration'
 
 async function calcEventCounts(
   providerID: UUID,

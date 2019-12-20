@@ -2,7 +2,7 @@ import assert from 'assert'
 import { TripEvent, Timestamp, TripTelemetry, GpsData } from '@mds-core/mds-types'
 import { calcDistance, routeDistance } from '@mds-core/mds-utils'
 import * as procTripUtils from '../src/utils'
-import { getConfig } from '../src/config'
+import { getConfig } from '../src/configuration'
 
 const getMockedTripEvent = (event_type: string, timestamp: Timestamp) => {
   const tripStartA = ({ event_type, timestamp } as unknown) as TripEvent
