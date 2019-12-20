@@ -2,7 +2,8 @@ import assert from 'assert'
 import { TripEvent, Timestamp, TripTelemetry, GpsData } from '@mds-core/mds-types'
 import { calcDistance, routeDistance } from '@mds-core/mds-utils'
 import * as procTripUtils from '../src/utils'
-import { getConfig } from '../src/configuration'
+
+const max_telemetry_time = 86400
 
 const getMockedTripEvent = (event_type: string, timestamp: Timestamp) => {
   const tripStartA = ({ event_type, timestamp } as unknown) as TripEvent
@@ -51,28 +52,21 @@ const getMockedTripTelemetryMap = () => {
 
 describe('Proc Trip', () => {
   describe('eventValidation()', () => {
-    it('Returns false if only one trip event is found (incomplete trip)', async () => {
-      const config = await getConfig()
+    it('Returns false if only one trip event is found (incomplete trip)', () => {
       const events = [getMockedTripEvent('trip_start', 42)]
-      const result = procTripUtils.eventValidation(events, 42, config.compliance_sla.max_telemetry_time)
+      const result = procTripUtils.eventValidation(events, 42, max_telemetry_time)
       assert.strictEqual(result, false)
     })
 
-    it('Returns false if trip_end is less than SLA delay', async () => {
-      const config = await getConfig()
+    it('Returns false if trip_end is less than SLA delay', () => {
       const events = [getMockedTripEvent('trip_end', 42), getMockedTripEvent('trip_start', 0)]
-      const result = procTripUtils.eventValidation(events, 42, config.compliance_sla.max_telemetry_time)
+      const result = procTripUtils.eventValidation(events, 42, max_telemetry_time)
       assert.strictEqual(result, false)
     })
 
-    it('Check if validation steps pass', async () => {
-      const config = await getConfig()
+    it('Check if validation steps pass', () => {
       const events = [getMockedTripEvent('trip_end', 42), getMockedTripEvent('trip_start', 0)]
-      const result = procTripUtils.eventValidation(
-        events,
-        43 + config.compliance_sla.max_telemetry_time,
-        config.compliance_sla.max_telemetry_time
-      )
+      const result = procTripUtils.eventValidation(events, 43 + max_telemetry_time, max_telemetry_time)
       assert.strictEqual(result, true)
     })
   })
