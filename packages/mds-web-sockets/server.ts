@@ -8,13 +8,15 @@ import { Clients } from './clients'
 import { ENTITY_TYPE } from './types'
 
 const {
-  env: { npm_package_name, PORT = 4001 }
+  env: { npm_package_name, PORT = 4009 }
 } = process
 
 export const WebSocketServer = () => {
   const server = ApiServer(app => app).listen(PORT, () => log.info(`${npm_package_name} running on port ${PORT}`))
 
+  log.info('Creating WS server')
   const wss = new WebSocket.Server({ server })
+  log.info('WS Server created!')
 
   setWsHeartbeat(
     wss,
@@ -96,9 +98,11 @@ export const WebSocketServer = () => {
         return clients.saveClient(args, ws)
       }
 
+      if (header === 'PING') {
+        return
+      }
+
       return ws.send('Invalid request!')
     })
   })
 }
-
-WebSocketServer()
