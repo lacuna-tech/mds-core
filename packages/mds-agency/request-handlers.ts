@@ -327,9 +327,9 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
         socket.writeEvent(recorded_event)
       ])
 
-      if (event.telemetry) {
-        event.telemetry.recorded = recorded
-        await writeTelemetry(event.telemetry)
+      if (recorded_event.telemetry) {
+        recorded_event.telemetry.recorded = recorded
+        await writeTelemetry(recorded_event.telemetry)
         await success()
       } else {
         await success()
