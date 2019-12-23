@@ -57,6 +57,7 @@ declare -A configs=(
   ["rc"]="${MDS_RC:-~/.bashrc ~/.zshrc}"
   ["workdir"]="/tmp/mds/tools"
   ["brew"]="${MDS_BREW:-oq jq gettext yarn nvm helm@2 derailed/k9s/k9s pgcli redis git go}"
+  ["paths"]="${MDS_PATHS:-gettext helm@2}"
   ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
@@ -128,6 +129,12 @@ declare -A apps=(
 yellow=`tput setaf 3`
 red=`tput setaf 9`
 reset=`tput sgr0`
+
+initialize() {
+  for p in ${configs[paths]}; do
+    export PATH=$(brew --prefix ${p})/bin:${PATH}
+  done; unset p
+}
 
 warn() {
   echo "${yellow}warn: ${1}${reset}"
@@ -1039,8 +1046,8 @@ forwardIfNeeded() {
 }
 
 context() {
-  hash kubectl && {
-    [[ -z ${context+x} && "$(lower $(kubectl config current-context))" =~ ^(${configs[local-context]})$ ]] || {
+  [[ -z ${context+1} ]] && {
+    [[ "$(lower $(kubectl config current-context))" =~ ^(${configs[local-context]})$ ]] || {
       v=yes
       [[ "$(prompt "confirm you want to proceed: [${v}/no] ")" != "${v}" ]] && usage "opted to exit" || context=true
       unset v
@@ -1159,6 +1166,7 @@ preset() {
   unset is
 }
 
+initialize
 check $(basename ${0})
 
 while getopts ":w:s:c:p:q-:h-:" opt; do
