@@ -296,16 +296,6 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
     }
   }
 
-  async function finish() {
-    if (event.telemetry) {
-      event.telemetry.recorded = recorded
-      await writeTelemetry(event.telemetry)
-      await success()
-    } else {
-      await success()
-    }
-  }
-
   // TODO switch to cache for speed?
   try {
     const device = await db.readDevice(event.device_id, provider_id)
@@ -336,10 +326,17 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
         stream.writeEvent(recorded_event),
         socket.writeEvent(recorded_event)
       ])
-      await finish()
+
+      if (event.telemetry) {
+        event.telemetry.recorded = recorded
+        await writeTelemetry(event.telemetry)
+        await success()
+      } else {
+        await success()
+      }
     } catch (err) {
-      await log.warn('/event exception cache/stream', err)
-      await finish()
+      await log.warn('/event exception cache/stream/socket', err)
+      await success()
     }
   } catch (err) {
     await fail(err)
