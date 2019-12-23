@@ -320,6 +320,12 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
 
     // database write is crucial; failures of cache/stream should be noted and repaired
     const recorded_event = await db.writeEvent(event)
+    const { telemetry } = recorded_event
+
+    if (telemetry) {
+      await db.writeTelemetry(Array.isArray(telemetry) ? telemetry : [telemetry])
+    }
+
     try {
       await Promise.all([
         cache.writeEvent(recorded_event),
@@ -327,13 +333,16 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
         socket.writeEvent(recorded_event)
       ])
 
-      if (recorded_event.telemetry) {
-        recorded_event.telemetry.recorded = recorded
-        await writeTelemetry(recorded_event.telemetry)
-        await success()
-      } else {
-        await success()
+      if (telemetry) {
+        telemetry.recorded = recorded
+        await Promise.all([
+          cache.writeTelemetry([telemetry]),
+          stream.writeTelemetry([telemetry]),
+          socket.writeTelemetry([telemetry])
+        ])
       }
+
+      await success()
     } catch (err) {
       await log.warn('/event exception cache/stream/socket', err)
       await success()
@@ -404,7 +413,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
       const recorded_telemetry = await writeTelemetry(valid)
 
       try {
-        await Promise.all(recorded_telemetry.map(socket.writeTelemetry))
+        await socket.writeTelemetry(recorded_telemetry)
       } catch (err) {
         await log.error('Failed to write telemetry to socket', err)
       }
