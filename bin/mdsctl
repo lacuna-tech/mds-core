@@ -388,7 +388,7 @@ installHelm() {
   [[ $(helm plugin list | grep unittest) ]] || helm plugin install https://github.com/lrills/helm-unittest
 
   case "${configs[provider],,}" in
-    gcp) installTiller;;
+    aws | gcp) installTiller;;
     *);;
   esac
 }
@@ -402,10 +402,10 @@ helmOptions() {
   unset opts
 }
 
+# fixme: cleanup
 installTiller() {
   check ${FUNCNAME[0]}
 
-  # fixme: clean this up, one path
   case "${configs[provider],,}" in
     gcp)
       kubectl create clusterrolebinding cluster-admin-binding \
@@ -414,6 +414,7 @@ installTiller() {
       kubectl create serviceaccount --namespace kube-system tiller
       kubectl create clusterrolebinding tiller-cluster-rule --clusterrole=cluster-admin --serviceaccount=kube-system:tiller
       kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}';;
+    aws) ;&
     *)
       if [ $(kubectl get serviceaccount tiller --namespace kube-system > /dev/null 2>&1; echo $?) == "1" ]; then
         warn "NOT FOR PRODUCTION USE"
@@ -424,21 +425,21 @@ metadata:
   name: tiller
   namespace: kube-system
 ---
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: tiller-clusterrolebinding
+  name: tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
 subjects:
 - kind: ServiceAccount
   name: tiller
   namespace: kube-system
-roleRef:
-  kind: ClusterRole
-  name: cluster-admin
-  apiGroup: ""
 EOF
-      helm init --service-account tiller --upgrade
-    fi;;
+        helm init --service-account tiller --upgrade
+      fi;;
   esac
 }
 
@@ -1009,6 +1010,44 @@ uninstallTiller() {
     pause 3
     helm init --upgrade
   fi
+  case "${configs[provider],,}" in
+    gcp)
+      if [ $(kubectl get serviceaccount tiller --namespace kube-system > /dev/null 2>&1; echo $?) == "0" ]; then
+        kubectl delete serviceaccount tiller --namespace kube-system
+        kubectl delete clusterrolebinding tiller-clusterrolebinding
+        helm reset --force
+        pause 3
+        helm init --upgrade
+      fi;;
+    aws) ;&
+    *)
+      if [ $(kubectl get serviceaccount tiller --namespace kube-system > /dev/null 2>&1; echo $?) == "1" ]; then
+        warn "NOT FOR PRODUCTION USE"
+        cat << EOF | kubectl delete -f -
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tiller
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tiller
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: tiller
+  namespace: kube-system
+EOF
+        helm reset --force
+        pause 3
+        helm init --upgrade
+      fi;;
+  esac
 }
 
 getPort() {
@@ -1056,7 +1095,7 @@ context() {
 }
 
 check() {
-  context
+  [[ "${1}" != "$(basename ${0})" ]] && context
 
   case "${1}" in
     $(basename ${0}))
