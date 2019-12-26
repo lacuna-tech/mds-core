@@ -10,19 +10,21 @@ before(() => {
 })
 
 describe('Tests MDS-Web-Sockets', () => {
-  it('Tests Authentication', done => {
-    const client = new WebSocket('ws://localhost:4009')
-    client.onopen = () => {
-      client.send(`AUTH%${ADMIN_AUTH}`)
-    }
-
-    client.on('message', (data) => {
-      if (data === 'Authentication success!') {
-        client.close()
-        return done()
+  describe('Tests Authentication', () => {
+    it('Tests admin:all scoped tokens can authenticate successfully', done => {
+      const client = new WebSocket('ws://localhost:4009')
+      client.onopen = () => {
+        client.send(`AUTH%${ADMIN_AUTH}`)
       }
-      client.close()
-      return done(data)
+
+      client.on('message', data => {
+        if (data === 'Authentication success!') {
+          client.close()
+          return done()
+        }
+        client.close()
+        return done(data)
+      })
     })
   })
 })
