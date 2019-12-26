@@ -417,7 +417,6 @@ installTiller() {
     aws) ;&
     *)
       if [ $(kubectl get serviceaccount tiller --namespace kube-system > /dev/null 2>&1; echo $?) == "1" ]; then
-        warn "NOT FOR PRODUCTION USE"
         cat << EOF | kubectl create -f -
 apiVersion: v1
 kind: ServiceAccount
@@ -1022,7 +1021,6 @@ uninstallTiller() {
     aws) ;&
     *)
       if [ $(kubectl get serviceaccount tiller --namespace kube-system > /dev/null 2>&1; echo $?) == "1" ]; then
-        warn "NOT FOR PRODUCTION USE"
         cat << EOF | kubectl delete -f -
 apiVersion: v1
 kind: ServiceAccount
