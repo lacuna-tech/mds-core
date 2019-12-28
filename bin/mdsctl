@@ -184,7 +184,7 @@ commands:
   bootstrap                                           : install dependencies; default: ${configs[tools]},${configs[bootstrap]}
   build                                               : build project
   install[:{service[,{service}]}]                     : install specified service; default: ${configs[install]}
-  cycle:[app[,app]]                                   : restart app
+  cycle[]:[app[,app]]]                                : restart app; default: cycle all services
   test[:unit,integration]                             : preform specified tests; default: ${configs[test]}
   open:[app[,{app}]]                                  : opens a browser for the provided application(s)
   forward[:{app[,{app}]}]                             : register port-forwarding for the provided application(s); default: ${configs[forward]}
@@ -577,9 +577,10 @@ cycle() {
   # check ${FUNCNAME[0]}
 
   for a in ${@}; do
-    # fixme: trap bad pod lookup
-    p=$(kubectl -n ${configs[namespace-mds]} get pod -l app=${a} -o jsonpath='{.items[0].metadata.name}')
-    [[ ! -z "${p}" ]] && kubectl -n ${configs[namespace-mds]} delete pod ${p}
+    (( $(kubectl -n ${configs[namespace-mds]} get pod -l app=${a} --ignore-not-found | wc -l) == 2 )) && {
+      p=$(kubectl -n ${configs[namespace-mds]} get pod -l app=${a} -o jsonpath='{.items[0].metadata.name}')
+      [[ ! -z "${p}" ]] && kubectl -n ${configs[namespace-mds]} delete pod ${p}
+    }
   done; unset a p
 }
 
@@ -1261,6 +1262,7 @@ for arg in "${@:$OPTIND}"; do
     install:namespace=*) installNamespace "$(normalize ${arg} =)";;
     install) arg="${configs[install]}";&
     install:*) invoke install "$(normalize ${arg})";;
+    cycle) s=$(services); p=$(processors); arg="${s// /,},${p// /,}"; unset s p;&
     cycle:*) cycle "$(normalize ${arg})";;
     test) arg="${configs[test]}";&
     test:*) invoke test "$(normalize ${arg})";;
