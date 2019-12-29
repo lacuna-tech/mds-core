@@ -56,6 +56,7 @@ declare -A configs=(
   ["provider"]="${MDS_PROVIDER:-}"
   ["rc"]="${MDS_RC:-~/.bashrc ~/.zshrc}"
   ["workdir"]="/tmp/mds/tools"
+  # fixme: can remove pgcli, redis
   ["brew"]="${MDS_BREW:-oq jq gettext yarn nvm helm@2 derailed/k9s/k9s pgcli redis git go}"
   ["paths"]="${MDS_PATHS:-gettext helm@2}"
   ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
@@ -84,7 +85,8 @@ declare -A configs=(
   ["values-mds"]="${MDS_VALUES_MDS:-}"
   ["values-natss"]="${MDS_VALUES_NATSS:-}"
   ["presets"]="${MDS_PRESETS:-}"
-  ["presets-mds"]="${MDS_PRESETS_MDS:-postgresql.password=Password123#,apis.mds-agency.migration=true}"
+  ["presets-mds-database-password"]="${MDS_PRESETS_MDS_DATABASE_PASSWORD:-Password123#}"
+  ["presets-mds"]="${MDS_PRESETS_MDS:-postgresql.password=${configs[presets-mds-database-password]},apis.mds-agency.migration=true}"
   ["presets-natss"]="${MDS_PRESETS_NATSS:-}"
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
@@ -155,6 +157,16 @@ prompt() {
 
 beerMe() {
    [ ${#configs[quiet]} -eq 0 ] && echo -ne "\xF0\x9F\x8D\xBA "
+}
+
+urlEncode() {
+	local LANG=C i c e=''
+	for ((i=0;i<${#1};i++)); do
+    c=${1:$i:1}
+		[[ "${c}" =~ [a-zA-Z0-9\.\~\_\-] ]] || printf -v c '%%%02X' "'${c}"
+    e+="${c}"
+	done; unset c
+  echo "${e}"
 }
 
 usage() {
@@ -866,12 +878,17 @@ app() {
 
 cliPostgresql() {
   check ${FUNCNAME[0]}
-  pgcli postgres://mdsadmin@localhost:5432/mds
+  # pgcli postgres://mdsadmin@localhost:5432/mds
+  kubectl -n ${configs[namespace-mds]} run -it --image=dencold/pgcli --rm=true --attach pgcli \
+    postgres://mdsadmin:$(urlEncode ${configs[presets-mds-database-password]})@${configs[namespace-mds]}-postgresql:5432/mds
 }
 
 cliRedis() {
   check ${FUNCNAME[0]}
-  redis-cli -u redis://localhost:6379/0
+  # redis-cli -u redis://localhost:6379/0
+  echo "issue command: redis-cli -u redis://${configs[namespace-mds]}-redis-master:6379/0"
+  kubectl -n ${configs[namespace-mds]} run -it --image=redis --rm=true --attach redis-cli \
+    /bin/bash #redis-cli -u redis://${configs[namespace-mds]}-redis-master:6379/0
 }
 
 uninstallNamespace() {
@@ -1144,12 +1161,12 @@ check() {
     installSimulator)
       [ ! "${configs[simulator-repository]}" ] && usage "unspecified simulator repository";;
     app:*) forwardIfNeeded ${1##*:};;
-    cliPostgresql)
-      hash pgcli > /dev/null 2>&1 || bootstrap
-      forwardIfNeeded mds-postgresql;;
-    cliRedis)
-      hash redis-cli > /dev/null 2>&1 || bootstrap
-      forwardIfNeeded mds-redis;;
+    cliPostgresql) ;;
+      # hash pgcli > /dev/null 2>&1 || bootstrap
+      # forwardIfNeeded mds-postgresql;;
+    cliRedis) ;;
+      # hash redis-cli > /dev/null 2>&1 || bootstrap
+      # forwardIfNeeded mds-redis;;
   esac
 }
 
