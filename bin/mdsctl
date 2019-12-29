@@ -1099,7 +1099,7 @@ forwardIfNeeded() {
 }
 
 context() {
-  [[ -z ${context+1} ]] && {
+  [[ -z ${context+x} ]] && {
     [[ "$(lower $(kubectl config current-context))" =~ ^(${configs[local-context]})$ ]] || {
       v=yes
       [[ "$(prompt "confirm you want to proceed: [${v}/no] ")" != "${v}" ]] && usage "opted to exit" || context=true
