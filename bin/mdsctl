@@ -577,7 +577,7 @@ cycle() {
   # check ${FUNCNAME[0]}
 
   for a in ${@}; do
-    (( $(kubectl -n ${configs[namespace-mds]} get pod -l app=${a} --ignore-not-found | wc -l) == 2 )) && {
+    (( $(kubectl -n ${configs[namespace-mds]} get pod -l app=${a} --ignore-not-found=true | wc -l) == 2 )) && {
       p=$(kubectl -n ${configs[namespace-mds]} get pod -l app=${a} -o jsonpath='{.items[0].metadata.name}')
       [[ ! -z "${p}" ]] && kubectl -n ${configs[namespace-mds]} delete pod ${p}
     }
@@ -798,7 +798,7 @@ portForward() {
   fv=$(get ${fa} 4 ${1})
   fp=$(get ${fa} 5 -1)
 
-  (( $(kubectl -n ${fns} get pod -l ${fk}=${fv} | wc -l) == 2 )) && {
+  (( $(kubectl -n ${fns} get pod -l ${fk}=${fv} --ignore-not-found=true | wc -l) == 2 )) && {
     fa=$(kubectl -n ${fns} get pod -l ${fk}=${fv} -o jsonpath='{.items[0].metadata.name}')
 
     [ ${fp} -eq "-1" ] && \
@@ -840,7 +840,7 @@ getApp() {
   gp=$(get ${ga} 5 -1)
 
   [ ${gp} -eq -1 ] && {
-    (( $(kubectl -n ${gns} get pod -l ${gk}=${gv} | wc -l) == 2 )) &&
+    (( $(kubectl -n ${gns} get pod -l ${gk}=${gv} --ignore-not-found=true | wc -l) == 2 )) &&
       gp=$(kubectl -n ${gns} get pod -l ${gk}=${gv} \
         -o jsonpath='{.items[0].spec.containers[0].ports[0].containerPort}')
   }
@@ -1073,7 +1073,7 @@ getPort() {
     gp=$(get ${ga} 5 -1)
 
     [ ${gp} -eq -1 ] && {
-      (( $(kubectl -n ${gns} get pod -l ${gk}=${gv} | wc -l) == 2 )) &&
+      (( $(kubectl -n ${gns} get pod -l ${gk}=${gv} --ignore-not-found=true | wc -l) == 2 )) &&
         gp=$(kubectl -n ${gns} get pod -l ${gk}=${gv} \
           -o jsonpath='{.items[0].spec.containers[0].ports[0].containerPort}')
     }
