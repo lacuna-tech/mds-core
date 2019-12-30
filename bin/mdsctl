@@ -898,6 +898,13 @@ uninstallNamespace() {
   done; unset ns
 }
 
+uninstallHelm() {
+  case "${configs[provider],,}" in
+    aws | gcp) uninstallTiller;;
+    *);;
+  esac
+}
+
 uninstallSimulator() {
   check ${FUNCNAME[0]}
 
@@ -1157,7 +1164,7 @@ check() {
       uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)
       hash helm > /dev/null 2>&1 || bootstrap;;
     installSimulator)
-      [ ! "${configs[simulator-repository]}" ] && usage "unspecified simulator repository";;
+      [[ ! -d ${configs[simulator]} && ! "${configs[simulator-repository]}" ]] && usage "unspecified simulator repository";;
     app:*) forwardIfNeeded ${1##*:};;
     cliPostgresql) ;;
       # hash pgcli > /dev/null 2>&1 || bootstrap
