@@ -69,11 +69,14 @@ declare -A configs=(
   ["forward"]="${MDS_FORWARD:-default}"
   ["reinstall"]="${MDS_REINSTALL:-mds}"
   ["pause"]="${MDS_PAUSE:-3}"
-  ["istio-version"]="${MDS_ISTIO_VERSION:-1.3.6}" # 1.4.2}"
-  ["istio-profile"]="${MDS_ISTIO_PROFILE:-}" #-istio-sds-auth}" # todo: looks to fail when installing istio-nodeagent
+  # note: istio-version=1.4.2 (latest) has been verified for development environments
+  ["istio-version"]="${MDS_ISTIO_VERSION:-1.3.6}"
+  # note: fails when installing istio-nodeagent (i.e. -istio-sds-auth)
+  ["istio-profile"]="${MDS_ISTIO_PROFILE:-}"
   ["istio"]="${MDS_ISTIO_PATH:-${configs[workdir]}/istio-${configs[istio-version]}}"
-  ["knative-version"]="${MDS_KNATIVE_VERSION:-0.11.0}" # 0.10.1}"
-  ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-eventing}" # monitoring serving}"
+  ["knative-version"]="${MDS_KNATIVE_VERSION:-0.11.0}"
+  # note: supports knative module (monitoring, serving), e.g.: :-eventing monitoring serving}
+  ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-eventing}"
   ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/src/knative.dev/eventing-contrib}"
   ["natss-version"]="${MDS_NATSS_VERSION:-${configs[knative-version]}}"
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
@@ -89,7 +92,8 @@ declare -A configs=(
   ["presets-natss"]="${MDS_PRESETS_NATSS:-}"
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
-  ["sets-istio"]="${MDS_SETS_ISTIO:-}" #pilot.resources.requests.memory=512Mi}"
+  # todo: try scaling down istio's resource requirements (e.g. local dev): pilot.resources.requests.memory=512Mi}
+  ["sets-istio"]="${MDS_SETS_ISTIO:-}"
   ["sets-natss"]="${MDS_SETS_NATSS:-}"
   ["sets-logging"]="${MDS_SETS_LOGGING:-fluentbit.backend.es.host=elasticsearch-master.util,fluentbit.backend.es.port=9200,fluentbit.backend.es.tls=off,kibana.env.ELASTICSEARCH_URL=http:elasticsearch-master.util:9200}"
   ["sets-simulator"]="${MDS_SETS_SIMULATOR:-registry=,jwt.enabled=false}"
@@ -103,7 +107,7 @@ declare -A configs=(
   ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
   ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-${configs[namespace-mds]}}"
   ["namespace-knative"]="${MDS_NAMESPACE_KNATIVE:-knative-eventing}"
-  ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-natss}" #${configs[namespace-mds]}}"
+  ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-natss}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
   ["quiet"]="${MDS_QUIET:-}")
 declare -A helmRepositories=(
