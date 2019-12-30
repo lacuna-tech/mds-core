@@ -188,7 +188,6 @@ where preset-key in:
   minimal                                             : minimal service deployment; default: preset(local) + mds-agency, postgresql, redis
   local                                               : local resource (cpu, memory) deployment; default: limitsCpu=200m, limitsMemory=200Mi, requestsCpu=20m, requestsMemory=32Mi
   disabled                                            : disable service deployment; default: all
-  no-events                                           : disable eventing services
   no-persistence                                      : disable persistence
 
 commands:
@@ -1215,7 +1214,7 @@ preset() {
         is+="${is:+,}sets-mds+=redis.master.persistence.enabled=false"
         is+="${is:+,}sets-mds+=redis.slave.persistence.enabled=false";;
       minimal)
-        preset $(normalize "disable,no-events,local,no-persistence")
+        preset $(normalize "disable,local,no-persistence")
         is+="${is:+,}sets-mds+=apis.mds-agency.enabled=true";;
       processors)
         preset $(normalize "minimal")
