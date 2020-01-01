@@ -109,6 +109,8 @@ declare -A configs=(
   ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-${configs[namespace-mds]}}"
   ["namespace-knative"]="${MDS_NAMESPACE_KNATIVE:-knative-eventing}"
   ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-natss}"
+  ["namespace-dns-lookup"]="${MDS_NAMESPACE_DNS_LOOKUP:-default}"
+  ["namespace-curl"]="${MDS_NAMESPACE_CURL:-default}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
   ["quiet"]="${MDS_QUIET:-}")
 declare -A helmRepositories=(
@@ -223,6 +225,9 @@ where service in:
   metrics
   nats
   natss
+  grafana
+  dnslookup
+  curl
 
 where app in:
   mds-agency
@@ -787,6 +792,18 @@ installNatss() {
   pause 7
 }
 
+installDnslookup() {
+  (( $(helm list --short dns-lookup | wc -l) == 0 )) && {
+    helm install ./helm/dns --name dns-lookup --namespace ${configs[-dns-lookup]}
+  }
+}
+
+installCurl() {
+  (( $(helm list --short curl | wc -l) == 0 )) && {
+    helm install ./helm/curl --name curl --namespace ${configs[namespace-curl]}
+  }
+}
+
 testUnit() {
   check ${FUNCNAME[0]}
 
@@ -1007,6 +1024,18 @@ uninstallNatss() {
       # done; unset ns
       [ -d ${configs[natss]} ] && /bin/rm -rf ${configs[natss]}
     fi
+  }
+}
+
+uninstallDnslookup() {
+  (( $(helm list --short dns-lookup | wc -l) == 1 )) && {
+    helm delete --purge dns-lookup
+  }
+}
+
+uninstallCurl() {
+  (( $(helm list --short curl | wc -l) == 1 )) && {
+    helm delete --purge curl
   }
 }
 
