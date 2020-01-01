@@ -79,6 +79,7 @@ declare -A configs=(
   ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-eventing}"
   ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/src/knative.dev/eventing-contrib}"
   ["natss-version"]="${MDS_NATSS_VERSION:-${configs[knative-version]}}"
+  ["grafana-plugins"]="${MDS_GRAFANA_PLUGINS:-devopsprodigy-kubegraf-app}"
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
   ["ingress-gateway-key-path"]="${MDS_INGRESS_GATEWAY_KEY_PATH:-}"
@@ -114,7 +115,8 @@ declare -A helmRepositories=(
   ["stable"]="https://kubernetes-charts.storage.googleapis.com"
   ["istio.io"]="https://storage.googleapis.com/istio-release/releases/${configs[istio-version]}/charts"
   ["banzaicloud-stable"]="https://kubernetes-charts.banzaicloud.com"
-  ["elastic"]="https://helm.elastic.co")
+  ["elastic"]="https://helm.elastic.co"
+  ["bitnami"]="https://charts.bitnami.com/bitnami")
 declare -A apps=(
   ["mds-agency"]="https://localhost:[port]/agency,mds,app"
   ["mds-audit"]="https://localhost:[port]/audit,mds,app"
@@ -549,6 +551,13 @@ installMetrics() {
   }
 }
 
+installGrafana() {
+  (( $(helm list --short grafana | wc -l) == 0 )) && {
+    helm install --name grafana bitnami/grafana --set admin.user=admin --set admin.password=pwd --set plugins=${grafana-plugins}
+    # todo: port-forward
+  }
+}
+
 imageVersion() {
   for s in $(services); do
     is+="${is:+,}sets-mds+=apis.${s}.version=$(docker images ${s} --format {{.Tag}})"
@@ -934,6 +943,13 @@ uninstallMetricsAdapter() {
   check ${FUNCNAME[0]}
 
   helm status kube-metrics-adapter > /dev/null 2>&1 && helm delete --purge kube-metrics-adapter
+}
+
+uninstallGrafana() {
+  (( $(helm list --short grafana | wc -l) == 1 )) && {
+    # todo: unforward
+    helm delete --purge grafana
+  }
 }
 
 uninstallMds() {
