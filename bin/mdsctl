@@ -319,7 +319,7 @@ getBranchSuffix() {
 }
 
 getCommitHash() {
-  git rev-parse HEAD | sed -E -e 's/[^-a-zA-Z0-9]/-/g' -e 's/^/-/'
+  git rev-parse --short HEAD | sed -E -e 's/[^-a-zA-Z0-9]/-/g' -e 's/^/-/'
 }
 
 # TODO: DRY
