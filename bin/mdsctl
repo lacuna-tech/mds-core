@@ -596,7 +596,8 @@ installMds() {
       configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
     pause 5
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
-    helm install ${configs[home]}/helm/mds --name mds --namespace ${configs[namespace-mds]} \
+    helm install ${configs[home]}/helm/mds --name ${configs[namespace-mds]} \
+      --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
       ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
@@ -979,7 +980,7 @@ uninstallGrafana() {
 uninstallMds() {
   check ${FUNCNAME[0]}
 
-  helm delete --purge mds ${configs[dryrun]:+--dry-run}
+  helm delete --purge ${configs[namespace-mds]} ${configs[dryrun]:+--dry-run}
   uninstallNamespace ${configs[namespace-mds]}
 }
 
