@@ -691,38 +691,35 @@ installKnative() {
   check ${FUNCNAME[0]}
 
   for c in ${configs[knative-components]}; do
-    case "${c}" in
-      eventing)
-        kubectl get namespace knative-eventing > /dev/null 2>&1 || {
-          if [ -d ${configs[home]}/helm/knative-eventing/${configs[knative-version]} ]; then
-            helm install ${configs[home]}/helm/knative-eventing-init/${configs[knative-version]} \
-              --name knative-eventing-init #--namespace knative-eventing \
-              ${configs[values]:+$(helmOptions values ${configs[values]})} \
-              ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-              ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-              ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-              ${configs[dryrun]:+--dry-run --debug}
-            helm install ${configs[home]}/helm/knative-eventing/${configs[knative-version]} \
-              --name knative-eventing #--namespace knative-eventing \
-              ${configs[values]:+$(helmOptions values ${configs[values]})} \
-              ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-              ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-              ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-              ${configs[dryrun]:+--dry-run --debug}
-          else
-            for s in knative.dev/crd-install=true ''; do
-              kubectl get namespace knative-eventing > /dev/null 2>&1 || {
-                # [[ "${c}" == eventing ]] && cy=release || unset cy
-                # [[ "${c}" == monitoring ]] && { cy=${c}; c=serving; }
-                kubectl apply ${s:+--selector ${s}} \
-                  --filename https://github.com/knative/eventing/releases/download/v${configs[knative-version]}/release.yaml \
-                    ${configs[dryrun]:+--dry-run --debug}
-                pause 5
-              }
-            done; unset s
-          fi
-        };;
-    esac
+    kubectl get namespace knative-${c} > /dev/null 2>&1 || {
+      if [ -d ${configs[home]}/helm/knative-${c}/${configs[knative-version]} ]; then
+        helm install ${configs[home]}/helm/knative-${c}-init/${configs[knative-version]} \
+          --name knative-${c}-init #--namespace knative-${c} \
+          ${configs[values]:+$(helmOptions values ${configs[values]})} \
+          ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+          ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+          ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+          ${configs[dryrun]:+--dry-run --debug}
+        helm install ${configs[home]}/helm/knative-${c}/${configs[knative-version]} \
+          --name knative-${c} #--namespace knative-${c} \
+          ${configs[values]:+$(helmOptions values ${configs[values]})} \
+          ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+          ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+          ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+          ${configs[dryrun]:+--dry-run --debug}
+      else
+        for s in knative.dev/crd-install=true ''; do
+          kubectl get namespace knative-${c} > /dev/null 2>&1 || {
+            # [[ "${c}" == eventing ]] && cy=release || unset cy
+            # [[ "${c}" == monitoring ]] && { cy=${c}; c=serving; }
+            kubectl apply ${s:+--selector ${s}} \
+              --filename https://github.com/knative/${c}/releases/download/v${configs[knative-version]}/release.yaml \
+                ${configs[dryrun]:+--dry-run --debug}
+            pause 5
+          }
+        done; unset s
+      fi
+    }
   done; unset c
 
   pause 8
@@ -821,7 +818,7 @@ testUnit() {
 #  yarn test
 
   for c in $(find ${configs[home]}/helm -type d -depth 1); do
-    helm unittest ${configs[home]}/helm/$(basename ${c})
+    helm unittest ${configs[home]} g/helm/$(basename ${c})
   done; unset c
 }
 
