@@ -809,7 +809,7 @@ installNatss() {
 
 installDnslookup() {
   (( $(helm list --short dns-lookup | wc -l) == 0 )) && {
-    helm install ./helm/dns --name dns-lookup --namespace ${configs[-dns-lookup]}
+    helm install ./helm/dns --name dns-lookup --namespace ${configs[namespace-dns-lookup]}
   }
 }
 

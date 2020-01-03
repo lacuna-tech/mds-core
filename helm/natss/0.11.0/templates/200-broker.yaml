@@ -100,7 +100,7 @@ spec:
             requests:
               cpu: {{ $.Values.resourcesRequestsCpu | default ($.Values.resourcesRequestsCpu | default "100m") }}
             limits:
-              memory: {{ $.Values.resourcesLimitsMemory | default ($.Values.resourcesLimitsMemory | default "32M") }}
+              memory: {{ $.Values.resourcesLimitsMemory | default ($.Values.resourcesLimitsMemory | default "512M") }}
       volumes:
       - configMap:
           name: nats-streaming
