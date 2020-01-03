@@ -714,14 +714,16 @@ installKnative() {
           ${configs[dryrun]:+--dry-run --debug}
       else
         for s in knative.dev/crd-install=true ''; do
-          kubectl get namespace knative-${c} > /dev/null 2>&1 || {
-            # [[ "${c}" == eventing ]] && cy=release || unset cy
-            # [[ "${c}" == monitoring ]] && { cy=${c}; c=serving; }
-            kubectl apply ${s:+--selector ${s}} \
-              --filename https://github.com/knative/${c}/releases/download/v${configs[knative-version]}/release.yaml \
-                ${configs[dryrun]:+--dry-run --debug}
-            pause 5
-          }
+          case ${c} in
+            eventing) cy=release;;
+            monitoring) cy=${c}; cc=serving;;
+            serving) cy=${c};;
+          esac
+          echo "kubectl apply ${s:+--selector ${s}} \
+            --filename https://github.com/knative/${cc}/releases/download/v${configs[knative-version]}/${cy}.yaml \
+            ${configs[dryrun]:+--dry-run --debug}"
+          unset cc
+          pause 5
         done; unset s
       fi
     }
