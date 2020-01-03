@@ -96,7 +96,7 @@ declare -A configs=(
   ["presets"]="${MDS_PRESETS:-}"
   ["presets-mds-database-password"]="${MDS_PRESETS_MDS_DATABASE_PASSWORD:-Password123#}"
   ["presets-mds"]="${MDS_PRESETS_MDS:-postgresql.password=${configs[presets-mds-database-password]},apis.mds-agency.migration=true}"
-  ["presets-natss"]="${MDS_PRESETS_NATSS:-}"
+  ["presets-natss"]="${MDS_PRESETS_NATSS:-resourcesLimitsMemory=32M}"
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
   # todo: try scaling down istio's resource requirements (e.g. local dev): pilot.resources.requests.memory=512Mi}
@@ -750,6 +750,7 @@ installNatss() {
         --name natss \
         ${configs[values]:+$(helmOptions values ${configs[values]})} \
         ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+        ${configs[presets-natss]:+$(helmOptions set ${configs[presets-natss]})} \
         ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
         ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
         ${configs[dryrun]:+--dry-run --debug}
