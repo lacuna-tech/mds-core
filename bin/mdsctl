@@ -3,6 +3,8 @@
 osx=Darwin
 linux=Linux
 
+[ ! -f ~/.bashrc ] && touch ~/.bashrc
+
 hash brew > /dev/null 2>&1 || {
   case "${MDS_OS:-$(uname)}" in
     ${osx})
@@ -56,8 +58,12 @@ declare -A configs=(
   ["provider"]="${MDS_PROVIDER:-}"
   ["rc"]="${MDS_RC:-~/.bashrc ~/.zshrc}"
   ["workdir"]="/tmp/mds/tools"
-  ["brew"]="${MDS_BREW:-oq jq gettext yarn nvm helm@2 derailed/k9s/k9s git go}"
-  ["paths"]="${MDS_PATHS:-gettext helm@2}"
+  ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s git go}"
+  ["brew-envsubst"]="gettext"
+  ["brew-helm"]="helm@2"
+  ["brew-k9s"]="derailed/k9s/k9s"
+  ["brew-oq"]="blacksmoke16/tap"
+  ["paths"]="${MDS_PATHS:-envsubst helm}"
   ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
@@ -141,7 +147,7 @@ reset=`tput sgr0`
 
 initialize() {
   for p in ${configs[paths]}; do
-    export PATH=$(brew --prefix ${p})/bin:${PATH}
+    export PATH=$(brew --prefix ${configs[brew-${p}]:-${p}})/bin:${PATH}
   done; unset p
 }
 
@@ -260,14 +266,13 @@ bootstrap() {
   check ${FUNCNAME[0]}
 
   for l in ${configs[brew]}; do
-    lc=${l}
-    case ${l} in
-      gettext) lc=envsubst;;
-      oq) brew tap blacksmoke16/tap;;
-    esac
+    lc=${configs[brew-${l}]:-${l}}
 
-    hash ${lc} > /dev/null 2>&1 || {
-      brew install ${l}
+    hash ${l} > /dev/null 2>&1 || {
+      case ${l} in
+        oq) brew tap ${lc};;
+        *) brew install ${lc};;
+      esac
 
       # todo: unable to detect nvm install via subshell given it is an alias
       case ${l} in
@@ -282,13 +287,12 @@ bootstrap() {
           nvm use node
           nvm install 10.16.3
           nvm alias default 10.16.3;;
-        gettext)
-          brew link --force gettext
-          export PATH=$(brew --prefix gettext)/bin:${PATH};;
-        helm@2) export PATH=$(brew --prefix helm@2)/bin:${PATH};;
+        envsubst) brew link --force ${lc};;
       esac
     }
-  done; unset l
+  done; unset l lc
+
+  initialize
 
   # fixme: impl
   hash ko > /dev/null 2>&1 || {
