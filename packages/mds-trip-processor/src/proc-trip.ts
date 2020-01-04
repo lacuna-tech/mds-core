@@ -72,8 +72,8 @@ async function processTrip(
       return dist > config.compliance_sla.max_telemetry_distance
     })
     const violation_count = violationArray.length
-    const max_violation_dist = violation_count ? Math.min(...violationArray) : null
-    const min_violation_dist = violation_count ? Math.max(...violationArray) : null
+    const max_violation_dist = violation_count ? Math.max(...violationArray) : null
+    const min_violation_dist = violation_count ? Math.min(...violationArray) : null
     const avg_violation_dist = violation_count ? violationArray.reduce((a, b) => a + b) / violationArray.length : null
 
     const tripData: TripEntry = {
@@ -90,8 +90,8 @@ async function processTrip(
 
     await db.insertTrips(tripData)
     // Delete all processed telemetry data and update cache
-    delete telemetryMap[trip_id]
-    await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, telemetryMap)
+    // delete telemetryMap[trip_id]
+    // await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, telemetryMap)
 
     return trip_id
   }
@@ -99,6 +99,7 @@ async function processTrip(
 }
 
 export async function tripProcessor() {
+  log.info('START')
   await Promise.all([db.startup(), cache.startup(), getConfig()])
   const curTime = now()
   const tripsMap = await cache.readAllTripsEvents()
@@ -106,12 +107,13 @@ export async function tripProcessor() {
     log.info('NO TRIP EVENTS FOUND')
     return
   }
+  log.info('TRIPS', tripsMap)
   await Promise.all(
     Object.keys(tripsMap).map(async vehicleID => {
       const [provider_id, device_id] = vehicleID.split(':')
       const tripsEvents = tripsMap[vehicleID]
-      const unprocessedTripsEvents = tripsEvents
 
+      log.info('loop', vehicleID)
       const results = await Promise.all(
         Object.keys(tripsEvents).map(tripID => {
           try {
@@ -122,13 +124,14 @@ export async function tripProcessor() {
         })
       )
 
+      log.info('RESULT', results)
       results.map(response => {
-        if (isUUID(response) && unprocessedTripsEvents[response]) delete unprocessedTripsEvents[response]
+        if (isUUID(response) && tripsEvents[response]) delete tripsEvents[response]
       })
 
       // Update or clear cache
-      if (Object.keys(unprocessedTripsEvents).length) return cache.writeTripsEvents(vehicleID, unprocessedTripsEvents)
-      return cache.deleteTripsEvents(vehicleID)
+      // if (Object.keys(tripsEvents).length) return cache.writeTripsEvents(vehicleID, unprocessedTripsEvents)
+      // return cache.deleteTripsEvents(vehicleID)
     })
   )
 }
