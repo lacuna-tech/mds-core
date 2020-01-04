@@ -1291,7 +1291,8 @@ preset() {
         preset $(normalize "minimal")
         for p in $(processors); do
           is+="${is:+,}presets-mds+=processors.${p}.enabled=true"
-        done; unset p;;
+        done; unset p
+        is+="${is:+,}sets-mds+=apis.mds-web-sockets.enabled=true";;
       data-external)
         is+="${is:+,}sets-mds+=postgresql.internal=false"
         is+="${is:+,}sets-mds+=postgresql.host=host.docker.internal"
