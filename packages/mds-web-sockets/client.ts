@@ -2,7 +2,23 @@ import WebSocket from 'ws'
 import { VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import log from '@mds-core/mds-logger'
 import { setWsHeartbeat, WebSocketBase } from 'ws-heartbeat/client'
+import https from 'https'
 import { ENTITY_TYPE } from './types'
+
+function doRequest(options: https.RequestOptions) {
+  // eslint-disable-next-line promise/avoid-new
+  return new Promise((resolve, reject) => {
+    const req = https.request(options)
+
+    req.on('response', res => {
+      resolve(res)
+    })
+
+    req.on('error', err => {
+      reject(err)
+    })
+  })
+}
 
 const { TOKEN, URL = 'ws://mds-web-sockets:4000' } = process.env
 
@@ -13,29 +29,39 @@ async function sendAuth() {
   return connection.send(`AUTH%Bearer ${TOKEN}`)
 }
 
-function getClient() {
+async function getClient() {
   if (connection && connection.readyState === 1) {
     return connection
   }
-  connection = new WebSocket(URL)
 
-  setWsHeartbeat(connection as WebSocketBase, 'PING')
-
-  connection.onopen = async () => {
-    await sendAuth()
+  const options = {
+    hostname: URL,
+    method: 'GET'
   }
 
-  connection.onerror = async err => {
-    return log.error(err)
-  }
+  const res = (await doRequest(options)) as { statusCode: number }
+  if (res.statusCode !== 503) {
+    connection = new WebSocket(URL)
 
-  return connection
+    setWsHeartbeat(connection as WebSocketBase, 'PING')
+
+    connection.onopen = async () => {
+      await sendAuth()
+    }
+
+    connection.onerror = async err => {
+      return log.error(err)
+    }
+
+    return connection
+  }
+  throw new Error('Could not connect to WebSocket server!')
 }
 
 /* Force test event to be send back to client */
 async function sendPush(entity: ENTITY_TYPE, data: VehicleEvent | Telemetry) {
   try {
-    const client = getClient()
+    const client = await getClient()
     return client.send(`PUSH%${entity}%${JSON.stringify(data)}`)
   } catch (err) {
     await log.warn(err)
