@@ -34,8 +34,12 @@ function getClient() {
 
 /* Force test event to be send back to client */
 async function sendPush(entity: ENTITY_TYPE, data: VehicleEvent | Telemetry) {
-  const client = getClient()
-  return client.send(`PUSH%${entity}%${JSON.stringify(data)}`)
+  try {
+    const client = getClient()
+    return client.send(`PUSH%${entity}%${JSON.stringify(data)}`)
+  } catch (err) {
+    await log.warn(err)
+  }
 }
 
 export function writeTelemetry(telemetries: Telemetry[]) {
