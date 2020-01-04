@@ -5,7 +5,7 @@ import { setWsHeartbeat, WebSocketBase } from 'ws-heartbeat/client'
 import requestPromise from 'request-promise'
 import { ENTITY_TYPE } from './types'
 
-const { TOKEN, URL = 'ws://mds-web-sockets:4000' } = process.env
+const { TOKEN, URL = 'mds-web-sockets:4000' } = process.env
 
 let connection: WebSocket
 
@@ -20,12 +20,12 @@ async function getClient() {
   }
 
   try {
-    const res = await requestPromise(URL)
+    const res = await requestPromise(`http://${URL}`)
 
     if (res.statusCode === 503) {
       throw new Error('Could not connect to WebSocket server')
     }
-    connection = new WebSocket(URL)
+    connection = new WebSocket(`ws://${URL}`)
 
     setWsHeartbeat(connection as WebSocketBase, 'PING')
 
