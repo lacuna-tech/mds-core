@@ -2,23 +2,8 @@ import WebSocket from 'ws'
 import { VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import log from '@mds-core/mds-logger'
 import { setWsHeartbeat, WebSocketBase } from 'ws-heartbeat/client'
-import https from 'https'
+import requestPromise from 'request-promise'
 import { ENTITY_TYPE } from './types'
-
-function doRequest(options: https.RequestOptions) {
-  // eslint-disable-next-line promise/avoid-new
-  return new Promise((resolve, reject) => {
-    const req = https.request(options)
-
-    req.on('response', res => {
-      resolve(res)
-    })
-
-    req.on('error', err => {
-      reject(err)
-    })
-  })
-}
 
 const { TOKEN, URL = 'ws://mds-web-sockets:4000' } = process.env
 
@@ -34,13 +19,12 @@ async function getClient() {
     return connection
   }
 
-  const options = {
-    hostname: URL,
-    method: 'GET'
-  }
+  try {
+    const res = await requestPromise(URL)
 
-  const res = (await doRequest(options)) as { statusCode: number }
-  if (res.statusCode !== 503) {
+    if (res.statusCode === 503) {
+      throw new Error('Could not connect to WebSocket server')
+    }
     connection = new WebSocket(URL)
 
     setWsHeartbeat(connection as WebSocketBase, 'PING')
@@ -54,8 +38,9 @@ async function getClient() {
     }
 
     return connection
+  } catch (err) {
+    throw new Error(`Could not connect to WebSocket server ${err}`)
   }
-  throw new Error('Could not connect to WebSocket server!')
 }
 
 /* Force test event to be send back to client */
