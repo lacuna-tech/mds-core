@@ -18,9 +18,7 @@
 import NATS from 'nats'
 import processor from './index'
 
-// const {
-//   env: { npm_package_name, PORT = 5000 }
-// } = process
+const { env } = process
 
 /* eslint-reason avoids import of logger */
 /* eslint-disable-next-line no-console */
@@ -28,10 +26,10 @@ import processor from './index'
 
 const nats = NATS.connect({})
 
-nats.subscribe('mds.event', (msg: any) => {
+nats.subscribe(`${env.TENANT_ID ?? 'mds'}.event`, (msg: any) => {
   processor('event', msg)
 })
 
-nats.subscribe('mds.telemetry', (msg: any) => {
+nats.subscribe(`${env.TENANT_ID ?? 'mds'}.telemetry`, (msg: any) => {
   processor('telemetry', msg)
 })
