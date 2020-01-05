@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /*
     Copyright 2019 City of Los Angeles.
 
@@ -14,14 +15,23 @@
     limitations under the License.
  */
 
-// Express local
-import { EventServer } from '@mds-core/mds-event-server'
+import NATS from 'nats'
 import processor from './index'
 
-const {
-  env: { npm_package_name, PORT = 5000 }
-} = process
+// const {
+//   env: { npm_package_name, PORT = 5000 }
+// } = process
 
 /* eslint-reason avoids import of logger */
 /* eslint-disable-next-line no-console */
-EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
+// EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
+
+const nats = NATS.connect({})
+
+nats.subscribe('mds.event', (msg: any) => {
+  processor('event', msg)
+})
+
+nats.subscribe('mds.telemetry', (msg: any) => {
+  processor('telemetry', msg)
+})

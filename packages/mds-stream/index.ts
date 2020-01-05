@@ -17,6 +17,7 @@
 import logger from '@mds-core/mds-logger'
 import redis from 'redis'
 import bluebird from 'bluebird'
+import NATS from 'nats'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import {
@@ -30,6 +31,8 @@ import {
 } from './types'
 
 const { env } = process
+
+const nats = NATS.connect({})
 
 let binding: BinaryHTTPEmitter | null = null
 
@@ -57,6 +60,9 @@ async function writeCloudEvent(type: string, data: string) {
   return getBinding().emit(event)
 }
 
+async function writeNatsEvent(type: string, data: string) {
+  nats.publish(`${env.TENANT_ID ?? 'mds'}.${type}`, data)
+}
 declare module 'redis' {
   interface RedisClient {
     dbsizeAsync: () => Promise<number>
@@ -169,14 +175,14 @@ async function writeStreamBatch(stream: Stream, field: string, values: unknown[]
 // put basics of vehicle in the cache
 async function writeDevice(device: Device) {
   if (env.SINK) {
-    return writeCloudEvent('device', JSON.stringify(device))
+    return writeNatsEvent('device', JSON.stringify(device))
   }
   return writeStream(DEVICE_INDEX_STREAM, 'data', device)
 }
 
 async function writeEvent(event: VehicleEvent) {
   if (env.SINK) {
-    return writeCloudEvent('event', JSON.stringify(event))
+    return writeNatsEvent('event', JSON.stringify(event))
   }
   return writeStream(DEVICE_RAW_STREAM, 'event', event)
 }
@@ -184,7 +190,7 @@ async function writeEvent(event: VehicleEvent) {
 // put latest locations in the cache
 async function writeTelemetry(telemetry: Telemetry[]) {
   if (env.SINK) {
-    await Promise.all(telemetry.map(item => writeCloudEvent('telemetry', JSON.stringify(item))))
+    await Promise.all(telemetry.map(item => writeNatsEvent('telemetry', JSON.stringify(item))))
     return
   }
   const start = now()
