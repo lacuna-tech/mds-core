@@ -33,6 +33,7 @@
     "@turf/boolean-point-in-polygon": "6.0.1",
     "@turf/helpers": "6.1.4",
     "@turf/turf": "5.1.6",
+    "kubemq-nodejs": "1.0.2",
     "loglevel": "1.6.6",
     "uuid": "3.3.3"
   },

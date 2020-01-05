@@ -18,6 +18,7 @@ import logger from '@mds-core/mds-logger'
 import redis from 'redis'
 import bluebird from 'bluebird'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
+import kubemq from 'kubemq-nodejs'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import {
   Stream,
@@ -55,6 +56,14 @@ async function writeCloudEvent(type: string, data: string) {
     .data(data)
 
   return getBinding().emit(event)
+}
+
+async function writeKubemqEvent(type: string, data: string) {
+  const pub = new kubemq.Publisher('localhost', '50000', 'pub', `${env.TENANT_ID ?? 'mds'}.${type}`)
+
+  const event = new kubemq.Publisher.Event(Buffer.from(data))
+
+  pub.send(event)
 }
 
 declare module 'redis' {
@@ -169,7 +178,7 @@ async function writeStreamBatch(stream: Stream, field: string, values: unknown[]
 // put basics of vehicle in the cache
 async function writeDevice(device: Device) {
   if (env.SINK) {
-    return writeCloudEvent('device', JSON.stringify(device))
+    return writeKubemqEvent('device', JSON.stringify(device))
   }
   return writeStream(DEVICE_INDEX_STREAM, 'data', device)
 }

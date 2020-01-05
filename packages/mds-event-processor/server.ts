@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /*
     Copyright 2019 City of Los Angeles.
 
@@ -14,14 +15,39 @@
     limitations under the License.
  */
 
-// Express local
-import { EventServer } from '@mds-core/mds-event-server'
+import kubemq from 'kubemq-nodejs'
 import processor from './index'
-
-const {
-  env: { npm_package_name, PORT = 5000 }
-} = process
 
 /* eslint-reason avoids import of logger */
 /* eslint-disable-next-line no-console */
-EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
+
+const eventSub = new kubemq.Subscriber('localhost', '50000', 'sub', 'mds.event')
+const telemetrySub = new kubemq.Subscriber('localhost', '50000', 'sub', 'mds.telemetry')
+
+// sub.subscribeToEvents((msg: any) => {
+//   processor('mds.event', JSON.parse(String.fromCharCode.apply(null, msg.Body)))
+// })
+
+eventSub.subscribeToEvents(
+  (msg: any) => {
+    processor('event', JSON.parse(String.fromCharCode.apply(null, msg.Body)))
+  },
+  // eslint-disable-next-line promise/prefer-await-to-callbacks
+  (err: any) => {
+    // eslint-disable-next-line no-console
+    console.log(`error:${err}`)
+  }
+)
+
+telemetrySub.subscribeToEvents(
+  (msg: any) => {
+    processor('event', JSON.parse(String.fromCharCode.apply(null, msg.Body)))
+  },
+  // eslint-disable-next-line promise/prefer-await-to-callbacks
+  (err: any) => {
+    // eslint-disable-next-line no-console
+    console.log(`error:${err}`)
+  }
+)
+
+// EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
