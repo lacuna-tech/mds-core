@@ -21,8 +21,8 @@ import processor from './index'
 /* eslint-reason avoids import of logger */
 /* eslint-disable-next-line no-console */
 
-const eventSub = new kubemq.Subscriber('localhost', '50000', 'sub', 'mds.event')
-const telemetrySub = new kubemq.Subscriber('localhost', '50000', 'sub', 'mds.telemetry')
+const eventSub = new kubemq.Subscriber('localhost', '50000', 'subEvent', 'mds.event')
+const telemetrySub = new kubemq.Subscriber('localhost', '50000', 'subTelemetry', 'mds.telemetry')
 
 // sub.subscribeToEvents((msg: any) => {
 //   processor('mds.event', JSON.parse(String.fromCharCode.apply(null, msg.Body)))
