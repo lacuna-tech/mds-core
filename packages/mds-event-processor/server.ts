@@ -41,7 +41,7 @@ eventSub.subscribeToEvents(
 
 telemetrySub.subscribeToEvents(
   (msg: any) => {
-    processor('event', JSON.parse(String.fromCharCode.apply(null, msg.Body)))
+    processor('telemetry', JSON.parse(String.fromCharCode.apply(null, msg.Body)))
   },
   // eslint-disable-next-line promise/prefer-await-to-callbacks
   (err: any) => {
