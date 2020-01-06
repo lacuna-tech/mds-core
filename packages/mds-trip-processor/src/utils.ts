@@ -15,24 +15,28 @@ export const eventValidation = (events: TripEvent[], curTime: Timestamp, timeSLA
   return true
 }
 
-export const createTelemetryMap = (events: TripEvent[], tripMap: TripsTelemetry, trip_id: UUID): TripTelemetry[][] => {
+export const createTelemetryMap = (
+  events: TripEvent[],
+  tripMap: TripsTelemetry,
+  trip_id: UUID
+): { [event: number]: TripTelemetry[] } => {
   const tripTelemetry = tripMap[trip_id]
-  const telemetry: TripTelemetry[][] = []
+  const telemetry: { [event: number]: TripTelemetry[] } = {}
   if (tripTelemetry && tripTelemetry.length > 0) {
     for (let i = 0; i < events.length - 1; i++) {
-      const start_time = events[i].timestamp
-      const end_time = events[i + 1].timestamp
+      const startTime = events[i].timestamp
+      const endTime = events[i + 1].timestamp
       // Bin telemetry by events
       const tripSegment = tripTelemetry.filter(
-        telemetry_point => telemetry_point.timestamp >= start_time && telemetry_point.timestamp < end_time
+        telemetryPoint => telemetryPoint.timestamp >= startTime && telemetryPoint.timestamp < endTime
       )
       tripSegment.sort((a, b) => a.timestamp - b.timestamp)
-      telemetry.push(tripSegment)
+      telemetry[startTime] = tripSegment
     }
     const lastEvent = tripTelemetry.filter(
-      telemetry_point => telemetry_point.timestamp === events[events.length - 1].timestamp
+      telemetryPoint => telemetryPoint.timestamp === events[events.length - 1].timestamp
     )
-    telemetry.push(lastEvent)
+    telemetry[events[events.length - 1].timestamp] = lastEvent
   } else {
     throw new Error('TRIP TELEMETRY NOT FOUND')
   }

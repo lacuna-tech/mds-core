@@ -99,7 +99,6 @@ async function processTrip(
 }
 
 export async function tripProcessor() {
-  log.info('START')
   await Promise.all([db.startup(), cache.startup(), getConfig()])
   const curTime = now()
   const tripsMap = await cache.readAllTripsEvents()
@@ -107,13 +106,10 @@ export async function tripProcessor() {
     log.info('NO TRIP EVENTS FOUND')
     return
   }
-  log.info('TRIPS', tripsMap)
   await Promise.all(
     Object.keys(tripsMap).map(async vehicleID => {
       const [provider_id, device_id] = vehicleID.split(':')
       const tripsEvents = tripsMap[vehicleID]
-
-      log.info('loop', vehicleID)
       const results = await Promise.all(
         Object.keys(tripsEvents).map(tripID => {
           try {

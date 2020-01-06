@@ -404,7 +404,7 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.state]: 'varchar(255)',
   [COLUMN.stop_id]: 'uuid NOT NULL',
   [COLUMN.stop_name]: 'varchar(255) NOT NULL',
-  [COLUMN.telemetry]: 'json[][]',
+  [COLUMN.telemetry]: 'json',
   [COLUMN.telemetry_distance_violations]: 'json',
   [COLUMN.telemetry_timestamp]: 'bigint',
   [COLUMN.thumbnail_filename]: 'varchar(64)',

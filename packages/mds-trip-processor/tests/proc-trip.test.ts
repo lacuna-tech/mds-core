@@ -82,10 +82,10 @@ describe('Proc Trip', () => {
     it('Maps telemtry points to trip events', () => {
       const telemetryMap = getMockedTripTelemetryMap()
       const events = getMockedTripEventMap()
-      const expected: TripTelemetry[][] = [
-        [getMockedTripTelemetry(42), getMockedTripTelemetry(43)],
-        [getMockedTripTelemetry(44)]
-      ]
+      const expected: { [event: number]: TripTelemetry[] } = {
+        '42': [getMockedTripTelemetry(42), getMockedTripTelemetry(43)],
+        '44': [getMockedTripTelemetry(44)]
+      }
       const result = procTripUtils.createTelemetryMap(events['trip-one'], telemetryMap, 'trip-one')
       assert.deepStrictEqual(result, expected)
     })

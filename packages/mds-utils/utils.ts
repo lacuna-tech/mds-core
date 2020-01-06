@@ -662,14 +662,17 @@ function moved(latA: number, lngA: number, latB: number, lngB: number) {
   return lngDiff > limit || latDiff > limit // very computational efficient basic check (better than sqrts & trig)
 }
 
-const calcDistance = (telemetry: TripTelemetry[][], startGps: GpsData): { distance: number; points: number[] } => {
+const calcDistance = (
+  telemetry: { [event: number]: TripTelemetry[] },
+  startGps: GpsData
+): { distance: number; points: number[] } => {
   let tempX = startGps.lat
   let tempY = startGps.lng
   let distance = 0
   const points: number[] = []
-  for (let n = 0; n < telemetry.length; n++) {
-    for (let m = 0; m < telemetry[n].length; m++) {
-      const currPing = telemetry[n][m]
+  for (const tripSegment of Object.values(telemetry)) {
+    for (let point = 0; point < tripSegment.length; point++) {
+      const currPing = tripSegment[point]
       if (currPing.latitude !== null && currPing.longitude !== null) {
         const pointDist = routeDistance([
           { lat: tempX, lng: tempY },

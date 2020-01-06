@@ -105,7 +105,7 @@ export interface TripEntry {
   min_violation_dist: number | null
   avg_violation_dist: number | null
   events: TripEvent[]
-  telemetry: TripTelemetry[][]
+  telemetry: { [event: number]: TripTelemetry[] }
 }
 
 export interface ProviderStreamData {
