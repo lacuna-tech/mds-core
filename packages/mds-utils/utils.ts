@@ -26,8 +26,6 @@ import {
   BoundingBox,
   Geography,
   Rule,
-  VEHICLE_EVENTS,
-  VEHICLE_STATUSES,
   EVENT_STATUS_MAP,
   VEHICLE_STATUS,
   BBox,
