@@ -90,8 +90,8 @@ async function processTrip(
 
     await db.insertTrips(tripData)
     // Delete all processed telemetry data and update cache
-    // delete telemetryMap[trip_id]
-    // await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, telemetryMap)
+    delete telemetryMap[trip_id]
+    await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, telemetryMap)
 
     return trip_id
   }
@@ -125,8 +125,8 @@ export async function tripProcessor() {
       })
 
       // Update or clear cache
-      // if (Object.keys(tripsEvents).length) return cache.writeTripsEvents(vehicleID, unprocessedTripsEvents)
-      // return cache.deleteTripsEvents(vehicleID)
+      if (Object.keys(tripsEvents).length) return cache.writeTripsEvents(vehicleID, tripsEvents)
+      return cache.deleteTripsEvents(vehicleID)
     })
   )
 }

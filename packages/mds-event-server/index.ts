@@ -39,7 +39,8 @@ export const EventServer = <TData, TResult>(
       return res.status(200).send({ result })
     } catch (error) /* istanbul ignore next */ {
       await logger.error('Cloud Event', error, { method, headers, body })
-      return res.status(500).send({ error })
+      // Must return healthy status to KNE to prevent infinite retry looping
+      return res.status(200).send({ error })
     }
   })
 
