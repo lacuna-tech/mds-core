@@ -16,8 +16,10 @@
 
 import express from 'express'
 
-import { pathsFor } from '@mds-core/mds-utils'
+import { pathsFor, isUUID } from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
+import log from '@mds-core/mds-logger'
+import { isProviderId } from '@mds-core/mds-providers'
 import {
   getStateSnapshot,
   getEventSnapshot,
@@ -54,7 +56,31 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/all'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    async (req, res, next) => {
+      if (res.locals.claims && res.locals.scopes.includes('metrics:read:provider')) {
+        const { provider_id } = res.locals.claims
+
+        if (!isUUID(provider_id)) {
+          await log.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
+          return res.status(400).send({
+            result: `invalid provider_id ${provider_id} is not a UUID`
+          })
+        }
+
+        if (!isProviderId(provider_id)) {
+          return res.status(400).send({
+            result: `invalid provider_id ${provider_id} is not a known provider`
+          })
+        }
+
+        // stash provider_id
+        res.locals.provider_id = provider_id
+      } else {
+        return res.status(401).send('Unauthorized')
+      }
+      next()
+    },
+    checkAccess(scopes => scopes.includes('metrics:read') || scopes.includes('metrics:read:provider')),
     getAll
   )
 

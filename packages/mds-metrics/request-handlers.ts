@@ -227,6 +227,13 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
       return prevSlices.concat(currSlices)
     }, [])
   const provider_ids = normalizeToArray<UUID>(query.provider_id)
+  if (res.locals.scopes.includes('metrics:read:provider')) {
+    for (const provider_id of provider_ids) {
+      if (provider_id !== res.locals.provider_id) {
+        return res.status(400).send(`invalid provider_id ${provider_id} is not a known provider`)
+      }
+    }
+  }
   const vehicle_types = normalizeToArray<VEHICLE_TYPE>(query.vehicle_type)
   const format: string | 'json' | 'tsv' = query.format || 'json'
 
