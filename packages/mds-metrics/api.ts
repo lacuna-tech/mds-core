@@ -20,7 +20,7 @@ import { pathsFor, isUUID, normalizeToArray } from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
 import log from '@mds-core/mds-logger'
 import { isProviderId } from '@mds-core/mds-providers'
-import { UUID } from 'packages/mds-types'
+import { UUID } from '@mds-core/mds-types'
 import {
   getStateSnapshot,
   getEventSnapshot,
