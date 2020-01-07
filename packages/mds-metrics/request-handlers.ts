@@ -230,7 +230,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
   if (res.locals.scopes.includes('metrics:read:provider')) {
     for (const provider_id of provider_ids) {
       if (provider_id !== res.locals.provider_id) {
-        return res.status(400).send(`invalid provider_id ${provider_id} is not a known provider`)
+        return res.status(400).send(`invalid provider_id ${provider_id} does not match claim ${res.locals.provider_id}`)
       }
     }
   }
