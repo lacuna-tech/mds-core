@@ -24,12 +24,16 @@ const { env } = process
 /* eslint-disable-next-line no-console */
 // EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
 
-const nats = NATS.connect({ url: 'nats://10.1.3.187:4222' })
+const nats = NATS.connect({ url: 'nats://10.1.4.188:4222' })
 
-nats.subscribe(`${env.TENANT_ID ?? 'mds'}.event`, (msg: any) => {
-  processor('event', JSON.parse(msg))
-})
+try {
+  nats.subscribe(`${env.TENANT_ID ?? 'mds'}.event`, async (msg: any) => {
+    await processor('event', JSON.parse(msg))
+  })
 
-nats.subscribe(`${env.TENANT_ID ?? 'mds'}.telemetry`, (msg: any) => {
-  processor('telemetry', JSON.parse(msg))
-})
+  nats.subscribe(`${env.TENANT_ID ?? 'mds'}.telemetry`, async (msg: any) => {
+    await processor('telemetry', JSON.parse(msg))
+  })
+} catch (err) {
+  console.log(err)
+}
