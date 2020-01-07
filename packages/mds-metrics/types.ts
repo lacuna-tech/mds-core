@@ -74,6 +74,7 @@ export interface MetricsApiRequest extends ApiRequest {
 export type MetricsApiResponse<T> = ApiResponse<T | Error> & {
   locals: ApiResponseLocals & {
     provider_id: UUID
+    provider_ids: UUID[]
   }
 }
 export type GetStateSnapshotResponse = MetricsApiResponse<StateSnapshotResponse[]>

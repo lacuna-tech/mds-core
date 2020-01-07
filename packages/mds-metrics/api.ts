@@ -16,10 +16,11 @@
 
 import express from 'express'
 
-import { pathsFor, isUUID } from '@mds-core/mds-utils'
+import { pathsFor, isUUID, normalizeToArray } from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
 import log from '@mds-core/mds-logger'
 import { isProviderId } from '@mds-core/mds-providers'
+import { UUID } from 'packages/mds-types'
 import {
   getStateSnapshot,
   getEventSnapshot,
@@ -57,7 +58,12 @@ function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/all'),
     async (req, res, next) => {
-      if (res.locals.claims && res.locals.scopes.includes('metrics:read:provider')) {
+      if (res.locals.scopes.includes('metrics:read:provider')) {
+        if (!res.locals.claims) {
+          return res.status(400).send({
+            result: 'No claims provided'
+          })
+        }
         const { provider_id } = res.locals.claims
 
         if (!isUUID(provider_id)) {
@@ -75,6 +81,18 @@ function api(app: express.Express): express.Express {
 
         // stash provider_id
         res.locals.provider_id = provider_id
+        const provider_ids = normalizeToArray<UUID>(req.query.provider_id).filter(
+          currProviderId => currProviderId === provider_id
+        )
+        // res.locals.provider_ids must contain provider_id from claim
+        if (provider_ids.length === 0) {
+          res.locals.provider_ids = [provider_id]
+        } else {
+          res.locals.provider_ids = provider_ids
+        }
+      } else if (res.locals.scopes.includes('metrics:read')) {
+        const provider_ids = normalizeToArray<UUID>(req.query.provider_id)
+        res.locals.provider_ids = provider_ids
       } else {
         return res.status(401).send('Unauthorized')
       }

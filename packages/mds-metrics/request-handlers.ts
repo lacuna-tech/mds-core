@@ -226,7 +226,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     .reduce((prevSlices, currSlices) => {
       return prevSlices.concat(currSlices)
     }, [])
-  const provider_ids = normalizeToArray<UUID>(query.provider_id)
+  const { provider_ids } = res.locals
   if (res.locals.scopes.includes('metrics:read:provider')) {
     for (const provider_id of provider_ids) {
       if (provider_id !== res.locals.provider_id) {
@@ -241,7 +241,6 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
   }
 
-  // TODO if empty array and metrics:read:provider scope, specify default [claimProviderId] in query
   for (const currProviderId of provider_ids) {
     if (!isUUID(currProviderId)) {
       return res.status(400).send(new BadParamsError(`provider_id ${currProviderId} is not a UUID`))
@@ -259,6 +258,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
       const bucketedMetrics = await Promise.all(
         slices.map(slice => {
           const { start, end } = slice
+          // If scope === metrics:read:provider, provider_ids must contain provider_id from claim to prevent * search on provider_id
           return db.getAllMetrics({
             start_time: start,
             end_time: end,
