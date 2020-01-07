@@ -241,6 +241,7 @@ export async function getAll(req: MetricsApiRequest, res: GetAllResponse) {
     return res.status(400).send(new BadParamsError(`Bad format query param: ${format}`))
   }
 
+  // TODO if empty array and metrics:read:provider scope, specify default [claimProviderId] in query
   for (const currProviderId of provider_ids) {
     if (!isUUID(currProviderId)) {
       return res.status(400).send(new BadParamsError(`provider_id ${currProviderId} is not a UUID`))
