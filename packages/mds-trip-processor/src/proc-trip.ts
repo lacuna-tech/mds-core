@@ -120,7 +120,6 @@ export async function tripProcessor() {
         })
       )
 
-      log.info('RESULT', results)
       results.map(response => {
         if (isUUID(response) && tripsEvents[response]) delete tripsEvents[response]
       })

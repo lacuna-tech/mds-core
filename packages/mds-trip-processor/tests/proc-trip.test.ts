@@ -93,9 +93,10 @@ describe('Proc Trip', () => {
 
   describe('calcDistance()', () => {
     it('Calculates distance between telemetries', () => {
-      const tripTelemetry: TripTelemetry[][] = [
-        [getMockedTripTelemetryWithGPS(42, 0, 100), getMockedTripTelemetryWithGPS(43, 100, 100)]
-      ]
+      const tripTelemetry: { [event: number]: TripTelemetry[] } = {
+        '42': [getMockedTripTelemetryWithGPS(42, 0, 0), getMockedTripTelemetryWithGPS(43, 0, 100)],
+        '44': [getMockedTripTelemetryWithGPS(44, 100, 100)]
+      }
       const startGPS: GpsData = { lat: 0, lng: 0 } as GpsData
       const expected = {
         distance:
@@ -105,6 +106,7 @@ describe('Proc Trip', () => {
             { lat: 100, lng: 100 }
           ]),
         points: [
+          0,
           routeDistance([startGPS, { lat: 0, lng: 100 }]),
           routeDistance([
             { lat: 0, lng: 100 },
