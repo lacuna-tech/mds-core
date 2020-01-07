@@ -10,6 +10,8 @@ export const AccessTokenScopes = [
   'events:read',
   'events:read:provider',
   'events:write:provider',
+  'metrics:read',
+  'metrics:read:provider',
   'policies:delete',
   'policies:publish',
   'policies:read',
@@ -21,9 +23,7 @@ export const AccessTokenScopes = [
   'trips:read',
   'vehicles:read',
   'vehicles:read:provider',
-  'vehicles:write:provider',
-  'metrics:read',
-  'metrics:read:provider'
+  'vehicles:write:provider'
 ] as const
 export type AccessTokenScope = typeof AccessTokenScopes[number]
 
@@ -38,6 +38,8 @@ export const ScopeDescriptions: { [S in AccessTokenScope]: string } = {
   'events:read': 'Read Events',
   'events:read:provider': 'Read Events (Provider Access)',
   'events:write:provider': 'Write Events (Provider Access)',
+  'metrics:read': 'Read Metrics',
+  'metrics:read:provider': 'Read Metrics (Provider Access)',
   'policies:delete': 'Delete Policies',
   'policies:publish': 'Publish Policies',
   'policies:read': 'Read Policies',
@@ -49,7 +51,5 @@ export const ScopeDescriptions: { [S in AccessTokenScope]: string } = {
   'trips:read': 'Read Trips',
   'vehicles:read': 'Read Vehicles',
   'vehicles:read:provider': 'Read Vehicles (Provider Access)',
-  'vehicles:write:provider': 'Write Vehicles (Provider Access)',
-  'metrics:read': 'Read Metrics',
-  'metrics:read:provider': 'Read Metrics (Provider Access)'
+  'vehicles:write:provider': 'Write Vehicles (Provider Access)'
 }

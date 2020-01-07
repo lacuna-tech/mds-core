@@ -57,13 +57,10 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/all'),
+    checkAccess(scopes => scopes.includes('metrics:read') || scopes.includes('metrics:read:provider')),
     async (req, res, next) => {
       if (res.locals.scopes.includes('metrics:read:provider')) {
-        if (!res.locals.claims) {
-          return res.status(400).send({
-            result: 'No claims provided'
-          })
-        }
+        // Claim exists if previous check passes
         const { provider_id } = res.locals.claims
 
         if (!isUUID(provider_id)) {
@@ -92,7 +89,6 @@ function api(app: express.Express): express.Express {
       }
       next()
     },
-    checkAccess(scopes => scopes.includes('metrics:read') || scopes.includes('metrics:read:provider')),
     getAll
   )
 
