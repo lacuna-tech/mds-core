@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /*
     Copyright 2019 City of Los Angeles.
 
@@ -14,14 +15,21 @@
     limitations under the License.
  */
 
-import { EventServer } from '@mds-core/mds-event-server'
+import NATS from 'nats'
 import processor from '@mds-core/mds-event-processor'
-import { env } from '@container-images/env-inject'
 
-const { npm_package_name, npm_package_version, npm_package_git_commit, PORT = 5000 } = env()
+const { env } = process
 
-EventServer(processor).listen(PORT, () =>
-  /* eslint-reason avoids import of logger */
-  /* eslint-disable-next-line no-console */
-  console.log(`${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) running on port ${PORT}`)
-)
+/* eslint-reason avoids import of logger */
+/* eslint-disable-next-line no-console */
+// EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
+
+const nats = NATS.connect({ url: 'nats://10.1.3.187:4222' })
+
+nats.subscribe(`${env.TENANT_ID ?? 'mds'}.event`, (msg: any) => {
+  processor('event', JSON.parse(msg))
+})
+
+nats.subscribe(`${env.TENANT_ID ?? 'mds'}.telemetry`, (msg: any) => {
+  processor('telemetry', JSON.parse(msg))
+})

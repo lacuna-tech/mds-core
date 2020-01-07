@@ -32,7 +32,7 @@ import {
 
 const { env } = process
 
-const nats = NATS.connect({})
+const nats = NATS.connect({ url: 'nats://10.1.3.187:4222' })
 
 let binding: BinaryHTTPEmitter | null = null
 
