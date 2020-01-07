@@ -81,15 +81,9 @@ function api(app: express.Express): express.Express {
 
         // stash provider_id
         res.locals.provider_id = provider_id
-        const provider_ids = normalizeToArray<UUID>(req.query.provider_id).filter(
-          currProviderId => currProviderId === provider_id
-        )
         // res.locals.provider_ids must contain provider_id from claim
-        if (provider_ids.length === 0) {
-          res.locals.provider_ids = [provider_id]
-        } else {
-          res.locals.provider_ids = provider_ids
-        }
+        // other queried providers are ignored
+        res.locals.provider_ids = [provider_id]
       } else if (res.locals.scopes.includes('metrics:read')) {
         const provider_ids = normalizeToArray<UUID>(req.query.provider_id)
         res.locals.provider_ids = provider_ids
