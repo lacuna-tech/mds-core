@@ -8,7 +8,7 @@ import {
   parseRelative,
   normalizeToArray
 } from '@mds-core/mds-utils'
-import { EVENT_STATUS_MAP, VEHICLE_TYPES, UUID, VEHICLE_TYPE } from '@mds-core/mds-types'
+import { EVENT_STATUS_MAP, VEHICLE_TYPES, VEHICLE_TYPE } from '@mds-core/mds-types'
 import { Parser } from 'json2csv'
 import fs from 'fs'
 
