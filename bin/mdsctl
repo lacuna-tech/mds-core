@@ -795,31 +795,31 @@ installNatss() {
       kubectl apply -f ${configs[natss]}/natss/config/broker/natss.yaml
     fi
 
-    if [ -d ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} ]; then
-      helm install ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} \
-        --name knative-eventing-contrib-natss \
-        ${configs[values]:+$(helmOptions values ${configs[values]})} \
-        ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-        ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-        ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-        ${configs[dryrun]:+--dry-run --debug}
-    else
-      for d in $(find ${configs[natss]}/natss/cmd/* -type d -maxdepth 1 -exec sh -c 'echo $(basename {})' \;); do
-        $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
-      done; unset d
+    # if [ -d ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} ]; then
+    #   helm install ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} \
+    #     --name knative-eventing-contrib-natss \
+    #     ${configs[values]:+$(helmOptions values ${configs[values]})} \
+    #     ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+    #     ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+    #     ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+    #     ${configs[dryrun]:+--dry-run --debug}
+    # else
+    #   for d in $(find ${configs[natss]}/natss/cmd/* -type d -maxdepth 1 -exec sh -c 'echo $(basename {})' \;); do
+    #     $(docker inspect --type=image ko.local/${d} > /dev/null 2>&1) || buildNatss ${d}
+    #   done; unset d
 
-      for c in controller dispatcher; do
-        for t in $(docker images ko.local/channel_${c} --format '{{.Tag}}'); do
-          if [ "${t}" != "latest" ]; then
-            sed -i.bak "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
-            break
-          fi
-        done; unset t
-      done; unset c
+    #   for c in controller dispatcher; do
+    #     for t in $(docker images ko.local/channel_${c} --format '{{.Tag}}'); do
+    #       if [ "${t}" != "latest" ]; then
+    #         sed -i.bak "s/image: knative.dev\/eventing-contrib\/natss\/cmd\/channel_${c}/image: ko.local\/channel_${c}:${t}/" ${configs[natss]}/natss/config/500-${c}.yaml
+    #         break
+    #       fi
+    #     done; unset t
+    #   done; unset c
 
-      # fixme: test for deployment
-      kubectl apply -f ${configs[natss]}/natss/config
-    fi
+    #   # fixme: test for deployment
+    #   kubectl apply -f ${configs[natss]}/natss/config
+    # fi
   }
 
   # fixme: do better
@@ -1060,21 +1060,21 @@ uninstallNatss() {
       [ -d ${configs[natss]} ] && /bin/rm -rf ${configs[natss]}
     fi
 
-    if [ -d ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} ]; then
-      helm delete --purge knative-eventing-contrib-natss
-    else
-      kubectl delete -f ${configs[natss]}/natss/config
-      # fixme: knative-eventing failed to resoncile with distinct namespace deployments
-      # helm delete --purge ${configs[namespace-natss]}-nats
-      # helm delete --purge ${configs[namespace-nats-knative]}-nats-knative
-      # helm delete --purge ${configs[namespace-nats-tenant]}-nats-tenant
+    # if [ -d ${configs[home]}/helm/knative-eventing-contrib-natss/${configs[natss-version]} ]; then
+    #   helm delete --purge knative-eventing-contrib-natss
+    # else
+    #   kubectl delete -f ${configs[natss]}/natss/config
+    #   # fixme: knative-eventing failed to resoncile with distinct namespace deployments
+    #   # helm delete --purge ${configs[namespace-natss]}-nats
+    #   # helm delete --purge ${configs[namespace-nats-knative]}-nats-knative
+    #   # helm delete --purge ${configs[namespace-nats-tenant]}-nats-tenant
 
-      # # fixme: deleteing a shared namespace is not right
-      # for ns in ${configs[namespace-natss]} ${configs[namespace-tenant]}; do # ${configs[namespace-nats-knative]}; do
-      #   [ "${ns}" != "${configs[namespace-mds]}" ] && uninstallNamespace ${ns}
-      # done; unset ns
-      [ -d ${configs[natss]} ] && /bin/rm -rf ${configs[natss]}
-    fi
+    #   # # fixme: deleteing a shared namespace is not right
+    #   # for ns in ${configs[namespace-natss]} ${configs[namespace-tenant]}; do # ${configs[namespace-nats-knative]}; do
+    #   #   [ "${ns}" != "${configs[namespace-mds]}" ] && uninstallNamespace ${ns}
+    #   # done; unset ns
+    #   [ -d ${configs[natss]} ] && /bin/rm -rf ${configs[natss]}
+    # fi
   }
 }
 
@@ -1250,8 +1250,8 @@ check() {
     build | testIntegration)
       hash yarn > /dev/null 2>&1 || bootstrap;;
     installNatss)
-      [ ! "${configs[natss-repository]}" ] && usage "unspecified natss repository"
-      kubectl get namespace ${configs[namespace-knative]} > /dev/null 2>&1 || installKnative;;
+      [ ! "${configs[natss-repository]}" ] && usage "unspecified natss repository";;
+      # kubectl get namespace ${configs[namespace-knative]} > /dev/null 2>&1 || installKnative;;
     installNats) ;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
