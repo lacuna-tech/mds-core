@@ -32,7 +32,7 @@ import {
 
 const { env } = process
 
-const nats = NATS.connect({ url: `nats://${env.NATS}:4222` })
+const nats = NATS.connect({ url: `nats://${env.STAN}:4222` })
 
 let binding: BinaryHTTPEmitter | null = null
 
@@ -174,14 +174,14 @@ async function writeStreamBatch(stream: Stream, field: string, values: unknown[]
 
 // put basics of vehicle in the cache
 async function writeDevice(device: Device) {
-  if (env.NATS) {
+  if (env.STAN) {
     return writeNatsEvent('device', JSON.stringify(device))
   }
   return writeStream(DEVICE_INDEX_STREAM, 'data', device)
 }
 
 async function writeEvent(event: VehicleEvent) {
-  if (env.NATS) {
+  if (env.STAN) {
     return writeNatsEvent('event', JSON.stringify(event))
   }
   return writeStream(DEVICE_RAW_STREAM, 'event', event)
@@ -189,7 +189,7 @@ async function writeEvent(event: VehicleEvent) {
 
 // put latest locations in the cache
 async function writeTelemetry(telemetry: Telemetry[]) {
-  if (env.NATS) {
+  if (env.STAN) {
     await Promise.all(telemetry.map(item => writeNatsEvent('telemetry', JSON.stringify(item))))
     return
   }

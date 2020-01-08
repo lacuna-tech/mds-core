@@ -121,7 +121,8 @@ declare -A configs=(
   ["namespace-dns-lookup"]="${MDS_NAMESPACE_DNS_LOOKUP:-default}"
   ["namespace-curl"]="${MDS_NAMESPACE_CURL:-default}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
-  ["quiet"]="${MDS_QUIET:-}")
+  ["quiet"]="${MDS_QUIET:-}"
+  ["keep-cache"]="${MDS_KEEP_CACHE:-}")
 declare -A helmRepositories=(
   ["stable"]="https://kubernetes-charts.storage.googleapis.com"
   ["istio.io"]="https://storage.googleapis.com/istio-release/releases/${configs[istio-version]}/charts"
@@ -497,6 +498,7 @@ installIstio() {
     (cd ${configs[workdir]}; curl -L https://git.io/getLatestIstio | ISTIO_VERSION=${configs[istio-version]} sh -)
   fi
 
+# fixme: disable prometheus
   kubectl get namespace istio-system > /dev/null 2>&1 || {
     ${configs[istio]}/bin/istioctl verify-install || error "istio verify installation failure"
 
@@ -534,7 +536,7 @@ installIstio() {
           ${configs[sets-istio]:+$(helmOptions set ${configs[sets-istio]})} \
           ${configs[dryrun]:+--dry-run};;
     esac
-    labelNamespaceIstioInjection default
+    # labelNamespaceIstioInjection default
     pause 20
   }
 }
@@ -544,6 +546,12 @@ labelNamespaceIstioInjection() {
 
   kubectl get namespace ${1} > /dev/null 2>&1 && \
     kubectl label namespace ${1} istio-injection=enabled --overwrite=true ${configs[dryrun]:+--dry-run}
+}
+
+unlabelNamespacesIstioInjection() {
+  check ${FUNCNAME[0]}
+
+  kubectl label namespaces --all istio-injection-
 }
 
 installLogging() {
@@ -600,8 +608,11 @@ installMds() {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
     labelNamespaceKnativeEventingInjection ${configs[namespace-mds]}
-    [ -z "${configs[image-repository]}" ] &&
-      configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
+    # note: remote registries may require image-version overrides
+    configure $(imageVersion)
+    [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
+      # configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
+
     pause 5
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
     helm install ${configs[home]}/helm/mds --name ${configs[namespace-mds]} \
@@ -758,7 +769,7 @@ installNats() {
     fi
 
     (cd ${configs[nats]}
-      ./setup.sh --without-tls --without-auth)
+      ./setup.sh) # --without-tls --without-auth)
   fi
 }
 
@@ -973,7 +984,10 @@ uninstallSimulator() {
   check ${FUNCNAME[0]}
 
   helm del --purge trackgen
-  [ -d ${configs[simulator]} ] && /bin/rm -rf ${configs[simulator]}
+
+  if [ -z "${configs[keep-cache]}" ]; then
+    [ -d ${configs[simulator]} ] && /bin/rm -rf ${configs[simulator]}
+  fi
 }
 
 uninstallFallbackCertificate() {
@@ -1046,7 +1060,9 @@ uninstallNats() {
     kubectl -n ${configs[namespace-nats]} delete pod nats-setup
   }
 
-  [[ -d ${configs[nats]} && -z "${configs[dryrun]}" ]] && /bin/rm -rf ${configs[nats]}
+  if [ -z "${configs[keep-cache]}" ]; then
+    [[ -d ${configs[nats]} && -z "${configs[dryrun]}" ]] && /bin/rm -rf ${configs[nats]}
+  fi
 }
 
 uninstallNatss() {
@@ -1132,8 +1148,12 @@ uninstallIstio() {
           ${configs[dryrun]:+--dry-run} > /dev/null;;
     esac
     kubectl delete namespace istio-system
+    unlabelNamespacesIstioInjection
   }
-  [[ -d ${configs[istio]} && -z "${configs[dryrun]}" ]] && /bin/rm -rf ${configs[istio]}
+
+  if [ -z "${configs[keep-cache]}" ]; then
+    [[ -d ${configs[istio]} && -z "${configs[dryrun]}" ]] && /bin/rm -rf ${configs[istio]}
+  fi
 }
 
 uninstallTiller() {

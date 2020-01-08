@@ -61,18 +61,18 @@ processors:
     migration: false
     triggeredBy:
       trigger: [event, telemetry]
-  mds-trip-processor:
-    enabled: false
-    version: latest
-    migration: false
-    triggeredBy:
-      cron: '* * * * *'
-  mds-provider-processor:
-    enabled: false
-    version: latest
-    migration: false
-    triggeredBy:
-      cron: '* * * * *'
+  # mds-trip-processor:
+  #   enabled: false
+  #   version: latest
+  #   migration: false
+  #   triggeredBy:
+  #     cron: '* * * * *'
+  # mds-provider-processor:
+  #   enabled: false
+  #   version: latest
+  #   migration: false
+  #   triggeredBy:
+  #     cron: '* * * * *'
 tenantId:
 timezone: America/Los_Angeles
 registry:
