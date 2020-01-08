@@ -68,7 +68,8 @@ declare -A configs=(
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
   ["natss-repository"]="${MDS_NATSS_REPOSITORY:-https://github.com/knative/eventing-contrib}"
-  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,knative,natss}"
+  ["nats-repository"]="${MDS_NATS_REPOSITORY:-https://github.com/nats-io/k8s}"
+  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats}" #knative,natss}"
   ["install"]="${MDS_INSTALL:-mds}"
   ["test"]="${MDS_TEST:-unit,integration}"
   ["uninstall"]="${MDS_UNINSTALL:-logging,mds,istio,helm}"
@@ -85,6 +86,7 @@ declare -A configs=(
   ["knative-components"]="${MDS_KNATIVE_COMPONENTS:-eventing}"
   ["natss"]="${MDS_NATSS_PATH:-${configs[workdir]}/src/knative.dev/eventing-contrib}"
   ["natss-version"]="${MDS_NATSS_VERSION:-${configs[knative-version]}}"
+  ["nats"]="${MDS_NATS_PATH:-${configs[workdir]}/k8s}"
   ["grafana-plugins"]="${MDS_GRAFANA_PLUGINS:-devopsprodigy-kubegraf-app}"
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
@@ -115,6 +117,7 @@ declare -A configs=(
   ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-${configs[namespace-mds]}}"
   ["namespace-knative"]="${MDS_NAMESPACE_KNATIVE:-knative-eventing}"
   ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-natss}"
+  ["namespace-nats"]="${MDS_NAMESPACE_NATS:-default}"
   ["namespace-dns-lookup"]="${MDS_NAMESPACE_DNS_LOOKUP:-default}"
   ["namespace-curl"]="${MDS_NAMESPACE_CURL:-default}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
@@ -532,6 +535,7 @@ installIstio() {
           ${configs[dryrun]:+--dry-run};;
     esac
     labelNamespaceIstioInjection default
+    pause 20
   }
 }
 
@@ -741,6 +745,21 @@ buildNatss() {
       # fixme: do better
       ${GO_HOME:-~/go}/bin/ko publish -BL ./cmd/${d})
   }; unset d
+}
+
+installNats() {
+  check ${FUNCNAME[0]}
+
+  if (( $(kubectl get pods -A | grep nats-0 | wc -l) == 0 )); then
+    if [[ ! -d ${configs[nats]} ]]; then
+      mkdir -p ${configs[workdir]}
+      (cd ${configs[workdir]}
+        git clone ${configs[nats-repository]})
+    fi
+
+    (cd ${configs[nats]}
+      ./setup.sh --without-tls --without-auth)
+  fi
 }
 
 installNatss() {
@@ -1013,6 +1032,23 @@ uninstallKnative() {
   done; unset c
 }
 
+uninstallNats() {
+  check ${FUNCNAME[0]}
+
+  if (( $(kubectl get pods -A | grep nats-0 | wc -l) == 1 )); then
+    if [[ -d ${configs[nats]} ]]; then
+      (cd ${configs[nats]}
+        ./destroy.sh)
+    fi
+  fi
+
+  kubectl -n ${configs[namespace-nats]} get pod nats-setup > /dev/null 2>&1 && {
+    kubectl -n ${configs[namespace-nats]} delete pod nats-setup
+  }
+
+  [[ -d ${configs[nats]} && -z "${configs[dryrun]}" ]] && /bin/rm -rf ${configs[nats]}
+}
+
 uninstallNatss() {
   check ${FUNCNAME[0]}
 
@@ -1097,7 +1133,7 @@ uninstallIstio() {
     esac
     kubectl delete namespace istio-system
   }
-  [[ -d ${configs[istio]} && -z "${configs[dryrun]}" ]] && echo "/bin/rm -rf ${configs[istio]}"
+  [[ -d ${configs[istio]} && -z "${configs[dryrun]}" ]] && /bin/rm -rf ${configs[istio]}
 }
 
 uninstallTiller() {
@@ -1216,13 +1252,15 @@ check() {
     installNatss)
       [ ! "${configs[natss-repository]}" ] && usage "unspecified natss repository"
       kubectl get namespace ${configs[namespace-knative]} > /dev/null 2>&1 || installKnative;;
+    installNats) ;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
     #     warn "configure an image-repository; eg ' ... -c:image-repository=[image-repository-url] ...'";;
     installMds)
       hash helm > /dev/null 2>&1 || bootstrap
-      kubectl get namespace istio-system > /dev/null 2>&1 || installIstio
-      kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 || installNatss;;
+      kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;;
+      # fixme: ??? | installNats
+      # kubectl get namespace ${configs[namespace-natss]} > /dev/null 2>&1 || installNatss;;
     installMetrics) kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installHelm | installIstio | installKnative | installLogging | installMetricsAdapter | testUnit | \
       uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)

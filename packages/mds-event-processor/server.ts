@@ -24,7 +24,7 @@ const { env } = process
 /* eslint-disable-next-line no-console */
 // EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
 
-const nats = NATS.connect({ url: 'nats://10.1.4.188:4222' })
+const nats = NATS.connect({ url: `nats://${env.NATS}:4222` })
 
 try {
   nats.subscribe(`${env.TENANT_ID ?? 'mds'}.event`, async (msg: any) => {

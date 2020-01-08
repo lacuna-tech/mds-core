@@ -1,5 +1,5 @@
-apiVersion: messaging.knative.dev/v1alpha1
-kind: NatssChannel
-metadata:
-  name: natss
-  namespace: {{ $.Release.Namespace }}
+# apiVersion: messaging.knative.dev/v1alpha1
+# kind: NatssChannel
+# metadata:
+#   name: natss
+#   namespace: {{ $.Release.Namespace }}
