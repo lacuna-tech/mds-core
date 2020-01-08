@@ -1,4 +1,4 @@
-import { TripEvent, TripsTelemetry, TripTelemetry, Timestamp, UUID } from '@mds-core/mds-types'
+import { TripEvent, TripsTelemetry, TripTelemetryField, Timestamp, UUID } from '@mds-core/mds-types'
 import log from '@mds-core/mds-logger'
 
 export const eventValidation = (events: TripEvent[], curTime: Timestamp, timeSLA: number): boolean => {
@@ -15,13 +15,9 @@ export const eventValidation = (events: TripEvent[], curTime: Timestamp, timeSLA
   return true
 }
 
-export const createTelemetryMap = (
-  events: TripEvent[],
-  tripMap: TripsTelemetry,
-  trip_id: UUID
-): { [event: number]: TripTelemetry[] } => {
+export const createTelemetryMap = (events: TripEvent[], tripMap: TripsTelemetry, trip_id: UUID): TripTelemetryField => {
   const tripTelemetry = tripMap[trip_id]
-  const telemetry: { [event: number]: TripTelemetry[] } = {}
+  const telemetry: TripTelemetryField = {}
   if (tripTelemetry && tripTelemetry.length > 0) {
     for (let i = 0; i < events.length - 1; i++) {
       const startTime = events[i].timestamp

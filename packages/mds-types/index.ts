@@ -88,6 +88,8 @@ export interface TripTelemetry {
 
 export type TripsTelemetry = { [trip_id: string]: TripTelemetry[] }
 
+export type TripTelemetryField = { [timestamp: number]: TripTelemetry[] }
+
 export interface TripEntry {
   vehicle_type: VEHICLE_TYPE
   trip_id: UUID

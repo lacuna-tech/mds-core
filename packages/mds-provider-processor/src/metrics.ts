@@ -57,7 +57,7 @@ async function calcVehicleCounts(
   // Calculate total number of registered vehicles at start of bin
   // TODO: cache value to query only bin size
   const registeredVehicles = await cache.readKeys('device:*:device')
-  const registeredCount = registeredVehicles ? registeredVehicles.length : 0
+  const registeredCount = registeredVehicles?.length ?? 0
 
   const events = await db.getStates(providerID, vehicleType, startTime, endTime)
   const histRegistered = events.filter(event => {

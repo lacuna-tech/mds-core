@@ -31,7 +31,7 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_STATUS,
   BBox,
-  TripTelemetry,
+  TripTelemetryField,
   GpsData,
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
@@ -674,7 +674,7 @@ function moved(latA: number, lngA: number, latB: number, lngB: number) {
 }
 
 const calcDistance = (
-  telemetry: { [event: number]: TripTelemetry[] },
+  telemetry: TripTelemetryField,
   startGps: GpsData
 ): { distance: number; points: number[] } => {
   let tempX = startGps.lat
