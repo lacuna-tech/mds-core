@@ -17,7 +17,7 @@
 import logger from '@mds-core/mds-logger'
 import redis from 'redis'
 import bluebird from 'bluebird'
-import NATS from 'nats'
+import NATS from 'node-nats-streaming'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import {
@@ -30,10 +30,12 @@ import {
   StreamItemID
 } from './types'
 
-const { env } = process
+const { env, pid } = process
 
-const nats = NATS.connect({ url: `nats://${env.NATS}:4222` })
-
+const nats = NATS.connect('knative-nats-streaming', `mds-stream-${pid}`, {
+  url: `nats://${env.NATS}:4222`,
+  connectTimeout: 100000
+})
 let binding: BinaryHTTPEmitter | null = null
 
 const getBinding = () => {

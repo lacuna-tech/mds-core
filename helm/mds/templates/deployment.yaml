@@ -93,7 +93,7 @@ spec:
           # - name: SINK
           #   value: http://natss-broker.{{ $.Release.Namespace }}.svc.cluster.local
           - name: NATS
-            value: nats-0.nats.default.svc.cluster.local
+            value: nats-streaming-0.nats-streaming.natss.svc.cluster.local
           {{- if not (empty $.Values.tenantId) }}
           - name: TENANT_ID
             value: {{ $.Values.tenantId }}
