@@ -144,7 +144,7 @@ export async function eventProcessor(type: string, data: VehicleEvent & Telemetr
     recorded: Timestamp
     annotation_version: number
   } = {
-    vehicle_type: await cache.getVehicleType(device_id),
+    vehicle_type: (await cache.getVehicleType(device_id)) ?? 'scooter',
     type,
     timestamp,
     device_id,
