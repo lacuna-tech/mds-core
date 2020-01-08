@@ -15,24 +15,44 @@
     limitations under the License.
  */
 
-import NATS from 'nats'
+import NATS from 'node-nats-streaming'
 import processor from '@mds-core/mds-event-processor'
 
-const { env } = process
+const { env, pid } = process
 
 /* eslint-reason avoids import of logger */
 /* eslint-disable-next-line no-console */
 // EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
 
-const nats = NATS.connect({ url: `nats://${env.STAN}:4222` })
+const nats = NATS.connect('knative-nats-streaming', `mds-event-processor-${pid}`, {
+  url: `nats://${env.STAN}:4222`
+})
 
 try {
-  nats.subscribe(`${env.TENANT_ID ?? 'mds'}.event`, async (msg: any) => {
-    await processor('event', JSON.parse(msg))
-  })
+  nats.on('connect', () => {
+    const eventSubscription = nats.subscribe(`${env.TENANT_ID ?? 'mds'}.event`, {
+      ...nats.subscriptionOptions(),
+      manualAcks: true,
+      maxInFlight: 1
+    })
 
-  nats.subscribe(`${env.TENANT_ID ?? 'mds'}.telemetry`, async (msg: any) => {
-    await processor('telemetry', JSON.parse(msg))
+    eventSubscription.on('message', async (msg: any) => {
+      const data = JSON.parse(msg.getData())
+      await processor('event', data)
+      msg.ack()
+    })
+
+    const telemetrySubscription = nats.subscribe(`${env.TENANT_ID ?? 'mds'}.telemetry`, {
+      ...nats.subscriptionOptions(),
+      manualAcks: true,
+      maxInFlight: 1
+    })
+
+    telemetrySubscription.on('message', async (msg: any) => {
+      const data = JSON.parse(msg.getData())
+      await processor('telemetry', data)
+      msg.ack()
+    })
   })
 } catch (err) {
   console.log(err)
