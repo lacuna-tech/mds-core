@@ -159,7 +159,7 @@ describe('Tests Utilities', () => {
           const eventB = { event_type: event_type_B } as VehicleEvent
           const actual = isStateTransitionValid(eventA, eventB)
           const transitionKey = `${eventA.event_type}, ${eventB.event_type}`
-          assert.strictEqual(actual, expectedTransitions[transitionKey], transitionKey)
+          assert.strictEqual(actual, expectedTransitions[eventA.event_type][eventB.event_type], transitionKey)
         }
       }
     })
