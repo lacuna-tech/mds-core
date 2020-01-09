@@ -32,8 +32,9 @@ import {
 
 const { env, pid } = process
 
-const nats = NATS.connect(`${env.STAN_CLUSTER_ID}`, `mds-stream-${pid}`, {
+const nats = NATS.connect(`${env.STAN_CLUSTER}`, `mds-stream-${pid}`, {
   url: `nats://${env.STAN}:4222`,
+  // userCreds: `${env.STAN_CREDS}`,
   connectTimeout: 100000
 })
 let binding: BinaryHTTPEmitter | null = null

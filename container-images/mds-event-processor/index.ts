@@ -24,8 +24,9 @@ const { env, pid } = process
 /* eslint-disable-next-line no-console */
 // EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
 
-const nats = NATS.connect(`${env.STAN_CLUSTER_ID}`, `mds-event-processor-${pid}`, {
+const nats = NATS.connect(`${env.STAN_CLUSTER}`, `mds-event-processor-${pid}`, {
   url: `nats://${env.STAN}:4222`
+  // userCreds: `${env.STAN_CREDS}`
 })
 
 try {

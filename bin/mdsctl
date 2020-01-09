@@ -321,17 +321,17 @@ processors() {
 build() {
   check ${FUNCNAME[0]}
 
-  # for s in $(services) $(processors); do
-  #   for i in $(docker images --filter=reference="${s}" -q); do
-  #     [ ${#i} -ge 1 ] && docker rmi -f ${i}
-  #   done; unset i
-  # done; unset s
+  for s in $(services) $(processors); do
+    for i in $(docker images --filter=reference="${s}" -q); do
+      [ ${#i} -ge 1 ] && docker rmi -f ${i}
+    done; unset i
+  done; unset s
 
-  # # todo: provide build-config-option for progressive builds, ie no-clean
-  # (cd ${configs[home]};
-  #   yarn clean;
-  #   yarn;
-  #   yarn image)
+  # todo: provide build-config-option for progressive builds, ie no-clean
+  (cd ${configs[home]};
+    yarn clean;
+    yarn;
+    yarn image)
 
   installImages
 }
@@ -769,7 +769,7 @@ installNats() {
     fi
 
     (cd ${configs[nats]}
-      ./setup.sh) # --without-tls --without-auth)
+      ./setup.sh --without-tls) # --without-tls --without-auth)
   fi
 }
 
