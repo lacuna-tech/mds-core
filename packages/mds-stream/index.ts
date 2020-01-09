@@ -33,7 +33,7 @@ import {
 
 const { env, pid } = process
 
-const natsClient = NATS.connect({ url: `nats://${env.STAN}:4222`, userCreds: './stan.creds', encoding: 'binary' })
+const natsClient = NATS.connect({ url: `nats://${env.STAN}:4222`, userCreds: env.STAN_CREDS, encoding: 'binary' })
 let nats: stan.Stan
 
 natsClient.on('connect', () => {

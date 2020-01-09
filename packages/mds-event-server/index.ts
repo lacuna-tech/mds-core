@@ -12,17 +12,19 @@ export type CEEventProcessor<TData, TResult> = (type: string, data: TData, event
 export const initializeStanSubscriber = <TData, TResult>({
   STAN,
   STAN_CLUSTER_ID,
+  STAN_CREDS,
   TENANT_ID,
   pid,
   processor
 }: {
   STAN: string
   STAN_CLUSTER_ID: string
+  STAN_CREDS: string
   TENANT_ID: string
   pid: number
   processor: EventProcessor<TData, TResult>
 }) => {
-  const natsClient = NATS.connect({ url: `nats://${STAN}:4222`, userCreds: './stan.creds', encoding: 'binary' })
+  const natsClient = NATS.connect({ url: `nats://${STAN}:4222`, userCreds: STAN_CREDS, encoding: 'binary' })
 
   natsClient.on('connect', () => {
     const nats = stan.connect(STAN_CLUSTER_ID, `mds-event-processor-${pid}`, {

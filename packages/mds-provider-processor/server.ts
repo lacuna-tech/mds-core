@@ -16,6 +16,7 @@
 
 // Express local
 import { EventServer } from '@mds-core/mds-event-server'
+import processor from './index'
 
 const {
   env: { npm_package_name, PORT = 5001 }
@@ -23,4 +24,4 @@ const {
 
 /* eslint-reason avoids import of logger */
 /* eslint-disable-next-line no-console */
-EventServer().listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
+EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
