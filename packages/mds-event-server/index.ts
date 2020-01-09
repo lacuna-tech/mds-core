@@ -66,5 +66,19 @@ export const EventServer = <TData, TResult>(
 
   server.get(pathsFor('/health'), HealthRequestHandler)
 
+  if (processor) {
+    server.post('/', async (req, res) => {
+      const { method, headers, body } = req
+      try {
+        const event = parseCloudEvent(req)
+        await logger.info('Cloud Event', method, event.format())
+        const result = await processor(event.getType(), event.getData(), event)
+        return res.status(200).send({ result })
+      } catch (error) /* istanbul ignore next */ {
+        await logger.error('Cloud Event', error, { method, headers, body })
+        return res.status(500).send({ error })
+      }
+    })
+  }
   return server
 }
