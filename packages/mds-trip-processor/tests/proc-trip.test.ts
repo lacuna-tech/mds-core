@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { TripEvent, Timestamp, TripTelemetry, GpsData, TripTelemetryField } from '@mds-core/mds-types'
+import { TripEvent, Timestamp, TripTelemetry, TripTelemetryField } from '@mds-core/mds-types'
 import { calcDistance, routeDistance } from '@mds-core/mds-utils'
 import * as procTripUtils from '../src/utils'
 
