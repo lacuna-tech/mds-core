@@ -18,7 +18,7 @@ import { EventServer, initializeStanSubscriber } from '@mds-core/mds-event-serve
 import processor from '@mds-core/mds-event-processor'
 
 const {
-  env: { npm_package_name, PORT = 5000, STAN, STAN_CLUSTER_ID, TENANT_ID },
+  env: { npm_package_name, PORT = 5000, STAN, STAN_CLUSTER, STAN_CREDS, TENANT_ID = 'mds' },
   pid
 } = process
 
@@ -26,7 +26,7 @@ const {
 /* eslint-disable-next-line no-console */
 EventServer(processor).listen(PORT, () => {
   console.log(`${npm_package_name} running on port ${PORT}`)
-  if (STAN && STAN_CLUSTER_ID && TENANT_ID)
-    initializeStanSubscriber({ STAN, STAN_CLUSTER_ID, TENANT_ID, pid, processor })
-  else console.log(`Cannot initialize STAN Subscribers. One of STAN, STAN_CLUSTER_ID, or TENANT_ID is undefined.`)
+  if (STAN && STAN_CLUSTER && TENANT_ID && STAN_CREDS)
+    initializeStanSubscriber({ STAN, STAN_CLUSTER, STAN_CREDS, TENANT_ID, pid, processor })
+  else console.log(`Cannot initialize STAN Subscribers. One of STAN, STAN_CLUSTER, or TENANT_ID is undefined.`)
 })

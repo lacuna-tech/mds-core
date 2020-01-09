@@ -329,8 +329,8 @@ build() {
 
   # todo: provide build-config-option for progressive builds, ie no-clean
   (cd ${configs[home]};
-    yarn clean;
-    yarn;
+    # yarn clean;
+    # yarn;
     yarn image)
 
   installImages
