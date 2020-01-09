@@ -1,7 +1,9 @@
 import express from 'express'
 import stan from 'node-nats-streaming'
 import { pathsFor } from '@mds-core/mds-utils'
+import logger from '@mds-core/mds-logger'
 import { AboutRequestHandler, HealthRequestHandler, JsonBodyParserMiddleware } from '@mds-core/mds-api-server'
+import Cloudevent, { BinaryHTTPReceiver } from 'cloudevents-sdk/v1'
 
 export type EventProcessor<TData, TResult> = (type: string, data: TData) => Promise<TResult>
 
@@ -55,6 +57,15 @@ export const EventServer = <TData, TResult>(
   processor?: EventProcessor<TData, TResult>,
   server: express.Express = express()
 ): express.Express => {
+  const receiver = new BinaryHTTPReceiver()
+  const { TENANT_ID = 'mds' } = process.env
+  const TENANT_REGEXP = new RegExp(`^${TENANT_ID}\\.`)
+
+  const parseCloudEvent = (req: express.Request): Cloudevent => {
+    const event = receiver.parse(req.body, req.headers)
+    return event.type(event.getType().replace(TENANT_REGEXP, ''))
+  }
+
   // Disable x-powered-by header
   server.disable('x-powered-by')
 
