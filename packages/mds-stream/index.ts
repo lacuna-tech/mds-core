@@ -38,7 +38,7 @@ let nats: stan.Stan
 
 natsClient.on('connect', () => {
   // eslint-disable-next-line no-var
-  nats = stan.connect(env.STAN_CLUSTER_ID || 'stan', `mds-event-processor-${pid}`, {
+  nats = stan.connect(env.STAN_CLUSTER || 'stan', `mds-event-processor-${pid}`, {
     nc: natsClient
   })
 })

@@ -11,14 +11,14 @@ export type CEEventProcessor<TData, TResult> = (type: string, data: TData, event
 
 export const initializeStanSubscriber = <TData, TResult>({
   STAN,
-  STAN_CLUSTER_ID,
+  STAN_CLUSTER,
   STAN_CREDS,
   TENANT_ID,
   pid,
   processor
 }: {
   STAN: string
-  STAN_CLUSTER_ID: string
+  STAN_CLUSTER: string
   STAN_CREDS: string
   TENANT_ID: string
   pid: number
@@ -27,7 +27,7 @@ export const initializeStanSubscriber = <TData, TResult>({
   const natsClient = NATS.connect({ url: `nats://${STAN}:4222`, userCreds: STAN_CREDS, encoding: 'binary' })
 
   natsClient.on('connect', () => {
-    const nats = stan.connect(STAN_CLUSTER_ID, `mds-event-processor-${pid}`, {
+    const nats = stan.connect(STAN_CLUSTER, `mds-event-processor-${pid}`, {
       nc: natsClient
     })
 
