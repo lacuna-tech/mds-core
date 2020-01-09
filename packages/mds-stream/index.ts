@@ -33,8 +33,7 @@ import {
 const { env, pid } = process
 
 const nats = NATS.connect(`${env.STAN_CLUSTER_ID}`, `mds-stream-${pid}`, {
-  url: `nats://${env.NATS}:4222`,
-  connectTimeout: 100000
+  url: `nats://${env.STAN}:4222`
 })
 let binding: BinaryHTTPEmitter | null = null
 
@@ -63,7 +62,13 @@ async function writeCloudEvent(type: string, data: string) {
 }
 
 async function writeNatsEvent(type: string, data: string) {
-  nats.publish(`${env.TENANT_ID ?? 'mds'}.${type}`, data)
+  if (env.CE_NAME) {
+    const event = cloudevent()
+      .type(`${env.TENANT_ID ?? 'mds'}.${type}`)
+      .source(env.CE_NAME)
+      .data(data)
+    nats.publish(`${env.TENANT_ID ?? 'mds'}.${type}`, JSON.stringify(event))
+  }
 }
 declare module 'redis' {
   interface RedisClient {

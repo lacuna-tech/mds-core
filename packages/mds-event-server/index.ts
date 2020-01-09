@@ -9,18 +9,20 @@ export type EventProcessor<TData, TResult> = (type: string, data: TData) => Prom
 export type CEEventProcessor<TData, TResult> = (type: string, data: TData, event: Cloudevent) => Promise<TResult>
 
 export const initializeStanSubscriber = <TData, TResult>({
-  NATS,
+  STAN,
+  STAN_CLUSTER_ID,
   TENANT_ID,
   pid,
   processor
 }: {
-  NATS?: string
-  TENANT_ID?: string
-  pid?: number
+  STAN: string
+  STAN_CLUSTER_ID: string
+  TENANT_ID: string
+  pid: number
   processor: EventProcessor<TData, TResult>
 }) => {
-  const nats = stan.connect('knative-nats-streaming', `mds-event-processor-${pid}`, {
-    url: `nats://${NATS}:4222`
+  const nats = stan.connect(STAN_CLUSTER_ID, `mds-event-processor-${pid}`, {
+    url: `nats://${STAN}:4222`
   })
 
   try {
@@ -32,7 +34,7 @@ export const initializeStanSubscriber = <TData, TResult>({
       })
 
       eventSubscription.on('message', async (msg: any) => {
-        const data = JSON.parse(msg.getData())
+        const { data } = JSON.parse(msg.getData())
         await processor('event', data)
         msg.ack()
       })
@@ -44,7 +46,7 @@ export const initializeStanSubscriber = <TData, TResult>({
       })
 
       telemetrySubscription.on('message', async (msg: any) => {
-        const data = JSON.parse(msg.getData())
+        const { data } = JSON.parse(msg.getData())
         await processor('telemetry', data)
         msg.ack()
       })
