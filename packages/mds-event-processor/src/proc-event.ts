@@ -72,7 +72,7 @@ export async function processTripTelemetry(deviceState: StateEntry): Promise<boo
   // Check if associated to an event or telemetry post
   const tripId = type === 'telemetry' ? await getTripId(deviceState) : trip_id
   if (tripId) {
-    const tripCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
+    const tripCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}:${trip_id}`)
     const trip = tripCache || []
     trip.push(tripTelemetry)
     await cache.writeTripsTelemetry(`${provider_id}:${device_id}:${trip_id}`, trip)

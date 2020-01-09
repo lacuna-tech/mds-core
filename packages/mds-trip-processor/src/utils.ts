@@ -1,4 +1,4 @@
-import { TripEvent, TripsTelemetry, TripTelemetryField, Timestamp, UUID } from '@mds-core/mds-types'
+import { TripEvent, TripTelemetry, TripTelemetryField, Timestamp } from '@mds-core/mds-types'
 import log from '@mds-core/mds-logger'
 
 export const eventValidation = (events: TripEvent[], curTime: Timestamp, timeSLA: number): boolean => {
@@ -15,20 +15,20 @@ export const eventValidation = (events: TripEvent[], curTime: Timestamp, timeSLA
   return true
 }
 
-export const createTelemetryMap = (events: TripEvent[], tripMap: TripsTelemetry, trip_id: UUID): TripTelemetryField => {
-  const tripTelemetry = tripMap[trip_id]
+export const createTelemetryMap = (events: TripEvent[], tripTelemetry: TripTelemetry[]): TripTelemetryField => {
   const telemetry: TripTelemetryField = {}
   if (tripTelemetry && tripTelemetry.length > 0) {
-    for (let i = 0; i < events.length - 1; i++) {
-      const startTime = events[i].timestamp
-      const endTime = events[i + 1].timestamp
+    events.reduce((start, end) => {
+      const startTime = start.timestamp
+      const endTime = end.timestamp
       // Bin telemetry by events
       const tripSegment = tripTelemetry.filter(
         telemetryPoint => telemetryPoint.timestamp >= startTime && telemetryPoint.timestamp < endTime
       )
       tripSegment.sort((a, b) => a.timestamp - b.timestamp)
       telemetry[startTime] = tripSegment
-    }
+      return end
+    })
     const lastEvent = tripTelemetry.filter(
       telemetryPoint => telemetryPoint.timestamp === events[events.length - 1].timestamp
     )

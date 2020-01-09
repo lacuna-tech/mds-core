@@ -46,8 +46,8 @@ async function processTrip(
   }
 
   // Calculate event binned trip telemetry data
-  const telemetryMap = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
-  if (telemetryMap) {
+  const telemetryList = await cache.readTripsTelemetry(`${provider_id}:${device_id}:${trip_id}`)
+  if (telemetryList) {
     // Get trip metadata
     const tripStartEvent = events[0]
     const tripEndEvent = events[events.length - 1]
@@ -63,7 +63,7 @@ async function processTrip(
       end_service_area_id: tripEndEvent.service_area_id
     }
     // Calculate trip metrics
-    const telemetry = createTelemetryMap(events, telemetryMap, trip_id)
+    const telemetry = createTelemetryMap(events, telemetryList)
     const duration = tripEndEvent.timestamp - tripStartEvent.timestamp
     const distMeasure = tripStartEvent.gps ? calcDistance(telemetry, tripStartEvent.gps) : null
     const distance = distMeasure ? distMeasure.distance : null
@@ -89,11 +89,7 @@ async function processTrip(
     }
 
     await db.insertTrips(tripData)
-    // Delete all processed telemetry data and update cache
-    delete telemetryMap[trip_id]
-    await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, telemetryMap)
-
-    return trip_id
+    return `${provider_id}:${device_id}:${trip_id}`
   }
   throw new Error('TELEMETRY NOT FOUND')
 }
@@ -106,27 +102,23 @@ export async function tripProcessor() {
     log.info('NO TRIP EVENTS FOUND')
     return
   }
-  await Promise.all(
-    Object.keys(tripsMap).map(async vehicleID => {
-      const [provider_id, device_id] = vehicleID.split(':')
-      const tripsEvents = tripsMap[vehicleID]
-      const results = await Promise.all(
-        Object.keys(tripsEvents).map(tripID => {
-          try {
-            return processTrip(provider_id, device_id, tripID, tripsEvents[tripID], curTime)
-          } catch (err) {
-            return err
-          }
-        })
-      )
-
-      results.map(response => {
-        if (isUUID(response) && tripsEvents[response]) delete tripsEvents[response]
-      })
-
-      // Update or clear cache
-      if (Object.keys(tripsEvents).length) return cache.writeTripsEvents(vehicleID, tripsEvents)
-      return cache.deleteTripsEvents(vehicleID)
+  const results = await Promise.all(
+    Object.keys(tripsMap).map(tripUUID => {
+      const [provider_id, device_id, trip_id] = tripUUID.split(':')
+      const tripEvents = tripsMap[tripUUID]
+      try {
+        return processTrip(provider_id, device_id, trip_id, tripEvents, curTime)
+      } catch (err) {
+        return err
+      }
     })
   )
+
+  // Update or clear cache
+  results.map(async response => {
+    if (isUUID(response) && tripsMap[response]) {
+      await cache.deleteTripsEvents(response)
+      await cache.deleteTripsTelemetry(response)
+    }
+  })
 }

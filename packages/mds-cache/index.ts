@@ -209,6 +209,10 @@ async function writeTripsTelemetry(field: UUID, data: TripTelemetry[]) {
   return (await getClient()).hsetAsync(decorateKey('trips:telemetry'), field, JSON.stringify(data))
 }
 
+async function deleteTripsTelemetry(field: UUID) {
+  return (await getClient()).hdelAsync(decorateKey('trips:telemetry'), field)
+}
+
 // update the ordered list of (device_id, timestamp) tuples
 // so that we can trivially get a list of "updated since ___" device_ids
 async function updateVehicleList(device_id: UUID, timestamp?: Timestamp) {
@@ -715,6 +719,7 @@ export = {
   deleteTripsEvents,
   readTripsTelemetry,
   writeTripsTelemetry,
+  deleteTripsTelemetry,
   seed,
   reset,
   startup,
