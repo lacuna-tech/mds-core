@@ -1,31 +1,21 @@
 import express from 'express'
-import logger from '@mds-core/mds-logger'
 import stan from 'node-nats-streaming'
 import { pathsFor } from '@mds-core/mds-utils'
 import { AboutRequestHandler, HealthRequestHandler, JsonBodyParserMiddleware } from '@mds-core/mds-api-server'
 
-export const EventServer = <TData, TResult>(server: express.Express = express()): express.Express => {
-  const {
-    env: { TENANT_ID = 'mds', NATS },
-    pid
-  } = process
+export type EventProcessor<TData, TResult> = (type: string, data: TData) => Promise<TResult>
 
-  startStanClient(NATS, pid)
-  // Disable x-powered-by header
-  server.disable('x-powered-by')
-
-  // Middleware
-  server.use(JsonBodyParserMiddleware({ limit: '1mb' }))
-
-  // Routes
-  server.get(pathsFor('/'), AboutRequestHandler)
-
-  server.get(pathsFor('/health'), HealthRequestHandler)
-
-  return server
-}
-
-const startStanClient = ({ NATS, TENANT_ID, pid, processor }: { NATS: string; TENANT_ID: string; pid: string }) => {
+export const initializeStanSubscriber = <TData, TResult>({
+  NATS,
+  TENANT_ID,
+  pid,
+  processor
+}: {
+  NATS?: string
+  TENANT_ID?: string
+  pid?: number
+  processor: EventProcessor<TData, TResult>
+}) => {
   const nats = stan.connect('knative-nats-streaming', `mds-event-processor-${pid}`, {
     url: `nats://${NATS}:4222`
   })
@@ -59,4 +49,22 @@ const startStanClient = ({ NATS, TENANT_ID, pid, processor }: { NATS: string; TE
   } catch (err) {
     console.log(err)
   }
+}
+
+export const EventServer = <TData, TResult>(
+  processor?: EventProcessor<TData, TResult>,
+  server: express.Express = express()
+): express.Express => {
+  // Disable x-powered-by header
+  server.disable('x-powered-by')
+
+  // Middleware
+  server.use(JsonBodyParserMiddleware({ limit: '1mb' }))
+
+  // Routes
+  server.get(pathsFor('/'), AboutRequestHandler)
+
+  server.get(pathsFor('/health'), HealthRequestHandler)
+
+  return server
 }

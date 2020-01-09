@@ -15,21 +15,17 @@
     limitations under the License.
  */
 
-import NATS from 'node-nats-streaming'
-import { EventServer } from '@mds-core/mds-event-server'
-import processor from './index'
-
-const { env, pid } = process
-
-/* eslint-reason avoids import of logger */
-/* eslint-disable-next-line no-console */
-// EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
-// Express local
+import { EventServer, initializeStanSubscriber } from '@mds-core/mds-event-server'
+import processor from '@mds-core/mds-event-processor'
 
 const {
-  env: { npm_package_name, PORT = 5000 }
+  env: { npm_package_name, PORT = 5000, NATS, TENANT_ID },
+  pid
 } = process
 
 /* eslint-reason avoids import of logger */
 /* eslint-disable-next-line no-console */
-EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
+EventServer().listen(PORT, () => {
+  console.log(`${npm_package_name} running on port ${PORT}`)
+  initializeStanSubscriber({ NATS, TENANT_ID, pid, processor })
+})
