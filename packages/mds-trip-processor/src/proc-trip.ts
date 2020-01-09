@@ -65,7 +65,7 @@ async function processTrip(
     // Calculate trip metrics
     const telemetry = createTelemetryMap(events, telemetryMap, trip_id)
     const duration = tripEndEvent.timestamp - tripStartEvent.timestamp
-    const distMeasure = tripStartEvent.gps ? calcDistance(telemetry, tripStartEvent.gps) : null
+    const distMeasure = tripStartEvent.gps ? calcDistance(telemetry) : null
     const distance = distMeasure ? distMeasure.distance : null
     const points = distMeasure ? distMeasure.points : []
     const violationArray = points.filter(dist => {

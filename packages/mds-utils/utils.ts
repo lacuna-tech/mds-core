@@ -31,8 +31,8 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_STATUS,
   BBox,
+  TripTelemetry,
   TripTelemetryField,
-  GpsData,
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
 import { TelemetryRecord } from '@mds-core/mds-db/types'
@@ -673,29 +673,31 @@ function moved(latA: number, lngA: number, latB: number, lngB: number) {
   return lngDiff > limit || latDiff > limit // very computational efficient basic check (better than sqrts & trig)
 }
 
-const calcDistance = (
-  telemetry: TripTelemetryField,
-  startGps: GpsData
-): { distance: number; points: number[] } => {
-  let tempX = startGps.lat
-  let tempY = startGps.lng
-  let distance = 0
+const calcDistance = (telemetry: TripTelemetryField): { distance: number; points: number[] } => {
   const points: number[] = []
+  let distance = 0
+  let telemetryList: TripTelemetry[] = []
   for (const tripSegment of Object.values(telemetry)) {
-    for (let point = 0; point < tripSegment.length; point++) {
-      const currPing = tripSegment[point]
-      if (currPing.latitude !== null && currPing.longitude !== null) {
-        const pointDist = routeDistance([
-          { lat: tempX, lng: tempY },
-          { lat: currPing.latitude, lng: currPing.longitude }
-        ])
-        distance += pointDist
-        points.push(pointDist)
-        tempX = currPing.latitude
-        tempY = currPing.longitude
-      }
-    }
+    telemetryList = telemetryList.concat(tripSegment)
   }
+  telemetryList.reduce((lastPoint, currPoint) => {
+    if (
+      currPoint.latitude !== null &&
+      currPoint.longitude !== null &&
+      lastPoint.latitude !== null &&
+      lastPoint.longitude !== null
+    ) {
+      const pointDist = routeDistance([
+        { lat: lastPoint.latitude, lng: lastPoint.longitude },
+        { lat: currPoint.latitude, lng: currPoint.longitude }
+      ])
+      distance += pointDist
+      points.push(pointDist)
+    } else {
+      throw new Error('TRIP POINT MISSING LAT/LNG')
+    }
+    return currPoint
+  })
   return { distance, points }
 }
 
