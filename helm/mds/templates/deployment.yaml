@@ -22,6 +22,11 @@ spec:
         - name: mds-config-files
           configMap:
             name: mds-config-files
+        - name: stan-creds-volume
+          configMap:
+            name: stans-creds
+          # secret:
+          #   secretName: stan-creds
       containers:
       - name: {{ $name }}
         {{- if $.Values.registry }}
@@ -44,6 +49,8 @@ spec:
         volumeMounts:
         - name: mds-config-files
           mountPath: /mds-config/
+        - name: stan-creds-volume
+          mountPath: /var/run/nats/creds/stan
         env:
           - name: PORT
             value: "4000"
@@ -136,4 +143,13 @@ data:
   {{- if .Values.postgresql.password }}
   postgresql-password: {{ .Values.postgresql.password | b64enc }}
   {{- end }}
+type: Opaque
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: stan-creds
+  namespace: {{ $.Release.Namespace }}
+data:
+  stan.creds: LS0tLS1CRUdJTiBOQVRTIFVTRVIgSldULS0tLS0KZXlKMGVYQWlPaUpxZDNRaUxDSmhiR2NpT2lKbFpESTFOVEU1SW4wLmV5SnFkR2tpT2lJMlJESlVVVWMwUzBWYVNqZFBTMUZUVWpaWk1rNUZTa0V6U0RkSlZWWklVMU5aUjBWWlJsY3lTMHBUTkRkRVIwZERRa0pCSWl3aWFXRjBJam94TlRjNE5UUTROVFE1TENKcGMzTWlPaUpCUVUxQ1VFWklTVEpMVWxKRlNrazFTMXBNUlVRMk5rSlJUbE5OTlRZME5FWlJXVUZaVmtwVE5VVllOVFZUVWs1Q1FrMWFXVU5OU3lJc0ltNWhiV1VpT2lKemRHRnVJaXdpYzNWaUlqb2lWVUZOUWtOUFdrNU1RbEZWV2xnMVEwOHpTbFpZUXpSSVdGUkJWbFZMUzBsTldWWTNTbGRJUjFkSVV6UlpUa0pWVTA1WVRsVmFUMGtpTENKMGVYQmxJam9pZFhObGNpSXNJbTVoZEhNaU9uc2ljSFZpSWpwN2ZTd2ljM1ZpSWpwN2ZYMTkuTlVmWUE0RDdhR2RqWXV2Y1NBQU0zVHQ0QzJ2NUU5Mm1MOHphT254YTJjd0wtX2R3Q2VmOE81ZEg1MUZtMm5TMUV1QnVFTlB2cUt6WFE1UGg5RFZwQncKLS0tLS0tRU5EIE5BVFMgVVNFUiBKV1QtLS0tLS0KKioqKioqKioqKioqKioqKioqKioqKioqKiBJTVBPUlRBTlQgKioqKioqKioqKioqKioqKioqKioqKioqKgpOS0VZIFNlZWQgcHJpbnRlZCBiZWxvdyBjYW4gYmUgdXNlZCB0byBzaWduIGFuZCBwcm92ZSBpZGVudGl0eS4KTktFWXMgYXJlIHNlbnNpdGl2ZSBhbmQgc2hvdWxkIGJlIHRyZWF0ZWQgYXMgc2VjcmV0cy4KLS0tLS1CRUdJTiBVU0VSIE5LRVkgU0VFRC0tLS0tClNVQUJMWkVJQkdRWjYzQk8zWFpTT1NYQUdUQVJSM0w0MjY0QTJCU0RaRUZYTDdPREpDWkc1SlFUMkkKLS0tLS0tRU5EIFVTRVIgTktFWSBTRUVELS0tLS0tCioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioK
 type: Opaque
