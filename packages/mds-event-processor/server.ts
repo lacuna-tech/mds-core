@@ -16,6 +16,7 @@
  */
 
 import NATS from 'node-nats-streaming'
+import { EventServer } from '@mds-core/mds-event-server'
 import processor from './index'
 
 const { env, pid } = process
@@ -23,37 +24,12 @@ const { env, pid } = process
 /* eslint-reason avoids import of logger */
 /* eslint-disable-next-line no-console */
 // EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
+// Express local
 
-const nats = NATS.connect('knative-nats-streaming', `mds-event-processor-${pid}`, {
-  url: `nats://${env.NATS}:4222`
-})
+const {
+  env: { npm_package_name, PORT = 5000 }
+} = process
 
-try {
-  nats.on('connect', () => {
-    const eventSubscription = nats.subscribe(`${env.TENANT_ID ?? 'mds'}.event`, {
-      ...nats.subscriptionOptions(),
-      manualAcks: true,
-      maxInFlight: 1
-    })
-
-    eventSubscription.on('message', async (msg: any) => {
-      const data = JSON.parse(msg.getData())
-      await processor('event', data)
-      msg.ack()
-    })
-
-    const telemetrySubscription = nats.subscribe(`${env.TENANT_ID ?? 'mds'}.telemetry`, {
-      ...nats.subscriptionOptions(),
-      manualAcks: true,
-      maxInFlight: 1
-    })
-
-    telemetrySubscription.on('message', async (msg: any) => {
-      const data = JSON.parse(msg.getData())
-      await processor('telemetry', data)
-      msg.ack()
-    })
-  })
-} catch (err) {
-  console.log(err)
-}
+/* eslint-reason avoids import of logger */
+/* eslint-disable-next-line no-console */
+EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))

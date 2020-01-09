@@ -1,26 +1,18 @@
 import express from 'express'
 import logger from '@mds-core/mds-logger'
+import stan from 'node-nats-streaming'
 import { pathsFor } from '@mds-core/mds-utils'
 import { AboutRequestHandler, HealthRequestHandler, JsonBodyParserMiddleware } from '@mds-core/mds-api-server'
-import { Cloudevent, BinaryHTTPReceiver } from 'cloudevents-sdk/v1'
 
-export type EventProcessor<TData, TResult> = (type: string, data: TData, event: Cloudevent) => Promise<TResult>
+export const EventServer = <TData, TResult>(server: express.Express = express()): express.Express => {
+  const {
+    env: { TENANT_ID = 'mds', NATS },
+    pid
+  } = process
 
-export const EventServer = <TData, TResult>(
-  processor: EventProcessor<TData, TResult>,
-  server: express.Express = express()
-): express.Express => {
+  startStanClient(NATS, pid)
   // Disable x-powered-by header
   server.disable('x-powered-by')
-
-  const receiver = new BinaryHTTPReceiver()
-  const { TENANT_ID = 'mds' } = process.env
-  const TENANT_REGEXP = new RegExp(`^${TENANT_ID}\\.`)
-
-  const parseCloudEvent = (req: express.Request): Cloudevent => {
-    const event = receiver.parse(req.body, req.headers)
-    return event.type(event.getType().replace(TENANT_REGEXP, ''))
-  }
 
   // Middleware
   server.use(JsonBodyParserMiddleware({ limit: '1mb' }))
@@ -30,18 +22,41 @@ export const EventServer = <TData, TResult>(
 
   server.get(pathsFor('/health'), HealthRequestHandler)
 
-  server.post('/', async (req, res) => {
-    const { method, headers, body } = req
-    try {
-      const event = parseCloudEvent(req)
-      await logger.info('Cloud Event', method, event.format())
-      const result = await processor(event.getType(), event.getData(), event)
-      return res.status(200).send({ result })
-    } catch (error) /* istanbul ignore next */ {
-      await logger.error('Cloud Event', error, { method, headers, body })
-      return res.status(500).send({ error })
-    }
+  return server
+}
+
+const startStanClient = ({ NATS, TENANT_ID, pid, processor }: { NATS: string; TENANT_ID: string; pid: string }) => {
+  const nats = stan.connect('knative-nats-streaming', `mds-event-processor-${pid}`, {
+    url: `nats://${NATS}:4222`
   })
 
-  return server
+  try {
+    nats.on('connect', () => {
+      const eventSubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.event`, {
+        ...nats.subscriptionOptions(),
+        manualAcks: true,
+        maxInFlight: 1
+      })
+
+      eventSubscription.on('message', async (msg: any) => {
+        const data = JSON.parse(msg.getData())
+        await processor('event', data)
+        msg.ack()
+      })
+
+      const telemetrySubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.telemetry`, {
+        ...nats.subscriptionOptions(),
+        manualAcks: true,
+        maxInFlight: 1
+      })
+
+      telemetrySubscription.on('message', async (msg: any) => {
+        const data = JSON.parse(msg.getData())
+        await processor('telemetry', data)
+        msg.ack()
+      })
+    })
+  } catch (err) {
+    console.log(err)
+  }
 }
