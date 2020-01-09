@@ -14,47 +14,19 @@
     See the License for the specific language governing permissions and
     limitations under the License.
  */
-
-import NATS from 'node-nats-streaming'
+import { EventServer, initializeStanSubscriber } from '@mds-core/mds-event-server'
 import processor from '@mds-core/mds-event-processor'
 
-const { env, pid } = process
+const {
+  env: { npm_package_name, PORT = 5000, STAN, STAN_CLUSTER_ID, TENANT_ID },
+  pid
+} = process
 
 /* eslint-reason avoids import of logger */
 /* eslint-disable-next-line no-console */
-// EventServer(processor).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
-
-const nats = NATS.connect(`${env.STAN_CLUSTER}`, `mds-event-processor-${pid}`, {
-  url: `nats://${env.STAN}:4222`
-  // userCreds: `${env.STAN_CREDS}`
+EventServer(processor).listen(PORT, () => {
+  console.log(`${npm_package_name} running on port ${PORT}`)
+  if (STAN && STAN_CLUSTER_ID && TENANT_ID)
+    initializeStanSubscriber({ STAN, STAN_CLUSTER_ID, TENANT_ID, pid, processor })
+  else console.log(`Cannot initialize STAN Subscribers. One of STAN, STAN_CLUSTER_ID, or TENANT_ID is undefined.`)
 })
-
-try {
-  nats.on('connect', () => {
-    const eventSubscription = nats.subscribe(`${env.TENANT_ID ?? 'mds'}.event`, {
-      ...nats.subscriptionOptions(),
-      manualAcks: true,
-      maxInFlight: 1
-    })
-
-    eventSubscription.on('message', async (msg: any) => {
-      const data = JSON.parse(msg.getData())
-      await processor('event', data)
-      msg.ack()
-    })
-
-    const telemetrySubscription = nats.subscribe(`${env.TENANT_ID ?? 'mds'}.telemetry`, {
-      ...nats.subscriptionOptions(),
-      manualAcks: true,
-      maxInFlight: 1
-    })
-
-    telemetrySubscription.on('message', async (msg: any) => {
-      const data = JSON.parse(msg.getData())
-      await processor('telemetry', data)
-      msg.ack()
-    })
-  })
-} catch (err) {
-  console.log(err)
-}

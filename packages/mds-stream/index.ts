@@ -17,7 +17,8 @@
 import logger from '@mds-core/mds-logger'
 import redis from 'redis'
 import bluebird from 'bluebird'
-import NATS from 'node-nats-streaming'
+import NATS from 'nats'
+import stan from 'node-nats-streaming'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import {
@@ -32,11 +33,16 @@ import {
 
 const { env, pid } = process
 
-const nats = NATS.connect(`${env.STAN_CLUSTER}`, `mds-stream-${pid}`, {
-  url: `nats://${env.STAN}:4222`,
-  // userCreds: `${env.STAN_CREDS}`,
-  connectTimeout: 100000
+const natsClient = NATS.connect({ url: `nats://${env.STAN}:4222`, userCreds: './stan.creds', encoding: 'binary' })
+let nats: stan.Stan
+
+natsClient.on('connect', () => {
+  // eslint-disable-next-line no-var
+  nats = stan.connect(env.STAN_CLUSTER_ID || 'stan', `mds-event-processor-${pid}`, {
+    nc: natsClient
+  })
 })
+
 let binding: BinaryHTTPEmitter | null = null
 
 const getBinding = () => {
@@ -64,7 +70,13 @@ async function writeCloudEvent(type: string, data: string) {
 }
 
 async function writeNatsEvent(type: string, data: string) {
-  nats.publish(`${env.TENANT_ID ?? 'mds'}.${type}`, data)
+  if (env.CE_NAME) {
+    const event = cloudevent()
+      .type(`${env.TENANT_ID ?? 'mds'}.${type}`)
+      .source(env.CE_NAME)
+      .data(data)
+    nats.publish(`${env.TENANT_ID ?? 'mds'}.${type}`, JSON.stringify(event))
+  }
 }
 declare module 'redis' {
   interface RedisClient {
