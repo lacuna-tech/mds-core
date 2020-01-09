@@ -1,4 +1,5 @@
 import express from 'express'
+import NATS from 'nats'
 import stan from 'node-nats-streaming'
 import { pathsFor } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
@@ -21,39 +22,43 @@ export const initializeStanSubscriber = <TData, TResult>({
   pid: number
   processor: EventProcessor<TData, TResult>
 }) => {
-  const nats = stan.connect(STAN_CLUSTER_ID, `mds-event-processor-${pid}`, {
-    url: `nats://${STAN}:4222`
-  })
+  const natsClient = NATS.connect({ url: `nats://${STAN}:4222`, userCreds: './stan.creds', encoding: 'binary' })
 
-  try {
-    nats.on('connect', () => {
-      const eventSubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.event`, {
-        ...nats.subscriptionOptions(),
-        manualAcks: true,
-        maxInFlight: 1
-      })
-
-      eventSubscription.on('message', async (msg: any) => {
-        const { data } = JSON.parse(msg.getData())
-        await processor('event', data)
-        msg.ack()
-      })
-
-      const telemetrySubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.telemetry`, {
-        ...nats.subscriptionOptions(),
-        manualAcks: true,
-        maxInFlight: 1
-      })
-
-      telemetrySubscription.on('message', async (msg: any) => {
-        const { data } = JSON.parse(msg.getData())
-        await processor('telemetry', data)
-        msg.ack()
-      })
+  natsClient.on('connect', () => {
+    const nats = stan.connect(STAN_CLUSTER_ID, `mds-event-processor-${pid}`, {
+      nc: natsClient
     })
-  } catch (err) {
-    console.log(err)
-  }
+
+    try {
+      nats.on('connect', () => {
+        const eventSubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.event`, {
+          ...nats.subscriptionOptions(),
+          manualAcks: true,
+          maxInFlight: 1
+        })
+
+        eventSubscription.on('message', async (msg: any) => {
+          const { data } = JSON.parse(msg.getData())
+          await processor('event', data)
+          msg.ack()
+        })
+
+        const telemetrySubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.telemetry`, {
+          ...nats.subscriptionOptions(),
+          manualAcks: true,
+          maxInFlight: 1
+        })
+
+        telemetrySubscription.on('message', async (msg: any) => {
+          const { data } = JSON.parse(msg.getData())
+          await processor('telemetry', data)
+          msg.ack()
+        })
+      })
+    } catch (err) {
+      console.log(err)
+    }
+  })
 }
 
 export const EventServer = <TData, TResult>(
