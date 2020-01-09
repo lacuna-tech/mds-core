@@ -6,6 +6,7 @@ import { AboutRequestHandler, HealthRequestHandler, JsonBodyParserMiddleware } f
 import Cloudevent, { BinaryHTTPReceiver } from 'cloudevents-sdk/v1'
 
 export type EventProcessor<TData, TResult> = (type: string, data: TData) => Promise<TResult>
+export type CEEventProcessor<TData, TResult> = (type: string, data: TData, event: Cloudevent) => Promise<TResult>
 
 export const initializeStanSubscriber = <TData, TResult>({
   NATS,
@@ -54,7 +55,7 @@ export const initializeStanSubscriber = <TData, TResult>({
 }
 
 export const EventServer = <TData, TResult>(
-  processor?: EventProcessor<TData, TResult>,
+  processor?: CEEventProcessor<TData, TResult>,
   server: express.Express = express()
 ): express.Express => {
   const receiver = new BinaryHTTPReceiver()
