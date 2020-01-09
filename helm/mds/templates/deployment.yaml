@@ -96,6 +96,8 @@ spec:
           #   value: nats-streaming-0.nats-streaming.natss.svc.cluster.local
           - name: STAN
             value: stan-0.stan.default.svc.cluster.local
+          - name: STAN_CLUSTER_ID
+            value: stan
           {{- if not (empty $.Values.tenantId) }}
           - name: TENANT_ID
             value: {{ $.Values.tenantId }}

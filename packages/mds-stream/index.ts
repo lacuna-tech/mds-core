@@ -32,7 +32,7 @@ import {
 
 const { env, pid } = process
 
-const nats = NATS.connect('knative-nats-streaming', `mds-stream-${pid}`, {
+const nats = NATS.connect(`${env.STAN_CLUSTER_ID}`, `mds-stream-${pid}`, {
   url: `nats://${env.STAN}:4222`,
   connectTimeout: 100000
 })
