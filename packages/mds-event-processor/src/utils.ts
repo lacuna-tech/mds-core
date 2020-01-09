@@ -1,4 +1,4 @@
-import { StateEntry, TripEvent, TripsEvents, VEHICLE_EVENTS } from '@mds-core/mds-types'
+import { StateEntry, TripEvent, VEHICLE_EVENTS } from '@mds-core/mds-types'
 import cache from '@mds-core/mds-cache'
 import log from '@mds-core/mds-logger'
 

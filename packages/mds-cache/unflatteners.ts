@@ -5,8 +5,8 @@ import {
   VEHICLE_REASON,
   Device,
   StateEntry,
-  TripsEvents,
-  TripsTelemetry,
+  TripEvent,
+  TripTelemetry,
   Telemetry,
   VehicleEvent
 } from '@mds-core/mds-types'
@@ -24,8 +24,8 @@ import {
   CachedItem,
   StringifiedStateEntry,
   StringifiedAllDeviceStates,
-  StringifiedTripsEvents,
-  StringifiedTripsTelemetry,
+  StringifiedTripEvent,
+  StringifiedTripTelemetry,
   StringifiedAllTripsEvents
 } from './types'
 
@@ -75,78 +75,72 @@ function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [v
   }
 }
 
-function parseTripsEvents(tripsEventsStr: StringifiedTripsEvents): TripsEvents {
+function parseTripEvents(tripEventsStr: StringifiedTripEvent[]): TripEvent[] {
   try {
-    const trips: TripsEvents = {}
+    const result: TripEvent[] = []
     // TODO: fix awkward cast/parsing, should be unnecessary with typing
-    const tripsEvents: StringifiedTripsEvents = JSON.parse(String(tripsEventsStr))
-    Object.keys(tripsEvents).map(trip_id => {
-      trips[trip_id] = []
-      tripsEvents[trip_id].map(tripEvent => {
-        trips[trip_id].push({
-          vehicle_type: tripEvent.vehicle_type as VEHICLE_TYPE,
-          timestamp: Number(tripEvent.timestamp),
-          event_type: tripEvent.event_type as VEHICLE_EVENT,
-          event_type_reason: tripEvent.event_type_reason ? (tripEvent.event_type_reason as VEHICLE_REASON) : null,
-          annotation_version: Number(tripEvent.annotation_version),
-          annotation: tripEvent.annotation
-            ? {
-                in_bound: JSON.parse(tripEvent.annotation.in_bound),
-                areas: tripEvent.annotation.areas
-              }
-            : null,
-          gps: tripEvent.gps
-            ? {
-                lat: Number(tripEvent.gps.lat),
-                lng: Number(tripEvent.gps.lng),
-                altitude: tripEvent.gps.altitude ? Number(tripEvent.gps.altitude) : null,
-                heading: tripEvent.gps.heading ? Number(tripEvent.gps.heading) : null,
-                speed: tripEvent.gps.speed ? Number(tripEvent.gps.speed) : null,
-                accuracy: tripEvent.gps.accuracy ? Number(tripEvent.gps.accuracy) : null
-              }
-            : null,
-          service_area_id: tripEvent.service_area_id ? tripEvent.service_area_id : null
-        })
+    const tripEvents: StringifiedTripEvent[] = JSON.parse(String(tripEventsStr))
+    tripEvents.map(tripEvent => {
+      result.push({
+        vehicle_type: tripEvent.vehicle_type as VEHICLE_TYPE,
+        timestamp: Number(tripEvent.timestamp),
+        event_type: tripEvent.event_type as VEHICLE_EVENT,
+        event_type_reason: tripEvent.event_type_reason ? (tripEvent.event_type_reason as VEHICLE_REASON) : null,
+        annotation_version: Number(tripEvent.annotation_version),
+        annotation: tripEvent.annotation
+          ? {
+              in_bound: JSON.parse(tripEvent.annotation.in_bound),
+              areas: tripEvent.annotation.areas
+            }
+          : null,
+        gps: tripEvent.gps
+          ? {
+              lat: Number(tripEvent.gps.lat),
+              lng: Number(tripEvent.gps.lng),
+              altitude: tripEvent.gps.altitude ? Number(tripEvent.gps.altitude) : null,
+              heading: tripEvent.gps.heading ? Number(tripEvent.gps.heading) : null,
+              speed: tripEvent.gps.speed ? Number(tripEvent.gps.speed) : null,
+              accuracy: tripEvent.gps.accuracy ? Number(tripEvent.gps.accuracy) : null
+            }
+          : null,
+        service_area_id: tripEvent.service_area_id ? tripEvent.service_area_id : null
       })
     })
-    return trips
+    return result
   } catch (err) {
-    throw new ParseError(`unable to parse tripsEvents: ${tripsEventsStr}: ${err}`)
+    throw new ParseError(`unable to parse tripsEvents: ${tripEventsStr}: ${err}`)
   }
 }
 
-function parseTripsTelemetry(tripsTelemetryStr: StringifiedTripsTelemetry): TripsTelemetry {
+function parseTripTelemetry(tripTelemetryStr: StringifiedTripTelemetry[]): TripTelemetry[] {
   try {
-    const trips: TripsTelemetry = {}
-    const tripsTelemetry: StringifiedTripsTelemetry = JSON.parse(String(tripsTelemetryStr))
-    Object.keys(tripsTelemetry).map(trip_id => {
-      trips[trip_id] = []
-      tripsTelemetry[trip_id].map(tripTelemetry => {
-        trips[trip_id].push({
-          timestamp: Number(tripTelemetry.timestamp),
-          latitude: tripTelemetry.latitude ? Number(tripTelemetry.latitude) : null,
-          longitude: tripTelemetry.longitude ? Number(tripTelemetry.longitude) : null,
-          annotation_version: Number(tripTelemetry.annotation_version),
-          annotation: tripTelemetry.annotation
-            ? {
-                in_bound: JSON.parse(tripTelemetry.annotation.in_bound),
-                areas: tripTelemetry.annotation.areas
-              }
-            : null,
-          service_area_id: tripTelemetry.service_area_id ? tripTelemetry.service_area_id : null
-        })
+    const result: TripTelemetry[] = []
+    const tripTelemetry: StringifiedTripTelemetry[] = JSON.parse(String(tripTelemetryStr))
+    tripTelemetry.map(telemetry => {
+      result.push({
+        timestamp: Number(telemetry.timestamp),
+        latitude: telemetry.latitude ? Number(telemetry.latitude) : null,
+        longitude: telemetry.longitude ? Number(telemetry.longitude) : null,
+        annotation_version: Number(telemetry.annotation_version),
+        annotation: telemetry.annotation
+          ? {
+              in_bound: JSON.parse(telemetry.annotation.in_bound),
+              areas: telemetry.annotation.areas
+            }
+          : null,
+        service_area_id: telemetry.service_area_id ? telemetry.service_area_id : null
       })
     })
-    return trips
+    return result
   } catch (err) {
-    throw new ParseError(`unable to parse tripsTelemetry: ${tripsTelemetryStr}: ${err}`)
+    throw new ParseError(`unable to parse tripsTelemetry: ${tripTelemetryStr}: ${err}`)
   }
 }
 
-function parseAllTripsEvents(allTripsEvents: StringifiedAllTripsEvents): { [vehicle_id: string]: TripsEvents } {
+function parseAllTripsEvents(allTripsEvents: StringifiedAllTripsEvents): { [id: string]: TripEvent[] } {
   try {
-    const allTrips: { [vehicle_id: string]: TripsEvents } = Object.keys(allTripsEvents).reduce((acc, vehicle_id) => {
-      return Object.assign(acc, { [vehicle_id]: parseTripsEvents(allTripsEvents[vehicle_id]) })
+    const allTrips: { [id: string]: TripEvent[] } = Object.keys(allTripsEvents).reduce((acc, vehicle_id) => {
+      return Object.assign(acc, { [vehicle_id]: parseTripEvents(allTripsEvents[vehicle_id]) })
     }, {})
     return allTrips
   } catch (err) {
@@ -235,8 +229,8 @@ function parseCachedItem(item: CachedItem): Device | Telemetry | VehicleEvent {
 export {
   parseDeviceState,
   parseAllDeviceStates,
-  parseTripsEvents,
-  parseTripsTelemetry,
+  parseTripEvents,
+  parseTripTelemetry,
   parseAllTripsEvents,
   parseEvent,
   parseTelemetry,

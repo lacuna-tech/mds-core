@@ -23,8 +23,8 @@ import {
   Timestamp,
   Device,
   VehicleEvent,
-  TripsEvents,
-  TripsTelemetry,
+  TripEvent,
+  TripTelemetry,
   Telemetry,
   StateEntry,
   BoundingBox,
@@ -38,8 +38,8 @@ import bluebird from 'bluebird'
 import {
   parseDeviceState,
   parseAllDeviceStates,
-  parseTripsEvents,
-  parseTripsTelemetry,
+  parseTripEvents,
+  parseTripTelemetry,
   parseAllTripsEvents,
   parseTelemetry,
   parseEvent,
@@ -56,8 +56,8 @@ import {
   StringifiedEvent,
   StringifiedStateEntry,
   StringifiedAllDeviceStates,
-  StringifiedTripsEvents,
-  StringifiedTripsTelemetry,
+  StringifiedTripEvent,
+  StringifiedTripTelemetry,
   StringifiedAllTripsEvents
 } from './types'
 
@@ -73,6 +73,7 @@ declare module 'redis' {
     hdelAsync: (...args: (string | number)[]) => Promise<number>
     hgetallAsync: (arg1: string) => Promise<{ [key: string]: string }>
     hgetAsync: (key: string, field: string) => Promise<string>
+    hscanAsync: (key: string, cursor: number, pattern: string) => Promise<string>
     hsetAsync: (key: string, field: string, value: string) => Promise<number>
     hmsetAsync: (...args: unknown[]) => Promise<'OK'>
     infoAsync: () => Promise<string>
@@ -148,6 +149,14 @@ async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null>
   return null
 }
 
+async function hscan(key: string, pattern: string): Promise<CachedItem | CachedHashItem | null> {
+  const flat = await (await getClient()).hscanAsync(decorateKey(key), 0, 'MATCH', pattern)
+  if (flat) {
+    return unflatten(flat)
+  }
+  return null
+}
+
 async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE> {
   // TODO: Fix type entry into cache so we don't need to do this unkown conversion
   return ((await getClient()).hgetAsync(decorateKey(`device:${keyID}:device`), 'type') as unknown) as VEHICLE_TYPE
@@ -168,17 +177,17 @@ async function writeDeviceState(field: UUID, data: StateEntry) {
   return (await getClient()).hsetAsync(decorateKey('device:state'), field, JSON.stringify(data))
 }
 
-async function readTripsEvents(field: UUID): Promise<TripsEvents | null> {
-  const tripsEvents = await hget(decorateKey('trips:events'), field)
-  return tripsEvents ? parseTripsEvents(tripsEvents as StringifiedTripsEvents) : null
+async function readTripsEvents(field: UUID): Promise<TripEvent[] | null> {
+  const tripEvents = await hget(decorateKey('trips:events'), field)
+  return tripEvents ? parseTripEvents(tripEvents as StringifiedTripEvent[]) : null
 }
 
-async function readAllTripsEvents(): Promise<{ [vehicle_id: string]: TripsEvents } | null> {
+async function readAllTripsEvents(): Promise<{ [id: string]: TripEvent[] } | null> {
   const allTripsEvents = await hgetall('trips:events')
   return allTripsEvents ? parseAllTripsEvents(allTripsEvents as StringifiedAllTripsEvents) : null
 }
 
-async function writeTripsEvents(field: UUID, data: TripsEvents) {
+async function writeTripsEvents(field: UUID, data: TripEvent[]) {
   return (await getClient()).hsetAsync(decorateKey('trips:events'), field, JSON.stringify(data))
 }
 
@@ -186,12 +195,12 @@ async function deleteTripsEvents(field: UUID) {
   return (await getClient()).hdelAsync(decorateKey('trips:events'), field)
 }
 
-async function readTripsTelemetry(field: UUID): Promise<TripsTelemetry | null> {
-  const tripsTelemetry = await hget(decorateKey('trips:telemetry'), field)
-  return tripsTelemetry ? parseTripsTelemetry(tripsTelemetry as StringifiedTripsTelemetry) : null
+async function readTripsTelemetry(field: UUID): Promise<TripTelemetry[] | null> {
+  const tripTelemetry = await hget(decorateKey('trips:telemetry'), field)
+  return tripTelemetry ? parseTripTelemetry(tripTelemetry as StringifiedTripTelemetry[]) : null
 }
 
-async function writeTripsTelemetry(field: UUID, data: TripsTelemetry) {
+async function writeTripsTelemetry(field: UUID, data: TripTelemetry[]) {
   return (await getClient()).hsetAsync(decorateKey('trips:telemetry'), field, JSON.stringify(data))
 }
 

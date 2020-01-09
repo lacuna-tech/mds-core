@@ -72,13 +72,10 @@ export async function processTripTelemetry(deviceState: StateEntry): Promise<boo
   // Check if associated to an event or telemetry post
   const tripId = type === 'telemetry' ? await getTripId(deviceState) : trip_id
   if (tripId) {
-    const tripsCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
-    const trips = tripsCache || {}
-    if (!trips[tripId]) {
-      trips[tripId] = []
-    }
-    trips[tripId].push(tripTelemetry)
-    await cache.writeTripsTelemetry(`${provider_id}:${device_id}`, trips)
+    const tripCache = await cache.readTripsTelemetry(`${provider_id}:${device_id}`)
+    const trip = tripCache || []
+    trip.push(tripTelemetry)
+    await cache.writeTripsTelemetry(`${provider_id}:${device_id}:${trip_id}`, trip)
     return true
   }
   return false
@@ -119,13 +116,10 @@ export async function processTripEvent(deviceState: StateEntry): Promise<boolean
 
   // Either append to existing trip or create new entry
   if (trip_id) {
-    const tripsCache = await cache.readTripsEvents(`${provider_id}:${device_id}`)
-    const trips = tripsCache || {}
-    if (!trips[trip_id]) {
-      trips[trip_id] = []
-    }
-    trips[trip_id].push(tripEvent)
-    await cache.writeTripsEvents(`${provider_id}:${device_id}`, trips)
+    const tripCache = await cache.readTripsEvents(`${provider_id}:${device_id}:${trip_id}`)
+    const trip = tripCache || []
+    trip.push(tripEvent)
+    await cache.writeTripsEvents(`${provider_id}:${device_id}:${trip_id}`, trip)
     return true
   }
   return false
