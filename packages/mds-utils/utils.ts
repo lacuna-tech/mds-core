@@ -673,10 +673,7 @@ function moved(latA: number, lngA: number, latB: number, lngB: number) {
   return lngDiff > limit || latDiff > limit // very computational efficient basic check (better than sqrts & trig)
 }
 
-const calcDistance = (
-  telemetry: TripTelemetryField,
-  startGps: GpsData
-): { distance: number; points: number[] } => {
+const calcDistance = (telemetry: TripTelemetryField, startGps: GpsData): { distance: number; points: number[] } => {
   let tempX = startGps.lat
   let tempY = startGps.lng
   let distance = 0

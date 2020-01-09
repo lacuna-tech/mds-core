@@ -73,7 +73,7 @@ declare module 'redis' {
     hdelAsync: (...args: (string | number)[]) => Promise<number>
     hgetallAsync: (arg1: string) => Promise<{ [key: string]: string }>
     hgetAsync: (key: string, field: string) => Promise<string>
-    hscanAsync: (key: string, cursor: number, pattern: string) => Promise<string>
+    hscanAsync: (key: string, cursor: number, condition: string, pattern: string) => Promise<string>
     hsetAsync: (key: string, field: string, value: string) => Promise<number>
     hmsetAsync: (...args: unknown[]) => Promise<'OK'>
     infoAsync: () => Promise<string>
@@ -180,6 +180,11 @@ async function writeDeviceState(field: UUID, data: StateEntry) {
 async function readTripsEvents(field: UUID): Promise<TripEvent[] | null> {
   const tripEvents = await hget(decorateKey('trips:events'), field)
   return tripEvents ? parseTripEvents(tripEvents as StringifiedTripEvent[]) : null
+}
+
+async function readTripsEventsVehicle(pattern: string): Promise<{ [id: string]: TripEvent[] } | null> {
+  const tripEvents = await hscan('trips:events', pattern)
+  return tripEvents ? parseAllTripsEvents(tripEvents as StringifiedAllTripsEvents) : null
 }
 
 async function readAllTripsEvents(): Promise<{ [id: string]: TripEvent[] } | null> {
@@ -704,6 +709,7 @@ export = {
   readAllDeviceStates,
   writeDeviceState,
   readTripsEvents,
+  readTripsEventsVehicle,
   readAllTripsEvents,
   writeTripsEvents,
   deleteTripsEvents,

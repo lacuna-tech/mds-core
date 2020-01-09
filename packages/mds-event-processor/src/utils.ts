@@ -1,4 +1,4 @@
-import { StateEntry, TripEvent, VEHICLE_EVENTS } from '@mds-core/mds-types'
+import { StateEntry, TripEvent, TripsEvents, VEHICLE_EVENTS } from '@mds-core/mds-types'
 import cache from '@mds-core/mds-cache'
 import log from '@mds-core/mds-logger'
 
@@ -28,7 +28,8 @@ export async function getTripId(deviceState: StateEntry): Promise<string | null>
     Return trip_id for telemetery entry by associating timestamps
   */
   const { provider_id, device_id, timestamp } = deviceState
-  const tripsEvents = await cache.readTripsEvents(`${provider_id}:${device_id}`)
+  const tripsEvents = await cache.readTripsEventsVehicle(`${provider_id}:${device_id}:*`)
+  log.info('ALL TRIPS EVENTS', tripsEvents)
   if (!tripsEvents) {
     log.info(`NO PRIOR TRIP EVENTS FOUND for ${provider_id}:${device_id}`)
     return null

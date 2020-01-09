@@ -75,6 +75,8 @@ export interface TripEvent {
   service_area_id?: UUID | null
 }
 
+export type TripsEvents = { [id: string]: TripEvent[] }
+
 export interface TripTelemetry {
   timestamp: Timestamp
   latitude: number | null
