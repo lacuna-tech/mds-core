@@ -15,19 +15,65 @@
     limitations under the License.
  */
 
-import { EventServer, initializeStanSubscriber } from '@mds-core/mds-event-server'
 import processor from '@mds-core/mds-event-processor'
+import NATS from 'nats'
+import stan from 'node-nats-streaming'
+import { StringDecoder } from 'string_decoder'
+import uuid from 'uuid'
 
 const {
-  env: { npm_package_name, PORT = 5000, STAN, STAN_CLUSTER, STAN_CREDS, TENANT_ID = 'mds' },
-  pid
+  env: { STAN = 'localhost', STAN_CLUSTER = 'stan', STAN_CREDS = 'stan.creds', TENANT_ID = 'mds' }
 } = process
 
 /* eslint-reason avoids import of logger */
 /* eslint-disable-next-line no-console */
-EventServer(processor).listen(PORT, () => {
-  console.log(`${npm_package_name} running on port ${PORT}`)
-  if (STAN && STAN_CLUSTER && TENANT_ID && STAN_CREDS)
-    initializeStanSubscriber({ STAN, STAN_CLUSTER, STAN_CREDS, TENANT_ID, pid, processor })
-  else console.log(`Cannot initialize STAN Subscribers. One of STAN, STAN_CLUSTER, or TENANT_ID is undefined.`)
-})
+
+if (STAN && STAN_CLUSTER && TENANT_ID && STAN_CREDS) {
+  const decoder = new StringDecoder('utf8')
+
+  const natsClient = NATS.connect({ url: `nats://${STAN}:4222`, userCreds: STAN_CREDS, encoding: 'binary' })
+
+  const nats = stan.connect(STAN_CLUSTER, `mds-event-processor-${uuid()}`, {
+    nc: natsClient
+  })
+
+  try {
+    nats.on('connect', () => {
+      const eventSubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.event`, {
+        ...nats.subscriptionOptions(),
+        manualAcks: true,
+        maxInFlight: 1
+      })
+
+      eventSubscription.on('message', async (msg: any) => {
+        const {
+          spec: {
+            payload: { data }
+          }
+        } = JSON.parse(decoder.write(msg.msg.array[3]))
+        const parsedData = JSON.parse(data)
+        await processor('event', parsedData)
+        msg.ack()
+      })
+
+      const telemetrySubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.telemetry`, {
+        ...nats.subscriptionOptions(),
+        manualAcks: true,
+        maxInFlight: 1
+      })
+
+      telemetrySubscription.on('message', async (msg: any) => {
+        const {
+          spec: {
+            payload: { data }
+          }
+        } = JSON.parse(decoder.write(msg.msg.array[3]))
+        const parsedData = JSON.parse(data)
+        await processor('telemetry', parsedData)
+        msg.ack()
+      })
+    })
+  } catch (err) {
+    console.log(err)
+  }
+} else console.log(`Cannot initialize STAN Subscribers. One of STAN, STAN_CLUSTER, or TENANT_ID is undefined.`)

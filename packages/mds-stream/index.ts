@@ -21,6 +21,7 @@ import NATS from 'nats'
 import stan from 'node-nats-streaming'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
+import uuid from 'uuid'
 import {
   Stream,
   StreamItem,
@@ -31,16 +32,11 @@ import {
   StreamItemID
 } from './types'
 
-const { env, pid } = process
+const { env } = process
 
 const natsClient = NATS.connect({ url: `nats://${env.STAN}:4222`, userCreds: env.STAN_CREDS, encoding: 'binary' })
-let nats: stan.Stan
-
-natsClient.on('connect', () => {
-  // eslint-disable-next-line no-var
-  nats = stan.connect(env.STAN_CLUSTER || 'stan', `mds-event-processor-${pid}`, {
-    nc: natsClient
-  })
+const nats = stan.connect(env.STAN_CLUSTER || 'stan', `mds-agency-${uuid()}`, {
+  nc: natsClient
 })
 
 let binding: BinaryHTTPEmitter | null = null
