@@ -14,11 +14,28 @@
     See the License for the specific language governing permissions and
     limitations under the License.
  */
+/* eslint-disable @typescript-eslint/no-floating-promises */
+/*
+    Copyright 2019 City of Los Angeles.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ */
+
 import processor from '@mds-core/mds-event-processor'
-import uuid from 'uuid'
 import NATS from 'nats'
 import stan from 'node-nats-streaming'
 import { StringDecoder } from 'string_decoder'
+import uuid from 'uuid'
 
 const {
   env: { STAN = 'localhost', STAN_CLUSTER = 'stan', STAN_CREDS = 'stan.creds', TENANT_ID = 'mds' }
@@ -38,7 +55,6 @@ if (STAN && STAN_CLUSTER && TENANT_ID && STAN_CREDS) {
 
   try {
     nats.on('connect', () => {
-      console.log('Connected!')
       const eventSubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.event`, {
         ...nats.subscriptionOptions(),
         manualAcks: true,
@@ -46,9 +62,13 @@ if (STAN && STAN_CLUSTER && TENANT_ID && STAN_CREDS) {
       })
 
       eventSubscription.on('message', async (msg: any) => {
-        const { data } = JSON.parse(decoder.write(msg.msg.array[3]))
-        console.log(data)
-        await processor('event', data)
+        const {
+          spec: {
+            payload: { data }
+          }
+        } = JSON.parse(decoder.write(msg.msg.array[3]))
+        const parsedData = JSON.parse(data)
+        await processor('event', parsedData)
         msg.ack()
       })
 
@@ -59,9 +79,13 @@ if (STAN && STAN_CLUSTER && TENANT_ID && STAN_CREDS) {
       })
 
       telemetrySubscription.on('message', async (msg: any) => {
-        const { data } = JSON.parse(decoder.write(msg.msg.array[3]))
-        console.log(data)
-        await processor('telemetry', data)
+        const {
+          spec: {
+            payload: { data }
+          }
+        } = JSON.parse(decoder.write(msg.msg.array[3]))
+        const parsedData = JSON.parse(data)
+        await processor('telemetry', parsedData)
         msg.ack()
       })
     })
