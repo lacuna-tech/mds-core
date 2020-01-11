@@ -73,7 +73,7 @@ declare module 'redis' {
     hdelAsync: (...args: (string | number)[]) => Promise<number>
     hgetallAsync: (arg1: string) => Promise<{ [key: string]: string }>
     hgetAsync: (key: string, field: string) => Promise<string>
-    hscanAsync: (key: string, cursor: number, condition: string, pattern: string) => Promise<string>
+    hscanAsync: (key: string, cursor: number, condition: string, pattern: string) => Promise<[string, string[]]>
     hsetAsync: (key: string, field: string, value: string) => Promise<number>
     hmsetAsync: (...args: unknown[]) => Promise<'OK'>
     infoAsync: () => Promise<string>
@@ -149,10 +149,13 @@ async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null>
   return null
 }
 
-async function hscan(key: string, pattern: string): Promise<CachedItem | CachedHashItem | null> {
+// TODO: explore alternatives to pattern match on field
+async function hscan(key: string, pattern: string): Promise<string[] | null> {
+  // hscanAsync returns contain an array of two elements, a string representing the cursor and a sub-array containing an array of alternating key/values
   const flat = await (await getClient()).hscanAsync(decorateKey(key), 0, 'MATCH', pattern)
-  if (flat) {
-    return unflatten(flat)
+  const entry = flat[1]
+  if (entry.length > 0) {
+    return entry
   }
   return null
 }
@@ -183,8 +186,23 @@ async function readTripsEvents(field: UUID): Promise<TripEvent[] | null> {
 }
 
 async function readTripsEventsVehicle(pattern: string): Promise<{ [id: string]: TripEvent[] } | null> {
-  const tripEvents = await hscan('trips:events', pattern)
-  return tripEvents ? parseAllTripsEvents(tripEvents as StringifiedAllTripsEvents) : null
+  // hscan returns list of alternating key and value strings (i.e. [keyA, valueA, keyB, valueB])
+  const allFilteredTripEventsList = await hscan('trips:events', pattern)
+  if (allFilteredTripEventsList) {
+    let lastKey = ''
+    const allFilteredTripEvents = allFilteredTripEventsList.reduce((acc, entry, index) => {
+      if (index % 2 === 0) {
+        acc[entry] = []
+        lastKey = entry
+      } else {
+        // TODO: reformat so it works with StringifiedAllTripsEvents
+        acc[lastKey] = JSON.parse(entry)
+      }
+      return acc
+    }, {} as StringifiedAllTripsEvents)
+    return parseAllTripsEvents(allFilteredTripEvents)
+  }
+  return null
 }
 
 async function readAllTripsEvents(): Promise<{ [id: string]: TripEvent[] } | null> {

@@ -58,7 +58,7 @@ export type CachedItem =
   | StringifiedStateEntry
 
 export type CachedHashItem =
-  | StringifiedTripEvent[]
-  | StringifiedTripTelemetry[]
   | StringifiedAllTripsEvents
   | StringifiedAllDeviceStates
+  | StringifiedTripEvent[]
+  | StringifiedTripTelemetry[]

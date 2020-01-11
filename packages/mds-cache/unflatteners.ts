@@ -77,6 +77,7 @@ function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [v
 
 function parseTripEvents(tripEventsStr: StringifiedTripEvent[]): TripEvent[] {
   try {
+    console.log('SINGLE ENTRY', tripEventsStr)
     const result: TripEvent[] = []
     // TODO: fix awkward cast/parsing, should be unnecessary with typing
     const tripEvents: StringifiedTripEvent[] = JSON.parse(String(tripEventsStr))
@@ -139,12 +140,13 @@ function parseTripTelemetry(tripTelemetryStr: StringifiedTripTelemetry[]): TripT
 
 function parseAllTripsEvents(allTripsEvents: StringifiedAllTripsEvents): { [id: string]: TripEvent[] } {
   try {
+    console.log('ALL TRIPS ERROR', allTripsEvents)
     const allTrips: { [id: string]: TripEvent[] } = Object.keys(allTripsEvents).reduce((acc, vehicle_id) => {
       return Object.assign(acc, { [vehicle_id]: parseTripEvents(allTripsEvents[vehicle_id]) })
     }, {})
     return allTrips
   } catch (err) {
-    throw new ParseError(`unable to parse allTripsEvents`)
+    throw new ParseError(`unable to parse allTripsEvents: ${err}`)
   }
 }
 
