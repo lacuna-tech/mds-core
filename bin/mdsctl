@@ -69,7 +69,7 @@ declare -A configs=(
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
   ["natss-repository"]="${MDS_NATSS_REPOSITORY:-https://github.com/knative/eventing-contrib}"
   ["nats-repository"]="${MDS_NATS_REPOSITORY:-https://github.com/nats-io/k8s}"
-  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats}" #knative,natss}"
+  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio}" #",nats}" #knative,natss}"
   ["install"]="${MDS_INSTALL:-mds}"
   ["test"]="${MDS_TEST:-unit,integration}"
   ["uninstall"]="${MDS_UNINSTALL:-logging,mds,istio,helm}"
@@ -589,12 +589,20 @@ installGrafana() {
   }
 }
 
+iamgeTag() {
+  case "${configs[provider],,}" in
+    aws) ;;
+    gcp) gcloud container images list-tags --limit=1 --format='get(TAGS)' ${configs[image-repository]}/${1};;
+    *) docker images ${1} --format {{.Tag}};;
+  esac
+}
+
 imageVersion() {
   for s in $(services); do
-    is+="${is:+,}sets-mds+=apis.${s}.version=$(docker images ${s} --format {{.Tag}})"
+    is+="${is:+,}sets-mds+=apis.${s}.version=$(iamgeTag ${s})"
   done; unset s
   for s in $(processors); do
-    is+="${is:+,}sets-mds+=processors.${s}.version=$(docker images ${s} --format {{.Tag}})"
+    is+="${is:+,}sets-mds+=processors.${s}.version=$(iamgeTag ${s})"
   done; unset s
 
   echo ${is}
@@ -769,7 +777,7 @@ installNats() {
     fi
 
     (cd ${configs[nats]}
-      ./setup.sh --without-tls) # --without-tls --without-auth)
+      ./setup.sh --without-tls) # --without-auth)
   fi
 }
 
