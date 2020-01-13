@@ -1,7 +1,7 @@
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import log from '@mds-core/mds-logger'
-import { calcDistance, isUUID, now } from '@mds-core/mds-utils'
+import { calcDistance, now } from '@mds-core/mds-utils'
 import { TripEvent, TripEntry, UUID, Timestamp } from '@mds-core/mds-types'
 import { eventValidation, createTelemetryMap } from './utils'
 import { getConfig } from './configuration'
