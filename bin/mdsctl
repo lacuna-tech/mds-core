@@ -63,6 +63,8 @@ declare -A configs=(
   ["brew-helm"]="helm@2"
   ["brew-k9s"]="derailed/k9s/k9s"
   ["brew-oq"]="blacksmoke16/tap"
+  ["brew-cask"]="${MDS_BREW_CASK:-gcloud}"
+  ["brew-cask-gcloud"]="google-cloud-sdk"
   ["paths"]="${MDS_PATHS:-envsubst helm}"
   ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
@@ -269,17 +271,17 @@ EOF
 bootstrap() {
   check ${FUNCNAME[0]}
 
-  for l in ${configs[brew]}; do
-    lc=${configs[brew-${l}]:-${l}}
+  for r in ${configs[brew]}; do
+    rc=${configs[brew-${r}]:-${r}}
 
-    hash ${l} > /dev/null 2>&1 || {
-      case ${l} in
-        oq) brew tap ${lc};;
-        *) brew install ${lc};;
+    hash ${r} > /dev/null 2>&1 || {
+      case ${r} in
+        oq) brew tap ${rc};;
+        *) brew install ${rc};;
       esac
 
       # todo: unable to detect nvm install via subshell given it is an alias
-      case ${l} in
+      case ${r} in
         nvm)
           [ ! -d ~/.nmv ] && mkdir -p ~/.nvm
           [ $(grep -Fxq "export NMV_DIR=\"\${HOME}/.nvm\"" ~/.bashrc; echo $?) == "1" ] && \
@@ -291,10 +293,18 @@ bootstrap() {
           nvm use node
           nvm install 10.16.3
           nvm alias default 10.16.3;;
-        envsubst) brew link --force ${lc};;
+        envsubst) brew link --force ${rc};;
       esac
     }
-  done; unset l lc
+  done; unset r rc
+
+  for r in ${configs[brew-cask]}; do
+    rc=${configs[brew-cask-${r}]:-${r}}
+
+    hash ${r} > /dev/null 2>&1 || {
+      brew cask install ${rc}
+    }
+  done; uninstall c rc
 
   initialize
 
