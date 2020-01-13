@@ -29,7 +29,6 @@ export async function getTripId(deviceState: StateEntry): Promise<string | null>
   */
   const { provider_id, device_id, timestamp } = deviceState
   const tripsEvents = await cache.readTripsEventsVehicle(`${provider_id}:${device_id}:*`)
-  log.info('ALL TRIPS EVENTS', tripsEvents)
   if (!tripsEvents) {
     log.info(`NO PRIOR TRIP EVENTS FOUND for ${provider_id}:${device_id}`)
     return null

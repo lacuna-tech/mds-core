@@ -24,7 +24,7 @@ async function processTrip(
   trip_id: UUID,
   events: TripEvent[],
   curTime: Timestamp
-): Promise<UUID | null> {
+): Promise<boolean> {
   const config = await getConfig()
   /*
     Add telemetry and meta data into database when a trip ends
@@ -42,7 +42,7 @@ async function processTrip(
   // Validation
   events.sort((a, b) => a.timestamp - b.timestamp)
   if (!eventValidation(events, curTime, config.compliance_sla.max_telemetry_time)) {
-    return null
+    return false
   }
 
   // Calculate event binned trip telemetry data
@@ -89,12 +89,14 @@ async function processTrip(
     }
 
     await db.insertTrips(tripData)
-    return `${provider_id}:${device_id}:${trip_id}`
+    await cache.deleteTripsEvents(`${provider_id}:${device_id}:${trip_id}`)
+    await cache.deleteTripsTelemetry(`${provider_id}:${device_id}:${trip_id}`)
+    return true
   }
   throw new Error('TELEMETRY NOT FOUND')
 }
 
-export async function tripProcessor() {
+export async function tripProcessor(): Promise<void> {
   await Promise.all([db.startup(), cache.startup(), getConfig()])
   const curTime = now()
   const tripsMap = await cache.readAllTripsEvents()
@@ -102,7 +104,7 @@ export async function tripProcessor() {
     log.info('NO TRIP EVENTS FOUND')
     return
   }
-  const results = await Promise.all(
+  await Promise.all(
     Object.keys(tripsMap).map(tripUUID => {
       const [provider_id, device_id, trip_id] = tripUUID.split(':')
       const tripEvents = tripsMap[tripUUID]
@@ -113,12 +115,4 @@ export async function tripProcessor() {
       }
     })
   )
-
-  // Update or clear cache
-  results.map(async response => {
-    if (isUUID(response) && tripsMap[response]) {
-      await cache.deleteTripsEvents(response)
-      await cache.deleteTripsTelemetry(response)
-    }
-  })
 }
