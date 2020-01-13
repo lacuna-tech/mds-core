@@ -56,8 +56,8 @@ import {
   StringifiedEvent,
   StringifiedStateEntry,
   StringifiedAllDeviceStates,
-  StringifiedTripEvent,
-  StringifiedTripTelemetry,
+  StringifiedTripEvents,
+  StringifiedTripTelemetries,
   StringifiedAllTripsEvents
 } from './types'
 
@@ -182,9 +182,10 @@ async function writeDeviceState(field: UUID, data: StateEntry) {
 
 async function readTripsEvents(field: UUID): Promise<TripEvent[] | null> {
   const tripEvents = await hget(decorateKey('trips:events'), field)
-  return tripEvents ? parseTripEvents(tripEvents as StringifiedTripEvent[]) : null
+  return tripEvents ? parseTripEvents(tripEvents as StringifiedTripEvents) : null
 }
 
+// TODO: Investigate alternatives, this should be used temporarily. O(n) runtime for streaming is not ideal.
 async function readTripsEventsVehicle(pattern: string): Promise<{ [id: string]: TripEvent[] } | null> {
   // hscan returns list of alternating key and value strings (i.e. [keyA, valueA, keyB, valueB])
   const allFilteredTripEventsList = await hscan('trips:events', pattern)
@@ -192,11 +193,10 @@ async function readTripsEventsVehicle(pattern: string): Promise<{ [id: string]: 
     let lastKey = ''
     const allFilteredTripEvents = allFilteredTripEventsList.reduce((acc, entry, index) => {
       if (index % 2 === 0) {
-        acc[entry] = []
+        acc[entry] = ''
         lastKey = entry
       } else {
-        // TODO: reformat so it works with StringifiedAllTripsEvents
-        acc[lastKey] = JSON.parse(entry)
+        acc[lastKey] = entry
       }
       return acc
     }, {} as StringifiedAllTripsEvents)
@@ -220,7 +220,7 @@ async function deleteTripsEvents(field: UUID) {
 
 async function readTripsTelemetry(field: UUID): Promise<TripTelemetry[] | null> {
   const tripTelemetry = await hget(decorateKey('trips:telemetry'), field)
-  return tripTelemetry ? parseTripTelemetry(tripTelemetry as StringifiedTripTelemetry[]) : null
+  return tripTelemetry ? parseTripTelemetry(tripTelemetry as StringifiedTripTelemetries) : null
 }
 
 async function writeTripsTelemetry(field: UUID, data: TripTelemetry[]) {

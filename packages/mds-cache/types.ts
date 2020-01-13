@@ -37,7 +37,8 @@ export type StringifiedTripEvent = Stringify<Omit<Omit<TripEvent, 'annotation'>,
   annotation: Stringify<AnnotationData> | null
   gps: Stringify<GpsData> | null
 }
-export type StringifiedAllTripsEvents = { [id: string]: StringifiedTripEvent[] }
+export type StringifiedTripEvents = string
+export type StringifiedAllTripsEvents = { [id: string]: StringifiedTripEvents }
 export type StringifiedTripTelemetry = Stringify<Omit<TripTelemetry, 'annotation'>> & {
   annotation: Stringify<AnnotationData>
 }
@@ -45,6 +46,7 @@ export type StringifiedEvent = Stringify<Omit<VehicleEvent, 'telemetry'>>
 export type StringifiedTelemetry = Stringify<Omit<Telemetry, 'gps'>> & {
   gps: Stringify<Omit<TelemetryData, 'charge'>>
 }
+export type StringifiedTripTelemetries = string
 export type StringifiedEventWithTelemetry = StringifiedEvent & { telemetry?: StringifiedTelemetry }
 
 export type StringifiedCacheReadDeviceResult = Stringify<CacheReadDeviceResult & { timestamp?: Timestamp }> & {
@@ -60,5 +62,5 @@ export type CachedItem =
 export type CachedHashItem =
   | StringifiedAllTripsEvents
   | StringifiedAllDeviceStates
-  | StringifiedTripEvent[]
-  | StringifiedTripTelemetry[]
+  | StringifiedTripEvents
+  | StringifiedTripTelemetries

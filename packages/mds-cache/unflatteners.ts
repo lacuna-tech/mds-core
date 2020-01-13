@@ -25,7 +25,9 @@ import {
   StringifiedStateEntry,
   StringifiedAllDeviceStates,
   StringifiedTripEvent,
+  StringifiedTripEvents,
   StringifiedTripTelemetry,
+  StringifiedTripTelemetries,
   StringifiedAllTripsEvents
 } from './types'
 
@@ -75,12 +77,10 @@ function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [v
   }
 }
 
-function parseTripEvents(tripEventsStr: StringifiedTripEvent[]): TripEvent[] {
+function parseTripEvents(tripEventsStr: StringifiedTripEvents): TripEvent[] {
   try {
-    console.log('SINGLE ENTRY', tripEventsStr)
     const result: TripEvent[] = []
-    // TODO: fix awkward cast/parsing, should be unnecessary with typing
-    const tripEvents: StringifiedTripEvent[] = JSON.parse(String(tripEventsStr))
+    const tripEvents: StringifiedTripEvent[] = JSON.parse(tripEventsStr)
     tripEvents.map(tripEvent => {
       result.push({
         vehicle_type: tripEvent.vehicle_type as VEHICLE_TYPE,
@@ -113,10 +113,10 @@ function parseTripEvents(tripEventsStr: StringifiedTripEvent[]): TripEvent[] {
   }
 }
 
-function parseTripTelemetry(tripTelemetryStr: StringifiedTripTelemetry[]): TripTelemetry[] {
+function parseTripTelemetry(tripTelemetryStr: StringifiedTripTelemetries): TripTelemetry[] {
   try {
     const result: TripTelemetry[] = []
-    const tripTelemetry: StringifiedTripTelemetry[] = JSON.parse(String(tripTelemetryStr))
+    const tripTelemetry: StringifiedTripTelemetry[] = JSON.parse(tripTelemetryStr)
     tripTelemetry.map(telemetry => {
       result.push({
         timestamp: Number(telemetry.timestamp),
@@ -140,7 +140,6 @@ function parseTripTelemetry(tripTelemetryStr: StringifiedTripTelemetry[]): TripT
 
 function parseAllTripsEvents(allTripsEvents: StringifiedAllTripsEvents): { [id: string]: TripEvent[] } {
   try {
-    console.log('ALL TRIPS ERROR', allTripsEvents)
     const allTrips: { [id: string]: TripEvent[] } = Object.keys(allTripsEvents).reduce((acc, vehicle_id) => {
       return Object.assign(acc, { [vehicle_id]: parseTripEvents(allTripsEvents[vehicle_id]) })
     }, {})
