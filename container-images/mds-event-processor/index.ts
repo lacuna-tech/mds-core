@@ -66,7 +66,7 @@ if (STAN && STAN_CLUSTER && TENANT_ID && STAN_CREDS) {
           spec: {
             payload: { data }
           }
-        } = JSON.parse(decoder.write(msg.msg.array[3]))
+        } = JSON.parse(msg.getRawData().toString())
         const parsedData = JSON.parse(data)
         await processor('event', parsedData)
         msg.ack()
