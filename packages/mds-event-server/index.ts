@@ -1,8 +1,8 @@
 import express from 'express'
-import NATS from 'nats'
+import uuid from 'uuid'
 import stan from 'node-nats-streaming'
 import { pathsFor } from '@mds-core/mds-utils'
-import logger from '@mds-core/mds-logger'
+import log from '@mds-core/mds-logger'
 import { AboutRequestHandler, HealthRequestHandler, JsonBodyParserMiddleware } from '@mds-core/mds-api-server'
 import Cloudevent, { BinaryHTTPReceiver } from 'cloudevents-sdk/v1'
 import { StringDecoder } from 'string_decoder'
@@ -15,58 +15,62 @@ export const initializeStanSubscriber = <TData, TResult>({
   STAN_CLUSTER,
   STAN_CREDS,
   TENANT_ID,
-  pid,
   processor
 }: {
   STAN: string
   STAN_CLUSTER: string
-  STAN_CREDS: string
+  STAN_CREDS?: string
   TENANT_ID: string
-  pid: number
   processor: EventProcessor<TData, TResult>
 }) => {
-  console.log('foo')
-
-  const decoder = new StringDecoder('utf8')
-
-  const natsClient = NATS.connect({ url: `nats://${STAN}:4222`, userCreds: STAN_CREDS, encoding: 'binary' })
-
-  const nats = stan.connect(STAN_CLUSTER, `mds-event-processor-${pid}`, {
-    nc: natsClient
-  })
-
-  console.log('foo')
-
-  try {
-    nats.on('connect', () => {
-      console.log('Connected!')
-      const eventSubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.event`, {
-        ...nats.subscriptionOptions(),
-        manualAcks: true,
-        maxInFlight: 1
-      })
-
-      eventSubscription.on('message', async (msg: any) => {
-        const { data } = JSON.parse(decoder.write(msg.msg.array[3]))
-        await processor('event', data)
-        msg.ack()
-      })
-
-      const telemetrySubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.telemetry`, {
-        ...nats.subscriptionOptions(),
-        manualAcks: true,
-        maxInFlight: 1
-      })
-
-      telemetrySubscription.on('message', async (msg: any) => {
-        const { data } = JSON.parse(decoder.write(msg.msg.array[3]))
-        await processor('telemetry', data)
-        msg.ack()
-      })
+  if (STAN && STAN_CLUSTER && TENANT_ID) {
+    const decoder = new StringDecoder('utf8')
+    const nats = stan.connect(STAN_CLUSTER, `mds-event-processor-${uuid()}`, {
+      url: `nats://${STAN}:4222`,
+      userCreds: STAN_CREDS
     })
-  } catch (err) {
-    console.log(err)
-  }
+
+    try {
+      nats.on('connect', () => {
+        log.info('Connected!')
+        const eventSubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.event`, {
+          ...nats.subscriptionOptions(),
+          manualAcks: true,
+          maxInFlight: 1
+        })
+
+        eventSubscription.on('message', async (msg: any) => {
+          const {
+            spec: {
+              payload: { data }
+            }
+          } = JSON.parse(msg.getRawData().toString())
+          const parsedData = JSON.parse(data)
+          await processor('event', parsedData)
+          msg.ack()
+        })
+
+        const telemetrySubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.telemetry`, {
+          ...nats.subscriptionOptions(),
+          manualAcks: true,
+          maxInFlight: 1
+        })
+
+        telemetrySubscription.on('message', async (msg: any) => {
+          const {
+            spec: {
+              payload: { data }
+            }
+          } = JSON.parse(decoder.write(msg.msg.array[3]))
+          const parsedData = JSON.parse(data)
+          await processor('telemetry', parsedData)
+          msg.ack()
+        })
+      })
+    } catch (err) {
+      console.log(err)
+    }
+  } else console.log(`Cannot initialize STAN Subscribers. One of STAN, STAN_CLUSTER, or TENANT_ID is undefined.`)
 }
 
 export const EventServer = <TData, TResult>(
@@ -98,11 +102,11 @@ export const EventServer = <TData, TResult>(
       const { method, headers, body } = req
       try {
         const event = parseCloudEvent(req)
-        await logger.info('Cloud Event', method, event.format())
+        log.info('Cloud Event', method, event.format())
         const result = await processor(event.getType(), event.getData(), event)
         return res.status(200).send({ result })
       } catch (error) /* istanbul ignore next */ {
-        await logger.error('Cloud Event', error, { method, headers, body })
+        await log.error('Cloud Event', error, { method, headers, body })
         return res.status(500).send({ error })
       }
     })

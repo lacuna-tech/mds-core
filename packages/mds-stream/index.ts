@@ -34,9 +34,10 @@ import {
 
 const { env } = process
 
-const natsClient = NATS.connect({ url: `nats://${env.STAN}:4222`, userCreds: env.STAN_CREDS, encoding: 'binary' })
 const nats = stan.connect(env.STAN_CLUSTER || 'stan', `mds-agency-${uuid()}`, {
-  nc: natsClient
+  url: `nats://${env.STAN}:4222`,
+  userCreds: env.STAN_CREDS,
+  encoding: 'binary'
 })
 
 let binding: BinaryHTTPEmitter | null = null
