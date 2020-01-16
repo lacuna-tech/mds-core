@@ -102,7 +102,7 @@ spec:
           # - name: NATS
           #   value: nats-streaming-0.nats-streaming.natss.svc.cluster.local
           - name: STAN
-            value: stan-0.stan.default.svc.cluster.local
+            value: stan.default.svc.cluster.local
           - name: STAN_CLUSTER
             value: stan
           - name: STAN_CREDS
