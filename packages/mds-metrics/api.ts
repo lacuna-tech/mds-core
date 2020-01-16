@@ -59,7 +59,10 @@ function api(app: express.Express): express.Express {
     pathsFor('/all'),
     checkAccess(scopes => scopes.includes('metrics:read') || scopes.includes('metrics:read:provider')),
     async (req, res, next) => {
-      if (res.locals.scopes.includes('metrics:read:provider')) {
+      if (res.locals.scopes.includes('metrics:read')) {
+        const provider_ids = normalizeToArray<UUID>(req.query.provider_id)
+        res.locals.provider_ids = provider_ids
+      } else if (res.locals.scopes.includes('metrics:read:provider')) {
         // Claim exists if previous check passes
         const { provider_id } = res.locals.claims
 
@@ -82,6 +85,7 @@ function api(app: express.Express): express.Express {
         // with only the claimed provider id
         // This loop makes sure we have [] or [provider_id] only
         for (const queryProviderId of normalizeToArray<UUID>(req.query.provider_id)) {
+          // provider id query params are validated in the request handler method
           if (queryProviderId !== provider_id) {
             return res
               .status(403)
@@ -90,9 +94,6 @@ function api(app: express.Express): express.Express {
         }
         // res.locals.provider_ids must contain provider_id from claim
         res.locals.provider_ids = [provider_id]
-      } else if (res.locals.scopes.includes('metrics:read')) {
-        const provider_ids = normalizeToArray<UUID>(req.query.provider_id)
-        res.locals.provider_ids = provider_ids
       } else {
         return res.status(401).send('Unauthorized')
       }
