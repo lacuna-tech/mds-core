@@ -121,6 +121,7 @@ declare -A configs=(
   ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-natss}"
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-default}"
   ["namespace-stan"]="${MDS_NAMESPACE_NATS:-${configs[namespace-nats]}}"
+  ["namespace-nats-box"]="${MDS_NAMESPACE_NATS:-${configs[namespace-nats]}}"
   ["namespace-dns-lookup"]="${MDS_NAMESPACE_DNS_LOOKUP:-default}"
   ["namespace-curl"]="${MDS_NAMESPACE_CURL:-default}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
@@ -823,6 +824,13 @@ installStan() {
     helm install ${configs[home]}/helm/stan-cluster --name stan-cluster --namespace ${configs[namespace-stan]}
 }
 
+installNatsbox() {
+  check ${FUNCNAME[0]}
+
+  [[ "$(helm list --short nats-box)" = "nats-box" ]] || \
+    helm install ${configs[home]}/helm/nats-box --name nats-box --namespace ${configs[namespace-nats-box]}
+}
+
 installNatss() {
   check ${FUNCNAME[0]}
 
@@ -1094,6 +1102,12 @@ uninstallKnative() {
         };;
     esac
   done; unset c
+}
+
+uninstallNatsbox() {
+  check ${FUNCNAME[0]}
+
+  [[ "$(helm list --short nats-box)" = "nats-box" ]] && helm delete --purge nats-box
 }
 
 uninstallStan() {
