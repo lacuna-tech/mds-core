@@ -25,8 +25,7 @@ import {
   TelemetryData,
   GpsData,
   AnnotationData,
-  PROPULSION_TYPE,
-  VEHICLE_TYPE
+  PROPULSION_TYPE
 } from '@mds-core/mds-types'
 
 export type StringifiedStateEntry = Stringify<Omit<Omit<StateEntry, 'annotation'>, 'gps'>> & {
@@ -65,4 +64,3 @@ export type CachedHashItem =
   | StringifiedTripsTelemetry
   | StringifiedAllTripsEvents
   | StringifiedAllDeviceStates
-
