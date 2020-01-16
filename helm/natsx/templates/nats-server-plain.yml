@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nats-config
+  namespace: {{ $.Release.Namespace | default "default" }}
 data:
   nats.conf: |
     pid_file: "/var/run/nats/nats.pid"
@@ -13,9 +14,7 @@ data:
       port: 6222
 
       routes [
-        nats://nats-0.nats.default.svc:6222
-        nats://nats-1.nats.default.svc:6222
-        nats://nats-2.nats.default.svc:6222
+        nats://nats-0.nats.{{ $.Release.Namespace | default "default" }}.svc:6222
       ]
 
       cluster_advertise: $CLUSTER_ADVERTISE
@@ -26,6 +25,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nats
+  namespace: {{ $.Release.Namespace | default "default" }}
   labels:
     app: nats
 spec:
@@ -50,6 +50,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: nats
+  namespace: {{ $.Release.Namespace | default "default" }}
   labels:
     app: nats
 spec:

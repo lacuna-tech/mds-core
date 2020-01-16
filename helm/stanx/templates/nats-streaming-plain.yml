@@ -3,6 +3,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: stan-config
+  namespace: {{ $.Release.Namespace | default "default" }}
 data:
   stan.conf: |
     port: 4222
@@ -11,7 +12,7 @@ data:
     leafnodes {
       remotes = [
         {
-            url: "nats://nats-0.nats.default.svc.cluster.local:7422"
+            url: ""nats://nats:7422"
         }
       ]
     }
@@ -27,7 +28,7 @@ data:
        log_path: /data/stan/log
 
        # Explicit names of resulting peers
-       peers: ["stan-0", "stan-1", "stan-2"]
+       peers: ["stan-0"]
       }
     }
 
@@ -36,6 +37,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: stan
+  namespace: {{ $.Release.Namespace | default "default" }}
   labels:
     app: stan
 spec:
@@ -50,6 +52,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: stan
+  namespace: {{ $.Release.Namespace | default "default" }}
   labels:
     app: stan
 spec:
