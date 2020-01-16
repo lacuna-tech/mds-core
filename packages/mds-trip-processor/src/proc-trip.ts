@@ -46,7 +46,7 @@ async function processTrip(
   }
 
   // Calculate event binned trip telemetry data
-  const telemetryList = await cache.readTripsTelemetry(`${provider_id}:${device_id}:${trip_id}`)
+  const telemetryList = await cache.readTripTelemetry(`${provider_id}:${device_id}:${trip_id}`)
   if (telemetryList) {
     // Get trip metadata
     const tripStartEvent = events[0]
@@ -89,8 +89,8 @@ async function processTrip(
     }
 
     await db.insertTrips(tripData)
-    await cache.deleteTripsEvents(`${provider_id}:${device_id}:${trip_id}`)
-    await cache.deleteTripsTelemetry(`${provider_id}:${device_id}:${trip_id}`)
+    await cache.deleteTripEvents(`${provider_id}:${device_id}:${trip_id}`)
+    await cache.deleteTripTelemetry(`${provider_id}:${device_id}:${trip_id}`)
     return true
   }
   throw new Error('TELEMETRY NOT FOUND')

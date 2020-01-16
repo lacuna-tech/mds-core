@@ -90,7 +90,7 @@ describe('Proc Event', () => {
   describe('getTripId()', () => {
     it('Returns null when there are no prior trips', async () => {
       const fakeReadTripsEvents = Sinon.fake.resolves(null)
-      Sinon.replace(cache, 'readTripsEventsVehicle', fakeReadTripsEvents)
+      Sinon.replace(cache, 'readDeviceTripsEvents', fakeReadTripsEvents)
       const fakeDeviceState: StateEntry = {} as StateEntry
       const result = await procEventUtils.getTripId(fakeDeviceState)
       assert.strictEqual(result, null)
@@ -99,7 +99,7 @@ describe('Proc Event', () => {
 
     it('Returns null when it fails to find trip events', async () => {
       const fakeReadTripsEvents = Sinon.fake.resolves({})
-      Sinon.replace(cache, 'readTripsEventsVehicle', fakeReadTripsEvents)
+      Sinon.replace(cache, 'readDeviceTripsEvents', fakeReadTripsEvents)
       const fakeDeviceState: StateEntry = {} as StateEntry
       const result = await procEventUtils.getTripId(fakeDeviceState)
       assert.strictEqual(result, null)
@@ -109,7 +109,7 @@ describe('Proc Event', () => {
     it('Finds the timestamp match', async () => {
       const trips = getMockedTripData()
       const fakeReadTripsEvents = Sinon.fake.resolves(trips)
-      Sinon.replace(cache, 'readTripsEventsVehicle', fakeReadTripsEvents)
+      Sinon.replace(cache, 'readDeviceTripsEvents', fakeReadTripsEvents)
       const fakeDeviceState: StateEntry = {
         timestamp: 44
       } as StateEntry
@@ -121,7 +121,7 @@ describe('Proc Event', () => {
     it('Does not find matching timestamp', async () => {
       const trips = getMockedTripData()
       const fakeReadTripsEvents = Sinon.fake.resolves(trips)
-      Sinon.replace(cache, 'readTripsEventsVehicle', fakeReadTripsEvents)
+      Sinon.replace(cache, 'readDeviceTripsEvents', fakeReadTripsEvents)
       const fakeDeviceState: StateEntry = {
         timestamp: 41
       } as StateEntry
@@ -149,10 +149,10 @@ describe('Proc Event', () => {
       Sinon.replace(procEventUtils, 'getTripId', fakeGetTripId)
 
       const fakeReadTripsTelemetry = Sinon.fake.resolves(null)
-      Sinon.replace(cache, 'readTripsTelemetry', fakeReadTripsTelemetry)
+      Sinon.replace(cache, 'readTripTelemetry', fakeReadTripsTelemetry)
 
       const fakeWriteTripsTelemetry = Sinon.fake.resolves('foo')
-      Sinon.replace(cache, 'writeTripsTelemetry', fakeWriteTripsTelemetry)
+      Sinon.replace(cache, 'writeTripTelemetry', fakeWriteTripsTelemetry)
 
       const fakeDeviceState: StateEntry = {
         timestamp: 41,
@@ -192,10 +192,10 @@ describe('Proc Event', () => {
 
     it('Writes to event map', async () => {
       const fakeReadTripsEvents = Sinon.fake.resolves(null)
-      Sinon.replace(cache, 'readTripsEvents', fakeReadTripsEvents)
+      Sinon.replace(cache, 'readTripEvents', fakeReadTripsEvents)
 
       const fakeWriteTripsEvents = Sinon.fake.resolves('foo')
-      Sinon.replace(cache, 'writeTripsEvents', fakeWriteTripsEvents)
+      Sinon.replace(cache, 'writeTripEvents', fakeWriteTripsEvents)
 
       const fakeDeviceState: StateEntry = {
         trip_id: 'fake-trip-id',

@@ -57,6 +57,8 @@ export interface StateEntry {
   trip_id?: UUID | null // telemetry entries will be null
 }
 
+export type DeviceStates = { [vehicle_id: string]: StateEntry }
+
 export interface AnnotationData {
   in_bound: boolean
   /* eslint-reason TODO: areas have not been defined yet within the scope of MJ */

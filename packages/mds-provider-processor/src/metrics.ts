@@ -55,7 +55,6 @@ async function calcVehicleCounts(
   endTime: Timestamp
 ): Promise<VehicleCountMetricObj> {
   // Calculate total number of registered vehicles at start of bin
-  // TODO: cache value to query only bin size
   const registeredVehicles = await cache.readKeys('device:*:device')
   const registeredCount = registeredVehicles?.length ?? 0
 

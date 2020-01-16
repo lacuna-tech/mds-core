@@ -5,7 +5,9 @@ import {
   VEHICLE_REASON,
   Device,
   StateEntry,
+  DeviceStates,
   TripEvent,
+  TripsEvents,
   TripTelemetry,
   Telemetry,
   VehicleEvent
@@ -66,9 +68,9 @@ function parseDeviceState(deviceState: StringifiedStateEntry): StateEntry {
   }
 }
 
-function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): { [vehicle_id: string]: StateEntry } {
+function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): DeviceStates {
   try {
-    const devices: { [vehicle_id: string]: StateEntry } = Object.keys(allDeviceStates).reduce((acc, vehicle_id) => {
+    const devices: DeviceStates = Object.keys(allDeviceStates).reduce((acc, vehicle_id) => {
       return Object.assign(acc, { [vehicle_id]: parseDeviceState(allDeviceStates[vehicle_id]) })
     }, {})
     return devices
@@ -138,7 +140,7 @@ function parseTripTelemetry(tripTelemetryStr: StringifiedTripTelemetries): TripT
   }
 }
 
-function parseAllTripsEvents(allTripsEvents: StringifiedAllTripsEvents): { [id: string]: TripEvent[] } {
+function parseAllTripsEvents(allTripsEvents: StringifiedAllTripsEvents): TripsEvents {
   try {
     const allTrips: { [id: string]: TripEvent[] } = Object.keys(allTripsEvents).reduce((acc, vehicle_id) => {
       return Object.assign(acc, { [vehicle_id]: parseTripEvents(allTripsEvents[vehicle_id]) })

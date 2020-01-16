@@ -24,9 +24,11 @@ import {
   Device,
   VehicleEvent,
   TripEvent,
+  TripsEvents,
   TripTelemetry,
   Telemetry,
   StateEntry,
+  DeviceStates,
   BoundingBox,
   EVENT_STATUS_MAP,
   VEHICLE_STATUSES,
@@ -171,7 +173,7 @@ async function readDeviceState(field: UUID): Promise<StateEntry | null> {
 }
 
 // TODO: Increase performance with provider pattern based fetch
-async function readAllDeviceStates(): Promise<{ [vehicle_id: string]: StateEntry } | null> {
+async function readAllDeviceStates(): Promise<DeviceStates | null> {
   const allDeviceStates = await hgetall('device:state')
   return allDeviceStates ? parseAllDeviceStates(allDeviceStates as StringifiedAllDeviceStates) : null
 }
@@ -180,13 +182,13 @@ async function writeDeviceState(field: UUID, data: StateEntry) {
   return (await getClient()).hsetAsync(decorateKey('device:state'), field, JSON.stringify(data))
 }
 
-async function readTripsEvents(field: UUID): Promise<TripEvent[] | null> {
+async function readTripEvents(field: UUID): Promise<TripEvent[] | null> {
   const tripEvents = await hget(decorateKey('trips:events'), field)
   return tripEvents ? parseTripEvents(tripEvents as StringifiedTripEvents) : null
 }
 
 // TODO: Investigate alternatives, this should be used temporarily. O(n) runtime for streaming is not ideal.
-async function readTripsEventsVehicle(pattern: string): Promise<{ [id: string]: TripEvent[] } | null> {
+async function readDeviceTripsEvents(pattern: string): Promise<TripsEvents | null> {
   // hscan returns list of alternating key and value strings (i.e. [keyA, valueA, keyB, valueB])
   const allFilteredTripEventsList = await hscan('trips:events', pattern)
   if (allFilteredTripEventsList) {
@@ -205,29 +207,29 @@ async function readTripsEventsVehicle(pattern: string): Promise<{ [id: string]: 
   return null
 }
 
-async function readAllTripsEvents(): Promise<{ [id: string]: TripEvent[] } | null> {
+async function readAllTripsEvents(): Promise<TripsEvents | null> {
   const allTripsEvents = await hgetall('trips:events')
   return allTripsEvents ? parseAllTripsEvents(allTripsEvents as StringifiedAllTripsEvents) : null
 }
 
-async function writeTripsEvents(field: UUID, data: TripEvent[]) {
+async function writeTripEvents(field: UUID, data: TripEvent[]) {
   return (await getClient()).hsetAsync(decorateKey('trips:events'), field, JSON.stringify(data))
 }
 
-async function deleteTripsEvents(field: UUID) {
+async function deleteTripEvents(field: UUID) {
   return (await getClient()).hdelAsync(decorateKey('trips:events'), field)
 }
 
-async function readTripsTelemetry(field: UUID): Promise<TripTelemetry[] | null> {
+async function readTripTelemetry(field: UUID): Promise<TripTelemetry[] | null> {
   const tripTelemetry = await hget(decorateKey('trips:telemetry'), field)
   return tripTelemetry ? parseTripTelemetry(tripTelemetry as StringifiedTripTelemetries) : null
 }
 
-async function writeTripsTelemetry(field: UUID, data: TripTelemetry[]) {
+async function writeTripTelemetry(field: UUID, data: TripTelemetry[]) {
   return (await getClient()).hsetAsync(decorateKey('trips:telemetry'), field, JSON.stringify(data))
 }
 
-async function deleteTripsTelemetry(field: UUID) {
+async function deleteTripTelemetry(field: UUID) {
   return (await getClient()).hdelAsync(decorateKey('trips:telemetry'), field)
 }
 
@@ -730,14 +732,14 @@ export = {
   readDeviceState,
   readAllDeviceStates,
   writeDeviceState,
-  readTripsEvents,
-  readTripsEventsVehicle,
+  readTripEvents,
+  readDeviceTripsEvents,
   readAllTripsEvents,
-  writeTripsEvents,
-  deleteTripsEvents,
-  readTripsTelemetry,
-  writeTripsTelemetry,
-  deleteTripsTelemetry,
+  writeTripEvents,
+  deleteTripEvents,
+  readTripTelemetry,
+  writeTripTelemetry,
+  deleteTripTelemetry,
   seed,
   reset,
   startup,
