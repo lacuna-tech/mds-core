@@ -40,14 +40,19 @@ export const initializeStanSubscriber = <TData, TResult>({
         })
 
         eventSubscription.on('message', async (msg: any) => {
-          const {
-            spec: {
-              payload: { data }
-            }
-          } = JSON.parse(msg.getRawData().toString())
-          const parsedData = JSON.parse(data)
-          await processor('event', parsedData)
-          msg.ack()
+          try {
+            const {
+              spec: {
+                payload: { data }
+              }
+            } = JSON.parse(msg.getRawData().toString())
+            const parsedData = JSON.parse(data)
+            await processor('event', parsedData)
+            msg.ack()
+          } catch (err) {
+            msg.ack()
+            await log.error(err)
+          }
         })
 
         const telemetrySubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.telemetry`, {
@@ -57,14 +62,19 @@ export const initializeStanSubscriber = <TData, TResult>({
         })
 
         telemetrySubscription.on('message', async (msg: any) => {
-          const {
-            spec: {
-              payload: { data }
-            }
-          } = JSON.parse(decoder.write(msg.msg.array[3]))
-          const parsedData = JSON.parse(data)
-          await processor('telemetry', parsedData)
-          msg.ack()
+          try {
+            const {
+              spec: {
+                payload: { data }
+              }
+            } = JSON.parse(decoder.write(msg.msg.array[3]))
+            const parsedData = JSON.parse(data)
+            await processor('telemetry', parsedData)
+            msg.ack()
+          } catch (err) {
+            msg.ack()
+            await log.error(err)
+          }
         })
       })
     } catch (err) {
