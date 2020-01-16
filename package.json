@@ -20,6 +20,7 @@
     "@types/geojson": "7946.0.7",
     "@types/hapi__joi": "15.0.4",
     "@types/json2csv": "4.5.1",
+    "@types/jsonwebtoken": "8.3.6",
     "@types/jwt-decode": "2.2.1",
     "@types/mocha": "5.2.7",
     "@types/mockdate": "2.0.0",

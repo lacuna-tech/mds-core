@@ -2,6 +2,8 @@ import WebSocket from 'ws'
 import { WebSocketAuthorizer } from '@mds-core/mds-api-authorizer'
 import { AuthorizationError } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
+import jwt, { GetPublicKeyOrSecret } from 'jsonwebtoken'
+import jwks from 'jwks-rsa'
 
 export class Clients {
   authenticatedClients: WebSocket[]
@@ -37,9 +39,13 @@ export class Clients {
     )
   }
 
-  public saveAuth(token: string, client: WebSocket) {
+  public async saveAuth(token: string, client: WebSocket) {
     try {
       const auth = WebSocketAuthorizer(token)
+      const validateAuth = await Clients.checkAuth(token)
+      if (!validateAuth) {
+        return client.send(new AuthorizationError())
+      }
       const scopes = auth?.scope.split(' ') ?? []
       if (scopes.includes('admin:all')) {
         this.authenticatedClients.push(client)
@@ -48,5 +54,31 @@ export class Clients {
     } catch (err) {
       client.send(JSON.stringify(err))
     }
+  }
+
+  public static checkAuth(token: string) {
+    const client = jwks({
+      jwksUri: 'ourIssuer'
+    })
+
+    // eslint-disable-next-line promise/prefer-await-to-callbacks
+    const getKey: GetPublicKeyOrSecret = (header, callback) => {
+      client.getSigningKey(header.kid ?? 'null', (_err, key: any) => {
+        const signingKey = key.publicKey || key.rsaPublicKey
+        // eslint-disable-next-line promise/prefer-await-to-callbacks
+        callback(null, signingKey)
+      })
+    }
+
+    // eslint-disable-next-line promise/avoid-new
+    return new Promise(resolve => {
+      // eslint-disable-next-line promise/prefer-await-to-callbacks
+      jwt.verify(token, getKey, { audience: 'ourAudience', issuer: 'ourIssuer' }, (err, decoded) => {
+        if (err) return resolve(false)
+
+        log.info(decoded)
+        return resolve(true)
+      })
+    })
   }
 }
