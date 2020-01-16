@@ -39,5 +39,3 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: metadata.namespace
-      hostname: example-stan-1
-      subdomain: example-stan-mgmt
