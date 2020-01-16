@@ -102,11 +102,11 @@ spec:
           # - name: NATS
           #   value: nats-streaming-0.nats-streaming.natss.svc.cluster.local
           - name: STAN
-            value: stan.default.svc.cluster.local
+            value: stan.{{ $.Release.Namespace | default "default" }}.svc.cluster.local
           - name: STAN_CLUSTER
-            value: stan
-          - name: STAN_CREDS
-            value: /var/run/nats/creds/stan/stan.creds
+            value: example-stan
+          # - name: STAN_CREDS
+          #   value: /var/run/nats/creds/stan/stan.creds
           {{- if not (empty $.Values.tenantId) }}
           - name: TENANT_ID
             value: {{ $.Values.tenantId }}

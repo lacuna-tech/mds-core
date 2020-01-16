@@ -58,7 +58,7 @@ declare -A configs=(
   ["provider"]="${MDS_PROVIDER:-}"
   ["rc"]="${MDS_RC:-~/.bashrc ~/.zshrc}"
   ["workdir"]="/tmp/mds/tools"
-  ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s git go}"
+  ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s git go awscli}"
   ["brew-envsubst"]="gettext"
   ["brew-helm"]="helm@2"
   ["brew-k9s"]="derailed/k9s/k9s"
@@ -71,7 +71,7 @@ declare -A configs=(
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
   ["natss-repository"]="${MDS_NATSS_REPOSITORY:-https://github.com/knative/eventing-contrib}"
   ["nats-repository"]="${MDS_NATS_REPOSITORY:-https://github.com/nats-io/k8s}"
-  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio}" #",nats}" #knative,natss}"
+  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats}" #" #knative,natss}"
   ["install"]="${MDS_INSTALL:-mds}"
   ["test"]="${MDS_TEST:-unit,integration}"
   ["uninstall"]="${MDS_UNINSTALL:-logging,mds,istio,helm}"
@@ -120,6 +120,8 @@ declare -A configs=(
   ["namespace-knative"]="${MDS_NAMESPACE_KNATIVE:-knative-eventing}"
   ["namespace-natss"]="${MDS_NAMESPACE_NATSS:-natss}"
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-default}"
+  ["namespace-stan"]="${MDS_NAMESPACE_NATS:-${configs[namespace-nats]}}"
+  ["namespace-nats-box"]="${MDS_NAMESPACE_NATS:-${configs[namespace-nats]}}"
   ["namespace-dns-lookup"]="${MDS_NAMESPACE_DNS_LOOKUP:-default}"
   ["namespace-curl"]="${MDS_NAMESPACE_CURL:-default}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
@@ -779,16 +781,68 @@ buildNatss() {
 installNats() {
   check ${FUNCNAME[0]}
 
-  if (( $(kubectl get pods -A | grep nats-0 | wc -l) == 0 )); then
-    if [[ ! -d ${configs[nats]} ]]; then
-      mkdir -p ${configs[workdir]}
-      (cd ${configs[workdir]}
-        git clone ${configs[nats-repository]})
-    fi
+  # if (( $(kubectl get pods -A | grep nats-0 | wc -l) == 0 )); then
+  #   if [[ ! -d ${configs[nats]} ]]; then
+  #     mkdir -p ${configs[workdir]}
+  #     (cd ${configs[workdir]}
+  #       git clone ${configs[nats-repository]})
+  #   fi
 
-    (cd ${configs[nats]}
-      ./setup.sh --without-tls) # --without-auth)
-  fi
+  #   (cd ${configs[nats]}
+  #     ./setup.sh --without-tls) # --without-auth)
+  # fi
+
+  [[ "$(helm list --short nats-init)" = "nats-init" ]] || \
+    helm install ${configs[home]}/helm/nats-init --name nats-init --namespace ${configs[namespace-nats]}
+  [[ "$(helm list --short nats)" = "nats" ]] || \
+    helm install ${configs[home]}/helm/nats --name nats --namespace ${configs[namespace-nats]}
+  pause 5
+  [[ "$(helm list --short nats-cluster)" = "nats-cluster" ]] || \
+    helm install ${configs[home]}/helm/nats-cluster --name nats-cluster --namespace ${configs[namespace-nats]}
+}
+
+installNatsx() {
+  check ${FUNCNAME[0]}
+
+  [ "$(helm list --short natsx)" = "natsx" ]] || \
+    helm install ${configs[home]}/helm/natsx --name natsx --namespace ${configs[namespace-nats]}
+}
+
+installStan() {
+  check ${FUNCNAME[0]}
+
+  # if (( $(kubectl get pods -A | grep nats-0 | wc -l) == 0 )); then
+  #   if [[ ! -d ${configs[nats]} ]]; then
+  #     mkdir -p ${configs[workdir]}
+  #     (cd ${configs[workdir]}
+  #       git clone ${configs[nats-repository]})
+  #   fi
+
+  #   (cd ${configs[nats]}
+  #     ./setup.sh --without-tls) # --without-auth)
+  # fi
+
+  [[ "$(helm list --short stan-init)" = "stan-init" ]] || \
+    helm install ${configs[home]}/helm/stan-init --name stan-init --namespace ${configs[namespace-stan]}
+  [[ "$(helm list --short stan)" = "stan" ]] || \
+    helm install ${configs[home]}/helm/stan --name stan --namespace ${configs[namespace-stan]}
+  pause 5
+  [[ "$(helm list --short stan-cluster)" = "stan-cluster" ]] || \
+    helm install ${configs[home]}/helm/stan-cluster --name stan-cluster --namespace ${configs[namespace-stan]}
+}
+
+installStanx() {
+  check ${FUNCNAME[0]}
+
+  [ "$(helm list --short stanx)" = "stanx" ]] || \
+    helm install ${configs[home]}/helm/stanx --name stanx --namespace ${configs[namespace-stan]}
+}
+
+installNatsbox() {
+  check ${FUNCNAME[0]}
+
+  [[ "$(helm list --short nats-box)" = "nats-box" ]] || \
+    helm install ${configs[home]}/helm/nats-box --name nats-box --namespace ${configs[namespace-nats-box]}
 }
 
 installNatss() {
@@ -1064,23 +1118,49 @@ uninstallKnative() {
   done; unset c
 }
 
+uninstallNatsbox() {
+  check ${FUNCNAME[0]}
+
+  [[ "$(helm list --short nats-box)" = "nats-box" ]] && helm delete --purge nats-box
+}
+
+uninstallStanx() {
+  [[ "$(helm list --short stanx)" = "stanx" ]] && helm delete --purge stanx
+}
+
+uninstallStan() {
+  check ${FUNCNAME[0]}
+
+  [[ "$(helm list --short stan-init)" = "stan-init" ]] && helm delete --purge stan-init
+  [[ "$(helm list --short stan)" = "stan" ]] && helm delete --purge stan
+  [[ "$(helm list --short stan-cluster)" = "stan-cluster" ]] && helm delete --purge stan-cluster
+}
+
+uninstallNatsx() {
+  [[ "$(helm list --short natsx)" = "natsx" ]] && helm delete --purge natsx
+}
+
 uninstallNats() {
   check ${FUNCNAME[0]}
 
-  if (( $(kubectl get pods -A | grep nats-0 | wc -l) == 1 )); then
-    if [[ -d ${configs[nats]} ]]; then
-      (cd ${configs[nats]}
-        ./destroy.sh)
-    fi
-  fi
+  # if (( $(kubectl get pods -A | grep nats-0 | wc -l) == 1 )); then
+  #   if [[ -d ${configs[nats]} ]]; then
+  #     (cd ${configs[nats]}
+  #       ./destroy.sh)
+  #   fi
+  # fi
 
-  kubectl -n ${configs[namespace-nats]} get pod nats-setup > /dev/null 2>&1 && {
-    kubectl -n ${configs[namespace-nats]} delete pod nats-setup
-  }
+  # kubectl -n ${configs[namespace-nats]} get pod nats-setup > /dev/null 2>&1 && {
+  #   kubectl -n ${configs[namespace-nats]} delete pod nats-setup
+  # }
 
-  if [ -z "${configs[keep-cache]}" ]; then
-    [[ -d ${configs[nats]} && -z "${configs[dryrun]}" ]] && /bin/rm -rf ${configs[nats]}
-  fi
+  # if [ -z "${configs[keep-cache]}" ]; then
+  #   [[ -d ${configs[nats]} && -z "${configs[dryrun]}" ]] && /bin/rm -rf ${configs[nats]}
+  # fi
+  # fixme: make better
+  [[ "$(helm list --short nats-init)" = "nats-init" ]] && helm delete --purge nats-init
+  [[ "$(helm list --short nats)" = "nats" ]] && helm delete --purge nats
+  [[ "$(helm list --short nats-cluster)" = "nats-cluster" ]] && helm delete --purge nats-cluster
 }
 
 uninstallNatss() {
@@ -1291,6 +1371,9 @@ check() {
       [ ! "${configs[natss-repository]}" ] && usage "unspecified natss repository";;
       # kubectl get namespace ${configs[namespace-knative]} > /dev/null 2>&1 || installKnative;;
     installNats) ;;
+    installStan) installNats;;
+    installNatsx) ;;
+    installStanx) installNatsx;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
     #     warn "configure an image-repository; eg ' ... -c:image-repository=[image-repository-url] ...'";;
