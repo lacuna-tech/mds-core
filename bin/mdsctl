@@ -801,6 +801,13 @@ installNats() {
     helm install ${configs[home]}/helm/nats-cluster --name nats-cluster --namespace ${configs[namespace-nats]}
 }
 
+installNatsx() {
+  check ${FUNCNAME[0]}
+
+  [ "$(helm list --short natsx)" = "natsx" ]] || \
+    helm install ${configs[home]}/helm/natsx --name natsx --namespace ${configs[namespace-nats]}
+}
+
 installStan() {
   check ${FUNCNAME[0]}
 
@@ -822,6 +829,13 @@ installStan() {
   pause 5
   [[ "$(helm list --short stan-cluster)" = "stan-cluster" ]] || \
     helm install ${configs[home]}/helm/stan-cluster --name stan-cluster --namespace ${configs[namespace-stan]}
+}
+
+installStanx() {
+  check ${FUNCNAME[0]}
+
+  [ "$(helm list --short stanx)" = "stanx" ]] || \
+    helm install ${configs[home]}/helm/stanx --name stanx --namespace ${configs[namespace-stan]}
 }
 
 installNatsbox() {
@@ -1110,12 +1124,20 @@ uninstallNatsbox() {
   [[ "$(helm list --short nats-box)" = "nats-box" ]] && helm delete --purge nats-box
 }
 
+uninstallStanx() {
+  [[ "$(helm list --short stanx)" = "stanx" ]] && helm delete --purge stanx
+}
+
 uninstallStan() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short stan-init)" = "stan-init" ]] && helm delete --purge stan-init
   [[ "$(helm list --short stan)" = "stan" ]] && helm delete --purge stan
   [[ "$(helm list --short stan-cluster)" = "stan-cluster" ]] && helm delete --purge stan-cluster
+}
+
+uninstallNatsx() {
+  [[ "$(helm list --short natsx)" = "natsx" ]] && helm delete --purge natsx
 }
 
 uninstallNats() {
@@ -1350,6 +1372,8 @@ check() {
       # kubectl get namespace ${configs[namespace-knative]} > /dev/null 2>&1 || installKnative;;
     installNats) ;;
     installStan) installNats;;
+    installNatsx) ;;
+    installStanx) installNatsx;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
     #     warn "configure an image-repository; eg ' ... -c:image-repository=[image-repository-url] ...'";;
