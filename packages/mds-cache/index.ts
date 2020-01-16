@@ -148,9 +148,9 @@ async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null>
   return null
 }
 
-async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE> {
-  // TODO: Fix type entry into cache so we don't need to do this unkown conversion
-  return ((await getClient()).hgetAsync(decorateKey(`device:${keyID}:device`), 'type') as unknown) as VEHICLE_TYPE
+async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE | null> {
+  const type = await (await getClient()).hgetAsync(decorateKey(`device:${keyID}:device`), 'type')
+  return type ? type as VEHICLE_TYPE : null
 }
 
 async function readDeviceState(field: UUID): Promise<StateEntry | null> {

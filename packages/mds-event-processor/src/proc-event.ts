@@ -137,8 +137,10 @@ export async function eventProcessor(type: string, data: VehicleEvent & Telemetr
   // Construct state
   let vehicleType = await cache.getVehicleType(device_id)
   if (!vehicleType) {
-    const [typeObj] = await db.getVehicleType(device_id)
-    vehicleType = typeObj.vehicle_type
+    vehicleType = await db.getVehicleType(device_id)
+    if (!vehicleType) {
+      throw new Error(`DEVICE ${device_id} NOT FOUND`)
+    }
   }
 
   const baseDeviceState: {
@@ -230,7 +232,7 @@ export async function eventProcessor(type: string, data: VehicleEvent & Telemetr
     }
 
     default: {
-      throw new Error('Not a valid cloudevent type')
+      throw new Error('NOT A VALID CLOUDEVENT TYPE')
     }
   }
 }
