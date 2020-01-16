@@ -104,7 +104,7 @@ spec:
           - name: STAN
             value: stan.{{ $.Release.Namespace | default "default" }}.svc.cluster.local
           - name: STAN_CLUSTER
-            value: stan
+            value: example-stan
           # - name: STAN_CREDS
           #   value: /var/run/nats/creds/stan/stan.creds
           {{- if not (empty $.Values.tenantId) }}
