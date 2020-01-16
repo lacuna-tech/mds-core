@@ -12,7 +12,7 @@ data:
     leafnodes {
       remotes = [
         {
-            url: ""nats://nats:7422"
+            url: "nats://nats:7422"
         }
       ]
     }
