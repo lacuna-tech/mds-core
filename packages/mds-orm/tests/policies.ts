@@ -1,5 +1,3 @@
-import test from 'unit.js'
-import uuid from 'uuid'
 import { POLICY_JSON } from '@mds-core/mds-test-data'
 import { ConnectionManager } from '../connection'
 import { PolicyEntity } from '../entities/policy-entity'
