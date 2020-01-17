@@ -67,7 +67,8 @@ const initializeNatsClient = ({
 }) => {
   return stan.connect(STAN_CLUSTER, `mds-event-processor-${uuid()}`, {
     url: `nats://${STAN}:4222`,
-    userCreds: STAN_CREDS
+    userCreds: STAN_CREDS,
+    reconnect: true
   })
 }
 
