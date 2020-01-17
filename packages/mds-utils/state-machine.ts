@@ -19,9 +19,10 @@ const stateTransitionDict: {
     [VEHICLE_EVENTS.deregister]: VEHICLE_STATUSES.inactive,
     [VEHICLE_EVENTS.provider_drop_off]: VEHICLE_STATUSES.available
   },
-  [VEHICLE_STATUSES.inactive]: {},
+  [VEHICLE_STATUSES.inactive]: {
+    [VEHICLE_EVENTS.register]: VEHICLE_STATUSES.removed
+  },
   [VEHICLE_STATUSES.removed]: {
-    [VEHICLE_EVENTS.register]: VEHICLE_STATUSES.removed,
     [VEHICLE_EVENTS.trip_enter]: VEHICLE_STATUSES.trip,
     [VEHICLE_EVENTS.provider_drop_off]: VEHICLE_STATUSES.available,
     [VEHICLE_EVENTS.deregister]: VEHICLE_STATUSES.inactive
@@ -46,4 +47,30 @@ const getNextState = (currStatus: VEHICLE_STATUS, nextEvent: VEHICLE_EVENT): VEH
   return stateTransitionDict[currStatus]?.[nextEvent]
 }
 
-export { stateTransitionDict, getNextState }
+const generateTransitionLabel = (
+  status: VEHICLE_STATUS,
+  nextStatus: VEHICLE_STATUS,
+  transitionEvent: VEHICLE_EVENT
+) => {
+  return `${status} -> ${nextStatus} [ label = ${transitionEvent} ]`
+}
+
+// Punch this output into http://www.webgraphviz.com/
+const generateGraph = () => {
+  const graphEntries = []
+  const statuses: VEHICLE_STATUS[] = Object.values(VEHICLE_STATUSES)
+  for (const status of statuses) {
+    const eventTransitions: VEHICLE_EVENT[] = Object.keys(stateTransitionDict[status]) as VEHICLE_EVENT[]
+    for (const event of eventTransitions) {
+      if (event) {
+        const nextStatus: VEHICLE_STATUS | undefined = stateTransitionDict[status][event]
+        if (nextStatus) {
+          graphEntries.push(`\t${generateTransitionLabel(status, nextStatus, event)}`)
+        }
+      }
+    }
+  }
+  return `digraph G {\n${graphEntries.join('\n')}\n}`
+}
+
+export { stateTransitionDict, getNextState, generateGraph }
