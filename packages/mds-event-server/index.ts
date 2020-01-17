@@ -56,6 +56,21 @@ const natsSubscriber = async <TData, TResult>({
   })
 }
 
+const initializeNatsClient = ({
+  STAN,
+  STAN_CLUSTER,
+  STAN_CREDS
+}: {
+  STAN: string
+  STAN_CLUSTER: string
+  STAN_CREDS?: string
+}) => {
+  return stan.connect(STAN_CLUSTER, `mds-event-processor-${uuid()}`, {
+    url: `nats://${STAN}:4222`,
+    userCreds: STAN_CREDS
+  })
+}
+
 export const initializeStanSubscriber = async <TData, TResult>({
   STAN,
   STAN_CLUSTER,
@@ -69,10 +84,7 @@ export const initializeStanSubscriber = async <TData, TResult>({
   TENANT_ID: string
   processor: EventProcessor<TData, TResult>
 }) => {
-  const nats = stan.connect(STAN_CLUSTER, `mds-event-processor-${uuid()}`, {
-    url: `nats://${STAN}:4222`,
-    userCreds: STAN_CREDS
-  })
+  const nats = initializeNatsClient({ STAN, STAN_CLUSTER, STAN_CREDS })
 
   try {
     nats.on('connect', () => {
@@ -84,6 +96,11 @@ export const initializeStanSubscriber = async <TData, TResult>({
           return natsSubscriber({ nats, processor, TENANT_ID, type })
         })
       )
+    })
+
+    nats.on('disconnect', async () => {
+      await log.error('Client disconnected, attempting to restablish connection...')
+      return initializeStanSubscriber({ STAN, STAN_CLUSTER, STAN_CREDS, TENANT_ID, processor })
     })
   } catch (err) {
     await log.error(err)
