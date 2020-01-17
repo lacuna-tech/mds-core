@@ -36,7 +36,6 @@ export default () =>
           .values(audits)
           .onConflict('DO NOTHING')
           .execute()
-        test.value(audits.length).is(records)
       } finally {
         await connection.close()
       }
