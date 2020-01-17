@@ -98,9 +98,15 @@ export const initializeStanSubscriber = async <TData, TResult>({
       )
     })
 
-    nats.on('disconnect', async () => {
-      await log.error('Client disconnected, attempting to restablish connection...')
-      return initializeStanSubscriber({ STAN, STAN_CLUSTER, STAN_CREDS, TENANT_ID, processor })
+    nats.on('reconnect', () => {
+      log.info('Connected!')
+
+      /* Subscribe to all available types. Down the road, this should probably be a parameter passed in to the parent function. */
+      return Promise.all(
+        SUBSCRIPTION_TYPES.map(type => {
+          return natsSubscriber({ nats, processor, TENANT_ID, type })
+        })
+      )
     })
   } catch (err) {
     await log.error(err)
