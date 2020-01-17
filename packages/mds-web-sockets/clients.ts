@@ -4,6 +4,7 @@ import { AuthorizationError } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 import jwt, { GetPublicKeyOrSecret } from 'jsonwebtoken'
 import jwks from 'jwks-rsa'
+import { promisify } from 'util'
 
 export class Clients {
   authenticatedClients: WebSocket[]
@@ -61,24 +62,19 @@ export class Clients {
       jwksUri: 'ourIssuer'
     })
 
-    // eslint-disable-next-line promise/prefer-await-to-callbacks
-    const getKey: GetPublicKeyOrSecret = (header, callback) => {
-      client.getSigningKey(header.kid ?? 'null', (_err, key: any) => {
-        const signingKey = key.publicKey || key.rsaPublicKey
-        // eslint-disable-next-line promise/prefer-await-to-callbacks
-        callback(null, signingKey)
-      })
+    const getKey: GetPublicKeyOrSecret = async header => {
+      /* Technically, this typedef is slightly incorrect, but is to coerce the compiler to happiness without type guarding. One of publicKey or rsaPublicKey *always* exists. */
+      const key: { publicKey?: string; rsaPublicKey?: string } = await promisify(client.getSigningKey)(
+        header.kid ?? 'null'
+      )
+      return key.publicKey || key.rsaPublicKey
     }
 
-    // eslint-disable-next-line promise/avoid-new
-    return new Promise(resolve => {
-      // eslint-disable-next-line promise/prefer-await-to-callbacks
-      jwt.verify(token, getKey, { audience: 'ourAudience', issuer: 'ourIssuer' }, (err, decoded) => {
-        if (err) return resolve(false)
-
-        log.info(decoded)
-        return resolve(true)
-      })
-    })
+    const verify: (
+      token: string,
+      secretOrPublicKey: jwt.Secret | GetPublicKeyOrSecret,
+      options?: jwt.VerifyOptions
+    ) => object | string = promisify(jwt.verify)
+    return verify(token, getKey, { audience: 'ourAudience', issuer: 'ourIssuer' })
   }
 }
