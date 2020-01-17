@@ -1,14 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nats-config
+  name: nats-configx
   namespace: {{ $.Release.Namespace | default "default" }}
 data:
   # Used to set cluster id in deployment
   # Look for $(NATS_CLUSTER) usage below
   NATS_CLUSTER: nats-streaming
   # This is the NATS hostname to connect to
-  NATS_HOST: nats://example-nats-mgmt:4222
+  #NATS_HOST: nats://example-nats-mgmt:4222
+  NATS_HOST: nats://nats:4222
 ---
 apiVersion: v1
 kind: Service
@@ -18,11 +19,12 @@ metadata:
   labels:
     app: nats-streaming-svc
 spec:
+  clusterIP: None
   ports:
   # Port 4222 is exposed from the NATS cluster and service
-  # - port: 4222
-  #   name: client
-  #   protocol: TCP
+  - port: 4222
+    name: client
+    protocol: TCP
   #
   # You can access the management urls:
   # curl http://nats-streaming-svc:8222/streaming/clientsz
@@ -90,12 +92,12 @@ spec:
         - name: NATS_CLUSTER
           valueFrom:
             configMapKeyRef:
-              name: nats-config
+              name: nats-configx
               key:  NATS_CLUSTER
         - name: NATS_HOST
           valueFrom:
             configMapKeyRef:
-              name: nats-config
+              name: nats-configx
               key:  NATS_HOST
         ports:
         - containerPort: 4222

@@ -804,7 +804,7 @@ installNats() {
 installNatsx() {
   check ${FUNCNAME[0]}
 
-  [ "$(helm list --short natsx)" = "natsx" ]] || \
+  [[ "$(helm list --short natsx)" = "natsx" ]] || \
     helm install ${configs[home]}/helm/natsx --name natsx --namespace ${configs[namespace-nats]}
 }
 
@@ -834,7 +834,7 @@ installStan() {
 installStanx() {
   check ${FUNCNAME[0]}
 
-  [ "$(helm list --short stanx)" = "stanx" ]] || \
+  [[ "$(helm list --short stanx)" = "stanx" ]] || \
     helm install ${configs[home]}/helm/stanx --name stanx --namespace ${configs[namespace-stan]}
 }
 
@@ -917,12 +917,16 @@ installNatss() {
 }
 
 installDnslookup() {
+  check ${FUNCNAME[0]}
+
   (( $(helm list --short dns-lookup | wc -l) == 0 )) && {
     helm install ./helm/dns --name dns-lookup --namespace ${configs[namespace-dns-lookup]}
   }
 }
 
 installCurl() {
+  check ${FUNCNAME[0]}
+
   (( $(helm list --short curl | wc -l) == 0 )) && {
     helm install ./helm/curl --name curl --namespace ${configs[namespace-curl]}
   }
@@ -1132,10 +1136,14 @@ uninstallNatsbox() {
 }
 
 uninstallStans() {
+  check ${FUNCNAME[0]}
+
   [[ "$(helm list --short stans)" = "stans" ]] && helm delete --purge stans
 }
 
 uninstallStanx() {
+  check ${FUNCNAME[0]}
+
   [[ "$(helm list --short stanx)" = "stanx" ]] && helm delete --purge stanx
 }
 
@@ -1148,6 +1156,8 @@ uninstallStan() {
 }
 
 uninstallNatsx() {
+  check ${FUNCNAME[0]}
+
   [[ "$(helm list --short natsx)" = "natsx" ]] && helm delete --purge natsx
 }
 
