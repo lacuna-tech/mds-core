@@ -133,7 +133,8 @@ async function info() {
 }
 
 async function hget(key: string, field: UUID): Promise<CachedItem | CachedHashItem | null> {
-  const flat = await (await getClient()).hgetAsync(decorateKey(key), field)
+  const client = await getClient()
+  const flat = await client.hgetAsync(decorateKey(key), field)
   if (flat) {
     return unflatten(flat)
   }
@@ -141,7 +142,8 @@ async function hget(key: string, field: UUID): Promise<CachedItem | CachedHashIt
 }
 
 async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null> {
-  const flat = await (await getClient()).hgetallAsync(decorateKey(key))
+  const client = await getClient()
+  const flat = await client.hgetallAsync(decorateKey(key))
   if (flat) {
     return unflatten(flat)
   }
@@ -149,8 +151,9 @@ async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null>
 }
 
 async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE | null> {
-  const type = await (await getClient()).hgetAsync(decorateKey(`device:${keyID}:device`), 'type')
-  return type ? type as VEHICLE_TYPE : null
+  const client = await getClient()
+  const type = await client.hgetAsync(decorateKey(`device:${keyID}:device`), 'type')
+  return (type as VEHICLE_TYPE) ?? null
 }
 
 async function readDeviceState(field: UUID): Promise<StateEntry | null> {

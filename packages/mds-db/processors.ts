@@ -16,7 +16,7 @@ export async function getVehicleType(device_id: UUID): Promise<VEHICLE_TYPE | nu
   const vals = new SqlVals()
   const query = `SELECT type FROM devices WHERE device_id = ${vals.add(device_id)}`
   const [queryResult]  = await makeReadOnlyQuery(query, vals)
-  return queryResult ? queryResult.type : null
+  return queryResult?.type ?? null
 }
 
 export async function getStates(
