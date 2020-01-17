@@ -1,13 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+import { Entity, Column } from 'typeorm'
 import { UUID } from '@mds-core/mds-types'
 import { FeatureCollection } from 'geojson'
-import { IdentityEntity, IdentityModel } from './identity-entity'
+import { IdentityEntity, IdentityPersistenceModel } from './identity-entity'
 // [TABLE.policies]: [COLUMN.id, COLUMN.policy_id, COLUMN.policy_json],
 
 //  [COLUMN.policy_id]: 'uuid NOT NULL',
 //   [COLUMN.policy_json]: 'json NOT NULL',
 
-export interface PolicyModel extends IdentityModel {
+export interface PolicyModel extends IdentityPersistenceModel {
   id: number
   policy_id: UUID
   policy_json: FeatureCollection
@@ -18,5 +18,5 @@ export class PolicyEntity extends IdentityEntity implements PolicyModel {
   policy_id: UUID
 
   @Column('json')
-  policy_json: FeatureCollection
+  policy_json: JSON
 }

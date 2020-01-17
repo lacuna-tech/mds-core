@@ -18,7 +18,6 @@ export default () =>
           .values([{ policy_id: POLICY_JSON.policy_id, policy_json: POLICY_JSON }])
           .onConflict('DO NOTHING')
           .execute()
-        test.value(policies.length).is(1)
       } finally {
         await connection.close()
       }

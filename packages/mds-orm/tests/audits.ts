@@ -8,14 +8,28 @@ const records = 5_000
 const recorded = Date.now()
 const audit_device_id = uuid()
 
-const manager = ConnectionManager(PolicyEntity)
+const manager = ConnectionManager(AuditEntity)
 
 export default () =>
   describe('Write/Read Audits', () => {
     it(records > 1 ? `Write ${records} Audits(s)` : 'Write Audit', async () => {
       const connection = await manager.getConnection('rw')
+      const audits = Array.from({ length: records }, (_, index) => ({
+        audit_trip_id: uuid(),
+        audit_subject_id: 'auditor@agency.city',
+        audit_device_id,
+        provider_id: MOCHA_PROVIDER_ID,
+        provider_name: 'ORM Test Provider',
+        provider_vehicle_id: `${Math.random()
+          .toString(36)
+          .substr(2, 3)
+          .toUpperCase()}-${index.toString().padStart(6, '0')}`,
+        provider_device_id: index % 2 === 0 ? uuid() : undefined,
+        timestamp: recorded,
+        recorded
+      }))
       try {
-        const repository = connection.getRepository(PolicyEntity)
+        const repository = connection.getRepository(AuditEntity)
         await repository
           .createQueryBuilder()
           .insert()
