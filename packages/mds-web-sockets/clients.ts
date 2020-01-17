@@ -11,6 +11,24 @@ export class Clients {
 
   subList: { [key: string]: WebSocket[] }
 
+  private static getKey: GetPublicKeyOrSecret = async header => {
+    const client = jwks({
+      jwksUri: 'ourIssuer'
+    })
+
+    /* Technically, this typedef is slightly incorrect, but is to coerce the compiler to happiness without type guarding. One of publicKey or rsaPublicKey *always* exists. */
+    const key: { publicKey?: string; rsaPublicKey?: string } = await promisify(client.getSigningKey)(
+      header.kid ?? 'null'
+    )
+    return key.publicKey || key.rsaPublicKey
+  }
+
+  private static verify: (
+    token: string,
+    secretOrPublicKey: jwt.Secret | GetPublicKeyOrSecret,
+    options?: jwt.VerifyOptions
+  ) => object | string = promisify(jwt.verify)
+
   public constructor() {
     this.subList = { EVENTS: [], TELEMETRIES: [] }
     this.authenticatedClients = []
@@ -58,23 +76,6 @@ export class Clients {
   }
 
   public static checkAuth(token: string) {
-    const client = jwks({
-      jwksUri: 'ourIssuer'
-    })
-
-    const getKey: GetPublicKeyOrSecret = async header => {
-      /* Technically, this typedef is slightly incorrect, but is to coerce the compiler to happiness without type guarding. One of publicKey or rsaPublicKey *always* exists. */
-      const key: { publicKey?: string; rsaPublicKey?: string } = await promisify(client.getSigningKey)(
-        header.kid ?? 'null'
-      )
-      return key.publicKey || key.rsaPublicKey
-    }
-
-    const verify: (
-      token: string,
-      secretOrPublicKey: jwt.Secret | GetPublicKeyOrSecret,
-      options?: jwt.VerifyOptions
-    ) => object | string = promisify(jwt.verify)
-    return verify(token, getKey, { audience: 'ourAudience', issuer: 'ourIssuer' })
+    return this.verify(token, this.getKey, { audience: 'ourAudience', issuer: 'ourIssuer' })
   }
 }
