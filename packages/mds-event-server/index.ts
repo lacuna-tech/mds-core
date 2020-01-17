@@ -5,12 +5,58 @@ import { pathsFor } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 import { AboutRequestHandler, HealthRequestHandler, JsonBodyParserMiddleware } from '@mds-core/mds-api-server'
 import Cloudevent, { BinaryHTTPReceiver } from 'cloudevents-sdk/v1'
-import { StringDecoder } from 'string_decoder'
 
 export type EventProcessor<TData, TResult> = (type: string, data: TData) => Promise<TResult>
 export type CEEventProcessor<TData, TResult> = (type: string, data: TData, event: Cloudevent) => Promise<TResult>
 
-export const initializeStanSubscriber = <TData, TResult>({
+const SUBSCRIPTION_TYPES = ['event', 'telemetry'] as const
+type SUBSCRIPTION_TYPE = typeof SUBSCRIPTION_TYPES[number]
+
+const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, TResult>, msg: stan.Message) => {
+  const { TENANT_ID = 'mds' } = process.env
+
+  const TENANT_REGEXP = new RegExp(`^${TENANT_ID}\\.`)
+
+  try {
+    const {
+      spec: {
+        payload: { data, type }
+      }
+    } = JSON.parse(msg.getRawData().toString())
+
+    const parsedData = JSON.parse(data)
+
+    await processor(type.replace(TENANT_REGEXP, ''), parsedData)
+    msg.ack()
+  } catch (err) {
+    msg.ack()
+    await log.error(err)
+  }
+}
+
+const natsSubscriber = async <TData, TResult>({
+  nats,
+  processor,
+  TENANT_ID,
+  type
+}: {
+  nats: stan.Stan
+  processor: EventProcessor<TData, TResult>
+  TENANT_ID: string
+  type: SUBSCRIPTION_TYPE
+}) => {
+  const subscriber = nats.subscribe(`${TENANT_ID ?? 'mds'}.${type}`, {
+    ...nats.subscriptionOptions(),
+    manualAcks: true,
+    maxInFlight: 1
+  })
+
+  subscriber.on('message', async (msg: stan.Message) => {
+    return subscriptionCb(processor, msg)
+  })
+}
+
+export const initializeStanSubscriber = async <TData, TResult>({
   STAN,
   STAN_CLUSTER,
   STAN_CREDS,
@@ -23,64 +69,25 @@ export const initializeStanSubscriber = <TData, TResult>({
   TENANT_ID: string
   processor: EventProcessor<TData, TResult>
 }) => {
-  if (STAN && STAN_CLUSTER && TENANT_ID) {
-    const decoder = new StringDecoder('utf8')
-    const nats = stan.connect(STAN_CLUSTER, `mds-event-processor-${uuid()}`, {
-      url: `nats://${STAN}:4222`,
-      userCreds: STAN_CREDS
+  const nats = stan.connect(STAN_CLUSTER, `mds-event-processor-${uuid()}`, {
+    url: `nats://${STAN}:4222`,
+    userCreds: STAN_CREDS
+  })
+
+  try {
+    nats.on('connect', () => {
+      log.info('Connected!')
+
+      /* Subscribe to all available types. Down the road, this should probably be a parameter passed in to the parent function. */
+      return Promise.all(
+        SUBSCRIPTION_TYPES.map(type => {
+          return natsSubscriber({ nats, processor, TENANT_ID, type })
+        })
+      )
     })
-
-    try {
-      nats.on('connect', () => {
-        log.info('Connected!')
-        const eventSubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.event`, {
-          ...nats.subscriptionOptions(),
-          manualAcks: true,
-          maxInFlight: 1
-        })
-
-        eventSubscription.on('message', async (msg: any) => {
-          try {
-            const {
-              spec: {
-                payload: { data }
-              }
-            } = JSON.parse(msg.getRawData().toString())
-            const parsedData = JSON.parse(data)
-            await processor('event', parsedData)
-            msg.ack()
-          } catch (err) {
-            msg.ack()
-            await log.error(err)
-          }
-        })
-
-        const telemetrySubscription = nats.subscribe(`${TENANT_ID ?? 'mds'}.telemetry`, {
-          ...nats.subscriptionOptions(),
-          manualAcks: true,
-          maxInFlight: 1
-        })
-
-        telemetrySubscription.on('message', async (msg: any) => {
-          try {
-            const {
-              spec: {
-                payload: { data }
-              }
-            } = JSON.parse(decoder.write(msg.msg.array[3]))
-            const parsedData = JSON.parse(data)
-            await processor('telemetry', parsedData)
-            msg.ack()
-          } catch (err) {
-            msg.ack()
-            await log.error(err)
-          }
-        })
-      })
-    } catch (err) {
-      console.log(err)
-    }
-  } else console.log(`Cannot initialize STAN Subscribers. One of STAN, STAN_CLUSTER, or TENANT_ID is undefined.`)
+  } catch (err) {
+    await log.error(err)
+  }
 }
 
 export const EventServer = <TData, TResult>(
