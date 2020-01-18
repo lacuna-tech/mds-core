@@ -8,8 +8,8 @@ data:
   # Look for $(NATS_CLUSTER) usage below
   NATS_CLUSTER: nats-streaming
   # This is the NATS hostname to connect to
-  #NATS_HOST: nats://example-nats-mgmt:4222
-  NATS_HOST: nats://nats:4222
+  NATS_HOST: nats://example-nats-mgmt:4222
+  #NATS_HOST: nats://nats:4222
 ---
 apiVersion: v1
 kind: Service
@@ -19,6 +19,9 @@ metadata:
   labels:
     app: nats-streaming-svc
 spec:
+  selector:
+    matchLabels:
+      app: nats-streaming-svc
   clusterIP: None
   ports:
   # Port 4222 is exposed from the NATS cluster and service
@@ -30,9 +33,12 @@ spec:
   # curl http://nats-streaming-svc:8222/streaming/clientsz
   # curl http://nats-streaming-svc:8222/streaming/channelsz
   #
-  - port: 8222
-    name: management
+  - port: 7777
+    name: metrics
     protocol: TCP
+#  - port: 8222
+#    name: management
+#    protocol: TCP
   selector:
     app: nats-streaming-stateful
 ---
@@ -42,12 +48,12 @@ metadata:
   name: nats-streaming-stateful
   namespace: {{ $.Release.Namespace | default "default" }}
 spec:
-  serviceName: nats-streaming-svc
-  # Adjust as needed but no less then 3 for cluster quorum
-  replicas: 3
   selector:
     matchLabels:
       app: nats-streaming-stateful
+  serviceName: nats-streaming-svc
+  # Adjust as needed but no less then 3 for cluster quorum
+  replicas: 3
   template:
     metadata:
       labels:

@@ -71,7 +71,7 @@ declare -A configs=(
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
   ["natss-repository"]="${MDS_NATSS_REPOSITORY:-https://github.com/knative/eventing-contrib}"
   ["nats-repository"]="${MDS_NATS_REPOSITORY:-https://github.com/nats-io/k8s}"
-  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio}" #,nats}" #" #knative,natss}"
+  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio}" #,nats}" #" #,natss}"
   ["install"]="${MDS_INSTALL:-mds}"
   ["test"]="${MDS_TEST:-unit,integration}"
   ["uninstall"]="${MDS_UNINSTALL:-logging,mds,istio,helm}"
@@ -1179,9 +1179,9 @@ uninstallNats() {
   #   [[ -d ${configs[nats]} && -z "${configs[dryrun]}" ]] && /bin/rm -rf ${configs[nats]}
   # fi
   # fixme: make better
-  [[ "$(helm list --short nats-init)" = "nats-init" ]] && helm delete --purge nats-init
-  [[ "$(helm list --short nats)" = "nats" ]] && helm delete --purge nats
-  [[ "$(helm list --short nats-cluster)" = "nats-cluster" ]] && helm delete --purge nats-cluster
+  for n in nats-init nats nats-cluster; do
+    [[ "$(helm list --short ${n})" = "${n}" ]] && helm delete --purge ${n}
+  done
 }
 
 uninstallNatss() {
