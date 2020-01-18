@@ -15,6 +15,7 @@ import { getWriteableClient, makeReadOnlyQuery } from './client'
 export async function getVehicleType(device_id: UUID): Promise<VEHICLE_TYPE | null>{
   const vals = new SqlVals()
   const query = `SELECT type FROM devices WHERE device_id = ${vals.add(device_id)}`
+  await logSql(query, vals)
   const [queryResult]  = await makeReadOnlyQuery(query, vals)
   return queryResult?.type ?? null
 }
@@ -29,6 +30,7 @@ export async function getStates(
   const query = `SELECT * FROM reports_device_states WHERE provider_id = ${vals.add(
     provider_id
   )} AND vehicle_type = ${vals.add(vehicleType)} AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)}`
+  await logSql(query, vals)
   return makeReadOnlyQuery(query, vals)
 }
 
@@ -44,6 +46,7 @@ export async function getTripCount(
   )} AND vehicle_type = ${vals.add(vehicleType)} AND type = 'event' AND recorded BETWEEN ${vals.add(
     start_time
   )} AND ${vals.add(end_time)}`
+  await logSql(query, vals)
   return makeReadOnlyQuery(query, vals)
 }
 
@@ -56,6 +59,7 @@ export async function getVehicleTripCount(
   const query = `SELECT count(DISTINCT trip_id) FROM reports_device_states WHERE device_id = ${vals.add(
     device_id
   )} AND type = 'event' AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)}`
+  await logSql(query, vals)
   return makeReadOnlyQuery(query, vals)
 }
 
@@ -73,6 +77,7 @@ export async function getLateEventCount(
   )} AND vehicle_type = ${vals.add(vehicleType)} AND type = 'event' AND event_type IN (${events.map(event =>
     vals.add(event)
   )}) AND recorded BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)} AND recorded-timestamp <= ${vals.add(SLA)}`
+  await logSql(query, vals)
   return makeReadOnlyQuery(query, vals)
 }
 
@@ -89,6 +94,7 @@ export async function getLateTelemetryCount(
   )} AND vehicle_type = ${vals.add(vehicleType)} AND type = 'telemetry' AND recorded BETWEEN ${vals.add(
     start_time
   )} AND ${vals.add(end_time)} AND recorded-timestamp <= ${vals.add(SLA)}`
+  await logSql(query, vals)
   return makeReadOnlyQuery(query, vals)
 }
 
@@ -102,6 +108,7 @@ export async function getTrips(
   const query = `SELECT * FROM reports_trips WHERE provider_id = ${vals.add(provider_id)} AND vehicle_type = ${vals.add(
     vehicleType
   )} AND end_time BETWEEN ${vals.add(start_time)} AND ${vals.add(end_time)}`
+  await logSql(query, vals)
   return makeReadOnlyQuery(query, vals)
 }
 
@@ -168,5 +175,6 @@ export async function getAllMetrics({
       ? ` AND vehicle_type IN (${vehicle_types.map(vehicle_type => vals.add(vehicle_type))}) `
       : ''
   const query = `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}${providerSegment}${geographySegment}${vehicleTypeSegment}`
+  await logSql(query, vals)
   return makeReadOnlyQuery(query, vals)
 }
