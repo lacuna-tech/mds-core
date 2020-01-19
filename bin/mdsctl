@@ -731,8 +731,10 @@ installNats() {
   check ${FUNCNAME[0]}
 
   for n in nats-init nats nats-cluster; do
-    [[ "$(helm list --short ${n})" = "${n}" ]] || \
-      helm install ${configs[home]}/helm/${n} --name ${n} --namespace ${configs[namespace-nats]}
+  echo ">${configs[namespace-nats]}-${n}<"
+  echo "[[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]]"
+    # [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || \
+      # echo "helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} --namespace ${configs[namespace-nats]}"
   done; unset n
 }
 
@@ -789,8 +791,8 @@ installNatsbox() {
 installStan() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short stan)" = "stan" ]] || \
-    helm install ${configs[home]}/helm/stan-statefulset --name stan --namespace ${configs[namespace-stan]}
+  [[ "$(helm list --short ${configs[namespace-stan]}-stan)" = "${configs[namespace-stan]}-stan" ]] || \
+    echo "helm install ${configs[home]}/helm/stan-statefulset --name ${configs[namespace-stan]}-stan --namespace ${configs[namespace-stan]}"
 }
 
 installStanx() {
@@ -992,7 +994,7 @@ uninstallMds() {
 uninstallStan() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short stan)" = "stan" ]] && helm delete --purge stan
+  echo "[[ \"$(helm list --short ${configs[namespace-stan]}-stan)\" = \"stan\" ]] && helm delete --purge ${configs[namespace-nats]}-stan"
 }
 
 uninstallStans() {
@@ -1013,7 +1015,7 @@ uninstallNats() {
   check ${FUNCNAME[0]}
 
   for n in nats-init nats nats-cluster; do
-    [[ "$(helm list --short ${n})" = "${n}" ]] && helm delete --purge ${n}
+    echo "[[ \"$(helm list --short ${configs[namespace-nats]}-${n})\" = \"${n}\" ]] && helm delete --purge ${configs[namespace-nats]}-${n}"
   done; uninstall n
 }
 

@@ -58,6 +58,8 @@ spec:
     metadata:
       labels:
         app: nats-streaming-stateful
+      annotations:
+        sidecar.istio.io/inject: "false"
     spec:
       containers:
         # Management port is enabled at default 8222
