@@ -421,6 +421,10 @@ updateHelmDependencies() {
   done; unset d
 }
 
+# fixme: hack for aws support, old helm version
+# helm() {
+#   ~/bin/helm $@
+# }
 installHelm() {
   check ${FUNCNAME[0]}
 
@@ -730,11 +734,9 @@ buildNatss() {
 installNats() {
   check ${FUNCNAME[0]}
 
-  for n in nats-init nats nats-cluster; do
-  echo ">${configs[namespace-nats]}-${n}<"
-  echo "[[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]]"
-    # [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || \
-      # echo "helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} --namespace ${configs[namespace-nats]}"
+  for n in nats-init nats-operator nats-cluster; do
+    [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || \
+      helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} --namespace ${configs[namespace-nats]}
   done; unset n
 }
 
@@ -1014,9 +1016,10 @@ uninstallNatsbox() {
 uninstallNats() {
   check ${FUNCNAME[0]}
 
-  for n in nats-init nats nats-cluster; do
-    echo "[[ \"$(helm list --short ${configs[namespace-nats]}-${n})\" = \"${n}\" ]] && helm delete --purge ${configs[namespace-nats]}-${n}"
-  done; uninstall n
+  for n in nats-init nats-operator nats-cluster; do
+    [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] && \
+      helm delete --purge ${configs[namespace-nats]}-${n}
+  done; unset n
 }
 
 uninstallNatsx() {
