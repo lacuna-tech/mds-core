@@ -5,6 +5,8 @@ metadata:
   namespace: {{ $.Release.Namespace | default "default" }}
   labels:
     app: nats-box
+  annotations:
+    sidecar.istio.io/inject: "false"
 spec:
   containers:
   - name: nats-box
