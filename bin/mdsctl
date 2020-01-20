@@ -794,7 +794,7 @@ installStan() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short ${configs[namespace-stan]}-stan)" = "${configs[namespace-stan]}-stan" ]] || \
-    echo "helm install ${configs[home]}/helm/stan-statefulset --name ${configs[namespace-stan]}-stan --namespace ${configs[namespace-stan]}"
+    helm install ${configs[home]}/helm/stan-statefulset --name ${configs[namespace-stan]}-stan --namespace ${configs[namespace-stan]}
 }
 
 installStanx() {
@@ -996,7 +996,7 @@ uninstallMds() {
 uninstallStan() {
   check ${FUNCNAME[0]}
 
-  echo "[[ \"$(helm list --short ${configs[namespace-stan]}-stan)\" = \"stan\" ]] && helm delete --purge ${configs[namespace-nats]}-stan"
+  [[ "$(helm list --short ${configs[namespace-stan]}-stan)" = "stan" ]] && helm delete --purge ${configs[namespace-nats]}-stan
 }
 
 uninstallStans() {
