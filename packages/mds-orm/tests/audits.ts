@@ -26,6 +26,7 @@ export default () =>
           .toUpperCase()}-${index.toString().padStart(6, '0')}`,
         provider_device_id: index % 2 === 0 ? uuid() : undefined,
         timestamp: recorded,
+        id: 0,
         recorded
       }))
       try {
@@ -36,6 +37,9 @@ export default () =>
           .values(audits)
           .onConflict('DO NOTHING')
           .execute()
+        for (const audit of audits) {
+            test.value(audit.id).isNot(0)
+          }
       } finally {
         await connection.close()
       }
