@@ -37,7 +37,7 @@ export default () =>
           .onConflict('DO NOTHING')
           .execute()
         for (const audit of audits) {
-            test.value(audit.id).is(undefined)
+            test.value(audit.id).isNot(undefined)
           }
       } finally {
         await connection.close()
