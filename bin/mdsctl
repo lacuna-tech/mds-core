@@ -1,12 +1,24 @@
 #!/usr/bin/env bash
 
-osx=Darwin
-linux=Linux
+osx=darwin
+linux=linux
 
 [ ! -f ~/.bashrc ] && touch ~/.bashrc
 
+lower() {
+  echo "${1}" | tr '[:upper:]' '[:lower:]'
+}
+
+os() {
+  os=${MDS_OS:-$(uname)}
+  case "$(lower ${os})" in
+    ${osx} | ${linux}) echo $(lower ${os});;
+    *) echo "unsupported";;
+  esac; unset os
+}
+
 hash brew > /dev/null 2>&1 || {
-  case "${MDS_OS:-$(uname)}" in
+  case "$(os)" in
     ${osx})
       hash brew > /dev/null 2>&1 || \
         /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)";;
@@ -24,7 +36,7 @@ hash brew > /dev/null 2>&1 || {
 }
 
 if [[ "$(bash -c 'echo $BASH_VERSION')" == 3* ]]; then
-  case "${MDS_OS:-$(uname)}" in
+  case "$(os)" in
     ${osx} | ${linux})
       brew install bash
       exec ${0} ${@} &
@@ -65,6 +77,8 @@ declare -A configs=(
   ["brew-oq"]="blacksmoke16/tap"
   ["brew-cask"]="${MDS_BREW_CASK:-gcloud}"
   ["brew-cask-gcloud"]="google-cloud-sdk"
+  ["helm-version"]="${MDS_HELM_VERSION:-2.14.1}"
+  ["helm-distribution"]="${MDS_HELM_DISTRIBUTION:-https://get.helm.sh/helm-v${configs[helm-version]}-{os\}-amd64.tar.gz}"
   ["paths"]="${MDS_PATHS:-envsubst helm}"
   ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
@@ -153,6 +167,20 @@ initialize() {
   for p in ${configs[paths]}; do
     export PATH=$(brew --prefix ${configs[brew-${p}]:-${p}})/bin:${PATH}
   done; unset p
+
+  # fixme: make minimal-version test more flexible; may not be required when helm:3 is supported more broadly
+  if [[ ! "$(helm version --short | grep -i client | cut -d ':' -f 2)" == *"${configs[helm-version]}"* ]]; then
+    os=$(os)
+
+    if [[ ! -x ${configs[workdir]}/helm/${os}-amd64 ]]; then
+      mkdir -p ${configs[workdir]}/helm
+      curl -o ${configs[workdir]}/helm/helm-v${helmVersion}.tgz ${configs[helm-distribution]/{os\}/${os}} > /dev/null 2>&1
+      (cd ${configs[workdir]}/helm; tar zxvf ${configs[workdir]}/helm/helm-v${helmVersion}.tgz > /dev/null 2>&1)
+    fi
+
+    export PATH=${configs[workdir]}/helm/${os}-amd64:${PATH}
+    unset os
+  fi
 }
 
 warn() {
@@ -623,13 +651,15 @@ imageVersion() {
 installMds() {
   check ${FUNCNAME[0]}
 
+exit
   installFallbackCertificate
   kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
     # note: remote registries may require image-version overrides
-    configure $(imageVersion)
-    [ ! -z "${configs[image-repository]}" ] && configure sets-mds+=registry=${configs[image-repository]}
+    # configure $(imageVersion)
+    [ -z "${configs[image-repository]}" ] && \
+      configure ${imageVersion} || configure sets-mds+=registry=${configs[image-repository]}
       # configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
 
     pause 5
