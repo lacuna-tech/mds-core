@@ -44,6 +44,8 @@ import { BadParamsError } from '@mds-core/mds-utils'
 
 import moment from 'moment-timezone'
 import { isArray } from 'util'
+import { ApiResponse, ApiResponseLocals, ApiRequest } from '@mds-core/mds-api-server'
+import { isProviderId, providerName } from '@mds-core/mds-providers'
 import { getNextState } from './state-machine'
 
 const RADIUS = 30.48 // 100 feet, in meters
@@ -770,6 +772,43 @@ function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[] {
   return [elementToNormalize]
 }
 
+interface ProviderClaimResponse extends ApiResponse {
+  locals: ApiResponseLocals & {
+    provider_id: UUID
+  }
+}
+
+async function providerClaimMiddleware(req: ApiRequest, res: ProviderClaimResponse) {
+  if (res.locals.claims === null) {
+    res.status(400).send({
+      result: 'No claims provided'
+    })
+    return false
+  }
+
+  const { provider_id } = res.locals.claims
+
+  if (!isUUID(provider_id)) {
+    await log.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
+    res.status(400).send({
+      result: `invalid provider_id ${provider_id} is not a UUID`
+    })
+    return false
+  }
+
+  if (!isProviderId(provider_id)) {
+    res.status(400).send({
+      result: `invalid provider_id ${provider_id} is not a known provider`
+    })
+    return false
+  }
+
+  res.locals.provider_id = provider_id
+
+  log.info(providerName(provider_id), req.method, req.originalUrl)
+  return provider_id
+}
+
 export {
   UUID_REGEX,
   isUUID,
@@ -822,5 +861,6 @@ export {
   parseRelative,
   parseIsRelative,
   getCurrentDate,
-  normalizeToArray
+  normalizeToArray,
+  providerClaimMiddleware
 }

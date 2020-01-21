@@ -16,7 +16,7 @@
 
 import express from 'express'
 
-import { pathsFor, isUUID, normalizeToArray } from '@mds-core/mds-utils'
+import { pathsFor, isUUID, normalizeToArray, providerClaimMiddleware } from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
 import log from '@mds-core/mds-logger'
 import { isProviderId } from '@mds-core/mds-providers'
@@ -63,24 +63,10 @@ function api(app: express.Express): express.Express {
         const provider_ids = normalizeToArray<UUID>(req.query.provider_id)
         res.locals.provider_ids = provider_ids
       } else if (res.locals.scopes.includes('metrics:read:provider')) {
-        // Claim exists if previous check passes
-        const { provider_id } = res.locals.claims
-
-        if (!isUUID(provider_id)) {
-          await log.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
-          return res.status(400).send({
-            result: `invalid provider_id ${provider_id} is not a UUID`
-          })
+        const provider_id = await providerClaimMiddleware(req, res)
+        if (provider_id === false) {
+          return
         }
-
-        if (!isProviderId(provider_id)) {
-          return res.status(400).send({
-            result: `invalid provider_id ${provider_id} is not a known provider`
-          })
-        }
-
-        // stash provider_id
-        res.locals.provider_id = provider_id
         // The query param provider ids can only be an empty array or a singleton array
         // with only the claimed provider id
         // This loop makes sure we have [] or [provider_id] only

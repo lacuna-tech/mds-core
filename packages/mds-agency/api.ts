@@ -18,7 +18,7 @@ import express from 'express'
 
 import log from '@mds-core/mds-logger'
 import { isProviderId } from '@mds-core/mds-providers'
-import { isUUID, pathsFor } from '@mds-core/mds-utils'
+import { isUUID, pathsFor, providerClaimMiddleware } from '@mds-core/mds-utils'
 import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
 import { checkAccess } from '@mds-core/mds-api-server'
 import {
@@ -46,29 +46,7 @@ function api(app: express.Express): express.Express {
     try {
       // verify presence of provider_id
       if (!(req.path.includes('/health') || req.path === '/')) {
-        if (res.locals.claims) {
-          const { provider_id } = res.locals.claims
-
-          if (!isUUID(provider_id)) {
-            await log.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
-            return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a UUID`
-            })
-          }
-
-          if (!isProviderId(provider_id)) {
-            return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a known provider`
-            })
-          }
-
-          // stash provider_id
-          res.locals.provider_id = provider_id
-
-          // log.info(providerName(provider_id), req.method, req.originalUrl)
-        } else {
-          return res.status(401).send('Unauthorized')
-        }
+        providerClaimMiddleware(req, res)
       }
     } catch (err) {
       /* istanbul ignore next */

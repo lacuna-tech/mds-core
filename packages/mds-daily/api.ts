@@ -19,7 +19,7 @@ import express from 'express'
 import log from '@mds-core/mds-logger'
 import cache from '@mds-core/mds-cache'
 import { providerName, isProviderId } from '@mds-core/mds-providers'
-import { isUUID, pathsFor, now } from '@mds-core/mds-utils'
+import { isUUID, pathsFor, now, providerClaimMiddleware } from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
 import { DailyApiRequest, DailyApiResponse } from './types'
 import {
@@ -53,20 +53,10 @@ async function agencyMiddleware(req: DailyApiRequest, res: DailyApiResponse, nex
         }
 
         if (provider_id) {
-          if (!isUUID(provider_id)) {
-            await log.warn(req.originalUrl, 'bogus provider_id', provider_id)
-            return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a UUID`
-            })
+          const providerIdResult = await providerClaimMiddleware(req, res)
+          if (providerIdResult === false) {
+            return
           }
-
-          if (!isProviderId(provider_id)) {
-            return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a known provider`
-            })
-          }
-
-          log.info(providerName(provider_id), req.method, req.originalUrl)
         }
       } else {
         return res.status(401).send('Unauthorized')
