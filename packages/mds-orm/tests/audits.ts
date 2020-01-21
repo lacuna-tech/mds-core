@@ -30,10 +30,11 @@ export default () =>
       }))
       try {
         const repository = connection.getRepository(AuditEntity)
-        await repository
+        const { raw: returning } = await repository
           .createQueryBuilder()
           .insert()
           .values(audits)
+          .returning('*')
           .onConflict('DO NOTHING')
           .execute()
         for (const audit of audits) {
