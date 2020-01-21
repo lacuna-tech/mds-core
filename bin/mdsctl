@@ -816,8 +816,8 @@ installNatss() {
 installNatsbox() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short natsbox)" = "natsbox" ]] || \
-    helm install ${configs[home]}/helm/natsbox --name natsbox --namespace ${configs[namespace-natsbox]}
+  [[ "$(helm list --short ${configs[namespace-natsbox]}-natsbox)" = "${configs[namespace-natsbox]}-natsbox" ]] || \
+    helm install ${configs[home]}/helm/natsbox --name ${configs[namespace-natsbox]}-natsbox --namespace ${configs[namespace-natsbox]}
 }
 
 installStan() {
@@ -839,13 +839,15 @@ installStanx() {
 installDns() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short dns)" = "dns" ]] && helm install ./helm/dns --name dns --namespace ${configs[namespace-dns]}
+  [[ "$(helm list --short ${configs[namespace-dns]}-dns)" = "${configs[namespace-dns]}-dns" ]] && \
+    helm install ./helm/dns --name ${configs[namespace-dns]}-dns --namespace ${configs[namespace-dns]}
 }
 
 installCurl() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short curl)" = "curl" ]] && helm install ./helm/curl --name dcurlns --namespace ${configs[namespace-curl]}
+  [[ "$(helm list --short ${configs[namespace-curl]}-curl)" = "${configs[namespace-curl]}-curl" ]] && \
+    helm install ./helm/curl --name ${configs[namespace-curl]}-curl --namespace ${configs[namespace-curl]}
 }
 
 testUnit() {
@@ -1040,7 +1042,8 @@ uninstallStans() {
 uninstallNatsbox() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short natsbox)" = "natsbox" ]] && helm delete --purge natsbox
+  [[ "$(helm list --short ${configs[namespace-natsbox]}-natsbox)" = "${configs[namespace-natsbox]}-natsbox" ]] && \
+    helm delete --purge ${configs[namespace-natsbox]}-natsbox
 }
 
 uninstallNats() {
@@ -1072,11 +1075,13 @@ uninstallNatss() {
 }
 
 uninstallDns() {
-  [[ "$(helm list --short dns)" = "dns" ]] && helm delete --purge dns
+  [[ "$(helm list --short ${configs[namespace-dns]}-dns)" = "${configs[namespace-dns]}-dns" ]] && \
+    helm delete --purge ${configs[namespace-dns]}-dns
 }
 
 uninstallCurl() {
-  [[ "$(helm list --short curl)" = "curl" ]] && helm delete --purge curl
+  [[ "$(helm list --short ${configs[namespace-curl]}-curl)" = "${configs[namespace-curl]}-curl" ]] && \
+    helm delete --purge ${configs[namespace-curl]}-curl
 }
 
 uninstallMetrics() {
