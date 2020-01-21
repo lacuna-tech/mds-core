@@ -17,6 +17,8 @@
 import test from 'unit.js'
 import assert from 'assert'
 import { VEHICLE_EVENTS, VehicleEvent } from '@mds-core/mds-types'
+import { ApiRequest } from '@mds-core/mds-api-server'
+import Sinon from 'sinon'
 import {
   routeDistance,
   filterEmptyHelper,
@@ -25,7 +27,9 @@ import {
   parseUnit,
   parseIsRelative,
   isStateTransitionValid,
-  normalizeToArray
+  normalizeToArray,
+  ProviderClaimResponse,
+  providerClaimMiddleware
 } from '../utils'
 import { expectedTransitions } from './state-transition-expected'
 
@@ -162,6 +166,51 @@ describe('Tests Utilities', () => {
           assert.strictEqual(actual, expectedTransitions[eventA.event_type][eventB.event_type], transitionKey)
         }
       }
+    })
+  })
+
+  describe('Provider claims helper', () => {
+    it('spits out missing claims', async () => {
+      const req: ApiRequest = {} as ApiRequest
+
+      const send = Sinon.fake.returns('boop')
+      const status = Sinon.fake.returns({ send })
+      const res: ProviderClaimResponse = ({
+        status,
+        locals: {
+          claims: null
+        }
+      } as unknown) as ProviderClaimResponse
+
+      const result = await providerClaimMiddleware(req, res)
+
+      assert.strictEqual(status.calledOnceWithExactly(400), true)
+      assert.strictEqual(send.calledOnce, true)
+      assert.strictEqual(result, false)
+
+      Sinon.restore()
+    })
+
+    it('spits out bad uuid', async () => {
+      const req: ApiRequest = {} as ApiRequest
+
+      const send = Sinon.fake.returns('boop')
+      const status = Sinon.fake.returns({ send })
+      const res: ProviderClaimResponse = ({
+        status,
+        locals: {
+          claims: null,
+          provider_id: 'not-a-uuid'
+        }
+      } as unknown) as ProviderClaimResponse
+
+      const result = await providerClaimMiddleware(req, res)
+
+      assert.strictEqual(status.calledOnceWithExactly(400), true)
+      assert.strictEqual(send.calledOnce, true)
+      assert.strictEqual(result, false)
+
+      Sinon.restore()
     })
   })
 })

@@ -772,7 +772,7 @@ function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[] {
   return [elementToNormalize]
 }
 
-interface ProviderClaimResponse extends ApiResponse {
+export interface ProviderClaimResponse extends ApiResponse {
   locals: ApiResponseLocals & {
     provider_id: UUID
   }
@@ -789,7 +789,7 @@ async function providerClaimMiddleware(req: ApiRequest, res: ProviderClaimRespon
   const { provider_id } = res.locals.claims
 
   if (!isUUID(provider_id)) {
-    await log.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
+    await log.warn(req.originalUrl, req.method, 'invalid provider_id is not a UUID', provider_id)
     res.status(400).send({
       result: `invalid provider_id ${provider_id} is not a UUID`
     })

@@ -26,7 +26,8 @@ import {
   getPolygon,
   pointInShape,
   isInStatesOrEvents,
-  ServerError
+  ServerError,
+  providerClaimMiddleware
 } from '@mds-core/mds-utils'
 import { Geography, Device, UUID, VehicleEvent } from '@mds-core/mds-types'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, BLUE_SYSTEMS_PROVIDER_ID, providerName } from '@mds-core/mds-providers'
@@ -42,28 +43,7 @@ function api(app: express.Express): express.Express {
       // verify presence of provider_id
       if (!(req.path.includes('/health') || req.path === '/')) {
         if (res.locals.claims) {
-          const { provider_id } = res.locals.claims
-
-          /* istanbul ignore next */
-          if (!provider_id) {
-            await log.warn('Missing provider_id in', req.originalUrl)
-            return res.status(400).send({
-              result: 'missing provider_id'
-            })
-          }
-
-          /* istanbul ignore next */
-          if (!isUUID(provider_id)) {
-            await log.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
-            return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a UUID`
-            })
-          }
-
-          // stash provider_id
-          res.locals.provider_id = provider_id
-
-          log.info(providerName(provider_id), req.method, req.originalUrl)
+          providerClaimMiddleware(req, res)
         } else {
           return res.status(401).send('Unauthorized')
         }
