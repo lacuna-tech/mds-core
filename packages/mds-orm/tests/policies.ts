@@ -28,5 +28,4 @@ export default () =>
         await ROConnection.close()
       }
     })
-
   })

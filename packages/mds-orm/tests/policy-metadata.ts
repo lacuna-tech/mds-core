@@ -22,11 +22,12 @@ export default () =>
       }
       const ROConnection = await manager.getConnection('ro')
       try {
-        const policy_metadata = await ROConnection.manager.find(PolicyMetadataEntity, { where: { policy_id: POLICY_UUID } })
+        const policy_metadata = await ROConnection.manager.find(PolicyMetadataEntity, {
+          where: { policy_id: POLICY_UUID }
+        })
         test.value(policy_metadata.length).is(1)
       } finally {
         await ROConnection.close()
       }
     })
-
   })
