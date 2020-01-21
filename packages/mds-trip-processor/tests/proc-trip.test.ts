@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { TripEvent, Timestamp, TripTelemetry, GpsData } from '@mds-core/mds-types'
+import { TripEvent, Timestamp, TripTelemetry, TripTelemetryField } from '@mds-core/mds-types'
 import { calcDistance, routeDistance } from '@mds-core/mds-utils'
 import * as procTripUtils from '../src/utils'
 
@@ -94,7 +94,10 @@ describe('Proc Trip', () => {
       const startGPS: GpsData = { lat: 0, lng: 0 } as GpsData
       const expected = {
         distance:
-          routeDistance([startGPS, { lat: 0, lng: 100 }]) +
+          routeDistance([
+            { lat: 0, lng: 0 },
+            { lat: 0, lng: 100 }
+          ]) +
           routeDistance([
             { lat: 0, lng: 100 },
             { lat: 100, lng: 100 }
@@ -108,7 +111,7 @@ describe('Proc Trip', () => {
           ])
         ]
       }
-      const result = calcDistance(tripTelemetry, startGPS)
+      const result = calcDistance(tripTelemetry)
       assert.deepStrictEqual(result, expected)
     })
   })

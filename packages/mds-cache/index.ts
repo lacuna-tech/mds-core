@@ -84,9 +84,13 @@ declare module 'redis' {
     zrangebyscoreAsync: (key: string, min: number | string, max: number | string) => Promise<string[]>
     georadiusAsync: (key: string, longitude: number, latitude: number, radius: number, unit: string) => Promise<UUID[]>
   }
+  interface Multi {
+    hgetallAsync: (arg1: string) => Promise<{ [key: string]: string }>
+  }
 }
 
 bluebird.promisifyAll(redis.RedisClient.prototype)
+bluebird.promisifyAll(redis.Multi.prototype)
 
 let cachedClient: redis.RedisClient | null
 
@@ -136,7 +140,8 @@ async function info() {
 }
 
 async function hget(key: string, field: UUID): Promise<CachedItem | CachedHashItem | null> {
-  const flat = await (await getClient()).hgetAsync(decorateKey(key), field)
+  const client = await getClient()
+  const flat = await client.hgetAsync(decorateKey(key), field)
   if (flat) {
     return unflatten(flat)
   }
@@ -144,7 +149,8 @@ async function hget(key: string, field: UUID): Promise<CachedItem | CachedHashIt
 }
 
 async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null> {
-  const flat = await (await getClient()).hgetallAsync(decorateKey(key))
+  const client = await getClient()
+  const flat = await client.hgetallAsync(decorateKey(key))
   if (flat) {
     return unflatten(flat)
   }
@@ -162,9 +168,10 @@ async function hscan(key: string, pattern: string): Promise<string[] | null> {
   return null
 }
 
-async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE> {
-  // TODO: Fix type entry into cache so we don't need to do this unkown conversion
-  return ((await getClient()).hgetAsync(decorateKey(`device:${keyID}:device`), 'type') as unknown) as VEHICLE_TYPE
+async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE | null> {
+  const client = await getClient()
+  const type = await client.hgetAsync(decorateKey(`device:${keyID}:device`), 'type')
+  return (type as VEHICLE_TYPE) ?? null
 }
 
 async function readDeviceState(field: UUID): Promise<StateEntry | null> {
@@ -290,7 +297,11 @@ async function hreads(
   // bleah
   const multi = (await getClient()).multi()
 
-  suffixes.map(suffix => ids.map(id => multi.hgetall(decorateKey(`${prefix}:${id}:${suffix}`))))
+  suffixes.map(suffix =>
+    ids.map(async id => {
+      await multi.hgetallAsync(decorateKey(`${prefix}:${id}:${suffix}`))
+    })
+  )
 
   /* eslint-reason external lib weirdness */
   /* eslint-disable-next-line promise/avoid-new */
