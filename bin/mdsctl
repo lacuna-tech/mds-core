@@ -70,7 +70,7 @@ declare -A configs=(
   ["provider"]="${MDS_PROVIDER:-}"
   ["rc"]="${MDS_RC:-~/.bashrc ~/.zshrc}"
   ["workdir"]="/tmp/mds/tools"
-  ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s git go awscli}"
+  ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s kubectx git awscli}"
   ["brew-envsubst"]="gettext"
   ["brew-helm"]="helm@2"
   ["brew-k9s"]="derailed/k9s/k9s"
@@ -323,11 +323,6 @@ bootstrap() {
   done; unset c rc
 
   initialize
-
-  # fixme: impl
-  hash ko > /dev/null 2>&1 || {
-    GO111MODULE=on go get github.com/google/ko/cmd/ko
-  }
 
   for p in lerna cypress mocha chai mochawesome; do
     yarn ${p} --version > /dev/null 2>&1 || yarn add -W ${p}
@@ -1182,11 +1177,7 @@ check() {
       [[ ! -d ${configs[simulator]} && ! "${configs[simulator-repository]}" ]] && usage "unspecified simulator repository";;
     app:*) forwardIfNeeded ${1##*:};;
     cliPostgresql) ;;
-      # hash pgcli > /dev/null 2>&1 || bootstrap
-      # forwardIfNeeded mds-postgresql;;
     cliRedis) ;;
-      # hash redis-cli > /dev/null 2>&1 || bootstrap
-      # forwardIfNeeded mds-redis;;
   esac
 }
 

@@ -98,9 +98,9 @@ spec:
           - name: CE_NAME
             value: {{ $name }}
           - name: NATS
-            value: nats.nats
+            value: nats.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
           - name: STAN
-            value: stan.{{ $.Release.Namespace | default "default" }}.svc.cluster.local
+            value: stan.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
           - name: STAN_CLUSTER
             value: stan
           {{- if not (empty $.Values.tenantId) }}
