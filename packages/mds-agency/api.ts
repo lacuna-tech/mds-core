@@ -45,7 +45,9 @@ function api(app: express.Express): express.Express {
     try {
       // verify presence of provider_id
       if (!(req.path.includes('/health') || req.path === '/')) {
-        providerClaimMiddleware(req, res)
+        if (!(await providerClaimMiddleware(req, res))) {
+          return
+        }
       }
     } catch (err) {
       /* istanbul ignore next */

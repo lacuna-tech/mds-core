@@ -43,7 +43,9 @@ function api(app: express.Express): express.Express {
       // verify presence of provider_id
       if (!(req.path.includes('/health') || req.path === '/')) {
         if (res.locals.claims) {
-          providerClaimMiddleware(req, res)
+          if (!(await providerClaimMiddleware(req, res))) {
+            return
+          }
         } else {
           return res.status(401).send('Unauthorized')
         }
