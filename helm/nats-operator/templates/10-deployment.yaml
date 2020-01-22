@@ -4,7 +4,7 @@ metadata:
   name: nats-operator
   # Change to the name of the namespace where to install NATS Operator.
   # Alternatively, change to "nats-io" to perform a cluster-scoped deployment in supported versions.
-  namespace: {{ $.Release.Namespace | default "default" }}
+  namespace: {{ $.Release.Namespace | default "nats" }}
 spec:
   replicas: 1
   selector:

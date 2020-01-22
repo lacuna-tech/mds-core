@@ -1,8 +1,8 @@
 apiVersion: "nats.io/v1alpha2"
 kind: "NatsCluster"
 metadata:
-  name: "example-nats"
-  namespace: {{ $.Release.Namespace | default "default" }}
+  name: "nats"
+  namespace: {{ $.Release.Namespace | default "nats" }}
 spec:
   size: 3
   pod:

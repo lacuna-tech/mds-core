@@ -8,8 +8,7 @@ data:
   # Look for $(NATS_CLUSTER) usage below
   NATS_CLUSTER: nats-streaming
   # This is the NATS hostname to connect to
-  NATS_HOST: nats://example-nats-mgmt:4222
-  #NATS_HOST: nats://nats:4222
+  NATS_HOST: nats://nats:4222
 ---
 apiVersion: v1
 kind: Service
