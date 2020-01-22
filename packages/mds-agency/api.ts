@@ -17,8 +17,7 @@
 import express from 'express'
 
 import log from '@mds-core/mds-logger'
-import { isProviderId } from '@mds-core/mds-providers'
-import { isUUID, pathsFor, providerClaimMiddleware } from '@mds-core/mds-utils'
+import { pathsFor, providerClaimMiddleware } from '@mds-core/mds-utils'
 import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
 import { checkAccess } from '@mds-core/mds-api-server'
 import {
