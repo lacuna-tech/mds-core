@@ -18,8 +18,7 @@ import express from 'express'
 
 import log from '@mds-core/mds-logger'
 import cache from '@mds-core/mds-cache'
-import { providerName, isProviderId } from '@mds-core/mds-providers'
-import { isUUID, pathsFor, now, providerClaimMiddleware } from '@mds-core/mds-utils'
+import { pathsFor, now, providerClaimMiddleware } from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
 import { DailyApiRequest, DailyApiResponse } from './types'
 import {
