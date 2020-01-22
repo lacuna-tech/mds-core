@@ -20,7 +20,7 @@ import { VEHICLE_EVENTS, VehicleEvent } from '@mds-core/mds-types'
 import { ApiRequest } from '@mds-core/mds-api-server'
 import Sinon from 'sinon'
 import uuid from 'uuid'
-import { TEST1_PROVIDER_ID } from 'packages/mds-providers'
+import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
 import {
   routeDistance,
   filterEmptyHelper,
