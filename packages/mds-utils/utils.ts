@@ -797,6 +797,7 @@ async function providerClaimMiddleware(req: ApiRequest, res: ProviderClaimRespon
   }
 
   if (!isProviderId(provider_id)) {
+    await log.warn(req.originalUrl, req.method, 'invalid provider_id is not a known provider', provider_id)
     res.status(400).send({
       result: `invalid provider_id ${provider_id} is not a known provider`
     })

@@ -19,6 +19,8 @@ import assert from 'assert'
 import { VEHICLE_EVENTS, VehicleEvent } from '@mds-core/mds-types'
 import { ApiRequest } from '@mds-core/mds-api-server'
 import Sinon from 'sinon'
+import uuid from 'uuid'
+import { TEST1_PROVIDER_ID } from 'packages/mds-providers'
 import {
   routeDistance,
   filterEmptyHelper,
@@ -199,8 +201,9 @@ describe('Tests Utilities', () => {
       const res: ProviderClaimResponse = ({
         status,
         locals: {
-          claims: null,
-          provider_id: 'not-a-uuid'
+          claims: {
+            provider_id: 'not-a-uuid'
+          }
         }
       } as unknown) as ProviderClaimResponse
 
@@ -209,6 +212,48 @@ describe('Tests Utilities', () => {
       assert.strictEqual(status.calledOnceWithExactly(400), true)
       assert.strictEqual(send.calledOnce, true)
       assert.strictEqual(result, false)
+
+      Sinon.restore()
+    })
+
+    it('spits out non provider uuid', async () => {
+      const req: ApiRequest = {} as ApiRequest
+
+      const send = Sinon.fake.returns('boop')
+      const status = Sinon.fake.returns({ send })
+      const res: ProviderClaimResponse = ({
+        status,
+        locals: {
+          claims: {
+            provider_id: uuid()
+          }
+        }
+      } as unknown) as ProviderClaimResponse
+
+      const result = await providerClaimMiddleware(req, res)
+
+      assert.strictEqual(status.calledOnceWithExactly(400), true)
+      assert.strictEqual(send.calledOnce, true)
+      assert.strictEqual(result, false)
+
+      Sinon.restore()
+    })
+
+    it('allows legit provider id', async () => {
+      const req: ApiRequest = {} as ApiRequest
+      const provider_id = TEST1_PROVIDER_ID
+      const send = Sinon.fake.returns('boop')
+      const status = Sinon.fake.returns({ send })
+      const res: ProviderClaimResponse = ({
+        status,
+        locals: {
+          claims: { provider_id }
+        }
+      } as unknown) as ProviderClaimResponse
+
+      const result = await providerClaimMiddleware(req, res)
+
+      assert.strictEqual(result, provider_id)
 
       Sinon.restore()
     })
