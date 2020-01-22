@@ -159,7 +159,7 @@ initialize() {
   done; unset p
 
   # fixme: make minimal-version test more flexible; may not be required when helm:3 is supported more broadly
-  if [[ ! "$(helm version --short | grep -i client | cut -d ':' -f 2)" == *"${configs[helm-version]}"* ]]; then
+  #if [[ ! "$(helm version --short | grep -i client | cut -d ':' -f 2)" == *"${configs[helm-version]}"* ]]; then
     os=$(os)
 
     if [[ ! -x ${configs[workdir]}/helm/${os}-amd64 ]]; then
@@ -170,7 +170,7 @@ initialize() {
 
     export PATH=${configs[workdir]}/helm/${os}-amd64:${PATH}
     unset os
-  fi
+  #fi
 }
 
 warn() {
@@ -292,7 +292,7 @@ bootstrap() {
 
     hash ${r} > /dev/null 2>&1 || {
       case ${r} in
-        oq) brew tap ${rc};;
+        oq) brew tap ${rc}; rc=${r};&
         *) brew install ${rc};;
       esac
 
@@ -300,19 +300,26 @@ bootstrap() {
       case ${r} in
         nvm)
           [ ! -d ~/.nmv ] && mkdir -p ~/.nvm
-          [ $(grep -Fxq "export NMV_DIR=\"\${HOME}/.nvm\"" ~/.bashrc; echo $?) == "1" ] && \
-            echo "export NMV_DIR=\"\${HOME}/.nvm\"" >> ~/.bashrc
-          [ $(grep -Fxq "eval . \$(brew --prefix nvm)/nvm.sh" ~/.bashrc; echo $?) == "1" ] && \
-            echo "eval . \$(brew --prefix nvm)/nvm.sh" >> ~/.bashrc
+          nv=12.14.1
+          for ns in "export NMV_DIR=\${HOME}/.nvm" \
+            "eval . \$(brew --prefix nvm)/nvm.sh" \
+            "nvm install ${nv}" \
+            "nvm alias default ${nv}" \
+            "nvm use --delete-prefix v${nv}"; do
+            [ $(grep -Fxq "${ns}" ~/.bashrc; echo $?) == "1" ] && echo "${ns}" >> ~/.bashrc
+          done; unset ns
           . $(brew --prefix nvm)/nvm.sh
           nvm install node
           nvm use node
-          nvm install 12.14.1
-          nvm alias default 12.14.1;;
+          . ~/.bashrc;;
+          #nvm install 12.14.1
+          #nvm alias default 12.14.1
+          #nvm use --delete-prefix v12.14.1;;
         envsubst) brew link --force ${lc};;
       esac
     }
   done; unset r rc
+
 
   for r in ${configs[brew-cask]}; do
     rc=${configs[brew-cask-${r}]:-${r}}
@@ -1149,7 +1156,7 @@ check() {
     $(basename ${0}))
       for rc in ${configs[rc]}; do
         if [[ -f ${rc} && $(grep -q "\\\*${configs[home]}/bin\\\*" ${rc}; echo $?) != 0 ]]; then
-            echo "export PATH=${configs[home]}/bin:\${PATH}" >> ${rc}
+          echo "export PATH=${configs[home]}/bin:\${PATH}" >> ${rc}
         fi
       done; unset rc
 
