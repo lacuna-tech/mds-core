@@ -66,13 +66,13 @@ processors:
     version: latest
     migration: false
     triggeredBy:
-      cron: '0 * * * *'
+      cron: '* * * * *'
   mds-provider-processor:
     enabled: true
     version: latest
     migration: false
     triggeredBy:
-      cron: '0 * * * *'
+      cron: '* * * * *'
 tenantId:
 timezone: America/Los_Angeles
 registry:

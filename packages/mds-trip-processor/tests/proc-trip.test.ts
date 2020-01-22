@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { TripEvent, Timestamp, TripTelemetry, TripTelemetryField } from '@mds-core/mds-types'
+import { TripEvent, Timestamp, TripTelemetry, TripTelemetryField, GpsData } from '@mds-core/mds-types'
 import { calcDistance, routeDistance } from '@mds-core/mds-utils'
 import * as procTripUtils from '../src/utils'
 
@@ -76,7 +76,7 @@ describe('Proc Trip', () => {
     it('Maps telemtry points to trip events', () => {
       const telemetryMap = getMockedTripTelemetryList()
       const events = getMockedTripEventMap()
-      const expected: { [event: number]: TripTelemetry[] } = {
+      const expected: TripTelemetryField = {
         '42': [getMockedTripTelemetry(42), getMockedTripTelemetry(43)],
         '44': [getMockedTripTelemetry(44)]
       }
@@ -87,7 +87,7 @@ describe('Proc Trip', () => {
 
   describe('calcDistance()', () => {
     it('Calculates distance between telemetries', () => {
-      const tripTelemetry: { [event: number]: TripTelemetry[] } = {
+      const tripTelemetry: TripTelemetryField = {
         '42': [getMockedTripTelemetryWithGPS(42, 0, 0), getMockedTripTelemetryWithGPS(43, 0, 100)],
         '44': [getMockedTripTelemetryWithGPS(44, 100, 100)]
       }
