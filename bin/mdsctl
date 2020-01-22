@@ -646,9 +646,8 @@ installMds() {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
     # note: remote registries may require image-version overrides
-    # configure $(imageVersion)
     [ -z "${configs[image-repository]}" ] && \
-      configure ${imageVersion} || configure sets-mds+=registry=${configs[image-repository]}
+      configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
       # configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
 
     pause 5
@@ -1209,7 +1208,7 @@ configure() {
       [[ "${k}" == *"+" ]] && configs[${k%+}]+="${configs[${k%+}]:+,}${v}" ||
 	  configs[${k}]="${v}"
     done; unset c k v
-  else
+  elif [[ ! -z "${1}" ]]; then
     configs[${1}]=
   fi
 }
