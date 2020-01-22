@@ -775,14 +775,14 @@ installStan() {
 installDns() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-dns]}-dns)" = "${configs[namespace-dns]}-dns" ]] && \
+  [[ "$(helm list --short ${configs[namespace-dns]}-dns)" = "${configs[namespace-dns]}-dns" ]] || \
     helm install ./helm/dns --name ${configs[namespace-dns]}-dns --namespace ${configs[namespace-dns]}
 }
 
 installCurl() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-curl]}-curl)" = "${configs[namespace-curl]}-curl" ]] && \
+  [[ "$(helm list --short ${configs[namespace-curl]}-curl)" = "${configs[namespace-curl]}-curl" ]] || \
     helm install ./helm/curl --name ${configs[namespace-curl]}-curl --namespace ${configs[namespace-curl]}
 }
 

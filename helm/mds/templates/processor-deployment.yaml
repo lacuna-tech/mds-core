@@ -97,16 +97,12 @@ spec:
             value: cloudevents
           - name: CE_NAME
             value: {{ $name }}
-          # - name: SINK
-          #   value: http://natss-broker.{{ $.Release.Namespace }}.svc.cluster.local
-          # - name: NATS
-          #   value: nats-streaming-0.nats-streaming.natss.svc.cluster.local
+          - name: NATS
+            value: nats.nats
           - name: STAN
             value: stan.{{ $.Release.Namespace | default "default" }}.svc.cluster.local
           - name: STAN_CLUSTER
-            value: example-stan
-          # - name: STAN_CREDS
-          #   value: /var/run/nats/creds/stan/stan.creds
+            value: stan
           {{- if not (empty $.Values.tenantId) }}
           - name: TENANT_ID
             value: {{ $.Values.tenantId }}
