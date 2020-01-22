@@ -3,39 +3,24 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: stan-config
+  namespace: {{ $.Release.Namespace }}
 data:
   stan.conf: |
     port: 4222
     http: 8222
 
-    leafnodes {
-      remotes = [
-        {
-            url: "nats://nats:7422"
-        }
-      ]
-    }
-
     streaming {
+     ns: "nats://nats:4222"
      id: stan
      store: file
      dir: /data/stan/store
-
-     cluster {
-       node_id: $POD_NAME
-
-       log_path: /data/stan/log
-
-       # Explicit names of resulting peers
-       peers: ["stan-0"]
-      }
     }
-
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: stan
+  namespace: {{ $.Release.Namespace }}
   labels:
     app: stan
 spec:
@@ -50,6 +35,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: stan
+  namespace: {{ $.Release.Namespace }}
   labels:
     app: stan
 spec:
@@ -57,7 +43,7 @@ spec:
     matchLabels:
       app: stan
   serviceName: stan
-  replicas: 3
+  replicas: 1
   volumeClaimTemplates:
   - metadata:
       name: stan-sts-vol
@@ -67,7 +53,7 @@ spec:
       volumeMode: "Filesystem"
       resources:
         requests:
-          storage: 5Gi
+          storage: 1Gi
   template:
     metadata:
       labels:
@@ -126,22 +112,6 @@ spec:
             port: 8222
           initialDelaySeconds: 10
           timeoutSeconds: 5
-      - name: metrics
-        image: synadia/prometheus-nats-exporter:0.6.0
-        args:
-        - -connz
-        - -routez
-        - -subz
-        - -varz
-        - -channelz
-        - -serverz
-        # - -prefix=stan
-        - -use_internal_server_id
-        - -DV
-        - http://localhost:8222/
-        ports:
-        - containerPort: 7777
-          name: metrics
       volumes:
       - name: config-volume
         configMap:

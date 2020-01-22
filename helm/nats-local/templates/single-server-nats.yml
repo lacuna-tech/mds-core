@@ -3,29 +3,17 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nats-config
-  namespace: {{ $.Release.Namespace | default "default" }}
+  namespace: {{ $.Release.Namespace }}
 data:
   nats.conf: |
     pid_file: "/var/run/nats/nats.pid"
-
     http: 8222
-
-    cluster {
-      port: 6222
-
-      routes [
-        nats://nats-0.nats.{{ $.Release.Namespace | default "default" }}.svc:6222
-      ]
-
-      cluster_advertise: $CLUSTER_ADVERTISE
-      connect_retries: 30
-    }
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: nats
-  namespace: {{ $.Release.Namespace | default "default" }}
+  namespace: {{ $.Release.Namespace }}
   labels:
     app: nats
 spec:
@@ -50,14 +38,14 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: nats
-  namespace: {{ $.Release.Namespace | default "default" }}
+  namespace: {{ $.Release.Namespace }}
   labels:
     app: nats
 spec:
   selector:
     matchLabels:
       app: nats
-  replicas: 2 # 3
+  replicas: 1
   serviceName: "nats"
   template:
     metadata:
@@ -148,42 +136,3 @@ spec:
               # the NATS Server to gracefully terminate the client connections.
               #
               command: ["/bin/sh", "-c", "/nats-server -sl=ldm=/var/run/nats/nats.pid && /bin/sleep 60"]
-
-      #################################
-      #                               #
-      #  NATS Configuration Reloader  #
-      #                               #
-      #################################
-      - name: reloader
-        image: connecteverything/nats-server-config-reloader:0.6.0
-        command:
-         - "nats-server-config-reloader"
-         - "-pid"
-         - "/var/run/nats/nats.pid"
-         - "-config"
-         - "/etc/nats-config/nats.conf"
-        volumeMounts:
-          - name: config-volume
-            mountPath: /etc/nats-config
-          - name: pid
-            mountPath: /var/run/nats
-
-      ##############################
-      #                            #
-      #  NATS Prometheus Exporter  #
-      #                            #
-      ##############################
-      - name: metrics
-        image: synadia/prometheus-nats-exporter:0.5.0
-        args:
-        - -connz
-        - -routez
-        - -subz
-        - -varz
-        - -prefix=nats
-        - -use_internal_server_id
-        - -DV
-        - http://localhost:8222/
-        ports:
-        - containerPort: 7777
-          name: metrics
