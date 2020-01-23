@@ -160,8 +160,7 @@ async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null>
 /* TODO: explore alternatives to pattern match on field */
 async function hscan(key: string, pattern: string): Promise<string[] | null> {
   /* hscanAsync returns contain an array of two elements, a string representing the cursor and a sub-array containing an array of alternating key/values */
-  const flat = await (await getClient()).hscanAsync(decorateKey(key), 0, 'MATCH', pattern)
-  const entry = flat[1]
+  const [, entry] = await (await getClient()).hscanAsync(decorateKey(key), 0, 'MATCH', pattern)
   if (entry.length > 0) {
     return entry
   }

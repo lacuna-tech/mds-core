@@ -81,10 +81,9 @@ function parseAllDeviceStates(allDeviceStates: StringifiedAllDeviceStates): Devi
 
 function parseTripEvents(tripEventsStr: StringifiedTripEvents): TripEvent[] {
   try {
-    const result: TripEvent[] = []
     const tripEvents: StringifiedTripEvent[] = JSON.parse(tripEventsStr)
-    tripEvents.map(tripEvent => {
-      result.push({
+    const result: TripEvent[] = tripEvents.map(tripEvent => {
+      return {
         vehicle_type: tripEvent.vehicle_type as VEHICLE_TYPE,
         timestamp: Number(tripEvent.timestamp),
         event_type: tripEvent.event_type as VEHICLE_EVENT,
@@ -107,7 +106,7 @@ function parseTripEvents(tripEventsStr: StringifiedTripEvents): TripEvent[] {
             }
           : null,
         service_area_id: tripEvent.service_area_id ? tripEvent.service_area_id : null
-      })
+      }
     })
     return result
   } catch (err) {
@@ -117,10 +116,9 @@ function parseTripEvents(tripEventsStr: StringifiedTripEvents): TripEvent[] {
 
 function parseTripTelemetry(tripTelemetryStr: StringifiedTripTelemetries): TripTelemetry[] {
   try {
-    const result: TripTelemetry[] = []
     const tripTelemetry: StringifiedTripTelemetry[] = JSON.parse(tripTelemetryStr)
-    tripTelemetry.map(telemetry => {
-      result.push({
+    const result: TripTelemetry[] = tripTelemetry.map(telemetry => {
+      return {
         timestamp: Number(telemetry.timestamp),
         latitude: telemetry.latitude ? Number(telemetry.latitude) : null,
         longitude: telemetry.longitude ? Number(telemetry.longitude) : null,
@@ -132,7 +130,7 @@ function parseTripTelemetry(tripTelemetryStr: StringifiedTripTelemetries): TripT
             }
           : null,
         service_area_id: telemetry.service_area_id ? telemetry.service_area_id : null
-      })
+      }
     })
     return result
   } catch (err) {
