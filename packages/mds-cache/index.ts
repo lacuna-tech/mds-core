@@ -195,16 +195,16 @@ async function readTripEvents(field: UUID): Promise<TripEvent[] | null> {
 
 /* TODO: Investigate alternatives, this should be used temporarily. O(n) runtime for streaming is not ideal. */
 async function readDeviceTripsEvents(pattern: string): Promise<TripsEvents | null> {
-  /* hscan returns list of alternating key and value strings (i.e. [keyA, valueA, keyB, valueB]) */
+  /*
+    hscan returns list of alternating key and value strings (i.e. [keyA, valueA, keyB, valueB])
+    Here we must construct an object of StringifiedAllTripsEvents from such list to pass to our unflattener method
+  */
   const allFilteredTripEventsList = await hscan('trips:events', pattern)
   if (allFilteredTripEventsList) {
-    let lastKey = ''
     const allFilteredTripEvents = allFilteredTripEventsList.reduce((acc, entry, index) => {
-      if (index % 2 === 0) {
-        acc[entry] = ''
-        lastKey = entry
-      } else {
-        acc[lastKey] = entry
+      if (index % 2 === 1) {
+        const key = allFilteredTripEventsList[index - 1]
+        acc[key] = entry
       }
       return acc
     }, {} as StringifiedAllTripsEvents)
