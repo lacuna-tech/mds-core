@@ -71,6 +71,10 @@ spec:
           - -m
           - "8222"
           - -store
+          - --max_msgs
+          - "0"
+          - --max_bytes
+          - "0"
           - file
           - -clustered
           - --cluster_node_id
