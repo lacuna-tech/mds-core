@@ -6,7 +6,7 @@ export const eventValidation = (events: TripEvent[], curTime: Timestamp, timeSLA
     log.info('NO TRIP_END EVENT SEEN')
     return false
   }
-  // Process anything where the last event timestamp is more than 24 hours old
+  /* Process anything where the last event timestamp is more than 24 hours old */
   const latestTime = events[events.length - 1].timestamp
   if (latestTime + timeSLA > curTime) {
     log.info('TRIPS ENDED LESS THAN 24HRS AGO')
@@ -21,7 +21,7 @@ export const createTelemetryMap = (events: TripEvent[], tripTelemetry: TripTelem
     events.reduce((start, end) => {
       const startTime = start.timestamp
       const endTime = end.timestamp
-      // Bin telemetry by events
+      /* Bin telemetry by events */
       const tripSegment = tripTelemetry.filter(
         telemetryPoint => telemetryPoint.timestamp >= startTime && telemetryPoint.timestamp < endTime
       )

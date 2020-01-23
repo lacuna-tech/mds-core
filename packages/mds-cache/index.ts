@@ -157,9 +157,9 @@ async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null>
   return null
 }
 
-// TODO: explore alternatives to pattern match on field
+/* TODO: explore alternatives to pattern match on field */
 async function hscan(key: string, pattern: string): Promise<string[] | null> {
-  // hscanAsync returns contain an array of two elements, a string representing the cursor and a sub-array containing an array of alternating key/values
+  /* hscanAsync returns contain an array of two elements, a string representing the cursor and a sub-array containing an array of alternating key/values */
   const flat = await (await getClient()).hscanAsync(decorateKey(key), 0, 'MATCH', pattern)
   const entry = flat[1]
   if (entry.length > 0) {
@@ -179,7 +179,7 @@ async function readDeviceState(field: UUID): Promise<StateEntry | null> {
   return deviceState ? parseDeviceState(deviceState as StringifiedStateEntry) : null
 }
 
-// TODO: Increase performance with provider pattern based fetch
+/* TODO: Increase performance with provider pattern based fetch */
 async function readAllDeviceStates(): Promise<DeviceStates | null> {
   const allDeviceStates = await hgetall('device:state')
   return allDeviceStates ? parseAllDeviceStates(allDeviceStates as StringifiedAllDeviceStates) : null
@@ -194,9 +194,9 @@ async function readTripEvents(field: UUID): Promise<TripEvent[] | null> {
   return tripEvents ? parseTripEvents(tripEvents as StringifiedTripEvents) : null
 }
 
-// TODO: Investigate alternatives, this should be used temporarily. O(n) runtime for streaming is not ideal.
+/* TODO: Investigate alternatives, this should be used temporarily. O(n) runtime for streaming is not ideal. */
 async function readDeviceTripsEvents(pattern: string): Promise<TripsEvents | null> {
-  // hscan returns list of alternating key and value strings (i.e. [keyA, valueA, keyB, valueB])
+  /* hscan returns list of alternating key and value strings (i.e. [keyA, valueA, keyB, valueB]) */
   const allFilteredTripEventsList = await hscan('trips:events', pattern)
   if (allFilteredTripEventsList) {
     let lastKey = ''

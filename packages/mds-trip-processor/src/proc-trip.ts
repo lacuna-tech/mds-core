@@ -39,16 +39,16 @@ async function processTrip(
     We must compute these metrics here due to the potential of up to 24hr delay of telemetry data
   */
 
-  // Validation
+  /* Validation */
   events.sort((a, b) => a.timestamp - b.timestamp)
   if (!eventValidation(events, curTime, config.compliance_sla.max_telemetry_time)) {
     return false
   }
 
-  // Calculate event binned trip telemetry data
+  /* Calculate event binned trip telemetry data */
   const telemetryList = await cache.readTripTelemetry(`${provider_id}:${device_id}:${trip_id}`)
   if (telemetryList) {
-    // Get trip metadata
+    /* Get trip metadata */
     const tripStartEvent = events[0]
     const tripEndEvent = events[events.length - 1]
     const baseTripData = {
@@ -62,7 +62,7 @@ async function processTrip(
       start_service_area_id: tripStartEvent.service_area_id,
       end_service_area_id: tripEndEvent.service_area_id
     }
-    // Calculate trip metrics
+    /* Calculate trip metrics */
     const telemetry = createTelemetryMap(events, telemetryList)
     const duration = tripEndEvent.timestamp - tripStartEvent.timestamp
     const distMeasure = tripStartEvent.gps ? calcDistance(telemetry) : null
