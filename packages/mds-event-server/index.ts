@@ -57,35 +57,35 @@ const natsSubscriber = async <TData, TResult>({
 }
 
 const initializeNatsClient = ({
-  STAN,
+  NATS,
   STAN_CLUSTER,
   STAN_CREDS
 }: {
-  STAN: string
+  NATS: string
   STAN_CLUSTER: string
   STAN_CREDS?: string
 }) => {
   return stan.connect(STAN_CLUSTER, `mds-event-processor-${uuid()}`, {
-    url: `nats://${STAN}:4222`,
+    url: `nats://${NATS}:4222`,
     userCreds: STAN_CREDS,
     reconnect: true
   })
 }
 
 export const initializeStanSubscriber = async <TData, TResult>({
-  STAN,
+  NATS,
   STAN_CLUSTER,
   STAN_CREDS,
   TENANT_ID,
   processor
 }: {
-  STAN: string
+  NATS: string
   STAN_CLUSTER: string
   STAN_CREDS?: string
   TENANT_ID: string
   processor: EventProcessor<TData, TResult>
 }) => {
-  const nats = initializeNatsClient({ STAN, STAN_CLUSTER, STAN_CREDS })
+  const nats = initializeNatsClient({ NATS, STAN_CLUSTER, STAN_CREDS })
 
   try {
     nats.on('connect', () => {

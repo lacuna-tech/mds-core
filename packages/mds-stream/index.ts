@@ -60,24 +60,24 @@ const getNats = () => {
 }
 
 async function writeCloudEvent(type: string, data: string) {
-  if (!env.SINK || !env.CE_NAME) {
+  if (!env.SINK || !env.NATS) {
     return
   }
 
   // fixme: unable to set-and-propgate additional ce headers, eg: ce.addExtension('foo', 'bar')
   const event = cloudevent()
     .type(`${env.TENANT_ID ?? 'mds'}.${type}`)
-    .source(env.CE_NAME)
+    .source(env.NATS)
     .data(data)
 
   return getBinding().emit(event)
 }
 
 async function writeNatsEvent(type: string, data: string) {
-  if (env.CE_NAME) {
+  if (env.NATS) {
     const event = cloudevent()
       .type(`${env.TENANT_ID ?? 'mds'}.${type}`)
-      .source(env.CE_NAME)
+      .source(env.NATS)
       .data(data)
     getNats().publish(`${env.TENANT_ID ?? 'mds'}.${type}`, JSON.stringify(event))
   }

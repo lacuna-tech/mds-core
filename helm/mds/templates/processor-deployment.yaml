@@ -95,14 +95,8 @@ spec:
             value: {{ $.Values.redis.port | quote }}
           # - name: EVENT_SOURCE
           #   value: cloudevents
-          # fixme: purge CE_NAME from mds-stream/index.ts
-          - name: CE_NAME
-            value: {{ $name }}
           - name: NATS
-            value: nats.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
-          # fixme: purge STAN in favor of NATS
-          - name: STAN
-            value: stan.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
+            value: example-nats.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
           - name: STAN_CLUSTER
             value: stan
           {{- if not (empty $.Values.tenantId) }}

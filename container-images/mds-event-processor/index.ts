@@ -19,10 +19,10 @@ import processor from '@mds-core/mds-event-processor'
 import { initializeStanSubscriber, EventServer } from '@mds-core/mds-event-server'
 
 const {
-  env: { STAN = 'localhost', STAN_CLUSTER = 'stan', STAN_CREDS, TENANT_ID = 'mds' }
+  env: { NATS = 'localhost', STAN_CLUSTER = 'stan', STAN_CREDS, TENANT_ID = 'mds' }
 } = process
 
-Promise.all([initializeStanSubscriber({ STAN, STAN_CLUSTER, STAN_CREDS, TENANT_ID, processor }), EventServer()]).catch(
+Promise.all([initializeStanSubscriber({ NATS, STAN_CLUSTER, STAN_CREDS, TENANT_ID, processor }), EventServer()]).catch(
   // eslint-disable-next-line promise/prefer-await-to-callbacks
   err => {
     console.log(err)
