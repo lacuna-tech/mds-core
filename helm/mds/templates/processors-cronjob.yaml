@@ -1,0 +1,85 @@
+{{- range $name, $processor := .Values.processors }}
+{{- if and $processor.enabled $processor.triggeredBy.cron }}
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: {{ $name }}-cron
+  namespace: {{ $.Release.Namespace }}
+spec:
+  schedule: {{ $processor.triggeredBy.cron | quote }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: {{ $name }}
+            image: {{ $name }}
+            env:
+            - name: PORT
+              value: "80"
+            - name: PATH_PREFIX
+              value: {{ $processor.pathPrefix }}
+            - name: TIMEZONE
+              value: {{ $.Values.timezone }}
+            - name: PG_USER
+              value: {{ $.Values.postgresql.postgresqlUsername }}
+            - name: PG_NAME
+              value: {{ $.Values.postgresql.postgresqlDatabase }}
+            - name: PG_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: mds-secrets
+                  key: postgresql-password
+            - name: PG_HOST
+            {{- if $.Values.postgresql.internal }}
+              value: {{ $.Release.Namespace }}-postgresql.{{ $.Release.Namespace }}.svc.cluster.local
+            {{- else }}
+              value: {{ $.Values.postgresql.host }}
+            {{- end }}
+            {{- if $.Values.postgresql.hostReader }}
+            - name: PG_HOST_READER
+              value: {{ $.Values.postgresql.hostReader }}
+            {{- end }}
+            {{- if $.Values.postgresql.port }}
+            - name: PG_PORT
+              value: {{ $.Values.postgresql.port | quote }}
+            {{- end}}
+            {{- if $processor.migration }}
+            - name: PG_MIGRATIONS
+              value: {{ $processor.migration | quote }}
+            {{- end }}
+            - name: REDIS_HOST
+            {{- if $.Values.redis.internal }}
+              value: {{ $.Release.Namespace }}-redis-master.{{ $.Release.Namespace }}.svc.cluster.local
+            {{- else }}
+              value: {{ $.Values.redis.host }}
+            {{- end }}
+            - name: REDIS_PORT
+              value: {{ $.Values.redis.port | quote }}
+            - name: EVENT_SOURCE
+              value: cloudevents
+            - name: CE_NAME
+              value: {{ $name }}
+            - name: NATS
+              value: nats.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
+            - name: STAN
+              value: stan.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
+            - name: STAN_CLUSTER
+              value: stan
+            {{- if not (empty $.Values.tenantId) }}
+            - name: TENANT_ID
+              value: {{ $.Values.tenantId }}
+            {{- end }}
+            {{- if $.Values.slack.channel }}
+            - name: SLACK_CHANNEL
+              value: {{ $.Values.slack.channel }}
+            - name: SLACK_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: mds-secrets
+                  key: slack-token
+            {{- end }}
+            restartPolicy: OnFailure
+---
+{{- end}}
+{{- end}}
