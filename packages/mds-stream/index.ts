@@ -50,7 +50,7 @@ const getBinding = () => {
 const getNats = () => {
   if (!nats) {
     nats = stan.connect(env.STAN_CLUSTER || 'stan', `mds-agency-${uuid()}`, {
-      url: `nats://${env.STAN}:4222`,
+      url: `nats://${env.NATS}:4222`,
       userCreds: env.STAN_CREDS,
       reconnect: true
     })
