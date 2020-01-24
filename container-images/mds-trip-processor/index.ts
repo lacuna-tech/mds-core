@@ -15,10 +15,6 @@
  */
 
 import tripProcessor from '@mds-core/mds-trip-processor'
-import log from '@mds-core/mds-logger'
 
-try {
-  await tripProcessor()
-} catch (err) {
-  await log.error(err)
-}
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+tripProcessor()
