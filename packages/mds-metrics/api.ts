@@ -16,8 +16,8 @@
 
 import express from 'express'
 
-import { pathsFor, normalizeToArray, providerClaimMiddleware } from '@mds-core/mds-utils'
-import { checkAccess } from '@mds-core/mds-api-server'
+import { pathsFor, normalizeToArray } from '@mds-core/mds-utils'
+import { checkAccess, providerClaimMiddleware } from '@mds-core/mds-api-server'
 import { UUID } from '@mds-core/mds-types'
 import {
   getStateSnapshot,

@@ -18,8 +18,8 @@ import express from 'express'
 
 import log from '@mds-core/mds-logger'
 import cache from '@mds-core/mds-cache'
-import { pathsFor, now, providerClaimMiddleware } from '@mds-core/mds-utils'
-import { checkAccess } from '@mds-core/mds-api-server'
+import { pathsFor, now } from '@mds-core/mds-utils'
+import { checkAccess, providerClaimMiddleware } from '@mds-core/mds-api-server'
 import { DailyApiRequest, DailyApiResponse } from './types'
 import {
   getRawTripData,

@@ -26,12 +26,12 @@ import {
   getPolygon,
   pointInShape,
   isInStatesOrEvents,
-  ServerError,
-  providerClaimMiddleware
+  ServerError
 } from '@mds-core/mds-utils'
 import { Geography, Device, UUID, VehicleEvent } from '@mds-core/mds-types'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, BLUE_SYSTEMS_PROVIDER_ID } from '@mds-core/mds-providers'
 import { Geometry, FeatureCollection } from 'geojson'
+import { providerClaimMiddleware } from '@mds-core/mds-api-server'
 import * as compliance_engine from './mds-compliance-engine'
 import { ComplianceApiRequest, ComplianceApiResponse } from './types'
 

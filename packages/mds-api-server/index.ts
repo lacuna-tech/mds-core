@@ -3,10 +3,11 @@ import bodyParser from 'body-parser'
 import express from 'express'
 import cors from 'cors'
 import logger from '@mds-core/mds-logger'
-import { pathsFor, AuthorizationError } from '@mds-core/mds-utils'
+import { pathsFor, AuthorizationError, isUUID } from '@mds-core/mds-utils'
 import { AuthorizationHeaderApiAuthorizer, ApiAuthorizer, AuthorizerClaims } from '@mds-core/mds-api-authorizer'
-import { AccessTokenScope } from '@mds-core/mds-types'
+import { AccessTokenScope, UUID } from '@mds-core/mds-types'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
+import { isProviderId, providerName } from '@mds-core/mds-providers'
 
 export type ApiRequest<P extends Params = ParamsDictionary> = express.Request<P>
 
@@ -18,6 +19,12 @@ export interface ApiResponseLocals {
 export interface ApiResponse<T = unknown> extends express.Response {
   locals: ApiResponseLocals
   send: (body: T | { error: Error }) => this
+}
+
+export interface ProviderClaimResponse extends ApiResponse {
+  locals: ApiResponseLocals & {
+    provider_id: UUID
+  }
 }
 
 const about = () => {
@@ -144,3 +151,35 @@ export const checkAccess = (validator: (scopes: AccessTokenScope[]) => boolean |
               .status(403)
               .send({ error: new AuthorizationError('no access without scope', { claims: res.locals.claims }) })
       }
+
+export async function providerClaimMiddleware(req: ApiRequest, res: ProviderClaimResponse) {
+  if (res.locals.claims === null) {
+    res.status(400).send({
+      result: 'No claims provided'
+    })
+    return false
+  }
+
+  const { provider_id } = res.locals.claims
+
+  if (!isUUID(provider_id)) {
+    await logger.warn(req.originalUrl, req.method, 'invalid provider_id is not a UUID', provider_id)
+    res.status(400).send({
+      result: `invalid provider_id ${provider_id} is not a UUID`
+    })
+    return false
+  }
+
+  if (!isProviderId(provider_id)) {
+    await logger.warn(req.originalUrl, req.method, 'invalid provider_id is not a known provider', provider_id)
+    res.status(400).send({
+      result: `invalid provider_id ${provider_id} is not a known provider`
+    })
+    return false
+  }
+
+  res.locals.provider_id = provider_id
+
+  logger.info(providerName(provider_id), req.method, req.originalUrl)
+  return provider_id
+}

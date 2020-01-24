@@ -17,10 +17,6 @@
 import test from 'unit.js'
 import assert from 'assert'
 import { VEHICLE_EVENTS, VehicleEvent } from '@mds-core/mds-types'
-import { ApiRequest } from '@mds-core/mds-api-server'
-import Sinon from 'sinon'
-import uuid from 'uuid'
-import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
 import {
   routeDistance,
   filterEmptyHelper,
@@ -29,9 +25,7 @@ import {
   parseUnit,
   parseIsRelative,
   isStateTransitionValid,
-  normalizeToArray,
-  ProviderClaimResponse,
-  providerClaimMiddleware
+  normalizeToArray
 } from '../utils'
 import { expectedTransitions } from './state-transition-expected'
 
@@ -168,94 +162,6 @@ describe('Tests Utilities', () => {
           assert.strictEqual(actual, expectedTransitions[eventA.event_type][eventB.event_type], transitionKey)
         }
       }
-    })
-  })
-
-  describe('Provider claims helper', () => {
-    it('spits out missing claims', async () => {
-      const req: ApiRequest = {} as ApiRequest
-
-      const send = Sinon.fake.returns('boop')
-      const status = Sinon.fake.returns({ send })
-      const res: ProviderClaimResponse = ({
-        status,
-        locals: {
-          claims: null
-        }
-      } as unknown) as ProviderClaimResponse
-
-      const result = await providerClaimMiddleware(req, res)
-
-      assert.strictEqual(status.calledOnceWithExactly(400), true)
-      assert.strictEqual(send.calledOnce, true)
-      assert.strictEqual(result, false)
-
-      Sinon.restore()
-    })
-
-    it('spits out bad uuid', async () => {
-      const req: ApiRequest = {} as ApiRequest
-
-      const send = Sinon.fake.returns('boop')
-      const status = Sinon.fake.returns({ send })
-      const res: ProviderClaimResponse = ({
-        status,
-        locals: {
-          claims: {
-            provider_id: 'not-a-uuid'
-          }
-        }
-      } as unknown) as ProviderClaimResponse
-
-      const result = await providerClaimMiddleware(req, res)
-
-      assert.strictEqual(status.calledOnceWithExactly(400), true)
-      assert.strictEqual(send.calledOnce, true)
-      assert.strictEqual(result, false)
-
-      Sinon.restore()
-    })
-
-    it('spits out non provider uuid', async () => {
-      const req: ApiRequest = {} as ApiRequest
-
-      const send = Sinon.fake.returns('boop')
-      const status = Sinon.fake.returns({ send })
-      const res: ProviderClaimResponse = ({
-        status,
-        locals: {
-          claims: {
-            provider_id: uuid()
-          }
-        }
-      } as unknown) as ProviderClaimResponse
-
-      const result = await providerClaimMiddleware(req, res)
-
-      assert.strictEqual(status.calledOnceWithExactly(400), true)
-      assert.strictEqual(send.calledOnce, true)
-      assert.strictEqual(result, false)
-
-      Sinon.restore()
-    })
-
-    it('allows legit provider id', async () => {
-      const req: ApiRequest = {} as ApiRequest
-      const provider_id = TEST1_PROVIDER_ID
-      const send = Sinon.fake.returns('boop')
-      const status = Sinon.fake.returns({ send })
-      const res: ProviderClaimResponse = ({
-        status,
-        locals: {
-          claims: { provider_id }
-        }
-      } as unknown) as ProviderClaimResponse
-
-      const result = await providerClaimMiddleware(req, res)
-
-      assert.strictEqual(result, provider_id)
-
-      Sinon.restore()
     })
   })
 })
