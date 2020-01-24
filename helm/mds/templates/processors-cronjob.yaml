@@ -79,7 +79,7 @@ spec:
                   name: mds-secrets
                   key: slack-token
             {{- end }}
-            restartPolicy: OnFailure
+          restartPolicy: OnFailure
 ---
 {{- end}}
 {{- end}}

@@ -15,7 +15,10 @@
  */
 
 import tripProcessor from '@mds-core/mds-trip-processor'
+import log from '@mds-core/mds-logger'
 
-/* eslint-reason avoids import of logger */
-/* eslint-disable-next-line no-console */
-tripProcessor()
+try {
+  await tripProcessor()
+} catch (err) {
+  await log.error(err)
+}
