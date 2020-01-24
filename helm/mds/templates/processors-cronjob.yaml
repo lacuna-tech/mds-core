@@ -13,7 +13,7 @@ spec:
         spec:
           containers:
           - name: {{ $name }}
-            image: {{ $name }}
+            image: {{ $name }}:{{ $processor.version }}
             env:
             - name: PORT
               value: "80"
@@ -56,28 +56,9 @@ spec:
             {{- end }}
             - name: REDIS_PORT
               value: {{ $.Values.redis.port | quote }}
-            - name: EVENT_SOURCE
-              value: cloudevents
-            - name: CE_NAME
-              value: {{ $name }}
-            - name: NATS
-              value: nats.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
-            - name: STAN
-              value: stan.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
-            - name: STAN_CLUSTER
-              value: stan
             {{- if not (empty $.Values.tenantId) }}
             - name: TENANT_ID
               value: {{ $.Values.tenantId }}
-            {{- end }}
-            {{- if $.Values.slack.channel }}
-            - name: SLACK_CHANNEL
-              value: {{ $.Values.slack.channel }}
-            - name: SLACK_TOKEN
-              valueFrom:
-                secretKeyRef:
-                  name: mds-secrets
-                  key: slack-token
             {{- end }}
           restartPolicy: OnFailure
 ---

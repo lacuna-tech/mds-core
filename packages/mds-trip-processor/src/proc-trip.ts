@@ -99,6 +99,7 @@ async function processTrip(
 }
 
 export async function tripProcessor() {
+  log.info('TRIGGERED')
   await Promise.all([db.startup(), cache.startup(), getConfig()])
   const curTime = now()
   const tripsMap = await cache.readAllTripsEvents()
