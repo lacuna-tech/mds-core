@@ -3,8 +3,6 @@
 osx=darwin
 linux=linux
 
-[ ! -f ~/.bashrc ] && touch ~/.bashrc
-
 lower() {
   echo "${1}" | tr '[:upper:]' '[:lower:]'
 }
@@ -297,6 +295,7 @@ bootstrap() {
       esac
 
       # todo: unable to detect nvm install via subshell given it is an alias
+      # todo: get rid of need to persist to ~/.bashrc
       case ${r} in
         nvm)
           [ ! -d ~/.nmv ] && mkdir -p ~/.nvm
@@ -354,8 +353,8 @@ build() {
 
   # todo: provide build-config-option for progressive builds, ie no-clean
   (cd ${configs[home]};
-    # yarn clean;
-    # yarn;
+    [ -z "${configs[keep-cache]}" ] && yarn clean;
+    yarn;
     yarn image)
 
   installImages
@@ -438,10 +437,6 @@ updateHelmDependencies() {
   done; unset d
 }
 
-# fixme: hack for aws support, old helm version
-# helm() {
-#   ~/bin/helm $@
-# }
 installHelm() {
   check ${FUNCNAME[0]}
 
@@ -1252,6 +1247,8 @@ preset() {
   unset is
 }
 
+[ ! -f ~/.bashrc ] && touch ~/.bashrc
+. ~/.bashrc
 initialize
 check $(basename ${0})
 
