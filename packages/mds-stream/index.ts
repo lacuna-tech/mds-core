@@ -193,14 +193,14 @@ async function writeStreamBatch(stream: Stream, field: string, values: unknown[]
 
 // put basics of vehicle in the cache
 async function writeDevice(device: Device) {
-  if (env.STAN) {
+  if (env.NATS) {
     return writeNatsEvent('device', JSON.stringify(device))
   }
   return writeStream(DEVICE_INDEX_STREAM, 'data', device)
 }
 
 async function writeEvent(event: VehicleEvent) {
-  if (env.STAN) {
+  if (env.NATS) {
     return writeNatsEvent('event', JSON.stringify(event))
   }
   return writeStream(DEVICE_RAW_STREAM, 'event', event)
@@ -208,7 +208,7 @@ async function writeEvent(event: VehicleEvent) {
 
 // put latest locations in the cache
 async function writeTelemetry(telemetry: Telemetry[]) {
-  if (env.STAN) {
+  if (env.NATS) {
     await Promise.all(telemetry.map(item => writeNatsEvent('telemetry', JSON.stringify(item))))
     return
   }
