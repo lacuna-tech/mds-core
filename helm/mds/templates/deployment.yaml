@@ -29,10 +29,8 @@ spec:
           #   secretName: stan-creds
       containers:
       - name: {{ $name }}
+        image: {{ if $.Values.registry }}{{ printf "%s/" $.Values.registry }}{{- end}}{{ $name }}:{{ $api.version }}
         {{- if $.Values.registry }}
-        image: {{ $.Values.registry }}/{{ $name }}:{{ $api.version }}
-        {{- else }}
-        image: {{ $name }}:{{ $api.version }}
         imagePullPolicy: IfNotPresent
         {{- end }}
         resources:

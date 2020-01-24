@@ -13,7 +13,10 @@ spec:
         spec:
           containers:
           - name: {{ $name }}
-            image: {{ $name }}:{{ $processor.version }}
+            image: {{ if $.Values.registry }}{{ printf "%s/" $.Values.registry }}{{- end}}{{ $name }}:{{ $processor.version }}
+            {{- if $.Values.registry }}
+            imagePullPolicy: IfNotPresent
+            {{- end }}
             env:
             - name: PORT
               value: "80"

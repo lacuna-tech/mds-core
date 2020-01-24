@@ -62,13 +62,13 @@ processors:
     triggeredBy:
       trigger: [event, telemetry]
   mds-trip-processor:
-    enabled: false
+    enabled: true
     version: latest
     migration: false
     triggeredBy:
       cron: '* * * * *'
   mds-provider-processor:
-    enabled: false
+    enabled: true
     version: latest
     migration: false
     triggeredBy:
