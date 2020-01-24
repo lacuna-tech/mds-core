@@ -96,7 +96,7 @@ spec:
           - name: NATS
             value: example-nats.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
           - name: STAN_CLUSTER
-            value: stan
+            value: nats-streaming
           {{- if not (empty $.Values.tenantId) }}
           - name: TENANT_ID
             value: {{ $.Values.tenantId }}
