@@ -152,9 +152,12 @@ async function parseAllTripsEvents(
   [vehicle_id: string]: TripsEvents
 }> {
   try {
-    const allTrips: { [vehicle_id: string]: TripsEvents } = Object.keys(allTripsEvents).reduce((acc, vehicle_id) => {
-      return Object.assign(acc, { [vehicle_id]: parseTripsEvents(allTripsEvents[vehicle_id]) })
-    }, {})
+    const allTrips: { [vehicle_id: string]: TripsEvents } = Object.keys(allTripsEvents).reduce(
+      async (acc, vehicle_id) => {
+        return Object.assign(acc, { [vehicle_id]: await parseTripsEvents(allTripsEvents[vehicle_id]) })
+      },
+      {}
+    )
     return allTrips
   } catch (err) {
     throw new ParseError(`unable to parse allTripsEvents`)
