@@ -37,6 +37,7 @@ export type StringifiedTripEvent = Stringify<Omit<Omit<TripEvent, 'annotation'>,
   annotation: Stringify<AnnotationData> | null
   gps: Stringify<GpsData> | null
 }
+/* TODO: structure more specfic typedef for StringifiedTripEvents & StringifiedTripTelemetries */
 export type StringifiedTripEvents = string
 export type StringifiedAllTripsEvents = { [id: string]: StringifiedTripEvents }
 export type StringifiedTripTelemetry = Stringify<Omit<TripTelemetry, 'annotation'>> & {

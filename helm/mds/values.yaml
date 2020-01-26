@@ -3,7 +3,7 @@ apis:
     enabled: true
     pathPrefix: /agency
     version: latest
-    migration: false
+    migration: true
   mds-audit:
     enabled: true
     pathPrefix: /audit
@@ -61,13 +61,13 @@ processors:
     version: latest
     migration: false
     triggeredBy:
-      cron: '0 * * * *'
+      cron: '* * * * *'
   mds-provider-processor:
     enabled: true
     version: latest
     migration: false
     triggeredBy:
-      cron: '0 * * * *'
+      cron: '* * * * *'
 tenantId:
 timezone: America/Los_Angeles
 registry:
