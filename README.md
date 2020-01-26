@@ -169,7 +169,7 @@ Verify:
 % kubectl cluster-info
 ```
 
-#### Bootstrap : install tool dependencies
+#### Bootstrap : install operational dependencies
 
 In order to build and operate MDS, a number of suporting technologies are leveraged by ensuring they are installed and operational via a one-time `bootstap` process:
 
@@ -208,6 +208,8 @@ Verify:
 ```
 
 #### MDS Operations
+
+MDS operates atop the following services: [Kubernetes](https://kubernetes.io), [Istio](https://istio.io), [NATS](https://nats.io), [PostgreSQL](https://www.postgresql.org) and [Redis](https://redis.io).
 
 (tbd)
 
