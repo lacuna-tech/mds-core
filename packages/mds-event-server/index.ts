@@ -115,7 +115,7 @@ export const initializeStanSubscriber = async <TData, TResult>({
 }
 
 export const EventServer = <TData, TResult>(
-  processor?: CEEventProcessor<TData, TResult>,
+  processor: CEEventProcessor<TData, TResult>,
   server: express.Express = express()
 ): express.Express => {
   const receiver = new BinaryHTTPReceiver()
@@ -123,8 +123,12 @@ export const EventServer = <TData, TResult>(
   const TENANT_REGEXP = new RegExp(`^${TENANT_ID}\\.`)
 
   const parseCloudEvent = (req: express.Request): Cloudevent => {
-    const event = receiver.parse(req.body, req.headers)
-    return event.type(event.getType().replace(TENANT_REGEXP, ''))
+    try {
+      const event = receiver.parse(req.body, req.headers)
+      return event.type(event.getType().replace(TENANT_REGEXP, ''))
+    } catch {
+      throw new Error('Malformed CE')
+    }
   }
 
   // Disable x-powered-by header
@@ -138,19 +142,21 @@ export const EventServer = <TData, TResult>(
 
   server.get(pathsFor('/health'), HealthRequestHandler)
 
-  if (processor) {
-    server.post('/', async (req, res) => {
-      const { method, headers, body } = req
-      try {
-        const event = parseCloudEvent(req)
-        log.info('Cloud Event', method, event.format())
-        const result = await processor(event.getType(), event.getData(), event)
-        return res.status(200).send({ result })
-      } catch (error) /* istanbul ignore next */ {
-        await log.error('Cloud Event', error, { method, headers, body })
+  server.post('/', async (req, res) => {
+    const { method, headers, body } = req
+    try {
+      const event = parseCloudEvent(req)
+      await log.info('Cloud Event', method, event.format())
+      const result = await processor(event.getType(), event.getData(), event)
+      return res.status(200).send({ result })
+    } catch (error) /* istanbul ignore next */ {
+      await log.error('Cloud Event', error, { method, headers, body })
+      if (String(error).includes('Malformed CE')) {
         return res.status(500).send({ error })
       }
-    })
-  }
+      return res.status(202).send({ error })
+    }
+  })
+
   return server
 }
