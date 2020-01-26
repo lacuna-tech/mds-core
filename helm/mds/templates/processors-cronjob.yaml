@@ -11,17 +11,20 @@ spec:
     spec:
       template:
         spec:
+          volumes:
+          - name: mds-config-files
+            configMap:
+              name: mds-config-files
           containers:
           - name: {{ $name }}
+            volumeMounts:
+            - name: mds-config-files
+              mountPath: /mds-config/
             image: {{ if $.Values.registry }}{{ printf "%s/" $.Values.registry }}{{- end}}{{ $name }}:{{ $processor.version }}
             {{- if $.Values.registry }}
             imagePullPolicy: IfNotPresent
             {{- end }}
             env:
-            - name: PORT
-              value: "80"
-            - name: PATH_PREFIX
-              value: {{ $processor.pathPrefix }}
             - name: TIMEZONE
               value: {{ $.Values.timezone }}
             - name: PG_USER
