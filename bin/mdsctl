@@ -68,6 +68,7 @@ declare -A configs=(
   ["provider"]="${MDS_PROVIDER:-}"
   ["rc"]="${MDS_RC:-~/.bashrc ~/.zshrc}"
   ["workdir"]="/tmp/mds/tools"
+  # fixme: consider removing envsubst in favor of sed
   ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s kubectx git awscli}"
   ["brew-envsubst"]="gettext"
   ["brew-helm"]="helm@2"
@@ -157,7 +158,8 @@ initialize() {
   done; unset p
 
   # fixme: make minimal-version test more flexible; may not be required when helm:3 is supported more broadly
-  #if [[ ! "$(helm version --short | grep -i client | cut -d ':' -f 2)" == *"${configs[helm-version]}"* ]]; then
+  # fixme: add conditional `hash helm`
+  # if [[ ! "$(helm version --short | grep -i client | cut -d ':' -f 2)" == *"${configs[helm-version]}"* ]]; then
     os=$(os)
 
     if [[ ! -x ${configs[workdir]}/helm/${os}-amd64 ]]; then
@@ -168,7 +170,7 @@ initialize() {
 
     export PATH=${configs[workdir]}/helm/${os}-amd64:${PATH}
     unset os
-  #fi
+  # fi
 }
 
 warn() {
@@ -288,14 +290,14 @@ bootstrap() {
   for r in ${configs[brew]}; do
     rc=${configs[brew-${r}]:-${r}}
 
-    hash ${r} > /dev/null 2>&1 || {
+     ${r} > /dev/null 2>&hash1 || {
       case ${r} in
         oq) brew tap ${rc}; rc=${r};&
         *) brew install ${rc};;
       esac
 
       # todo: unable to detect nvm install via subshell given it is an alias
-      # todo: get rid of need to persist to ~/.bashrc
+      # todo: don't persist to ~/.bashrc
       case ${r} in
         nvm)
           [ ! -d ~/.nmv ] && mkdir -p ~/.nvm
@@ -315,7 +317,6 @@ bootstrap() {
       esac
     }
   done; unset r rc
-
 
   for r in ${configs[brew-cask]}; do
     rc=${configs[brew-cask-${r}]:-${r}}
@@ -615,7 +616,8 @@ installGrafana() {
 
 iamgeTag() {
   case "${configs[provider],,}" in
-    aws) ;;
+    aws) aws ecr describe-images --repository-name ${1} --output text \
+      --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[*]' | tr '\t' '\n' | tail -1;;
     gcp) gcloud container images list-tags --limit=1 --format='get(TAGS)' ${configs[image-repository]}/${1};;
     *) docker images ${1} --format {{.Tag}};;
   esac
