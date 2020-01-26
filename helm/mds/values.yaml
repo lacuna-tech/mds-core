@@ -3,7 +3,7 @@ apis:
     enabled: true
     pathPrefix: /agency
     version: latest
-    migration: false
+    migration: true
   mds-audit:
     enabled: true
     pathPrefix: /audit

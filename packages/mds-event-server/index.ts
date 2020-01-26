@@ -115,7 +115,7 @@ export const initializeStanSubscriber = async <TData, TResult>({
 }
 
 export const EventServer = <TData, TResult>(
-  processor: CEEventProcessor<TData, TResult>,
+  processor?: CEEventProcessor<TData, TResult>,
   server: express.Express = express()
 ): express.Express => {
   const receiver = new BinaryHTTPReceiver()
@@ -147,7 +147,9 @@ export const EventServer = <TData, TResult>(
     try {
       const event = parseCloudEvent(req)
       await log.info('Cloud Event', method, event.format())
-      const result = await processor(event.getType(), event.getData(), event)
+      const result = processor
+        ? await processor(event.getType(), event.getData(), event)
+        : 'ERROR: No Processor Supplied'
       return res.status(200).send({ result })
     } catch (error) /* istanbul ignore next */ {
       await log.error('Cloud Event', error, { method, headers, body })
