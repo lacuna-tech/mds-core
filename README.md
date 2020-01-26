@@ -123,7 +123,7 @@ lerna run prettier
 
 ### Kubernetes
 
-MDS can readily be provisioned to a [Kubernetes](https://kubernetes.io), be it a local (aka developer) cluster or remote. Following are all the necessary steps required to: install depden
+MDS can readily be provisioned to a [Kubernetes](https://kubernetes.io), be it a local or remote cluster. The following steps describe how to build, deploy and operate against a local MDS cluster.
 
 #### Prerequisites
 
