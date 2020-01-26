@@ -121,34 +121,132 @@ lerna run prettier
 * Select any one of the files in a package's test folder
 * Press `F5`
 
-### [Kubernetes](https://kubernetes.io)/[Istio](https://istio.io)
+### Kubernetes
 
-MDS can be provisioned to a Kubernetes cluster as follows:
+MDS can readily be provisioned to a [Kubernetes](https://kubernetes.io), be it a local (aka developer) cluster or remote. Following are all the necessary steps required to: install depden
 
-* Install and configure [Docker Desktop](https://download.docker.com/mac/stable/Docker.dmg)
-  * `preferences / advanced`: cpus:6, memory:8G, swap:1G
-  * `preferences / kubernetes`: enabled kubernetes
-* Add `kubectl` to your PATH environment, e.g. for OSX:
-  * `export PATH=/Applications/Docker.app/Contents/Resources/bin:${PATH}`
-* Ensure an active kubernetes cluster is configured and accessible:
-  * `kubectl config set-context docker-desktop`
+#### Prerequisites
 
-Lastly, build and deploy MDS to your kubernetes cluster:
+Obtain a local working copy of MDS:
 
-```bash
-./bin/mdsctl bootstrap -p processors build install:mds test:integration
+```sh
+% git clone https://github.com/lacuna-tech/mds-core
+% cd mds-core
 ```
 
-To cleanup the MDS cluster consider:
+OSX (Linux and Windows tbd)
 
-```bash
-./bin/mdsctl uninstall:mds uninstall
+Install [Docker Desktop](https://download.docker.com/mac/stable/Docker.dmg):
+
+```sh
+% open https://download.docker.com/mac/stable/Docker.dmg
 ```
 
-For a complete listing of available operations consider:
+Run:
 
-```bash
-./bin/mdsctl
+```sh
+% open /Applications/Docker.app
+```
+
+And configure Kubernetes:
+
+```
+preferences / resources / advanced: CPUs:6, Memory:8G, Swap:1G (minimal, apply more as possible)
+preferences / kubernetes: enable kubernetes
+```
+
+Add `docker` and `kubectl` to your PATH environment:
+
+```sh
+% export PATH=/Applications/Docker.app/Contents/Resources/bin:${PATH}
+```
+
+Verify:
+
+```sh
+% which kubectl
+% kubectl config set-context docker-desktop
+% kubectl cluster-info
+```
+
+#### Bootstrap : install tool dependencies
+
+In order to build and operate MDS, a number of suporting technologies are leveraged by ensuring they are installed and operational via a one-time `bootstap` process:
+
+```sh
+% ./bin/mdsctl bootstrap
+```
+
+The principle tools are: [homebrew](https://brew.sh), [bash-4.x+](https://www.gnu.org/software/bash/), [oq](https://github.com/Blacksmoke16/oq), [jq](https://stedolan.github.io/jq/), [yarn](https://yarnpkg.com/), [nvm](https://github.com/nvm-sh/nvm), [helm-2.14.1](https://helm.sh), [k9s](https://github.com/derailed/k9s), [kubectx](https://github.com/ahmetb/kubectx), [git](https://git-scm.com/), [gcloud](https://cloud.google.com/sdk/) and [awscli](https://aws.amazon.com/cli/).
+
+#### Build : compile source into deployable images
+
+Compiling and packaging MDS into a deployable form is achived as follows:
+
+```sh
+% ./bin/mdsctl build
+```
+
+Verify:
+
+```sh
+% docker images | grep mds*
+```
+
+#### Run : install MDS
+
+(tbd: ?best profile?)
+
+```sh
+% ./bin/mdsctl -p minimal install:mds
+```
+
+Verify:
+
+```sh
+% curl localhost/agency
+```
+
+#### MDS Operations
+
+(tbd)
+
+#### Additional Considerations
+
+Access the database:
+
+```sh
+% ./bin/mdsctl cli:postgresql
+```
+
+Access the cache:
+
+```sh
+% ./bin/mdsctl cli:redis
+```
+
+(tbd) Access the event stream:
+
+```sh
+% ./bin/mdsctl install:natsbox
+```
+
+Access the MDS cluster:
+
+```sh
+% k9s
+```
+
+Display the complete set of operations:
+
+```sh
+% ./bin/mdsctl
+```
+
+#### Cleanup
+
+```sh
+% ./bin/mdsctl uninstall:mds uninstall
 ```
 
 ## Other
