@@ -98,7 +98,7 @@ spec:
           - name: STAN_CLUSTER
             value: nats-streaming
           - name: TENANT_ID
-          {{- if not (empty $.Values.tenantId) }}
+          {{- if hasKey $.Values "tenantId" }}
             value: {{ $.Values.tenantId }}
           {{- else }}
             value: {{ $.Release.Namespace }}
