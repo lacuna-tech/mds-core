@@ -121,7 +121,7 @@ declare -A configs=(
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-nats}"
   ["namespace-stan"]="${MDS_NAMESPACE_NATS:-${configs[namespace-nats]}}"
   ["namespace-surveyor"]="${MDS_NAMESPACE_SURVEYOR:-${configs[namespace-nats]}}"
-  ["namespace-natsbox"]="${MDS_NAMESPACE_NATS:-${configs[namespace-nats]}}"
+  ["namespace-nats-box"]="${MDS_NAMESPACE_NATS_BOX:-${configs[namespace-nats]}}"
   ["namespace-dns"]="${MDS_NAMESPACE_DNS:-default}"
   ["namespace-curl"]="${MDS_NAMESPACE_CURL:-default}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
@@ -750,8 +750,8 @@ installNats() {
 installNatsbox() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-natsbox]}-natsbox)" = "${configs[namespace-natsbox]}-natsbox" ]] || \
-    helm install ${configs[home]}/helm/natsbox --name ${configs[namespace-natsbox]}-natsbox --namespace ${configs[namespace-natsbox]}
+  [[ "$(helm list --short ${configs[namespace-nats-box]}-nats-box)" = "${configs[namespace-nats-box]}-nats-box" ]] || \
+    helm install ${configs[home]}/helm/nats-box --name ${configs[namespace-nats-box]}-nats-box --namespace ${configs[namespace-nats-box]}
 }
 
 installStan() {
@@ -988,8 +988,8 @@ uninstallStan() {
 uninstallNatsbox() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-natsbox]}-natsbox)" = "${configs[namespace-natsbox]}-natsbox" ]] && \
-    helm delete --purge ${configs[namespace-natsbox]}-natsbox
+  [[ "$(helm list --short ${configs[namespace-nats-box]}-nats-box)" = "${configs[namespace-nats-box]}-nats-box" ]] && \
+    helm delete --purge ${configs[namespace-nats-box]}-nats-box
 }
 
 uninstallNats() {
