@@ -1,5 +1,5 @@
 {{- range $name, $processor := .Values.processors }}
-{{- if and $processor.enabled $processor.triggeredBy.cron }}
+{{- if $processor.triggeredBy.cron }}
 apiVersion: batch/v1beta1
 kind: CronJob
 metadata:

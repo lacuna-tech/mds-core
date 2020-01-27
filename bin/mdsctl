@@ -120,7 +120,8 @@ declare -A configs=(
   ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-${configs[namespace-mds]}}"
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-nats}"
   ["namespace-stan"]="${MDS_NAMESPACE_NATS:-${configs[namespace-nats]}}"
-  ["namespace-natsbox"]="${MDS_NAMESPACE_NATS:-${configs[namespace-nats]}}"
+  ["namespace-surveyor"]="${MDS_NAMESPACE_SURVEYOR:-${configs[namespace-nats]}}"
+  ["namespace-nats-box"]="${MDS_NAMESPACE_NATS_BOX:-${configs[namespace-nats]}}"
   ["namespace-dns"]="${MDS_NAMESPACE_DNS:-default}"
   ["namespace-curl"]="${MDS_NAMESPACE_CURL:-default}"
   ["dryrun"]="${MDS_DRY_RUN:-}"
@@ -749,20 +750,34 @@ installNats() {
 installNatsbox() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-natsbox]}-natsbox)" = "${configs[namespace-natsbox]}-natsbox" ]] || \
-    helm install ${configs[home]}/helm/natsbox --name ${configs[namespace-natsbox]}-natsbox --namespace ${configs[namespace-natsbox]}
+  [[ "$(helm list --short ${configs[namespace-nats-box]}-nats-box)" = "${configs[namespace-nats-box]}-nats-box" ]] || \
+    helm install ${configs[home]}/helm/nats-box --name ${configs[namespace-nats-box]}-nats-box --namespace ${configs[namespace-nats-box]}
 }
 
 installStan() {
   check ${FUNCNAME[0]}
 
   [ "$(localContext)" != "true" ] && {
-    [[ "$(helm list --short ${configs[namespace-stan]}-stan)" = "${configs[namespace-stan]}-stan" ]] || \
-      helm install ${configs[home]}/helm/stan-statefulset --name ${configs[namespace-stan]}-stan --namespace ${configs[namespace-stan]}
+    [[ "$(helm list --short ${configs[namespace-stan]}-nats-streaming-server)" = "${configs[namespace-stan]}-nats-streaming-server" ]] || \
+      helm install ${configs[home]}/helm/nats-streaming-server --name ${configs[namespace-stan]}-nats-streaming-server \
+        --namespace ${configs[namespace-stan]}
   } || {
-    [[ "$(helm list --short ${configs[namespace-stan]}-stan)" = "${configs[namespace-stan]}-stan" ]] || \
-      helm install ${configs[home]}/helm/stan-local --name ${configs[namespace-stan]}-stan --namespace ${configs[namespace-stan]}
+    [[ "$(helm list --short ${configs[namespace-stan]}-nats-streaming-server)" = "${configs[namespace-stan]}-nats-streaming-server" ]] || \
+      helm install ${configs[home]}/helm/nats-streaming-server-local --name ${configs[namespace-stan]}-nats-streaming-server \
+        --namespace ${configs[namespace-stan]}
   }
+}
+
+installSurveyor() {
+  check ${FUNCNAME[0]}
+
+  for s in prometheus-operator nats-prometheus nats-surveyor-grafana nats-surveyor; do
+    [[ "$(helm list --short ${configs[namespace-surveyor]}-p${s})" = "${configs[namespace-surveyor]}-${s}" ]] || {
+      helm install ${configs[home]}/helm/${s} --name ${configs[namespace-surveyor]}-${s} \
+        --namespace ${configs[namespace-surveyor]}
+      pause 5
+    }
+  done; unset s
 }
 
 installDns() {
@@ -954,18 +969,27 @@ uninstallMds() {
   uninstallNamespace ${configs[namespace-mds]}
 }
 
+uninstallSurveyor() {
+  check ${FUNCNAME[0]}
+
+  for s in prometheus-operator nats-prometheus nats-surveyor-grafana nats-surveyor; do
+    [[ "$(helm list --short ${configs[namespace-surveyor]}-p${s})" = "${configs[namespace-surveyor]}-${s}" ]] && \
+      helm delete --purge ${configs[namespace-surveyor]}-${s}
+  done; unset s
+}
+
 uninstallStan() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-stan]}-stan)" = "${configs[namespace-stan]}-stan" ]] && \
-    helm delete --purge ${configs[namespace-stan]}-stan
+  [[ "$(helm list --short ${configs[namespace-stan]}-nats-streaming-server)" = "${configs[namespace-stan]}-nats-streaming-server" ]] && \
+    helm delete --purge ${configs[namespace-stan]}-nats-streaming-server
 }
 
 uninstallNatsbox() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-natsbox]}-natsbox)" = "${configs[namespace-natsbox]}-natsbox" ]] && \
-    helm delete --purge ${configs[namespace-natsbox]}-natsbox
+  [[ "$(helm list --short ${configs[namespace-nats-box]}-nats-box)" = "${configs[namespace-nats-box]}-nats-box" ]] && \
+    helm delete --purge ${configs[namespace-nats-box]}-nats-box
 }
 
 uninstallNats() {
@@ -1161,6 +1185,7 @@ check() {
       hash yarn > /dev/null 2>&1 || bootstrap;;
     installNats) ;;
     installStan) installNats;;
+    installSurveyor) ;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
     #     warn "configure an image-repository; eg ' ... -c:image-repository=[image-repository-url] ...'";;

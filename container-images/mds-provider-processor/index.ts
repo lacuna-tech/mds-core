@@ -18,3 +18,11 @@ import providerProcessor from '@mds-core/mds-provider-processor'
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 providerProcessor()
+  .then(() => {
+    return process.exit(0)
+  })
+  // eslint-disable-next-line promise/prefer-await-to-callbacks
+  .catch(err => {
+    console.log(err)
+    return process.exit(1)
+  })
