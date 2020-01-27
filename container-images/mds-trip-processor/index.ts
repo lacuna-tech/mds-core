@@ -18,3 +18,11 @@ import tripProcessor from '@mds-core/mds-trip-processor'
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 tripProcessor()
+  .then(() => {
+    return process.exit(0)
+  })
+  // eslint-disable-next-line promise/prefer-await-to-callbacks
+  .catch(err => {
+    console.log(err)
+    return process.exit(1)
+  })
