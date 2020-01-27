@@ -22,11 +22,6 @@ spec:
         - name: mds-config-files
           configMap:
             name: mds-config-files
-        - name: stan-creds-volume
-          configMap:
-            name: stans-creds
-          # secret:
-          #   secretName: stan-creds
       containers:
       - name: {{ $name }}
         {{- if $.Values.registry }}
@@ -49,8 +44,6 @@ spec:
         volumeMounts:
         - name: mds-config-files
           mountPath: /mds-config/
-        - name: stan-creds-volume
-          mountPath: /var/run/nats/creds/stan
         env:
           - name: PORT
             value: "80"
@@ -93,8 +86,6 @@ spec:
           {{- end }}
           - name: REDIS_PORT
             value: {{ $.Values.redis.port | quote }}
-          # - name: EVENT_SOURCE
-          #   value: cloudevents
           - name: NATS
             value: example-nats.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
           - name: STAN_CLUSTER
