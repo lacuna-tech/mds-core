@@ -155,12 +155,6 @@ preferences / resources / advanced: CPUs:6, Memory:8G, Swap:1G (minimal, apply m
 preferences / kubernetes: enable kubernetes
 ```
 
-Add `docker` and `kubectl` to your PATH environment:
-
-```sh
-% export PATH=/Applications/Docker.app/Contents/Resources/bin:${PATH}
-```
-
 Verify:
 
 ```sh
