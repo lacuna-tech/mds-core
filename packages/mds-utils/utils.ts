@@ -738,7 +738,10 @@ const parseRelative = (
     const { operator, unit, count } = parsedStartOffset
     if (operator === '-') {
       return {
-        start_time: anchorPoint.subtract(count, unit).valueOf(),
+        start_time: anchorPoint
+          .clone()
+          .subtract(count, unit)
+          .valueOf(),
         end_time: anchorPoint.valueOf()
       }
     }
@@ -751,7 +754,10 @@ const parseRelative = (
     if (operator === '+') {
       return {
         start_time: anchorPoint.valueOf(),
-        end_time: anchorPoint.add(count, unit).valueOf()
+        end_time: anchorPoint
+          .clone()
+          .add(count, unit)
+          .valueOf()
       }
     }
     throw new BadParamsError(`Invalid ending point: ${endOffset}`)
