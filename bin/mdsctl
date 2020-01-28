@@ -289,7 +289,7 @@ bootstrap() {
   for r in ${configs[brew]}; do
     rc=${configs[brew-${r}]:-${r}}
 
-     ${r} > /dev/null 2>&hash1 || {
+     ${r} > /dev/null 2>&1 || {
       case ${r} in
         oq) brew tap ${rc}; rc=${r};&
         *) brew install ${rc};;
