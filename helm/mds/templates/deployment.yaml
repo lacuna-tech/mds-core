@@ -85,7 +85,7 @@ spec:
           - name: REDIS_PORT
             value: {{ $.Values.redis.port | quote }}
           - name: NATS
-            value: example-nats.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
+            value: nats.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
           - name: STAN_CLUSTER
             value: nats-streaming
           - name: TENANT_ID
