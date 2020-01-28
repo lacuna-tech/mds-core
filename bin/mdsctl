@@ -300,6 +300,7 @@ bootstrap() {
       # todo: unable to detect nvm install via subshell given it is an alias
       case ${r} in
         nvm)
+          # todo: normalize-nvm env
           [ ! -d ~/.nmv ] && mkdir -p ~/.nvm
           export NVM_DIR=${HOME}/.nvm
           . $(brew --prefix nvm)/nvm.sh
@@ -322,6 +323,12 @@ bootstrap() {
   done; unset c rc
 
   initialize
+
+  # todo: normalize nvm-env
+  . $(brew --prefix nvm)/nvm.sh
+  [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh
+  nvm install ${configs[nvm-version]}
+  nvm alias default ${configs[nvm-version]}
 
   for p in lerna cypress mocha chai mochawesome; do
     yarn ${p} --version > /dev/null 2>&1 || yarn add -W ${p}
@@ -349,10 +356,11 @@ build() {
 
   # todo: provide build-config-option for progressive builds, ie no-clean
   (cd ${configs[home]};
+    # todo: normalize nvm-env
     . $(brew --prefix nvm)/nvm.sh;
+    [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh;
+    nvm install ${configs[nvm-version]};
     nvm alias default ${configs[nvm-version]};
-    nvm use --delete-prefix v${configs[nvm-version]};
-    nvm use node;
     [ -z "${configs[keep-cache]}" ] && yarn clean;
     yarn;
     yarn image)
@@ -1272,8 +1280,6 @@ preset() {
   unset is
 }
 
-# [ ! -f ~/.bashrc ] && touch ~/.bashrc
-# . ~/.bashrc
 initialize
 check $(basename ${0})
 
