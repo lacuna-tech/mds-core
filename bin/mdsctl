@@ -66,7 +66,7 @@ declare -A configs=(
   ["home"]="${MDS_HOME:-$(installDir)}"
   ["os"]="${MDS_OS:-`uname`}"
   ["provider"]="${MDS_PROVIDER:-}"
-  ["rc"]="${MDS_RC:-~/.bashrc ~/.zshrc}"
+  ["nvm-version"]="${MDS_NVM_VERSION:-12.14.1}"
   ["workdir"]="/tmp/mds/tools"
   # fixme: consider removing envsubst in favor of sed
   ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s kubectx git awscli}"
@@ -171,6 +171,8 @@ initialize() {
     export PATH=${configs[workdir]}/helm/${os}-amd64:${PATH}
     unset os
   # fi
+
+  export NVM_DIR=${HOME}/.nvm
 }
 
 warn() {
@@ -289,29 +291,24 @@ bootstrap() {
   for r in ${configs[brew]}; do
     rc=${configs[brew-${r}]:-${r}}
 
-     ${r} > /dev/null 2>&hash1 || {
+    hash ${r} > /dev/null 2>&1 || {
       case ${r} in
         oq) brew tap ${rc}; rc=${r};&
         *) brew install ${rc};;
       esac
 
       # todo: unable to detect nvm install via subshell given it is an alias
-      # todo: don't persist to ~/.bashrc
       case ${r} in
         nvm)
+          # todo: normalize-nvm env
           [ ! -d ~/.nmv ] && mkdir -p ~/.nvm
-          nv=12.14.1
-          for ns in "export NMV_DIR=\${HOME}/.nvm" \
-            "eval . \$(brew --prefix nvm)/nvm.sh" \
-            "nvm install ${nv}" \
-            "nvm alias default ${nv}" \
-            "nvm use --delete-prefix v${nv}"; do
-            [ $(grep -Fxq "${ns}" ~/.bashrc; echo $?) == "1" ] && echo "${ns}" >> ~/.bashrc
-          done; unset ns nv
+          export NVM_DIR=${HOME}/.nvm
           . $(brew --prefix nvm)/nvm.sh
+          nvm install ${configs[nvm-version]}
+          nvm alias default ${configs[nvm-version]}
+          nvm use --delete-prefix v${configs[nvm-version]}
           nvm install node
-          nvm use node
-          . ~/.bashrc;;
+          nvm use node;;
         envsubst) brew link --force ${lc};;
       esac
     }
@@ -326,6 +323,12 @@ bootstrap() {
   done; unset c rc
 
   initialize
+
+  # todo: normalize nvm-env
+  . $(brew --prefix nvm)/nvm.sh
+  [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh
+  nvm install ${configs[nvm-version]}
+  nvm alias default ${configs[nvm-version]}
 
   for p in lerna cypress mocha chai mochawesome; do
     yarn ${p} --version > /dev/null 2>&1 || yarn add -W ${p}
@@ -353,6 +356,11 @@ build() {
 
   # todo: provide build-config-option for progressive builds, ie no-clean
   (cd ${configs[home]};
+    # todo: normalize nvm-env
+    . $(brew --prefix nvm)/nvm.sh;
+    [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh;
+    nvm install ${configs[nvm-version]};
+    nvm alias default ${configs[nvm-version]};
     [ -z "${configs[keep-cache]}" ] && yarn clean;
     yarn;
     yarn image)
@@ -1272,8 +1280,6 @@ preset() {
   unset is
 }
 
-[ ! -f ~/.bashrc ] && touch ~/.bashrc
-. ~/.bashrc
 initialize
 check $(basename ${0})
 
