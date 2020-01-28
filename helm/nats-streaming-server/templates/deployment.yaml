@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: nats-configx
+  name: nats-config
   namespace: {{ $.Release.Namespace | default "default" }}
 data:
   # Used to set cluster id in deployment
@@ -103,12 +103,12 @@ spec:
         - name: NATS_CLUSTER
           valueFrom:
             configMapKeyRef:
-              name: nats-configx
+              name: nats-config
               key:  NATS_CLUSTER
         - name: NATS_HOST
           valueFrom:
             configMapKeyRef:
-              name: nats-configx
+              name: nats-config
               key:  NATS_HOST
         ports:
         - containerPort: 4222
