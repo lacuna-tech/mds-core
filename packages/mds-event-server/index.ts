@@ -13,9 +13,9 @@ const SUBSCRIPTION_TYPES = ['event', 'telemetry'] as const
 type SUBSCRIPTION_TYPE = typeof SUBSCRIPTION_TYPES[number]
 
 const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, TResult>, msg: stan.Message) => {
-  const { TENANT_ID = 'mds' } = process.env
+  const { TENANT_ID } = process.env
 
-  const TENANT_REGEXP = new RegExp(`^${TENANT_ID}\\.`)
+  const TENANT_REGEXP = new RegExp(`^${TENANT_ID || 'mds'}\\.`)
 
   try {
     const {
@@ -45,7 +45,7 @@ const natsSubscriber = async <TData, TResult>({
   TENANT_ID: string
   type: SUBSCRIPTION_TYPE
 }) => {
-  const subscriber = nats.subscribe(`${TENANT_ID ?? 'mds'}.${type}`, {
+  const subscriber = nats.subscribe(`${TENANT_ID || 'mds'}.${type}`, {
     ...nats.subscriptionOptions(),
     manualAcks: true,
     maxInFlight: 1

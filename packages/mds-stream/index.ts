@@ -66,7 +66,7 @@ async function writeCloudEvent(type: string, data: string) {
 
   // fixme: unable to set-and-propgate additional ce headers, eg: ce.addExtension('foo', 'bar')
   const event = cloudevent()
-    .type(`${env.TENANT_ID ?? 'mds'}.${type}`)
+    .type(`${env.TENANT_ID || 'mds'}.${type}`)
     .source(env.NATS)
     .data(data)
 
@@ -76,10 +76,10 @@ async function writeCloudEvent(type: string, data: string) {
 async function writeNatsEvent(type: string, data: string) {
   if (env.NATS) {
     const event = cloudevent()
-      .type(`${env.TENANT_ID ?? 'mds'}.${type}`)
+      .type(`${env.TENANT_ID || 'mds'}.${type}`)
       .source(env.NATS)
       .data(data)
-    getNats().publish(`${env.TENANT_ID ?? 'mds'}.${type}`, JSON.stringify(event))
+    getNats().publish(`${env.TENANT_ID || 'mds'}.${type}`, JSON.stringify(event))
   }
 }
 declare module 'redis' {
