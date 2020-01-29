@@ -361,6 +361,7 @@ build() {
     nvm install ${configs[nvm-version]};
     nvm alias default ${configs[nvm-version]};
     [ -z "${configs[keep-cache]}" ] && yarn clean;
+    yarn clean;
     yarn;
     yarn image)
 
