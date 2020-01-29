@@ -60,11 +60,6 @@ cronjobs:
     version: latest
     migration: false
     schedule: '0 * * * *'
-    env:
-      - name: THIS
-        value: THAT
-      - name: THIS2
-        value: SOMET^HING_ELSE
   mds-provider-processor:
     enabled: true
     version: latest
