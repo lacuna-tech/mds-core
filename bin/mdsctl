@@ -340,14 +340,14 @@ services() {
   echo $(oq -i yaml -r '.apis | keys[]' ${configs[home]}/helm/mds/values.yaml)
 }
 
-processors() {
-  echo $(oq -i yaml -r '.processors | keys[]' ${configs[home]}/helm/mds/values.yaml)
+cronJobs() {
+  echo $(oq -i yaml -r '.cronjobs | keys[]' ${configs[home]}/helm/mds/values.yaml)
 }
 
 build() {
   check ${FUNCNAME[0]}
 
-  for s in $(services) $(processors); do
+  for s in $(services) $(cronJobs); do
     for i in $(docker images --filter=reference="${s}" -q); do
       [ ${#i} -ge 1 ] && docker rmi -f ${i}
     done; unset i
@@ -621,7 +621,7 @@ installGrafana() {
   }
 }
 
-iamgeTag() {
+imageTag() {
   case "${configs[provider],,}" in
     aws) aws ecr describe-images --repository-name ${1} --output text \
       --query 'sort_by(imageDetails,& imagePushedAt)[*].imageTags[*]' | tr '\t' '\n' | tail -1;;
@@ -632,10 +632,11 @@ iamgeTag() {
 
 imageVersion() {
   for s in $(services); do
-    is+="${is:+,}sets-mds+=apis.${s}.version=$(iamgeTag ${s})"
+    is+="${is:+,}sets-mds+=apis.${s}.version=$(imageTag ${s})"
   done; unset s
-  for s in $(processors); do
-    is+="${is:+,}sets-mds+=processors.${s}.version=$(iamgeTag ${s})"
+
+  for s in $(cronJobs); do
+    is+="${is:+,}sets-mds+=cronjobs.${s}.version=$(imageTag ${s})"
   done; unset s
 
   echo ${is}
@@ -744,15 +745,10 @@ installSimulator() {
 installNats() {
   check ${FUNCNAME[0]}
 
-  [ "$(localContext)" != "true" ] && {
-    for n in nats-init nats-operator nats-cluster; do
-      [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || \
-        helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} --namespace ${configs[namespace-nats]}
-    done; unset n
-  } || {
-    [[ "$(helm list --short ${configs[namespace-nats]}-nats)" = "${configs[namespace-nats]}-nats" ]] || \
-      helm install ${configs[home]}/helm/nats-local --name ${configs[namespace-nats]}-nats --namespace ${configs[namespace-nats]}
-  }
+  for n in nats-init nats-operator nats-cluster; do
+    [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || \
+      helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} --namespace ${configs[namespace-nats]}
+  done; unset n
 }
 
 installNatsbox() {
@@ -765,15 +761,9 @@ installNatsbox() {
 installStan() {
   check ${FUNCNAME[0]}
 
-  [ "$(localContext)" != "true" ] && {
-    [[ "$(helm list --short ${configs[namespace-stan]}-nats-streaming-server)" = "${configs[namespace-stan]}-nats-streaming-server" ]] || \
-      helm install ${configs[home]}/helm/nats-streaming-server --name ${configs[namespace-stan]}-nats-streaming-server \
-        --namespace ${configs[namespace-stan]}
-  } || {
-    [[ "$(helm list --short ${configs[namespace-stan]}-nats-streaming-server)" = "${configs[namespace-stan]}-nats-streaming-server" ]] || \
-      helm install ${configs[home]}/helm/nats-streaming-server-local --name ${configs[namespace-stan]}-nats-streaming-server \
-        --namespace ${configs[namespace-stan]}
-  }
+  [[ "$(helm list --short ${configs[namespace-stan]}-nats-streaming-server)" = "${configs[namespace-stan]}-nats-streaming-server" ]] || \
+    helm install ${configs[home]}/helm/nats-streaming-server --name ${configs[namespace-stan]}-nats-streaming-server \
+      --namespace ${configs[namespace-stan]}
 }
 
 installDns() {
@@ -982,15 +972,10 @@ uninstallNatsbox() {
 uninstallNats() {
   check ${FUNCNAME[0]}
 
-  [ "$(localContext)" != "true" ] && {
-    for n in nats-init nats-operator nats-cluster; do
-      [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] && \
-        helm delete --purge ${configs[namespace-nats]}-${n}
-    done; unset n
-  } || {
-    [[ "$(helm list --short ${configs[namespace-nats]}-nats)" = "${configs[namespace-nats]}-nats" ]] && \
-      helm delete --purge ${configs[namespace-nats]}-nats
-  }
+  for n in nats-init nats-operator nats-cluster; do
+    [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] && \
+      helm delete --purge ${configs[namespace-nats]}-${n}
+  done; unset n
 
   kubectl delete namespace ${configs[namespace-nats]}
 }
@@ -1221,8 +1206,8 @@ preset() {
         for s in $(services); do
           is+="${is:+,}presets-mds+=apis.${s}.enabled=false"
         done; unset s
-        for p in $(processors); do
-          is+="${is:+,}presets-mds+=processors.${p}.enabled=false"
+        for p in $(cronJobs); do
+          is+="${is:+,}presets-mds+=cronjobs.${p}.enabled=false"
         done; unset p;;
       local)
         is+="${is:+,}presets-mds+=resourcesLimitsCpu=200m"
@@ -1301,7 +1286,7 @@ for arg in "${@:$OPTIND}"; do
     install:namespace=*) installNamespace "$(normalize ${arg} =)";;
     install) arg="${configs[install]}";&
     install:*) invoke install "$(normalize ${arg})";;
-    cycle) s=$(services); p=$(processors); arg="${s// /,},${p// /,}"; unset s p;&
+    cycle) s=$(services); p=$(cronjobs); arg="${s// /,},${p// /,}"; unset s p;&
     cycle:*) cycle "$(normalize ${arg})";;
     test) arg="${configs[test]}";&
     test:*) invoke test "$(normalize ${arg})";;
