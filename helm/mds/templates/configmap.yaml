@@ -5,21 +5,3 @@ metadata:
   namespace: {{ .Release.Namespace }}
 data:
 {{ (.Files.Glob (printf "files/mds-config/%s/*.{json,json5}" .Release.Namespace) ).AsConfig | indent 2 }}
----
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: stans-creds
-  namespace: {{ .Release.Namespace }}
-data:
-  stan.creds: |
-    -----BEGIN NATS USER JWT-----
-    eyJ0eXAiOiJqd3QiLCJhbGciOiJlZDI1NTE5In0.eyJqdGkiOiJDT0JKTUU3Skc0M1dLNVNKNEhPVjdUM01TUUlQUUVZU0lVTUJYTjVIUTYzVE1IQTdERlJRIiwiaWF0IjoxNTc4Njg1ODYwLCJpc3MiOiJBQlBQQkk3V0hQS0tVQUQ0RE5NQ1c2V09STjdNSVNPSE1IUTVZSU9ISk5RM0M1VFRPTzRDV0ZaTyIsIm5hbWUiOiJzeXMiLCJzdWIiOiJVQTRUSkU1M1hFVEtGUFRFQ1lWRVpBSzNIMkVDR1VSSVdZSkpaRVREUU81QVhSNkhWN0ZENUhJViIsInR5cGUiOiJ1c2VyIiwibmF0cyI6eyJwdWIiOnt9LCJzdWIiOnt9fX0.2jwAmP62UcMh0l3fL4Z-cJAXl1guG61qqb0IhXVNZBqPZyxvfgvYZderN10c-Be0wC-m9P-2gY6HWngiHU3sAw
-    ------END NATS USER JWT------
-    ************************* IMPORTANT *************************
-    NKEY Seed printed below can be used to sign and prove identity.
-    NKEYs are sensitive and should be treated as secrets.
-    -----BEGIN USER NKEY SEED-----
-    SUAGIRH2Z24KWAG5BFFUJ732P7KRFIYZBGERJXVGOZCFNVSNNCVAZDZU2A
-    ------END USER NKEY SEED------
-    *************************************************************

@@ -123,7 +123,7 @@ lerna run prettier
 
 ### Kubernetes
 
-MDS can readily be provisioned to a [Kubernetes](https://kubernetes.io), be it a local or remote cluster. The following steps describe how to build, deploy and operate against a local MDS cluster.
+MDS can readily be provisioned to a [Kubernetes](https://kubernetes.io) capable cluster, be it a local or remote. The following steps describe how to build, deploy and operate against a local MDS cluster.
 
 #### Prerequisites
 
@@ -155,12 +155,6 @@ preferences / resources / advanced: CPUs:6, Memory:8G, Swap:1G (minimal, apply m
 preferences / kubernetes: enable kubernetes
 ```
 
-Add `docker` and `kubectl` to your PATH environment:
-
-```sh
-% export PATH=/Applications/Docker.app/Contents/Resources/bin:${PATH}
-```
-
 Verify:
 
 ```sh
@@ -177,7 +171,15 @@ In order to build and operate MDS, a number of suporting technologies are levera
 % ./bin/mdsctl bootstrap
 ```
 
-The principle tools are: [homebrew](https://brew.sh), [bash-4.x+](https://www.gnu.org/software/bash/), [oq](https://github.com/Blacksmoke16/oq), [jq](https://stedolan.github.io/jq/), [yarn](https://yarnpkg.com/), [nvm](https://github.com/nvm-sh/nvm), [helm-2.14.1](https://helm.sh), [k9s](https://github.com/derailed/k9s), [kubectx](https://github.com/ahmetb/kubectx), [git](https://git-scm.com/), [gcloud](https://cloud.google.com/sdk/) and [awscli](https://aws.amazon.com/cli/).
+The principle tools are: [homebrew](https://brew.sh), [bash-4.x+](https://www.gnu.org/software/bash/), [oq](https://github.com/Blacksmoke16/oq), [jq](https://stedolan.github.io/jq/), [yarn](https://yarnpkg.com/), [nvm](https://github.com/nvm-sh/nvm), [helm-2.14.1](https://helm.sh), [k9s](https://github.com/derailed/k9s), [kubectx](https://github.com/ahmetb/kubectx), [git](https://git-scm.com/), [gcloud](https://cloud.google.com/sdk/) and [awscli](https://aws.amazon.com/cli/). Additionally the following services are provisioned: [istio](https://istio.io) and [nats](https://nats.io).
+
+Verify:
+
+```sh
+% kubectl -n istio-system get pods
+% kubectl -n nats get pods
+% k9s &
+```
 
 #### Build : compile source into deployable images
 
