@@ -107,20 +107,19 @@ const parseRelative = (
   const parsedStartOffset = parseOffset(startOffset)
   const parsedEndOffset = parseOffset(endOffset)
 
-  if (!parsedStartOffset?.relative && !parsedEndOffset?.relative) {
+  if (!parsedStartOffset.relative && !parsedEndOffset.relative) {
     return {
       start_time: parseAnchorPoint(startOffset).valueOf(),
       end_time: parseAnchorPoint(endOffset).valueOf()
     }
   }
 
-  if (parsedStartOffset?.relative && parsedEndOffset?.relative) {
+  if (parsedStartOffset.relative && parsedEndOffset.relative) {
     throw new BadParamsError(`Both start_offset and end_offset cannot be relative to each other`)
   }
 
-  if (parsedStartOffset?.relative) {
+  if (parsedStartOffset.relative) {
     const anchorPoint = parseAnchorPoint(endOffset)
-    console.log(anchorPoint.toLocaleString())
     const { operator, unit, count } = parsedStartOffset
     if (operator === '-') {
       return {
@@ -134,7 +133,7 @@ const parseRelative = (
     throw new BadParamsError(`Invalid starting point: ${startOffset}`)
   }
 
-  if (parsedEndOffset?.relative) {
+  if (parsedEndOffset.relative) {
     const anchorPoint = parseAnchorPoint(startOffset)
     const { operator, unit, count } = parsedEndOffset
     if (operator === '+') {

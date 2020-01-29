@@ -60,10 +60,10 @@ describe('Date/time API utils', () => {
   })
 
   describe('parses relative dates', () => {
-    it('parses yesterday/-7d', () => {
-      Sinon.replace(dt, 'getLocalTime', Sinon.fake.returns(moment('2020-01-15')))
+    it('parses -7d/yesterday', () => {
+      Sinon.replace(dt, 'getLocalTime', Sinon.fake.returns(moment('2020-01-15').clone()))
       const result = dt.parseRelative('-7d', 'yesterday')
-      assert.deepStrictEqual(result, { start_time: 1578380400000, end_time: 1578985200000 })
+      assert.deepStrictEqual(result, { start_time: moment('2020-01-15').clone().subtract(8, 'd').valueOf(), end_time: moment('2020-01-15').clone().subtract(1, 'd').valueOf() })
       Sinon.restore()
     })
   })
