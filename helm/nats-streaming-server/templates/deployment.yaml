@@ -6,7 +6,7 @@ metadata:
 data:
   # Used to set cluster id in deployment
   # Look for $(NATS_CLUSTER) usage below
-  NATS_CLUSTER: stan
+  NATS_CLUSTER: nats-streaming
   # This is the NATS hostname to connect to
   NATS_HOST: nats://nats:4222
 ---
@@ -70,12 +70,12 @@ spec:
           - "$(NATS_CLUSTER)"
           - -m
           - "8222"
-          - -store
+          - --store
+          - file
           - --max_msgs
           - "0"
           - --max_bytes
           - "0"
-          - file
           - -clustered
           - --cluster_node_id
           - "$(POD_NAME)"
