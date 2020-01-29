@@ -148,7 +148,7 @@ Run:
 % open /Applications/Docker.app
 ```
 
-Lastly, onfigure Kubernetes:
+Lastly, configure Kubernetes in Docker Desktop:
 
 ```
 preferences / resources / advanced: CPUs:6, Memory:8G, Swap:1G (minimal, apply more as possible)
