@@ -42,7 +42,7 @@ import { serviceAreaMap } from 'ladot-service-areas'
 
 import { isArray } from 'util'
 import { getNextState } from './state-machine'
-import { parseRelative } from './date-time-utils'
+import { parseRelative, getCurrentDate } from './date-time-utils'
 
 const RADIUS = 30.48 // 100 feet, in meters
 const NUMBER_OF_EDGES = 32 // Number of edges to add, geojson doesn't support real circles
@@ -670,5 +670,6 @@ export {
   moved,
   calcDistance,
   normalizeToArray,
-  parseRelative
+  parseRelative,
+  getCurrentDate
 }

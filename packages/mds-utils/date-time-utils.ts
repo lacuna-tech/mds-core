@@ -2,7 +2,7 @@ import { Timestamp } from '@mds-core/mds-types'
 import moment from 'moment-timezone'
 import { BadParamsError } from './exceptions'
 
-const getCurrentDate = () => {
+export const getCurrentDate = () => {
   return new Date()
 }
 
@@ -158,6 +158,5 @@ export {
   parseOffset,
   parseAnchorPoint,
   parseRelative,
-  parseIsRelative,
-  getCurrentDate
+  parseIsRelative
 }
