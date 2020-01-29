@@ -45,7 +45,7 @@ const natsSubscriber = async <TData, TResult>({
   TENANT_ID: string
   type: SUBSCRIPTION_TYPE
 }) => {
-  const subscriber = nats.subscribe(`${TENANT_ID ?? 'mds'}.${type}`, {
+  const subscriber = nats.subscribe(`${TENANT_ID || 'mds'}.${type}`, {
     ...nats.subscriptionOptions(),
     manualAcks: true,
     maxInFlight: 1
