@@ -142,17 +142,24 @@ Install [Docker Desktop](https://download.docker.com/mac/stable/Docker.dmg):
 % open https://download.docker.com/mac/stable/Docker.dmg
 ```
 
-Run:
+Start Docker-Desktop:
 
 ```sh
 % open /Applications/Docker.app
 ```
 
-Lastly, onfigure Kubernetes:
+Lastly, configure Kubernetes:
 
-```
-preferences / resources / advanced: CPUs:6, Memory:8G, Swap:1G (minimal, apply more as possible)
-preferences / kubernetes: enable kubernetes
+```txt
+open Docker-Desktop preferences
+select the Resources option
+  apply the following minimal resource changes:
+    CPUs: 6
+    Memory: 8G
+    Swap: 1G
+select the Kubernetes option
+  select Enable Kubernetes option
+select Apply & Restart
 ```
 
 Verify:
