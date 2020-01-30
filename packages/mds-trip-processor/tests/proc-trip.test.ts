@@ -1,5 +1,5 @@
 import assert from 'assert'
-import { TripEvent, Timestamp, TripTelemetry, GpsData } from '@mds-core/mds-types'
+import { TripEvent, Timestamp, TripTelemetry, TripTelemetryField } from '@mds-core/mds-types'
 import { calcDistance, routeDistance } from '@mds-core/mds-utils'
 import * as procTripUtils from '../src/utils'
 
@@ -34,20 +34,14 @@ const getMockedTripEventMap = () => {
   return trips
 }
 
-const getMockedTripTelemetryMap = () => {
+const getMockedTripTelemetryList = () => {
   const telemetryA = getMockedTripTelemetry(42)
   const telemetryB = getMockedTripTelemetry(43)
   const telemetryC = getMockedTripTelemetry(44)
-  const telemetryD = getMockedTripTelemetry(52)
-  const telemetryE = getMockedTripTelemetry(53)
-  const telemetryF = getMockedTripTelemetry(54)
 
-  const trips = {
-    'trip-one': [telemetryA, telemetryB, telemetryC],
-    'trip-two': [telemetryD, telemetryE, telemetryF]
-  }
+  const telemetry = [telemetryA, telemetryB, telemetryC]
 
-  return trips
+  return telemetry
 }
 
 describe('Proc Trip', () => {
@@ -73,46 +67,52 @@ describe('Proc Trip', () => {
 
   describe('createTelemetryMap()', () => {
     it('Errors out if trip telemetry does not exist', () => {
-      const telemetryMap = getMockedTripTelemetryMap()
+      const telemetryMap = getMockedTripTelemetryList()
       assert.throws(() => {
-        procTripUtils.createTelemetryMap([], telemetryMap, 'fake-trip-id')
+        procTripUtils.createTelemetryMap([], telemetryMap)
       })
     })
 
     it('Maps telemtry points to trip events', () => {
-      const telemetryMap = getMockedTripTelemetryMap()
+      const telemetryMap = getMockedTripTelemetryList()
       const events = getMockedTripEventMap()
-      const expected: TripTelemetry[][] = [
-        [getMockedTripTelemetry(42), getMockedTripTelemetry(43)],
-        [getMockedTripTelemetry(44)]
-      ]
-      const result = procTripUtils.createTelemetryMap(events['trip-one'], telemetryMap, 'trip-one')
+      const expected: TripTelemetryField = {
+        '42': [getMockedTripTelemetry(42), getMockedTripTelemetry(43)],
+        '44': [getMockedTripTelemetry(44)]
+      }
+      const result = procTripUtils.createTelemetryMap(events['trip-one'], telemetryMap)
       assert.deepStrictEqual(result, expected)
     })
   })
 
   describe('calcDistance()', () => {
     it('Calculates distance between telemetries', () => {
-      const tripTelemetry: TripTelemetry[][] = [
-        [getMockedTripTelemetryWithGPS(42, 0, 100), getMockedTripTelemetryWithGPS(43, 100, 100)]
-      ]
-      const startGPS: GpsData = { lat: 0, lng: 0 } as GpsData
+      const tripTelemetry: TripTelemetryField = {
+        '42': [getMockedTripTelemetryWithGPS(42, 0, 0), getMockedTripTelemetryWithGPS(43, 0, 100)],
+        '44': [getMockedTripTelemetryWithGPS(44, 100, 100)]
+      }
       const expected = {
         distance:
-          routeDistance([startGPS, { lat: 0, lng: 100 }]) +
+          routeDistance([
+            { lat: 0, lng: 0 },
+            { lat: 0, lng: 100 }
+          ]) +
           routeDistance([
             { lat: 0, lng: 100 },
             { lat: 100, lng: 100 }
           ]),
         points: [
-          routeDistance([startGPS, { lat: 0, lng: 100 }]),
+          routeDistance([
+            { lat: 0, lng: 0 },
+            { lat: 0, lng: 100 }
+          ]),
           routeDistance([
             { lat: 0, lng: 100 },
             { lat: 100, lng: 100 }
           ])
         ]
       }
-      const result = calcDistance(tripTelemetry, startGPS)
+      const result = calcDistance(tripTelemetry)
       assert.deepStrictEqual(result, expected)
     })
   })
