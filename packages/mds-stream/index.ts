@@ -59,6 +59,7 @@ const getNats = () => {
   return nats
 }
 
+/* Currently unused code, keeping it in the case that we decide to switch back to Knative Eventing */
 async function writeCloudEvent(type: string, data: string) {
   if (!env.SINK || !env.NATS) {
     return
