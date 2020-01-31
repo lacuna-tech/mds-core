@@ -159,7 +159,7 @@ reset=`tput sgr0`
 
 initialize() {
   for p in ${configs[paths]}; do
-    [ -z "${no_brew}" ]] && export PATH=$(brew --prefix ${configs[brew-${p}]:-${p}})/bin:${PATH}
+    [ -z "${no_brew}" ] && export PATH=$(brew --prefix ${configs[brew-${p}]:-${p}})/bin:${PATH}
   done; unset p
 
   # fixme: make minimal-version test more flexible; may not be required when helm:3 is supported more broadly
@@ -298,8 +298,8 @@ bootstrap() {
 
     [[ "$(exists ${r})" != "0" ]] && {
       case ${r} in
-        oq) [ -z "${no_brew}" ]] && brew tap ${rc}; rc=${r};&
-        *) [ -z "${no_brew}" ]] && brew install ${rc};;
+        oq) [ -z "${no_brew}" ] && brew tap ${rc}; rc=${r};&
+        *) [ -z "${no_brew}" ] && brew install ${rc};;
       esac
 
       # todo: unable to detect nvm install via subshell given it is an alias
@@ -308,13 +308,13 @@ bootstrap() {
           # todo: normalize-nvm env
           [ ! -d ~/.nmv ] && mkdir -p ~/.nvm
           export NVM_DIR=${HOME}/.nvm
-          [ -z "${no_brew}" ]] && . $(brew --prefix nvm)/nvm.sh
+          [ -z "${no_brew}" ] && . $(brew --prefix nvm)/nvm.sh
           nvm install ${configs[nvm-version]}
           nvm alias default ${configs[nvm-version]}
           nvm use --delete-prefix v${configs[nvm-version]}
           nvm install node
           nvm use node;;
-        envsubst) [ -z "${no_brew}" ]] && brew link --force ${lc};;
+        envsubst) [ -z "${no_brew}" ] && brew link --force ${lc};;
       esac
     }
   done; unset r rc
@@ -323,14 +323,14 @@ bootstrap() {
     rc=${configs[brew-cask-${r}]:-${r}}
 
     [[ "$(exists ${r})" != "0" ]] && {
-      [ -z "${no_brew}" ]] && brew cask install ${rc}
+      [ -z "${no_brew}" ] && brew cask install ${rc}
     }
   done; unset c rc
 
   initialize
 
   # todo: normalize nvm-env
-  [ -z "${no_brew}" ]] && . $(brew --prefix nvm)/nvm.sh
+  [ -z "${no_brew}" ] && . $(brew --prefix nvm)/nvm.sh
   [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh
   nvm install ${configs[nvm-version]}
   nvm alias default ${configs[nvm-version]}
@@ -362,7 +362,7 @@ build() {
   # todo: provide build-config-option for progressive builds, ie no-clean
   (cd ${configs[home]};
     # todo: normalize nvm-env
-    [ -z "${no_brew}" ]] && . $(brew --prefix nvm)/nvm.sh;
+    [ -z "${no_brew}" ] && . $(brew --prefix nvm)/nvm.sh;
     [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh;
     nvm install ${configs[nvm-version]};
     nvm alias default ${configs[nvm-version]};
@@ -771,6 +771,13 @@ installStan() {
       --namespace ${configs[namespace-stan]}
 }
 
+installSurveyor() {
+  for n in prometheus-operator nats-prometheus nats-surveyor-grafana nats-surveyor; do
+    [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || \
+      helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} --namespace ${configs[namespace-nats]}
+  done; unset n
+}
+
 installDns() {
   check ${FUNCNAME[0]}
 
@@ -958,6 +965,13 @@ uninstallMds() {
 
   helm delete --purge ${configs[namespace-mds]} ${configs[dryrun]:+--dry-run}
   uninstallNamespace ${configs[namespace-mds]}
+}
+
+uninstallSurveyor() {
+  for n in prometheus-operator nats-prometheus nats-surveyor-grafana nats-surveyor; do
+    [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] && \
+      helm delete --purge ${configs[namespace-nats]}-${n}
+  done; unset n
 }
 
 uninstallStan() {
