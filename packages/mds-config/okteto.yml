@@ -1,5 +1,0 @@
-name: mds-config
-image: node:12
-command: ['bash']
-forward:
-  - 9229:9229
