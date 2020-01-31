@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: remote-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: remote-dev
+  template:
+    metadata:
+      labels:
+        app: remote-dev
+    spec:
+      containers:
+        - image: okteto/hello-world:node
+          name: remote-dev
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: remote-dev
+spec:
+  type: ClusterIP
+  ports:
+    - name: 'remote-dev'
+      port: 3000
+  selector:
+    app: remote-dev
