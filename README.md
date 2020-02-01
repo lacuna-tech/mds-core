@@ -238,7 +238,7 @@ After following the above steps to set up a local MDS cluster, you can override 
 % cd packages/${SERVICE_NAME}
 % yarn start
 ```
-5. When you're done with your session, execute `% okteto down` to return back to the standard service.
+5. When you're done with your session, execute `% okteto down` to return back to the standard service if you're using the okteto interface directly, or run `> Okteto Down` from the VSCode command palette.
 
 #### MDS Operations
 
