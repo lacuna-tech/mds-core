@@ -216,6 +216,19 @@ Verify:
 % curl localhost/agency
 ```
 
+#### In-Cluster Development
+Due to the nature of MDS-Core being a highly portable Typescript project that compiles down into minified javascript for its images, rapidly development in-cluster can be quite challenging. MDS-Core utilizes [Okteto](https://okteto.com) to enable developers to actively develop their code in-cluster.
+
+After following the above steps to set up a local MDS cluster, you can override an existing service's deployment with these steps.
+1. Update `mds-core/okteto.yml`'s `name` field to be set to the service you wish to replace (e.g. `mds-agency`)
+2.
+```sh
+% curl https://get.okteto.com -sSfL | sh
+% okteto up
+```
+3. When you're done with your session, execute `% okteto down` to return back to the standard service.
+4. You can attach to the session using the VSCode Remote debugger by pointing to `localhost:9229`
+
 #### MDS Operations
 
 MDS operates atop the following services: [Kubernetes](https://kubernetes.io), [Istio](https://istio.io), [NATS](https://nats.io), [PostgreSQL](https://www.postgresql.org) and [Redis](https://redis.io).
