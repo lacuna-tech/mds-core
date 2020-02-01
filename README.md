@@ -224,20 +224,21 @@ After following the above steps to set up a local MDS cluster, you can override 
 2.
 ```sh
 % curl https://get.okteto.com -sSfL | sh
+```
+3.
+* If you want to use the okteto interface directly
+```sh
 % okteto up
 ```
-3. Configure environment
-```sh
-# In the okteto interface
-% yarn
+* If you want to interface using the VSCode debugger, install the VSCode Okteto extension, then open the command palette and run `> Okteto Up`.
+4. Configure environment
 ```
-4. If you want to use the okteto interface directly
-```sh
+# Either in Okteto Up shell or vscode remote shell
+% yarn
 % cd packages/${SERVICE_NAME}
 % yarn start
 ```
-5. If you want to interface using the VSCode debugger, you can attach to the session using the VSCode Remote debugger by pointing to `localhost:9229`
-6. When you're done with your session, execute `% okteto down` to return back to the standard service.
+5. When you're done with your session, execute `% okteto down` to return back to the standard service.
 
 #### MDS Operations
 
