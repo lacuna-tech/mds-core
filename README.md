@@ -225,20 +225,16 @@ After following the above steps to set up a local MDS cluster, you can override 
 ```sh
 % curl https://get.okteto.com -sSfL | sh
 ```
-3.
-* If you want to use the okteto interface directly
+3. Install the `Remote - Kubernetes` VSCode extension.
+4. Run `> Okteto Up` from the VSCode command palette.
+* After the remote session opens, execute this in the new shell window:
 ```sh
-% okteto up
-```
-* If you want to interface using the VSCode debugger, install the VSCode Okteto extension, then open the command palette and run `> Okteto Up`.
-4. Configure environment
-```
-# Either in Okteto Up shell or vscode remote shell
 % yarn
 % cd packages/${SERVICE_NAME}
 % yarn start
 ```
-5. When you're done with your session, execute `% okteto down` to return back to the standard service if you're using the okteto interface directly, or run `> Okteto Down` from the VSCode command palette.
+5. This session is now safe to close, and you can reattach with the `okteto.${SERVICE_NAME}` ssh profile automatically added for you using the VSCode `Remote - SSH` package.
+6. When you're completely done with your session, run `> Okteto Down` from the VSCode command palette, or `okteto down` from terminal to revert the changes made by Okteto, and return your service to its previous deployment.
 
 #### MDS Operations
 
