@@ -35,9 +35,9 @@ spec:
   - port: 7777
     name: metrics
     protocol: TCP
-#  - port: 8222
-#    name: management
-#    protocol: TCP
+  - port: 8222
+    name: management
+    protocol: TCP
   selector:
     app: nats-streaming-stateful
 ---
