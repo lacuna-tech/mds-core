@@ -42,7 +42,6 @@ import {
   PROVIDER_SCOPES,
   GEOGRAPHY2_UUID
 } from '@mds-core/mds-test-data'
-import { polygonArea } from 'd3'
 import { la_city_boundary } from './la-city-boundary'
 import { api } from '../api'
 /* eslint-disable-next-line @typescript-eslint/no-var-requires */
