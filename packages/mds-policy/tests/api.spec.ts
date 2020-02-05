@@ -42,6 +42,7 @@ import {
   PROVIDER_SCOPES,
   GEOGRAPHY2_UUID
 } from '@mds-core/mds-test-data'
+import { polygonArea } from 'd3'
 import { la_city_boundary } from './la-city-boundary'
 import { api } from '../api'
 /* eslint-disable-next-line @typescript-eslint/no-var-requires */
@@ -177,6 +178,9 @@ describe('Tests app', () => {
       .set('Authorization', AUTH)
       .expect(200)
       .end((err, result) => {
+        if (result === undefined) {
+          log('result was undefined. err was', err)
+        }
         const body = result.body
         log('read back all policies response:', body)
         test.value(body.policies.length).is(1) // only one
