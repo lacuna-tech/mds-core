@@ -59,12 +59,12 @@ cronjobs:
     enabled: true
     version: latest
     migration: false
-    schedule: '0 * * * *'
+    schedule: '* * * * *'
   mds-provider-processor:
     enabled: true
     version: latest
     migration: false
-    schedule: '0 * * * *'
+    schedule: '* * * * *'
 tenantId:
 timezone: America/Los_Angeles
 registry:

@@ -105,11 +105,11 @@ describe('Metrics', () => {
       const fakeReadAllDeviceStates = Sinon.fake.resolves(states)
       Sinon.replace(cache, 'readAllDeviceStates', fakeReadAllDeviceStates)
       const expected = {
-        registered: 1,
+        registered: 0,
         deployed: 4,
         dead: null
       }
-      const result = await metricUtils.calcVehicleCounts('fake-provider-id', 'scooter', 0, 42)
+      const result = await metricUtils.calcVehicleCounts('fake-provider-id', 'scooter')
       assert.deepStrictEqual(result, expected)
       Sinon.restore()
     })

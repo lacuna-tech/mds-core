@@ -48,29 +48,27 @@ async function calcEventCounts(
   return { ...eventCounts, telemetry: telemetryCount }
 }
 
-async function calcVehicleCounts(
-  providerID: UUID,
-  vehicleType: VEHICLE_TYPE,
-  startTime: Timestamp,
-  endTime: Timestamp
-): Promise<VehicleCountMetricObj> {
+async function calcVehicleCounts(providerID: UUID, vehicleType: VEHICLE_TYPE): Promise<VehicleCountMetricObj> {
   /* Calculate total number of registered vehicles at start of bin */
-  const registeredVehicles = await cache.readKeys('device:*:device')
-  const registeredCount = registeredVehicles?.length ?? 0
-
-  const events = await db.getStates(providerID, vehicleType, startTime, endTime)
-  const histRegistered = events.filter(event => {
-    return event.event_type === VEHICLE_EVENTS.register
-  }).length
-  const histDeregistered = events.filter(event => {
-    return event.event_type === VEHICLE_EVENTS.deregister
-  }).length
-  const registeredLastHour = histRegistered - histDeregistered
-  const registered = registeredCount + registeredLastHour
+  /* FIXME: This is a temporary placeholder until device cache restructuring
+  supports provider awareness or stream metric replacement */
+  const allRegisteredVehicles = await cache.readKeys('device:*:device')
+  const registeredForProvider: UUID[] = []
+  await Promise.all(
+    allRegisteredVehicles.map(async device => {
+      const id = device.slice(device.indexOf(':') + 1, device.lastIndexOf(':'))
+      if (
+        (await cache.getVehicleProvider(id)) === '264aad41-b47c-415d-8585-0208d436516e' &&
+        (await cache.getVehicleType(id)) === vehicleType
+      ) {
+        registeredForProvider.push(device)
+      }
+    })
+  )
+  const registered = registeredForProvider.length
 
   /*
   Calculate total number of vehicle in Right of way
-  TODO: 48 hour filtering
   */
   const stateCache = await cache.readAllDeviceStates()
   const deployed = stateCache

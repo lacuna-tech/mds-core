@@ -173,6 +173,12 @@ async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE | null> {
   return (type as VEHICLE_TYPE) ?? null
 }
 
+async function getVehicleProvider(keyID: UUID): Promise<UUID | null> {
+  const client = await getClient()
+  const provider = await client.hgetAsync(decorateKey(`device:${keyID}:device`), 'provider_id')
+  return (provider as UUID) ?? null
+}
+
 async function readDeviceState(field: UUID): Promise<StateEntry | null> {
   const deviceState = await hget('device:state', field)
   return deviceState ? parseDeviceState(deviceState as StringifiedStateEntry) : null
@@ -739,6 +745,7 @@ export = {
   health,
   info,
   getVehicleType,
+  getVehicleProvider,
   readDeviceState,
   readAllDeviceStates,
   writeDeviceState,

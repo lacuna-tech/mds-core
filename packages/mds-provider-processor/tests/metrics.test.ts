@@ -71,7 +71,7 @@ describe('Proc Metrics', () => {
   })
 
   it('calcVehicleCounts', async () => {
-    const res = await metric.calcVehicleCounts(PROVIDER_ID, VEHICLE_TYPES.scooter, time - 10000, time + 10000)
+    const res = await metric.calcVehicleCounts(PROVIDER_ID, VEHICLE_TYPES.scooter)
     assert.deepStrictEqual(res, { registered: 2, deployed: null, dead: null })
   })
 
