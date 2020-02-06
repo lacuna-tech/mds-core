@@ -100,8 +100,6 @@ describe('Metrics', () => {
       const fakeRegisteredVehicles = Sinon.fake.resolves(null)
       Sinon.replace(cache, 'readKeys', fakeRegisteredVehicles)
       const states = getMockedGetStates()
-      const fakeGetStates = Sinon.fake.resolves(states)
-      Sinon.replace(db, 'getStates', fakeGetStates)
       const fakeReadAllDeviceStates = Sinon.fake.resolves(states)
       Sinon.replace(cache, 'readAllDeviceStates', fakeReadAllDeviceStates)
       const expected = {
