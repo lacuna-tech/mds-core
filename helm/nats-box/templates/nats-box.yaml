@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Pod
 metadata:
   name: nats-box
-  namespace: { { $.Release.Namespace | default "default" } }
+  namespace: {{ $.Release.Namespace | default "default" }}
   labels:
     app: nats-box
   annotations:
