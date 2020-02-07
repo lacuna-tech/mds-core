@@ -3,8 +3,6 @@
 osx=darwin
 linux=linux
 
-no_brew=${MDS_NO_BREW:-}
-
 exists() {
   hash ${1} > /dev/null 2>&1
   echo $?
@@ -22,7 +20,7 @@ os() {
   esac; unset os
 }
 
-[[ "$(exists brew)" != "0" && -z "${no_brew}" ]] && {
+[[ "$(exists brew)" != "0" ]] && {
   case "$(os)" in
     ${osx})
       /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)";;
@@ -42,7 +40,7 @@ os() {
 if [[ "$(bash -c 'echo $BASH_VERSION')" == 3* ]]; then
   case "$(os)" in
     ${osx} | ${linux})
-      [[ -z "${no_brew}" ]] && brew install bash
+      brew install bash
       exec ${0} ${@} &
       exit;;
     *) usage "unsupported os: $(uname)";;
@@ -75,11 +73,13 @@ declare -A configs=(
   ["nvm-version"]="${MDS_NVM_VERSION:-12.14.1}"
   ["workdir"]="/tmp/mds/tools"
   # fixme: consider removing envsubst in favor of sed
-  ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s kubectx git awscli}"
+  ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s kubectx git aws nsc}"
   ["brew-envsubst"]="gettext"
   ["brew-helm"]="helm@2"
   ["brew-k9s"]="derailed/k9s/k9s"
+  ["brew-aws"]="awscli"
   ["brew-oq"]="blacksmoke16/tap"
+  ["brew-nsc"]="nats-io/nats-tools"
   ["brew-cask"]="${MDS_BREW_CASK:-gcloud}"
   ["brew-cask-gcloud"]="google-cloud-sdk"
   ["helm-version"]="${MDS_HELM_VERSION:-2.14.1}"
@@ -100,6 +100,7 @@ declare -A configs=(
   # note: fails when installing istio-nodeagent (i.e. -istio-sds-auth)
   ["istio-profile"]="${MDS_ISTIO_PROFILE:-}"
   ["istio"]="${MDS_ISTIO_PATH:-${configs[workdir]}/istio-${configs[istio-version]}}"
+  ["nats"]="${MDS_NATS_PATH:-${configs[workdir]}/nats}"
   ["grafana-plugins"]="${MDS_GRAFANA_PLUGINS:-devopsprodigy-kubegraf-app}"
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
@@ -159,7 +160,7 @@ reset=`tput sgr0`
 
 initialize() {
   for p in ${configs[paths]}; do
-    [ -z "${no_brew}" ] && export PATH=$(brew --prefix ${configs[brew-${p}]:-${p}})/bin:${PATH}
+    export PATH=$(brew --prefix ${configs[brew-${p}]:-${p}})/bin:${PATH}
   done; unset p
 
   # fixme: make minimal-version test more flexible; may not be required when helm:3 is supported more broadly
@@ -298,9 +299,11 @@ bootstrap() {
 
     [[ "$(exists ${r})" != "0" ]] && {
       case ${r} in
-        oq) [ -z "${no_brew}" ] && brew tap ${rc}; rc=${r};&
-        *) [ -z "${no_brew}" ] && brew install ${rc};;
+        oq) brew tap ${rc}; rc=${r};;
+        nsc) brew tap ${rc}; rc=${rc}/${r};;
       esac
+
+      brew install ${rc}
 
       # todo: unable to detect nvm install via subshell given it is an alias
       case ${r} in
@@ -308,13 +311,13 @@ bootstrap() {
           # todo: normalize-nvm env
           [ ! -d ~/.nmv ] && mkdir -p ~/.nvm
           export NVM_DIR=${HOME}/.nvm
-          [ -z "${no_brew}" ] && . $(brew --prefix nvm)/nvm.sh
+          . $(brew --prefix nvm)/nvm.sh
           nvm install ${configs[nvm-version]}
           nvm alias default ${configs[nvm-version]}
           nvm use --delete-prefix v${configs[nvm-version]}
           nvm install node
           nvm use node;;
-        envsubst) [ -z "${no_brew}" ] && brew link --force ${lc};;
+        envsubst) brew link --force ${lc};;
       esac
     }
   done; unset r rc
@@ -323,23 +326,23 @@ bootstrap() {
     rc=${configs[brew-cask-${r}]:-${r}}
 
     [[ "$(exists ${r})" != "0" ]] && {
-      [ -z "${no_brew}" ] && brew cask install ${rc}
+      brew cask install ${rc}
     }
   done; unset c rc
 
-  initialize
+  # initialize
 
-  # todo: normalize nvm-env
-  [ -z "${no_brew}" ] && . $(brew --prefix nvm)/nvm.sh
-  [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh
-  nvm install ${configs[nvm-version]}
-  nvm alias default ${configs[nvm-version]}
+  # # todo: normalize nvm-env
+  # . $(brew --prefix nvm)/nvm.sh
+  # [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh
+  # nvm install ${configs[nvm-version]}
+  # nvm alias default ${configs[nvm-version]}
 
-  for p in lerna cypress mocha chai mochawesome; do
-    yarn ${p} --version > /dev/null 2>&1 || yarn add -W ${p}
-  done; unset p
+  # for p in lerna cypress mocha chai mochawesome; do
+  #   yarn ${p} --version > /dev/null 2>&1 || yarn add -W ${p}
+  # done; unset p
 
-  invoke install "$(normalize ${configs[bootstrap]})"
+  # invoke install "$(normalize ${configs[bootstrap]})"
 }
 
 services() {
@@ -362,7 +365,7 @@ build() {
   # todo: provide build-config-option for progressive builds, ie no-clean
   (cd ${configs[home]};
     # todo: normalize nvm-env
-    [ -z "${no_brew}" ] && . $(brew --prefix nvm)/nvm.sh;
+    . $(brew --prefix nvm)/nvm.sh;
     [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh;
     nvm install ${configs[nvm-version]};
     nvm alias default ${configs[nvm-version]};
@@ -747,6 +750,18 @@ installSimulator() {
       ${configs[dryrun]:+--dry-run --debug})
 }
 
+installNsc() {
+  check ${FUNCNAME[0]}
+
+  $(nsc env > /dev/null 2>&1) || nsc init --name KO
+  $(nsc describe operator --name KO > /dev/null 2>&1) || nsc add operator --name KO
+  $(nsc describe account --name SYS > /dev/null 2>&1) || nsc add account --name SYS
+  $(nsc describe user --account SYS --name sys > /dev/null 2>&1) || nsc add user --account SYS --name sys
+
+  [[ ! -d ${configs[nats]} ]] && mkdir -p ${configs[nats]}
+  [[ ! -f ${configs[nats]}/resolver.conf ]] && nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf
+}
+
 installNats() {
   check ${FUNCNAME[0]}
 
@@ -1001,6 +1016,13 @@ uninstallNats() {
   kubectl delete namespace ${configs[namespace-nats]}
 }
 
+uninstallNsc() {
+  # todo: rm ~/{.nkeys,nsc}
+  if [ -z "${configs[keep-cache]}" ]; then
+    [[ -d ${configs[nats]} ]] && /bin/rm -rf ${configs[nats]}
+  fi
+}
+
 uninstallDns() {
   [[ "$(helm list --short ${configs[namespace-dns]}-dns)" = "${configs[namespace-dns]}-dns" ]] && \
     helm delete --purge ${configs[namespace-dns]}-dns
@@ -1176,7 +1198,7 @@ check() {
       #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
     build | testIntegration)
       [[ "$(exists yarn)" != "0" ]] && bootstrap;;
-    installNats) ;;
+    installNats) installNsc;;
     installStan) installNats;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
