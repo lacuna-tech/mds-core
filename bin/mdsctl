@@ -108,11 +108,14 @@ declare -A configs=(
   ["ingress-gateway-certificate-path"]="${MDS_INGRESS_GATEWAY_CERTIFICATE_PATH:-}"
   ["values"]="${MDS_VALUES:-}"
   ["values-mds"]="${MDS_VALUES_MDS:-}"
+  ["values-nats"]="${MDS_VALUES_NATS:-}"
   ["presets"]="${MDS_PRESETS:-}"
   ["presets-mds-database-password"]="${MDS_PRESETS_MDS_DATABASE_PASSWORD:-Password123#}"
   ["presets-mds"]="${MDS_PRESETS_MDS:-postgresql.password=${configs[presets-mds-database-password]},apis.mds-agency.migration=true}"
+  ["presets-nats"]="${MDS_PRESETS_NATS:-}"
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
+  ["sets-nats"]="${MDS_SETS_NATS:-}"
   # todo: try scaling down istio's resource requirements (e.g. local dev): pilot.resources.requests.memory=512Mi}
   ["sets-istio"]="${MDS_SETS_ISTIO:-}"
   ["sets-logging"]="${MDS_SETS_LOGGING:-fluentbit.backend.es.host=elasticsearch-master.util,fluentbit.backend.es.port=9200,fluentbit.backend.es.tls=off,kibana.env.ELASTICSEARCH_URL=http:elasticsearch-master.util:9200}"
@@ -330,19 +333,19 @@ bootstrap() {
     }
   done; unset c rc
 
-  # initialize
+  initialize
 
-  # # todo: normalize nvm-env
-  # . $(brew --prefix nvm)/nvm.sh
-  # [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh
-  # nvm install ${configs[nvm-version]}
-  # nvm alias default ${configs[nvm-version]}
+  # todo: normalize nvm-env
+  . $(brew --prefix nvm)/nvm.sh
+  [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh
+  nvm install ${configs[nvm-version]}
+  nvm alias default ${configs[nvm-version]}
 
-  # for p in lerna cypress mocha chai mochawesome; do
-  #   yarn ${p} --version > /dev/null 2>&1 || yarn add -W ${p}
-  # done; unset p
+  for p in lerna cypress mocha chai mochawesome; do
+    yarn ${p} --version > /dev/null 2>&1 || yarn add -W ${p}
+  done; unset p
 
-  # invoke install "$(normalize ${configs[bootstrap]})"
+  invoke install "$(normalize ${configs[bootstrap]})"
 }
 
 services() {
@@ -457,7 +460,7 @@ updateHelmDependencies() {
 installHelm() {
   check ${FUNCNAME[0]}
 
-  helm init --upgrade || usage "helm intialization failure"
+  helm init --force-upgrade || usage "helm intialization failure"
   pause 5
 
   for r in "${!helmRepositories[@]}"; do
@@ -760,15 +763,34 @@ installNsc() {
 
   [[ ! -d ${configs[nats]} ]] && mkdir -p ${configs[nats]}
   [[ ! -f ${configs[nats]}/resolver.conf ]] && nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf
+
+  # $(kubectl get secret nats-sys-creds > /dev/null 2>&1) || \
+  #   kubectl create secret generic nats-sys-creds --from-file ~/.nkeys/creds/KO/SYS/sys.creds
+  # $(kubectl -n ${configs[namespace-nats]} get configmap nats-account > /dev/null 2>&1) || \
+  #   kubectl -n ${configs[namespace-nats]} create configmap nats-accounts --from-file ${configs[nats]}/resolver.conf
 }
 
 installNats() {
   check ${FUNCNAME[0]}
 
+  kubectl create namespace nats
+  installNsc
+
   for n in nats-init nats-operator nats-cluster; do
     [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || {
-      helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} --namespace ${configs[namespace-nats]}
+      helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} \
+        ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
+        ${configs[values]:+$(helmOptions values ${configs[values]})} \
+        ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+        ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+        ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+        ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+        ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+        ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+        ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+        ${configs[dryrun]:+--dry-run --debug}
       pause 3
+      # installNsc
     }
   done; unset n
 }
@@ -1008,7 +1030,7 @@ uninstallNatsbox() {
 uninstallNats() {
   check ${FUNCNAME[0]}
 
-  for n in nats-init nats-operator nats-cluster; do
+  for n in nats-init nats-operator nats-cluster; do # nats-server; do
     [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] && \
       helm delete --purge ${configs[namespace-nats]}-${n}
   done; unset n
@@ -1198,7 +1220,7 @@ check() {
       #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
     build | testIntegration)
       [[ "$(exists yarn)" != "0" ]] && bootstrap;;
-    installNats) installNsc;;
+    installNats) ;; #installNsc;;
     installStan) installNats;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
@@ -1256,7 +1278,8 @@ preset() {
         is+="${is:+,}presets-mds+=resourcesLimitsCpu=200m"
         is+="${is:+,}presets-mds+=resourcesLimitsMemory=200Mi"
         is+="${is:+,}presets-mds+=resourcesRequestsCpu=20m"
-        is+="${is:+,}presets-mds+=resourcesRequestsMemory=32Mi";;
+        is+="${is:+,}presets-mds+=resourcesRequestsMemory=32Mi"
+        is+="${is:+,}presets-nats+=clusterSize=1";;
       no-persistence)
         is+="${is:+,}sets-mds+=postgresql.persistence.enabled=false"
         is+="${is:+,}sets-mds+=postgresql.volumePermissions.enabled=true"

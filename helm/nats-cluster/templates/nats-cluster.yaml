@@ -4,7 +4,11 @@ metadata:
   name: "nats"
   namespace: {{ $.Release.Namespace | default "nats" }}
 spec:
-  size: 3
+  size: {{ $.Values.clusterSize | default 3 }}
+  version: 2.1.2
   pod:
     annotations:
       sidecar.istio.io/inject: "false"
+  # operatorConfig:
+  #   secret: operator-jwt
+  #   systemAccount: "AASYS..."
