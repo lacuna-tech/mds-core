@@ -1,11 +1,5 @@
-# Usage: Name of the deployment to modify.
-# Docs: https://okteto.com/docs/reference/manifest/index.html#name-string-required
-name: mds-event-processor
-# Usage: Namespace for the deployment
-# Docs: https://okteto.com/docs/reference/manifest/index.html#namespace-string-optional
+name: mds-agency
 namespace: mds
-# Usage: Docker Image to fetch
-# Docs: https://okteto.com/docs/reference/manifest/index.html#image-string-optional
 image: node:12
 # Usage: What command should be run upon establishing a connection
 # Docs: https://okteto.com/docs/reference/manifest/index.html#command-string-optional
@@ -13,10 +7,7 @@ command: ['bash']
 # Docs: https://okteto.com/docs/reference/manifest/index.html#forward-string-optional
 forward:
   - 9229:9229
-# Docs: https://okteto.com/docs/reference/manifest/index.html#resources-object-optional
 resources:
   limits:
     cpu: 2000m
     memory: 4Gi
-# Docs: https://okteto.com/docs/reference/manifest/index.html#remote-integer-optional
-remote: 6969
