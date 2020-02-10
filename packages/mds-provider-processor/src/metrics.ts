@@ -57,13 +57,10 @@ async function calcVehicleCounts(providerID: UUID, vehicleType: VEHICLE_TYPE): P
   await Promise.all(
     allRegisteredVehicles?.map(async device => {
       const id = device.slice(device.indexOf(':') + 1, device.lastIndexOf(':'))
-      if (
-        (await cache.getVehicleProvider(id)) === '264aad41-b47c-415d-8585-0208d436516e' &&
-        (await cache.getVehicleType(id)) === vehicleType
-      ) {
+      if ((await cache.getVehicleProvider(id)) === providerID && (await cache.getVehicleType(id)) === vehicleType) {
         registeredForProvider.push(device)
       }
-    }) || []
+    }) ?? []
   )
   const registered = registeredForProvider.length
 
