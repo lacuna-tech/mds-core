@@ -41,7 +41,7 @@ if [[ "$(bash -c 'echo $BASH_VERSION')" == 3* ]]; then
   case "$(os)" in
     ${osx} | ${linux})
       brew install bash
-      exec ${0} ${@} &
+      exec bash ${0} ${@} &
       exit;;
     *) usage "unsupported os: $(uname)";;
   esac
@@ -130,6 +130,7 @@ declare -A configs=(
   ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-${configs[namespace-mds]}}"
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-nats}"
   ["namespace-stan"]="${MDS_NAMESPACE_NATS:-${configs[namespace-mds]}}"
+  ["namespace-nats-account-server"]="${MDS_NAMESPACE_NATS_ACCOUNT_SERVER:-${configs[namespace-nats]}}"
   ["namespace-nats-box"]="${MDS_NAMESPACE_NATS_BOX:-${configs[namespace-nats]}}"
   ["namespace-dns"]="${MDS_NAMESPACE_DNS:-default}"
   ["namespace-curl"]="${MDS_NAMESPACE_CURL:-default}"
@@ -773,11 +774,13 @@ installNsc() {
 installNats() {
   check ${FUNCNAME[0]}
 
-  kubectl create namespace nats
-  installNsc
+  # kubectl create namespace nats
+  # installNsc
 
   for n in nats-init nats-operator nats-cluster; do
     [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || {
+      systemAccount=$(nsc describe account --name SYS | grep "Account ID" | sed 's/[^a-z  A-Z 0-9]//g' | tr -s " " | cut -d' ' -f4)
+      operatorJwt=$(<~/.nsc/nats/KO/KO.jwt)
       helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} \
         ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
         ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -786,6 +789,8 @@ installNats() {
         ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
         ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
         ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+        $(helmOptions set systemAccount=${systemAccount}) \
+        $(helmOptions set operatorJwt=${operatorJwt}) \
         ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
         ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
         ${configs[dryrun]:+--dry-run --debug}
@@ -793,6 +798,16 @@ installNats() {
       # installNsc
     }
   done; unset n
+}
+
+installNatsAccountServer() {
+  check ${FUNCNAME[0]}
+
+  [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] || \
+    nscOperatorDirectory=/Users/jwtodd/.nsc/nats #$(nsc env | grep "Store Dir" | sed 's/[^a-z  A-Z]//g' | tr -s " " | cut -d' ' -f4)
+    helm install ${configs[home]}/helm/nats-account-server --name ${configs[namespace-nats-account-server]}-nats-account-server \
+      --namespace ${configs[namespace-nats-account-server]} \
+      $(helmOptions set nscOperatorDirectory=${nscOperatorDirectory})
 }
 
 installNatsbox() {
@@ -1025,6 +1040,13 @@ uninstallNatsbox() {
 
   [[ "$(helm list --short ${configs[namespace-nats-box]}-nats-box)" = "${configs[namespace-nats-box]}-nats-box" ]] && \
     helm delete --purge ${configs[namespace-nats-box]}-nats-box
+}
+
+uninstallNatsAccountServer() {
+  check ${FUNCNAME[0]}
+
+  [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] && \
+    helm delete --purge ${configs[namespace-nats-account-server]}-nats-account-server
 }
 
 uninstallNats() {

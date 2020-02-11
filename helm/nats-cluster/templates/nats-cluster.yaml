@@ -9,6 +9,16 @@ spec:
   pod:
     annotations:
       sidecar.istio.io/inject: "false"
-  # operatorConfig:
-  #   secret: operator-jwt
-  #   systemAccount: "AASYS..."
+  operatorConfig:
+    secret: operator-jwt
+    systemAccount: "{{ $.Values.systemAccount | default "invalid" }}"
+    resolver: URL(http://nats-account-server/jwt/v1/accounts/)
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: operator-jwt
+  namespace: {{ $.Release.Namespace }}
+data:
+  op.jwt: {{ $.Values.operatorJwt | b64enc }}
+type: Opaque
