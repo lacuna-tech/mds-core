@@ -15,6 +15,13 @@ describe('Test Config Client', () => {
     test.value(settings).is(null)
   })
 
+  it('Single Settings File (partial)', async () => {
+    const [error, settings] = await client.getSettings<{ missing: unknown }>(['missing'], { partial: true })
+    test.value(error).is(null)
+    test.value(settings).isNot(null)
+    test.value(settings?.missing).is(null)
+  })
+
   it('Single Settings File', async () => {
     const [error, settings] = await client.getSettings<{ name: string }>(['package'])
     test.value(error).is(null)
@@ -26,6 +33,16 @@ describe('Test Config Client', () => {
     const [error, settings] = await client.getSettings(['package', 'missing'])
     test.value(error instanceof NotFoundError).is(true)
     test.value(settings).is(null)
+  })
+
+  it('Multiple Settings File (partial)', async () => {
+    const [error, settings] = await client.getSettings<{ name?: string; missing: unknown }>(['package', 'missing'], {
+      partial: true
+    })
+    test.value(error).is(null)
+    test.value(settings).isNot(null)
+    test.value(settings?.name).is('@mds-core/mds-config-service')
+    test.value(settings?.missing).is(null)
   })
 
   it('Multiple Settings File', async () => {
