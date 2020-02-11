@@ -6,13 +6,13 @@ import logger from '@mds-core/mds-logger'
 import { NotFoundError, UnsupportedTypeError } from '@mds-core/mds-utils'
 import JSON5 from 'json5'
 
-type GetSettingsSuccess<TSettings> = [null, TSettings]
-const Success = <TSettings>(result: TSettings): GetSettingsSuccess<TSettings> => [null, result]
+type GetSettingsSuccess<TSettings extends {}> = [null, TSettings]
+const Success = <TSettings extends {}>(result: TSettings): GetSettingsSuccess<TSettings> => [null, result]
 
 type GetSettingsFailure = [Error, null]
 const Failure = (error: Error): GetSettingsFailure => [error, null]
 
-type GetSettingsResult<TSettings> = GetSettingsSuccess<TSettings> | GetSettingsFailure
+type GetSettingsResult<TSettings extends {}> = GetSettingsSuccess<TSettings> | GetSettingsFailure
 
 const getFilePath = (property: string, ext: '.json' | '.json5'): string => {
   const { MDS_CONFIG_PATH = '/mds-config' } = process.env
@@ -30,37 +30,61 @@ const readFile = async (path: string): Promise<string> => {
   }
 }
 
-const readJsonFile = async <TSettings>(property: string): Promise<TSettings> => {
+const parseJson = <TSettings extends {}>(
+  json: string,
+  { parser = JSON }: Partial<{ parser: JSON }> = {}
+): TSettings => {
   try {
-    const json5 = await readFile(getFilePath(property, '.json5'))
-    try {
-      return JSON5.parse(json5)
-    } catch (error) {
-      throw new UnsupportedTypeError('Settings File must contain JSON', { error })
-    }
-  } catch {
-    const json = await readFile(getFilePath(property, '.json'))
-    try {
-      return JSON.parse(json)
-    } catch (error) {
-      throw new UnsupportedTypeError('Settings File must contain JSON', { error })
-    }
+    return parser.parse(json) as TSettings
+  } catch (error) {
+    throw new UnsupportedTypeError('Settings File must contain JSON', { error })
   }
 }
 
-export const client = {
-  getSettings: async <TSettings>(properties: string[]): Promise<GetSettingsResult<TSettings>> => {
+const readJsonFile = async <TSettings extends {}>(property: string): Promise<GetSettingsResult<TSettings>> => {
+  try {
+    const json5 = await readFile(getFilePath(property, '.json5'))
+    return Success(
+      parseJson<TSettings>(json5, { parser: JSON5 })
+    )
+  } catch {
     try {
-      const settings = await Promise.all(properties.map(property => readJsonFile(property)))
-      return Success(settings.reduce<TSettings>((merged, setting) => Object.assign(merged, setting), {} as TSettings))
+      const json = await readFile(getFilePath(property, '.json'))
+      return Success(parseJson<TSettings>(json))
     } catch (error) {
       return Failure(error)
     }
   }
 }
 
-const loadSettings = async <TSettings>(properties: string[]): Promise<GetSettingsResult<TSettings>> => {
-  const loaded = await client.getSettings<TSettings>(properties)
+interface GetSettingsOptions {
+  partial: boolean
+}
+
+export const client = {
+  getSettings: async <TSettings extends {}>(
+    properties: string[],
+    { partial = false }: Partial<GetSettingsOptions> = {}
+  ): Promise<GetSettingsResult<TSettings>> => {
+    const settings = await Promise.all(properties.map(property => readJsonFile<TSettings>(property)))
+    const failure = settings.find(([error]) => error !== null)
+    if (failure && !partial) {
+      return failure
+    }
+    return Success(
+      settings.reduce<TSettings>(
+        (merged, [error, setting], index) => Object.assign(merged, error ? { [properties[index]]: null } : setting),
+        {} as TSettings
+      )
+    )
+  }
+}
+
+const loadSettings = async <TSettings extends {}>(
+  properties: string[],
+  options: Partial<GetSettingsOptions>
+): Promise<GetSettingsResult<TSettings>> => {
+  const loaded = await client.getSettings<TSettings>(properties, options)
   const [error, settings] = loaded
   await (settings === null
     ? logger.error('Failed to load configuration', properties, error)
@@ -68,12 +92,12 @@ const loadSettings = async <TSettings>(properties: string[]): Promise<GetSetting
   return loaded
 }
 
-export const ConfigurationManager = <TSettings>(properties: string[]) => {
-  let cached: GetSettingsResult<TSettings> | null = null
+export const ConfigurationManager = <TSettings>(properties: string[], options: Partial<GetSettingsOptions> = {}) => {
+  let loaded: GetSettingsResult<TSettings> | null = null
   return {
     settings: async (): Promise<TSettings> => {
-      cached = cached ?? (await loadSettings<TSettings>(properties))
-      const [error, settings] = cached
+      loaded = loaded ?? (await loadSettings<TSettings>(properties, options))
+      const [error, settings] = loaded
       if (settings !== null) {
         return settings
       }

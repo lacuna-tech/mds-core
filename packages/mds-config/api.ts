@@ -17,16 +17,14 @@
 import express from 'express'
 import { pathsFor, NotFoundError } from '@mds-core/mds-utils'
 import { client } from '@mds-core/mds-config-service'
-import {
-  ConfigApiGetSettingsRequest,
-  ConfigApiResponse,
-  ConfigApiGetMergedSettingsRequest,
-  ConfigApiRequest
-} from './types'
+import { ConfigApiGetSettingsRequest, ConfigApiResponse, ConfigApiGetMergedSettingsRequest } from './types'
 
-const getSettings = async (req: ConfigApiRequest, res: ConfigApiResponse) => {
+const getSettings = async (
+  req: ConfigApiGetSettingsRequest | ConfigApiGetMergedSettingsRequest,
+  res: ConfigApiResponse
+) => {
   const { properties } = res.locals
-  const [error, settings] = await client.getSettings(properties)
+  const [error, settings] = await client.getSettings(properties, { partial: req.query.partial === 'true' })
   return error
     ? res.status(error instanceof NotFoundError ? 404 : 500).send({ ...error, properties })
     : res.status(200).send(settings)

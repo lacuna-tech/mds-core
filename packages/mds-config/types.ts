@@ -23,8 +23,18 @@ export interface ConfigApiResponse extends ApiResponse {
   }
 }
 
-export type ConfigApiGetSettingsRequest = ConfigApiRequest<{ property: string }>
+interface ConfigApiGetSettingsQueryParameters {
+  partial: string
+}
+
+export interface ConfigApiGetSettingsRequest extends ConfigApiRequest<{ property: string }> {
+  query: Partial<ConfigApiGetSettingsQueryParameters>
+}
+
+interface ConfigApiGetMergedSettingsQueryParameters extends ConfigApiGetSettingsQueryParameters {
+  p: string | string[]
+}
 
 export interface ConfigApiGetMergedSettingsRequest extends ConfigApiRequest {
-  query: Partial<{ [P in 'p']: string | string[] }>
+  query: Partial<ConfigApiGetMergedSettingsQueryParameters>
 }
