@@ -779,7 +779,8 @@ installNats() {
 
   for n in nats-init nats-operator nats-cluster; do
     [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || {
-      systemAccount=$(nsc describe account --name SYS | grep "Account ID" | sed 's/[^a-z  A-Z 0-9]//g' | tr -s " " | cut -d' ' -f4)
+      systemAccount=$(nsc describe account --name SYS | grep "Account ID" | awk '{print $5}')
+      # systemAccount=$(nsc describe account --name SYS | grep "Account ID" | sed 's/[^a-z  A-Z 0-9]//g' | tr -s " " | cut -d' ' -f4)
       operatorJwt=$(<~/.nsc/nats/KO/KO.jwt)
       helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} \
         ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
