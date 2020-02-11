@@ -26,12 +26,10 @@ import {
 
 const getSettings = async (req: ConfigApiRequest, res: ConfigApiResponse) => {
   const { properties } = res.locals
-  try {
-    const settings = await client.getSettings(properties)
-    return res.status(200).send(settings)
-  } catch (error) {
-    return res.status(error instanceof NotFoundError ? 404 : 500).send({ ...error, properties })
-  }
+  const [error, settings] = await client.getSettings(properties)
+  return error
+    ? res.status(error instanceof NotFoundError ? 404 : 500).send({ ...error, properties })
+    : res.status(200).send(settings)
 }
 
 function api(app: express.Express): express.Express {
@@ -39,7 +37,7 @@ function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/settings'),
     async (req: ConfigApiGetMergedSettingsRequest, res: ConfigApiResponse, next: express.NextFunction) => {
-      res.locals.properties = req.query.p ?? 'settings'
+      res.locals.properties = Array.isArray(req.query.p) ? req.query.p : [req.query.p ?? 'settings']
       return next()
     },
     getSettings
@@ -49,7 +47,7 @@ function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/settings/:property'),
     async (req: ConfigApiGetSettingsRequest, res: ConfigApiResponse, next: express.NextFunction) => {
-      res.locals.properties = req.params.property
+      res.locals.properties = [req.params.property]
       return next()
     },
     getSettings

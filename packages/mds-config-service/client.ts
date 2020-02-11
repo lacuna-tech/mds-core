@@ -6,22 +6,18 @@ import logger from '@mds-core/mds-logger'
 import { NotFoundError, UnsupportedTypeError } from '@mds-core/mds-utils'
 import JSON5 from 'json5'
 
-const statAsync = promisify(fs.stat)
-const statFile = async (path: string): Promise<string | null> => {
-  try {
-    const stats = await statAsync(path)
-    if (stats.isFile()) {
-      return path
-    }
-  } catch {}
-  return null
-}
+type GetSettingsSuccess<TSettings> = [null, TSettings]
+const Success = <TSettings>(result: TSettings): GetSettingsSuccess<TSettings> => [null, result]
 
-const getFilePath = async (property: string): Promise<string> => {
+type GetSettingsFailure = [Error, null]
+const Failure = (error: Error): GetSettingsFailure => [error, null]
+
+type GetSettingsResult<TSettings> = GetSettingsSuccess<TSettings> | GetSettingsFailure
+
+const getFilePath = (property: string, ext: '.json' | '.json5'): string => {
   const { MDS_CONFIG_PATH = '/mds-config' } = process.env
   const dir = MDS_CONFIG_PATH.replace('~', homedir())
-  const json5 = await statFile(normalize(format({ dir, name: property, ext: '.json5' })))
-  return json5 ?? normalize(format({ dir, name: property, ext: '.json' }))
+  return normalize(format({ dir, name: property, ext }))
 }
 
 const readFileAsync = promisify(fs.readFile)
@@ -30,38 +26,58 @@ const readFile = async (path: string): Promise<string> => {
     const utf8 = await readFileAsync(path, { encoding: 'utf8' })
     return utf8
   } catch (error) {
-    throw new NotFoundError('Settings File Not Found', error)
+    throw new NotFoundError('Settings File Not Found', { error, path })
   }
 }
 
-const readJsonFile = async <TSettings extends {}>(property: string): Promise<TSettings> => {
-  const path = await getFilePath(property)
-  const file = await readFile(path)
+const readJsonFile = async <TSettings>(property: string): Promise<TSettings> => {
   try {
-    return JSON5.parse(file)
-  } catch (error) {
-    throw new UnsupportedTypeError('Settings File must contain JSON', { error, path })
+    const json5 = await readFile(getFilePath(property, '.json5'))
+    try {
+      return JSON5.parse(json5)
+    } catch (error) {
+      throw new UnsupportedTypeError('Settings File must contain JSON', { error })
+    }
+  } catch {
+    const json = await readFile(getFilePath(property, '.json'))
+    try {
+      return JSON.parse(json)
+    } catch (error) {
+      throw new UnsupportedTypeError('Settings File must contain JSON', { error })
+    }
   }
 }
 
 export const client = {
-  getSettings: async <TConfig extends {} = {}>(properties: string | string[]) => {
-    const settings = await Promise.all(
-      (Array.isArray(properties) ? properties : [properties]).map(property => readJsonFile(property))
-    )
-    return settings.reduce<TConfig>((config, setting) => Object.assign(config, setting), {} as TConfig)
+  getSettings: async <TSettings>(properties: string[]): Promise<GetSettingsResult<TSettings>> => {
+    try {
+      const settings = await Promise.all(properties.map(property => readJsonFile(property)))
+      return Success(settings.reduce<TSettings>((merged, setting) => Object.assign(merged, setting), {} as TSettings))
+    } catch (error) {
+      return Failure(error)
+    }
   }
 }
 
-export const ConfigurationManager = <TConfig extends {} = {}>(properties: string | string[]) => {
-  let config: TConfig | null = null
+const loadSettings = async <TSettings>(properties: string[]): Promise<GetSettingsResult<TSettings>> => {
+  const loaded = await client.getSettings<TSettings>(properties)
+  const [error, settings] = loaded
+  await (settings === null
+    ? logger.error('Failed to load configuration', properties, error)
+    : logger.info('Loaded configuration', properties, settings))
+  return loaded
+}
+
+export const ConfigurationManager = <TSettings>(properties: string[]) => {
+  let cached: GetSettingsResult<TSettings> | null = null
   return {
-    configuration: async (): Promise<TConfig> => {
-      if (config === null) {
-        config = await client.getSettings<TConfig>(properties)
-        logger.info('Loaded Configuration', properties, config)
+    settings: async (): Promise<TSettings> => {
+      cached = cached ?? (await loadSettings<TSettings>(properties))
+      const [error, settings] = cached
+      if (settings !== null) {
+        return settings
       }
-      return config
+      throw error
     }
   }
 }

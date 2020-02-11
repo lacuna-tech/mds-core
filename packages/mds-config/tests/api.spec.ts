@@ -29,9 +29,19 @@ describe('Testing API', () => {
     process.env.MDS_CONFIG_PATH = './'
   })
 
+  it(`Default Settings File (404)`, done => {
+    request
+      .get(`/config/settings`)
+      .expect(404)
+      .end((err, result) => {
+        test.value(result.body.name).is('NotFoundError')
+        done(err)
+      })
+  })
+
   it(`Single Settings File (404)`, done => {
     request
-      .get(`/config/settings/missing`)
+      .get(`/config/settings?p=missing`)
       .expect(404)
       .end((err, result) => {
         test.value(result.body.name).is('NotFoundError')

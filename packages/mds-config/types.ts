@@ -19,7 +19,7 @@ import { Params, ParamsDictionary } from 'express-serve-static-core'
 export type ConfigApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
 export interface ConfigApiResponse extends ApiResponse {
   locals: ApiResponseLocals & {
-    properties: string | string[]
+    properties: string[]
   }
 }
 
