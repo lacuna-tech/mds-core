@@ -15,7 +15,7 @@
  */
 
 import express from 'express'
-import { pathsFor, NotFoundError } from '@mds-core/mds-utils'
+import { pathsFor } from '@mds-core/mds-utils'
 import { client } from '@mds-core/mds-config-service'
 import { ConfigApiGetSettingsRequest, ConfigApiResponse, ConfigApiGetMergedSettingsRequest } from './types'
 
@@ -25,9 +25,7 @@ const getSettings = async (
 ) => {
   const { properties } = res.locals
   const [error, settings] = await client.getSettings(properties, { partial: req.query.partial === 'true' })
-  return error
-    ? res.status(error instanceof NotFoundError ? 404 : 500).send({ ...error, properties })
-    : res.status(200).send(settings)
+  return error ? res.status(404).send(error) : res.status(200).send(settings)
 }
 
 function api(app: express.Express): express.Express {

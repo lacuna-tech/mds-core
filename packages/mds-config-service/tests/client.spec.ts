@@ -16,14 +16,14 @@ describe('Test Config Client', () => {
   })
 
   it('Single Settings File (partial)', async () => {
-    const [error, settings] = await client.getSettings<{ missing: unknown }>(['missing'], { partial: true })
+    const [error, settings] = await client.getSettings<{ missing?: unknown }>(['missing'], { partial: true })
     test.value(error).is(null)
     test.value(settings).isNot(null)
     test.value(settings?.missing).is(null)
   })
 
   it('Single Settings File', async () => {
-    const [error, settings] = await client.getSettings<{ name: string }>(['package'])
+    const [error, settings] = await client.getSettings<{ name?: string }>(['package'])
     test.value(error).is(null)
     test.value(settings).isNot(null)
     test.value(settings?.name).is('@mds-core/mds-config-service')
@@ -36,7 +36,7 @@ describe('Test Config Client', () => {
   })
 
   it('Multiple Settings File (partial)', async () => {
-    const [error, settings] = await client.getSettings<{ name?: string; missing: unknown }>(['package', 'missing'], {
+    const [error, settings] = await client.getSettings<{ name?: string; missing?: unknown }>(['package', 'missing'], {
       partial: true
     })
     test.value(error).is(null)
@@ -64,6 +64,15 @@ describe('Test Config Client', () => {
       caught = error
     }
     test.value(caught instanceof NotFoundError).is(true)
+  })
+
+  it('Config Manager (partial)', async () => {
+    const settings = await ConfigurationManager<{ name?: string; missing?: unknown }>(['package', 'missing'], {
+      partial: true
+    }).settings()
+    test.value(settings).isNot(null)
+    test.value(settings.name).is('@mds-core/mds-config-service')
+    test.value(settings.missing).is(null)
   })
 
   it('Config Manager', async () => {

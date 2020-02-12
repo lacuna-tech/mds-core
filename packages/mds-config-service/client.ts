@@ -67,16 +67,21 @@ export const client = {
     { partial = false }: Partial<GetSettingsOptions> = {}
   ): Promise<GetSettingsResult<TSettings>> => {
     const settings = await Promise.all(properties.map(property => readJsonFile<TSettings>(property)))
-    const failure = settings.find(([error]) => error !== null)
-    if (failure && !partial) {
-      return failure
-    }
-    return Success(
-      settings.reduce<TSettings>(
-        (merged, [error, setting], index) => Object.assign(merged, error ? { [properties[index]]: null } : setting),
-        {} as TSettings
-      )
+    const result = settings.reduce<{ found: string[]; missing: string[] }>(
+      (info, [error], index) =>
+        error
+          ? { ...info, missing: [...info.missing, properties[index]] }
+          : { ...info, found: [...info.found, properties[index]] },
+      { found: [], missing: [] }
     )
+    return result.missing.length > 0 && !partial
+      ? Failure(new NotFoundError('Settings Not Found', result))
+      : Success(
+          settings.reduce<TSettings>(
+            (merged, [error, setting], index) => Object.assign(merged, error ? { [properties[index]]: null } : setting),
+            {} as TSettings
+          )
+        )
   }
 }
 
