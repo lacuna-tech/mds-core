@@ -151,15 +151,15 @@ Start Docker-Desktop:
 Lastly, configure Kubernetes:
 
 ```txt
-open Docker-Desktop preferences
-select the Resources option
+select the 'Preferences' option
+select the 'Resources' option
   apply the following minimal resource changes:
     CPUs: 6
     Memory: 8G
     Swap: 1G
-select the Kubernetes option
-  select Enable Kubernetes option
-select Apply & Restart
+select the 'Kubernetes' option
+  select 'Enable Kubernetes' option
+select 'Apply & Restart'
 ```
 
 Verify:
@@ -215,6 +215,26 @@ Verify:
 ```sh
 % curl localhost/agency
 ```
+
+#### In-Cluster Development
+Due to the nature of MDS-Core being a highly portable Typescript project that compiles down into minified javascript for its images, rapidly development in-cluster can be quite challenging. MDS-Core utilizes [Okteto](https://okteto.com) to enable developers to actively develop their code in-cluster.
+
+After following the above steps to set up a local MDS cluster, you can override an existing service's deployment with these steps.
+1. Update `mds-core/okteto.yml`'s `name` field to be set to the service you wish to replace (e.g. `mds-agency`)
+2.
+```sh
+% curl https://get.okteto.com -sSfL | sh
+```
+3. Install the `Remote - Kubernetes` VSCode extension.
+4. Run `> Okteto Up` from the VSCode command palette.
+* After the remote session opens, execute this in the new shell window:
+```sh
+% yarn
+% cd packages/${SERVICE_NAME}
+% yarn start
+```
+5. This session is now safe to close, and you can reattach with the `okteto.${SERVICE_NAME}` ssh profile automatically added for you using the VSCode `Remote - SSH` package.
+6. When you're completely done with your session, run `> Okteto Down` from the VSCode command palette, or `okteto down` from terminal to revert the changes made by Okteto, and return your service to its previous deployment.
 
 #### MDS Operations
 
