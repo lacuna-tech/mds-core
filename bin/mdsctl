@@ -88,13 +88,14 @@ declare -A configs=(
   ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
-  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats}"
+  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats,nas}"
   ["install"]="${MDS_INSTALL:-mds}"
   ["test"]="${MDS_TEST:-unit,integration}"
-  ["uninstall"]="${MDS_UNINSTALL:-logging,mds,stan,nats,istio,helm}"
+  ["uninstall"]="${MDS_UNINSTALL:-logging,mds,stan,nas,nats,istio,helm}"
   ["forward"]="${MDS_FORWARD:-default}"
   ["reinstall"]="${MDS_REINSTALL:-mds}"
   ["pause"]="${MDS_PAUSE:-3}"
+  ["pause-kubectl"]="${MDS_PAUSE_KUBECTL:-45}"
   # note: istio-version=1.4.2 (latest) has been verified for development environments
   ["istio-version"]="${MDS_ISTIO_VERSION:-1.3.6}"
   # note: fails when installing istio-nodeagent (i.e. -istio-sds-auth)
@@ -764,51 +765,93 @@ installNsc() {
 
   [[ ! -d ${configs[nats]} ]] && mkdir -p ${configs[nats]}
   [[ ! -f ${configs[nats]}/resolver.conf ]] && nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf
+}
 
-  # $(kubectl get secret nats-sys-creds > /dev/null 2>&1) || \
-  #   kubectl create secret generic nats-sys-creds --from-file ~/.nkeys/creds/KO/SYS/sys.creds
-  # $(kubectl -n ${configs[namespace-nats]} get configmap nats-account > /dev/null 2>&1) || \
-  #   kubectl -n ${configs[namespace-nats]} create configmap nats-accounts --from-file ${configs[nats]}/resolver.conf
+kubectl_spin() {
+  local cap=4
+  local i=0
+  while true; do
+    kubectl "${@}" > /dev/null 2>&1 && return 0
+    [[ "${i}" -ge ${cap} ]] && break || sleep ${configs[pause]}
+    i=$((i+1))
+  done
+  [[ "${i}" -ge ${cap} ]] && return 1
 }
 
 installNats() {
   check ${FUNCNAME[0]}
 
-  # kubectl create namespace nats
-  # installNsc
+  # for n in nats-init nats-operator nats-cluster; do
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-init)" = "${configs[namespace-nats]}-nats-init" ]] || {
+    helm install ${configs[home]}/helm/nats-init --name ${configs[namespace-nats]}-nats-init \
+      ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug}
 
-  for n in nats-init nats-operator nats-cluster; do
-    [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || {
-      systemAccount=$(nsc describe account --name SYS | grep "Account ID" | awk '{print $5}')
-      # systemAccount=$(nsc describe account --name SYS | grep "Account ID" | sed 's/[^a-z  A-Z 0-9]//g' | tr -s " " | cut -d' ' -f4)
-      operatorJwt=$(<~/.nsc/nats/KO/KO.jwt)
-      helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} \
-        ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
-        ${configs[values]:+$(helmOptions values ${configs[values]})} \
-        ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
-        ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-        ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
-        ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-        ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
-        $(helmOptions set systemAccount=${systemAccount}) \
-        $(helmOptions set operatorJwt=${operatorJwt}) \
-        ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-        ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
-        ${configs[dryrun]:+--dry-run --debug}
-      pause 3
-      # installNsc
-    }
-  done; unset n
+    [[ $(kubectl_spin describe namespace ${configs[namespace-nats]} > /dev/null 2>&1; echo $?) == "0" ]] || \
+      error "failed kubectl: describe namespace ${configs[namespace-nats]}"
+  }
+
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-operator)" = "${configs[namespace-nats]}-nats-operator" ]] || {
+    helm install ${configs[home]}/helm/nats-operator --name ${configs[namespace-nats]}-nats-operator \
+      ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug}
+    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready \
+      pod/$(kubectl --namespace ${configs[namespace-nats]} get pods --selector=name=nats-operator --output jsonpath='{.items[0].metadata.name}') \
+      --timeout=${configs[pause-kubectl]}s || error "nats-operator installation error"
+  }
+
+  installNas
+
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-cluster)" = "${configs[namespace-nats]}-nats-cluster" ]] || {
+    systemAccount=$(nsc describe account --name SYS | grep "Account ID" | awk '{print $5}')
+    # todo: ?better way?; $(nsc env | grep "Stores Dir") isn't panning
+    operatorJwt=$(<~/.nsc/nats/KO/KO.jwt)
+    helm install ${configs[home]}/helm/nats-cluster --name ${configs[namespace-nats]}-nats-cluster \
+      ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      $(helmOptions set systemAccount=${systemAccount}) \
+      $(helmOptions set operatorJwt=${operatorJwt}) \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug}
+    # todo: vary based on nats-cluster size
+    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pod/nats-1 \
+      --timeout=${configs[pause-kubectl]}s || error "nats-cluster installation error"
+  }
 }
 
-installNatsAccountServer() {
+installNas() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] || \
-    nscOperatorDirectory=/Users/jwtodd/.nsc/nats #$(nsc env | grep "Store Dir" | sed 's/[^a-z  A-Z]//g' | tr -s " " | cut -d' ' -f4)
+    # todo: ?better way?; $(nsc env | grep "Stores Dir") isn't panning
+    nscOperatorDirectory=${HOME}/.nsc/nats
     helm install ${configs[home]}/helm/nats-account-server --name ${configs[namespace-nats-account-server]}-nats-account-server \
       --namespace ${configs[namespace-nats-account-server]} \
       $(helmOptions set nscOperatorDirectory=${nscOperatorDirectory})
+    kubectl --namespace ${configs[namespace-nats-account-server]} wait --for=condition=Ready pod/nats-account-server \
+        --timeout=${configs[pause-kubectl]}s || error "nas installation error"
 }
 
 installNatsbox() {
@@ -1043,7 +1086,7 @@ uninstallNatsbox() {
     helm delete --purge ${configs[namespace-nats-box]}-nats-box
 }
 
-uninstallNatsAccountServer() {
+uninstallNas() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] && \
@@ -1243,11 +1286,12 @@ check() {
       #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
     build | testIntegration)
       [[ "$(exists yarn)" != "0" ]] && bootstrap;;
-    installNats) ;; #installNsc;;
+    installNats) installNsc;;
     installStan) installNats;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
     #     warn "configure an image-repository; eg ' ... -c:image-repository=[image-repository-url] ...'";;
+    # installNas) installNats;;
     installMds)
       [[ "$(exists helm)" != "0" ]] && bootstrap
       kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;;
@@ -1256,6 +1300,7 @@ check() {
     installHelm | installIstio | installLogging | installMetricsAdapter | testUnit | \
       uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)
       [[ "$(exists helm)" != "0" ]] && bootstrap;;
+    uninstallNats) uninstallNas;;
     installSimulator)
       [[ ! -d ${configs[simulator]} && ! "${configs[simulator-repository]}" ]] && usage "unspecified simulator repository";;
     app:*) forwardIfNeeded ${1##*:};;
