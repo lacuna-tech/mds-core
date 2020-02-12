@@ -296,10 +296,14 @@ async function hreads(
   // bleah
   const multi = (await getClient()).multi()
 
-  await suffixes.map(suffix =>
-    ids.map(id => {
-      return multi.hgetallAsync(decorateKey(`${prefix}:${id}:${suffix}`))
-    })
+  await Promise.all(
+    suffixes.map(suffix =>
+      Promise.all(
+        ids.map(id => {
+          return multi.hgetallAsync(decorateKey(`${prefix}:${id}:${suffix}`))
+        })
+      )
+    )
   )
 
   const replies = await multi.execAsync()
