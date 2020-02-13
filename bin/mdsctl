@@ -87,7 +87,7 @@ declare -A configs=(
   ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
-  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats}"
+  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats,stan}"
   ["install"]="${MDS_INSTALL:-mds}"
   ["test"]="${MDS_TEST:-unit,integration}"
   ["uninstall"]="${MDS_UNINSTALL:-logging,mds,stan,nats,istio,helm}"
@@ -129,7 +129,7 @@ declare -A configs=(
   ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
   ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-${configs[namespace-mds]}}"
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-nats}"
-  ["namespace-nats-stan"]="${MDS_NAMESPACE_NATS:-${configs[namespace-mds]}}"
+  ["namespace-nats-stan"]="${MDS_NAMESPACE_NATS:-${configs[namespace-nats]}}" #mds]}}"
   ["namespace-nats-account-server"]="${MDS_NAMESPACE_NATS_ACCOUNT_SERVER:-${configs[namespace-nats]}}"
   ["namespace-nats-box"]="${MDS_NAMESPACE_NATS_BOX:-${configs[namespace-nats]}}"
   ["namespace-dns"]="${MDS_NAMESPACE_DNS:-default}"
@@ -866,7 +866,7 @@ installNats() {
 installNas() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] || \
+  [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] || {
     # todo: ?better way?; $(nsc env | grep "Stores Dir") isn't panning
     nscOperatorDirectory=${HOME}/.nsc/nats
 
@@ -885,6 +885,7 @@ installNas() {
 
     kubectl --namespace ${configs[namespace-nats-account-server]} wait --for=condition=Ready pod/nats-account-server \
         --timeout=${configs[pause-kubectl]}s || error "nas installation error"
+  }
 }
 
 installNatsbox() {
@@ -908,6 +909,9 @@ installStan() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short ${configs[namespace-nats-stan]}-nats-streaming-server)" = "${configs[namespace-nats-stan]}-nats-streaming-server" ]] || {
+    # todo: make better
+    stanCreds=${HOME}/.nkeys/creds/KO/SYS/sys.creds
+
     helm install ${configs[home]}/helm/nats-streaming-server --name ${configs[namespace-nats-stan]}-nats-streaming-server \
       ${configs[namespace-nats-stan]:+--namespace ${configs[namespace-nats-stan]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -918,10 +922,11 @@ installStan() {
       ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      $(helmOptions set-file stanCreds=${stanCreds}) \
       ${configs[dryrun]:+--dry-run --debug}
 
-    # kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --all \
-    #   --timeout=${configs[pause-kubectl]}s || error "nats-operator installation error"
+    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pod --selector=app=nats-streaming-stateful \
+      --timeout=${configs[pause-kubectl]}s || error "nats-streaming-server installation error"
   }
 
 }

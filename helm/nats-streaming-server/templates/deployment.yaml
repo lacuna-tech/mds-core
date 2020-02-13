@@ -11,6 +11,17 @@ data:
   NATS_HOST: nats://nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222
 ---
 apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: stan-config
+  namespace: {{ .Release.Namespace }}
+data:
+  stan.conf: |
+    streaming {
+      credentials: "/var/run/nats/secrets/sys.creds"
+    }
+---
+apiVersion: v1
 kind: Service
 metadata:
   name: nats-streaming-svc
@@ -64,6 +75,8 @@ spec:
         # Management port is enabled at default 8222
       - command:
           - /nats-streaming-server
+          - -sc
+          - "/etc/stan-config/stan.conf"
           - -ns
           - "$(NATS_HOST)"
           - -cluster_id
@@ -83,6 +96,9 @@ spec:
           - /opt/stan-logs
           - -dir
           - /opt/stan-data
+          - --stan_debug
+          - --stan_trace
+          - -SDV
           # This is the ugly part. Update this with your replica count
           - --cluster_peers
           - "nats-streaming-stateful-0,nats-streaming-stateful-1,nats-streaming-stateful-2"
@@ -124,6 +140,10 @@ spec:
           name: management
         # We need 2 volume mounts
         volumeMounts:
+        - name: config-volume
+          mountPath: /etc/stan-config
+        - name: creds-volume
+          mountPath: /var/run/nats/secrets
           # Contains message payload data, channels, subscriptions
         - name: stan-pvc-data
           mountPath: /opt/stan-data
@@ -150,6 +170,13 @@ spec:
           timeoutSeconds: 5
           successThreshold: 1
           failureThreshold: 3
+      volumes:
+      - name: config-volume
+        configMap:
+          name: stan-config
+      - name: creds-volume
+        secret:
+          secretName: stan-creds
       # This is important to spread pods across nodes
       # If we don't do this a node upgrade might take down more then 1 pod
       # which would compromise quorum
@@ -184,3 +211,12 @@ spec:
         requests:
           # Adjust as needed value chosen here is arbitrary
           storage: 20Gi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: stan-creds
+  namespace: {{ $.Release.Namespace }}
+data:
+  sys.creds: {{ $.Values.stanCreds | b64enc }}
+type: Opaque
