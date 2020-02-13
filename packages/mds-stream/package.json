@@ -19,8 +19,8 @@
     "bluebird": "3.7.2",
     "cloudevents-sdk": "1.0.0",
     "flat": "5.0.0",
-    "node-gzip": "1.1.2",
-    "redis": "2.8.0"
+    "node-nats-streaming": "0.3.0-2",
+    "redis": "3.0.2"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",

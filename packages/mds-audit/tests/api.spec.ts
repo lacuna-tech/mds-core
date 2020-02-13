@@ -743,13 +743,6 @@ describe('Testing API', () => {
         errReason: `Missing file extension in filename samplepng`
       },
       {
-        name: 'missing extension',
-        file: 'samplepng.',
-        status: 400,
-        errName: 'ValidationError',
-        errReason: `Missing file extension in filename samplepng.`
-      },
-      {
         name: 'unsupported mimetype',
         file: 'sample.gif',
         status: 415,
@@ -805,7 +798,7 @@ describe('Testing API', () => {
         .attach('file', `./tests/sample.png`)
         .expect(500)
         .end((err, result) => {
-          test.value(result.error.status).is(500)
+          test.value(result.body.error.name).is('ServerError')
           done(err)
         })
     })

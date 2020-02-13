@@ -21,10 +21,11 @@ async function processProvider(providerID: UUID, curTime: Timestamp) {
     Add provider metadata into PG database.
     These metrics should be computed here on an interval basis rather than being event triggered.
   */
-  // Only processing at organization level for scooters now
-  // TODO: add providerMap back when streaming logic is added back to proc-event
-  // const providersMap = await cache.hgetall('provider:state')
-  // const providerData: ProviderStreamData = providersMap ? providersMap[providerID] : null
+  /*
+  TODO: add providerMap back when streaming logic is added back to proc-event
+  const providersMap = await cache.hgetall('provider:state')
+  const providerData: ProviderStreamData = providersMap ? providersMap[providerID] : null
+  */
 
   const binStart = curTime - 3600000
   const binStartYesterday = binStart - 86400000
@@ -40,7 +41,7 @@ async function processProvider(providerID: UUID, curTime: Timestamp) {
         provider_id: providerID,
         vehicle_type: vehicleType as VEHICLE_TYPE,
         event_counts: await metric.calcEventCounts(providerID, vehicleType as VEHICLE_TYPE, binStart, curTime),
-        vehicle_counts: await metric.calcVehicleCounts(providerID, vehicleType as VEHICLE_TYPE, 0, binStart),
+        vehicle_counts: await metric.calcVehicleCounts(providerID, vehicleType as VEHICLE_TYPE, binStart, curTime),
         trip_count: await metric.calcTripCount(providerID, vehicleType as VEHICLE_TYPE, binStart, curTime),
         vehicle_trips_count: await metric.calcVehicleTripCount(
           providerID,
@@ -83,7 +84,7 @@ async function processProvider(providerID: UUID, curTime: Timestamp) {
 }
 
 export async function providerProcessor() {
-  const [{ providers }] = await Promise.all([getConfig(), db.startup()])
+  const { providers } = await getConfig()
   const curTime = now()
   await Promise.all(providers.map(provider => processProvider(provider.provider_id, curTime)))
 }
