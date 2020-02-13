@@ -41,8 +41,7 @@ if [[ "$(bash -c 'echo $BASH_VERSION')" == 3* ]]; then
   case "$(os)" in
     ${osx} | ${linux})
       brew install bash
-      exec bash ${0} ${@} &
-      exit;;
+      $(brew --prefix bash)/bin/bash -c "${0} ${@}";;
     *) usage "unsupported os: $(uname)";;
   esac
 fi
@@ -1157,7 +1156,9 @@ uninstallNats() {
       helm delete --purge ${configs[namespace-nats]}-${n}
   done; unset n
 
-  kubectl delete namespace ${configs[namespace-nats]}
+  for n in namespace/${configs[namespace-nats]} crd/natsserviceroles.nats.io crd/natsclusters.nats.io; do
+    kubectl delete ${n}
+  done; unset n
 }
 
 uninstallNsc() {
