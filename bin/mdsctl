@@ -88,10 +88,10 @@ declare -A configs=(
   ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
-  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats,nas}"
+  ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats}"
   ["install"]="${MDS_INSTALL:-mds}"
   ["test"]="${MDS_TEST:-unit,integration}"
-  ["uninstall"]="${MDS_UNINSTALL:-logging,mds,stan,nas,nats,istio,helm}"
+  ["uninstall"]="${MDS_UNINSTALL:-logging,mds,stan,nats,istio,helm}"
   ["forward"]="${MDS_FORWARD:-default}"
   ["reinstall"]="${MDS_REINSTALL:-mds}"
   ["pause"]="${MDS_PAUSE:-3}"
@@ -130,7 +130,7 @@ declare -A configs=(
   ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
   ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-${configs[namespace-mds]}}"
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-nats}"
-  ["namespace-stan"]="${MDS_NAMESPACE_NATS:-${configs[namespace-mds]}}"
+  ["namespace-nats-stan"]="${MDS_NAMESPACE_NATS:-${configs[namespace-mds]}}"
   ["namespace-nats-account-server"]="${MDS_NAMESPACE_NATS_ACCOUNT_SERVER:-${configs[namespace-nats]}}"
   ["namespace-nats-box"]="${MDS_NAMESPACE_NATS_BOX:-${configs[namespace-nats]}}"
   ["namespace-dns"]="${MDS_NAMESPACE_DNS:-default}"
@@ -839,7 +839,7 @@ installNats() {
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
       ${configs[dryrun]:+--dry-run --debug}
-    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pod -all \
+    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --all \
       --timeout=${configs[pause-kubectl]}s || error "nats-cluster installation error"
   }
 }
@@ -851,8 +851,18 @@ installNas() {
     # todo: ?better way?; $(nsc env | grep "Stores Dir") isn't panning
     nscOperatorDirectory=${HOME}/.nsc/nats
     helm install ${configs[home]}/helm/nats-account-server --name ${configs[namespace-nats-account-server]}-nats-account-server \
-      --namespace ${configs[namespace-nats-account-server]} \
+      ${configs[namespace-nats-account-server]:+--namespace ${configs[namespace-nats-account-server]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
       $(helmOptions set nscOperatorDirectory=${nscOperatorDirectory})
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug}
+
     kubectl --namespace ${configs[namespace-nats-account-server]} wait --for=condition=Ready pod/nats-account-server \
         --timeout=${configs[pause-kubectl]}s || error "nas installation error"
 }
@@ -861,21 +871,50 @@ installNatsbox() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short ${configs[namespace-nats-box]}-nats-box)" = "${configs[namespace-nats-box]}-nats-box" ]] || \
-    helm install ${configs[home]}/helm/nats-box --name ${configs[namespace-nats-box]}-nats-box --namespace ${configs[namespace-nats-box]}
+    helm install ${configs[home]}/helm/nats-box --name ${configs[namespace-nats-box]}-nats-box \
+      ${configs[namespace-nats-box]:+--namespace ${configs[namespace-nats-box]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug}
 }
 
 installStan() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-stan]}-nats-streaming-server)" = "${configs[namespace-stan]}-nats-streaming-server" ]] || \
-    helm install ${configs[home]}/helm/nats-streaming-server --name ${configs[namespace-stan]}-nats-streaming-server \
-      --namespace ${configs[namespace-stan]}
+  [[ "$(helm list --short ${configs[namespace-nats-stan]}-nats-streaming-server)" = "${configs[namespace-nats-stan]}-nats-streaming-server" ]] || \
+    helm install ${configs[home]}/helm/nats-streaming-server --name ${configs[namespace-nats-stan]}-nats-streaming-server \
+      ${configs[namespace-nats-stan]:+--namespace ${configs[namespace-nats-stan]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug}
 }
 
 installSurveyor() {
   for n in prometheus-operator nats-prometheus nats-surveyor-grafana nats-surveyor; do
     [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || \
-      helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} --namespace ${configs[namespace-nats]}
+      helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} \
+        ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
+        ${configs[values]:+$(helmOptions values ${configs[values]})} \
+        ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+        ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+        ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+        ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+        ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+        ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+        ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+        ${configs[dryrun]:+--dry-run --debug}
   done; unset n
 }
 
@@ -883,14 +922,26 @@ installDns() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short ${configs[namespace-dns]}-dns)" = "${configs[namespace-dns]}-dns" ]] || \
-    helm install ./helm/dns --name ${configs[namespace-dns]}-dns --namespace ${configs[namespace-dns]}
+    helm install ./helm/dns --name ${configs[namespace-dns]}-dns \
+      ${configs[namespace-dns]:+--namespace ${configs[namespace-dns]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[dryrun]:+--dry-run --debug}
 }
 
 installCurl() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short ${configs[namespace-curl]}-curl)" = "${configs[namespace-curl]}-curl" ]] || \
-    helm install ./helm/curl --name ${configs[namespace-curl]}-curl --namespace ${configs[namespace-curl]}
+    helm install ./helm/curl --name ${configs[namespace-curl]}-curl \
+      ${configs[namespace-curl]:+--namespace ${configs[namespace-curl]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[dryrun]:+--dry-run --debug}
 }
 
 testUnit() {
@@ -1078,8 +1129,8 @@ uninstallSurveyor() {
 uninstallStan() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-stan]}-nats-streaming-server)" = "${configs[namespace-stan]}-nats-streaming-server" ]] && \
-    helm delete --purge ${configs[namespace-stan]}-nats-streaming-server
+  [[ "$(helm list --short ${configs[namespace-nats-stan]}-nats-streaming-server)" = "${configs[namespace-nats-stan]}-nats-streaming-server" ]] && \
+    helm delete --purge ${configs[namespace-nats-stan]}-nats-streaming-server
 }
 
 uninstallNatsbox() {
@@ -1098,6 +1149,8 @@ uninstallNas() {
 
 uninstallNats() {
   check ${FUNCNAME[0]}
+
+  uninstallNas
 
   for n in nats-init nats-operator nats-cluster; do # nats-server; do
     [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] && \
@@ -1346,10 +1399,10 @@ preset() {
           is+="${is:+,}presets-mds+=cronjobs.${p}.enabled=false"
         done; unset p;;
       local)
-        is+="${is:+,}presets-mds+=resourcesLimitsCpu=200m"
-        is+="${is:+,}presets-mds+=resourcesLimitsMemory=200Mi"
-        is+="${is:+,}presets-mds+=resourcesRequestsCpu=20m"
-        is+="${is:+,}presets-mds+=resourcesRequestsMemory=32Mi"
+        is+="${is:+,}presets+=resourcesLimitsCpu=200m"
+        is+="${is:+,}presets+=resourcesLimitsMemory=200Mi"
+        is+="${is:+,}presets+=resourcesRequestsCpu=20m"
+        is+="${is:+,}presets+=resourcesRequestsMemory=32Mi"
         is+="${is:+,}presets-nats+=clusterSize=1";;
       no-persistence)
         is+="${is:+,}sets-mds+=postgresql.persistence.enabled=false"

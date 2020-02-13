@@ -94,6 +94,13 @@ spec:
         # Version I used here contains nats 2.0 internally
         name: nats-streaming-stateful
         image: nats-streaming:0.16.2
+        resources:
+          limits:
+            cpu: {{ $.Values.resourcesLimitsCpu | default "500m" }}
+            memory: {{ $.Values.resourcesLimitsMemory | default "512Mi" }}
+          requests:
+            cpu: {{ $.Values.resourcesRequestsCpu | default "50m" }}
+          memory: {{ $.Values.resourcesRequestsMemory | default "128Mi" }}
         env:
         # POD name is used for node id
         - name: POD_NAME
