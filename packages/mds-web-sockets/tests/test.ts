@@ -3,6 +3,7 @@ import { MOCHA_PROVIDER_ID } from '@mds-core/mds-providers'
 import { PROVIDER_SCOPES } from '@mds-core/mds-test-data'
 import { WebSocketServer } from '../server'
 
+// FIXME: Websockest unable to accept basic auth, need to makae this a Bearer JWT
 const ADMIN_AUTH = `basic ${Buffer.from(`${MOCHA_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
 
 before(() => {
