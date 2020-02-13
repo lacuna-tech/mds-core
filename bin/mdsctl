@@ -804,7 +804,7 @@ installNats() {
       ${configs[dryrun]:+--dry-run --debug}
 
     kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --all \
-      --timeout=${configs[pause-kubectl]}s || error "nats-cluster installation error"
+      --timeout=${configs[pause-kubectl]}s || error "nats-operator installation error"
   }
   # [[ "$(helm list --short ${configs[namespace-nats]}-nats-init)" = "${configs[namespace-nats]}-nats-init" ]] || {
   #   helm install ${configs[home]}/helm/nats-init --name ${configs[namespace-nats]}-nats-init \
@@ -907,7 +907,7 @@ installNatsbox() {
 installStan() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-nats-stan]}-nats-streaming-server)" = "${configs[namespace-nats-stan]}-nats-streaming-server" ]] || \
+  [[ "$(helm list --short ${configs[namespace-nats-stan]}-nats-streaming-server)" = "${configs[namespace-nats-stan]}-nats-streaming-server" ]] || {
     helm install ${configs[home]}/helm/nats-streaming-server --name ${configs[namespace-nats-stan]}-nats-streaming-server \
       ${configs[namespace-nats-stan]:+--namespace ${configs[namespace-nats-stan]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -919,6 +919,11 @@ installStan() {
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
       ${configs[dryrun]:+--dry-run --debug}
+
+    # kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --all \
+    #   --timeout=${configs[pause-kubectl]}s || error "nats-operator installation error"
+  }
+
 }
 
 installSurveyor() {
@@ -1366,9 +1371,10 @@ check() {
       #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
     build | testIntegration)
       [[ "$(exists yarn)" != "0" ]] && bootstrap;;
+    installNsc) ;;
+    installNas) installNsc;;
     installNats) installNas;;
     installStan) installNats;;
-    installNas) installNsc;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
     #     warn "configure an image-repository; eg ' ... -c:image-repository=[image-repository-url] ...'";;

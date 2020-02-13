@@ -8,7 +8,7 @@ data:
   # Look for $(NATS_CLUSTER) usage below
   NATS_CLUSTER: {{ $.Values.tenantId | default "mds" }}
   # This is the NATS hostname to connect to
-  NATS_HOST: nats://nats.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222
+  NATS_HOST: nats://nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222
 ---
 apiVersion: v1
 kind: Service
@@ -93,7 +93,7 @@ spec:
         # This docker image contains both nats and nats-streaming
         # Version I used here contains nats 2.0 internally
         name: nats-streaming-stateful
-        image: nats-streaming:0.16.2 # 0.17.0
+        image: nats-streaming:0.16.2 #0.17.0
         resources:
           limits:
             cpu: {{ $.Values.resourcesLimitsCpu | default "500m" }}
