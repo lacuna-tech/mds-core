@@ -109,7 +109,7 @@ spec:
         # This docker image contains both nats and nats-streaming
         # Version I used here contains nats 2.0 internally
         name: nats-streaming-stateful
-        image: nats-streaming:0.16.2 #0.17.0
+        image: nats-streaming:0.17.0
         resources:
           limits:
             cpu: {{ $.Values.resourcesLimitsCpu | default "500m" }}

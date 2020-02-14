@@ -4,6 +4,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nats-surveyor-prometheus
+  namespace: {{ $.Release.Namespace }}
   labels:
     app: nats-surveyor-prometheus
 spec:
@@ -20,6 +21,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nats-surveyor-observations
+  namespace: {{ $.Release.Namespace }}
 data:
   test.json: |
     {
@@ -31,6 +33,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nats-surveyor
+  namespace: {{ $.Release.Namespace }}
   labels:
     app: nats-surveyor
 spec:
@@ -47,6 +50,9 @@ spec:
       - name: config-volume
         configMap:
           name: nats-surveyor-observations
+      - name: creds-volume
+        secret:
+          secretName: stan-creds
       containers:
       - name: nats-surveyor
         image: synadia/nats-surveyor:0.0.1-alpha4
@@ -55,9 +61,11 @@ spec:
           name: metrics
         command:
          - "/nats-surveyor"
-         - "-s=nats://nats:4222"
-         - "-c=3"
+         - "-s=nats://nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222"
+         - "-c=1"
          - "-observe=/etc/nats/observations/"
+         - "-creds"
+         - "/var/run/nats/secrets/sys.creds"
         volumeMounts:
           - name: config-volume
             mountPath: /etc/nats/observations
@@ -73,6 +81,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: nats-surveyor
+  namespace: {{ $.Release.Namespace }}
   labels:
     app: nats-surveyor
 spec:
@@ -89,6 +98,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
   name: nats-surveyor
+  namespace: {{ $.Release.Namespace }}
 spec:
   scrapeInterval: "5s"
   serviceAccountName: prometheus
@@ -104,6 +114,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: nats-surveyor
+  namespace: {{ $.Release.Namespace }}
   labels:
     app: nats-surveyor
 spec:

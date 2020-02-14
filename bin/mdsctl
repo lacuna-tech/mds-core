@@ -932,20 +932,75 @@ installStan() {
 }
 
 installSurveyor() {
-  for n in prometheus-operator nats-prometheus nats-surveyor-grafana nats-surveyor; do
-    [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] || \
-      helm install ${configs[home]}/helm/${n} --name ${configs[namespace-nats]}-${n} \
-        ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
-        ${configs[values]:+$(helmOptions values ${configs[values]})} \
-        ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
-        ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-        ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
-        ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-        ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
-        ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-        ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
-        ${configs[dryrun]:+--dry-run --debug}
-  done; unset n
+  [[ "$(helm list --short ${configs[namespace-nats]}-prometheus-operator)" = "${configs[namespace-nats]}-prometheus-operator" ]] || {
+    helm install ${configs[home]}/helm/prometheus-operator --name ${configs[namespace-nats]}-prometheus-operator \
+      ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug}
+
+    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Available deployment.apps/prometheus-operator \
+      --timeout=${configs[pause-kubectl]}s || error "prometheus-operator installation error"
+  }
+
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-prometheus)" = "${configs[namespace-nats]}-nats-prometheus" ]] || {
+    helm install ${configs[home]}/helm/nats-prometheus --name ${configs[namespace-nats]}-nats-prometheus \
+      ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug}
+
+    # todo: fix block
+    # kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Available deployment.apps/nats-surveyor-grafana \
+    #   --timeout=${configs[pause-kubectl]}s || error "nats-prometheus installation error"
+  }
+
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-surveyor-grafana)" = "${configs[namespace-nats]}-nats-surveyor-grafana" ]] || {
+    helm install ${configs[home]}/helm/nats-surveyor-grafana --name ${configs[namespace-nats]}-nats-surveyor-grafana \
+      ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug}
+
+    # todo: fix block
+    # kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pod --selector=app=nats-surveyor-grafana \
+      # --timeout=${configs[pause-kubectl]}s || error "nats-surveyor-grafana installation error"
+  }
+
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-surveyor)" = "${configs[namespace-nats]}-nats-surveyor" ]] || {
+    helm install ${configs[home]}/helm/nats-surveyor --name ${configs[namespace-nats]}-nats-surveyor \
+      ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug}
+
+    # kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pod --selector=app=nats-surveyor \
+    #   --timeout=${configs[pause-kubectl]}s || error "nats-surveyor installation error"
+  }
 }
 
 installDns() {
