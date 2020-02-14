@@ -2752,6 +2752,13 @@
   dependencies:
     "@types/express" "*"
 
+"@types/node-rsa@1.0.0":
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/@types/node-rsa/-/node-rsa-1.0.0.tgz#4432df6227c5de734f5f0fbea2420ffb51c51e44"
+  integrity sha512-9hTSXhGDKotpq5XCm+r7wMgt5gl6bGH6VS/sV9bsKda4JmJYyOCdTenSkTUh7zsOihm2oCm5o2ZdfpUIGYKLzQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/node@*", "@types/node@>= 8", "@types/node@>=8.9.0":
   version "13.7.1"
   resolved "https://registry.yarnpkg.com/@types/node/-/node-13.7.1.tgz#238eb34a66431b71d2aaddeaa7db166f25971a0d"
@@ -3453,7 +3460,7 @@ asn1.js@^4.0.0:
     inherits "^2.0.1"
     minimalistic-assert "^1.0.0"
 
-asn1@~0.2.3:
+asn1@^0.2.4, asn1@~0.2.3:
   version "0.2.4"
   resolved "https://registry.yarnpkg.com/asn1/-/asn1-0.2.4.tgz#8d2475dfab553bb33e77b54e59e880bb8ce23136"
   integrity sha512-jxwzQpLQjSmWXgwaCZE9Nz+glAG01yF1QnWgbhGwHI5A6FRIEY6IVqtHhIepHqI7/kyEyQEagBC5mBEFlIYvdg==
@@ -8802,6 +8809,13 @@ node-preload@^0.2.0:
   integrity sha512-RM5oyBy45cLEoHqCeh+MNuFAxO0vTFBLskvQbOKnEE7YTTSN4tbN8QWDIPQ6L+WvKsB/qLEGpYe2ZZ9d4W9OIQ==
   dependencies:
     process-on-spawn "^1.0.0"
+
+node-rsa@1.0.7:
+  version "1.0.7"
+  resolved "https://registry.yarnpkg.com/node-rsa/-/node-rsa-1.0.7.tgz#85b7a6d6fa8ee624be6402a6b41be49272d58055"
+  integrity sha512-idwRXma6scFufZmbaKkHpJoLL93yynRefP6yur13wZ5i9FR35ex451KCoF2OORDeJanyRVahmjjiwmUlCnTqJA==
+  dependencies:
+    asn1 "^0.2.4"
 
 nodemon@2.0.2:
   version "2.0.2"

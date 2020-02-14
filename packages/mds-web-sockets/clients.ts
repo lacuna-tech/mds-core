@@ -65,7 +65,8 @@ export class Clients {
 
       const validateAuth = await Clients.checkAuth(token)
       if (!validateAuth) {
-        return client.send(new AuthorizationError())
+        client.send(JSON.stringify({ err: new AuthorizationError() }))
+        return
       }
 
       const scopes = auth?.scope.split(' ') ?? []
@@ -74,7 +75,7 @@ export class Clients {
         this.authenticatedClients.push(client)
         client.send('Authentication success!')
       } else {
-        client.send(new AuthorizationError())
+        client.send(JSON.stringify({ err: new AuthorizationError() }))
       }
     } catch (err) {
       await log.warn(err)
@@ -83,9 +84,14 @@ export class Clients {
   }
 
   public static async checkAuth(token: string) {
-    const { JWT_ISSUER = 'https://example.com', JWT_AUDIENCE = 'https://example.com' } = process.env
-    const { header } = jwt.decode(token, { complete: true, json: true }) as { header: { kid: string } }
-    const key = (await this.getKey(header)) as string
-    return jwt.verify(token, key, { audience: JWT_AUDIENCE, issuer: JWT_ISSUER })
+    try {
+      const { JWT_ISSUER, JWT_AUDIENCE } = process.env
+      const { header } = jwt.decode(token, { complete: true, json: true }) as { header: { kid: string } }
+      const key = (await this.getKey(header)) as string
+      return jwt.verify(token, key, { audience: JWT_AUDIENCE, issuer: JWT_ISSUER })
+    } catch (err) {
+      await log.warn(err)
+      return false
+    }
   }
 }
