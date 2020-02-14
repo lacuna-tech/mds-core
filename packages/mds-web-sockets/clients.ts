@@ -2,7 +2,7 @@ import WebSocket from 'ws'
 import { WebSocketAuthorizer } from '@mds-core/mds-api-authorizer'
 import { AuthorizationError } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
-import jwt, { GetPublicKeyOrSecret } from 'jsonwebtoken'
+import jwt from 'jsonwebtoken'
 import jwks from 'jwks-rsa'
 import { promisify } from 'util'
 
@@ -11,7 +11,7 @@ export class Clients {
 
   subList: { [key: string]: WebSocket[] }
 
-  private static getKey = async (header: { kid: string }) => {
+  public static getKey = async (header: { kid: string }) => {
     const { JWKS_URI } = process.env
 
     if (!JWKS_URI) throw new Error('No OAUTH_ISSUER defined')
@@ -27,12 +27,6 @@ export class Clients {
 
     return key.publicKey || key.rsaPublicKey
   }
-
-  private static verify: (
-    token: string,
-    secretOrPublicKey: jwt.Secret | GetPublicKeyOrSecret,
-    options?: jwt.VerifyOptions
-  ) => object | string = promisify(jwt.verify)
 
   public constructor() {
     this.subList = { EVENTS: [], TELEMETRIES: [] }
