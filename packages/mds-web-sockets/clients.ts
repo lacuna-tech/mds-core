@@ -14,7 +14,7 @@ export class Clients {
   public static getKey = async (header: { kid: string }) => {
     const { JWKS_URI } = process.env
 
-    if (!JWKS_URI) throw new Error('No OAUTH_ISSUER defined')
+    if (!JWKS_URI) throw new Error('No JWKS_URI defined!')
 
     const client = jwks({
       jwksUri: JWKS_URI
