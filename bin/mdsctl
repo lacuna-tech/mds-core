@@ -72,7 +72,7 @@ declare -A configs=(
   ["nvm-version"]="${MDS_NVM_VERSION:-12.14.1}"
   ["workdir"]="/tmp/mds/tools"
   # fixme: consider removing envsubst in favor of sed
-  ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s kubectx git aws nsc}"
+  ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s kubectx git aws nsc sops}"
   ["brew-envsubst"]="gettext"
   ["brew-helm"]="helm@2"
   ["brew-k9s"]="derailed/k9s/k9s"
@@ -143,6 +143,15 @@ declare -A helmRepositories=(
   ["banzaicloud-stable"]="https://kubernetes-charts.banzaicloud.com"
   ["elastic"]="https://helm.elastic.co"
   ["bitnami"]="https://charts.bitnami.com/bitnami")
+declare -A helmPlugins=(
+  ["unittest"]=https://github.com/lrills/helm-unittest
+  ["secrets"]=https://github.com/futuresimple/helm-secrets
+  ["diff"]="https://github.com/databus23/helm-diff --version master"
+  ["monitor"]="https://github.com/ContainerSolutions/helm-monitor"
+  ["edit"]="https://github.com/mstrzele/helm-edit"
+  ["last"]="https://github.com/adamreese/helm-last"
+  ["env"]="https://github.com/adamreese/helm-env"
+)
 declare -A apps=(
   ["mds-agency"]="https://localhost:[port]/agency,mds,app"
   ["mds-audit"]="https://localhost:[port]/audit,mds,app"
@@ -470,7 +479,9 @@ installHelm() {
 
   updateHelmDependencies
 
-  [[ $(helm plugin list | grep unittest) ]] || helm plugin install https://github.com/lrills/helm-unittest
+  for p in "${!helmPlugins[@]}"; do
+    [[ $(helm plugin list | grep ${p}) ]] || helm plugin install ${helmPlugins[${p}]}
+  done; unset p
 
   case "${configs[provider],,}" in
     aws | gcp) installTiller;;
