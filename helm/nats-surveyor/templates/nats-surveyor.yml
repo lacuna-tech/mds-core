@@ -26,7 +26,8 @@ data:
   test.json: |
     {
       "name": "latency.on.test",
-      "topic": "latency.on.test"
+      "topic": "latency.on.test",
+      "credential": "/var/run/nats/secrets/sys.creds"
     }
 ---
 apiVersion: apps/v1
@@ -53,6 +54,9 @@ spec:
       - name: creds-volume
         secret:
           secretName: stan-creds
+      # - name: test-creds-volume
+      #   secret:
+      #     secretName: nats-test-creds
       containers:
       - name: nats-surveyor
         image: synadia/nats-surveyor:0.0.1-alpha4
@@ -60,15 +64,18 @@ spec:
         - containerPort: 7777
           name: metrics
         command:
-         - "/nats-surveyor"
-         - "-s=nats://nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222"
-         - "-c=1"
-         - "-observe=/etc/nats/observations/"
-         - "-creds"
-         - "/var/run/nats/secrets/sys.creds"
+          - "/nats-surveyor"
+          - "-s=nats://nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222"
+          - "-c=1"
+          - "-creds=/var/run/nats/secrets/sys.creds"
+          - "-observe=/etc/nats/observations/"
         volumeMounts:
           - name: config-volume
             mountPath: /etc/nats/observations
+          - name: creds-volume
+            mountPath: /var/run/nats/secrets
+          # - name: test-creds-volume
+          #   mountPath: /var/run/nats/creds/test
 
         # Disable all cpu limits for the server.
         #
