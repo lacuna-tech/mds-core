@@ -1,0 +1,77 @@
+prometheus:
+
+  serverFiles:
+    alerting_rules.yml:
+      groups:
+
+        - name: Nodes
+          rules:
+
+            - alert: NodeOutOfMemory
+              expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Out of memory (instance {{ $labels.instance }})"
+                description: "Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+            - alert: NodeOutOfDiskSpace
+              expr: (node_filesystem_avail_bytes{mountpoint="/rootfs"}  * 100) / node_filesystem_size_bytes{mountpoint="/rootfs"} < 10
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Out of disk space (instance {{ $labels.instance }})"
+                description: "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+            - alert: NodeOutOfInodes
+              expr: node_filesystem_files_free{mountpoint ="/rootfs"} / node_filesystem_files{mountpoint ="/rootfs"} * 100 < 10
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Out of inodes (instance {{ $labels.instance }})"
+                description: "Disk is almost running out of available inodes (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+            - alert: NodeHighCpuLoad
+              expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: "High CPU load (instance {{ $labels.instance }})"
+                description: "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+        - name: Pods
+          rules:
+
+            - alert: PersistentVolumeOutOfDiskSpace
+              expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 10
+              for: 5m
+              labels:
+                severity: warning
+              annotations:
+                summary: "Volume out of disk space (instance {{ $labels.instance }})"
+                description: "Volume is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+            - alert: StatefulsetDown
+              expr: (kube_statefulset_status_replicas_ready / kube_statefulset_status_replicas_current) != 1
+              for: 5m
+              labels:
+                severity: error
+              annotations:
+                summary: "StatefulSet down (instance {{ $labels.instance }})"
+                description: "A StatefulSet went down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+
+  alertmanagerFiles:
+    alertmanager.yml:
+
+      global:
+        slack_api_url: "https://hooks.slack.com/services/REDACTED/REDACTED/REDACTED"
+
+      receivers:
+        - name: default-receiver
+          slack_configs:
+            - channel: '@k8s-alerts'
+              send_resolved: false
