@@ -298,11 +298,9 @@ async function hreads(
 
   await Promise.all(
     suffixes.map(suffix =>
-      Promise.all(
-        ids.map(id => {
-          return multi.hgetallAsync(decorateKey(`${prefix}:${id}:${suffix}`))
-        })
-      )
+      ids.map(id => {
+        return multi.hgetallAsync(decorateKey(`${prefix}:${id}:${suffix}`))
+      })
     )
   )
 
