@@ -42,14 +42,16 @@ const getConnection = async (name: ConnectionName, entities: Function[]) => {
 
 export const ConnectionManager = (...entities: Function[]) => {
   const connections: Partial<{ [C in ConnectionName]: Connection }> = {}
-  return {
-    getConnection: async (name: ConnectionName) => {
-      const connection = connections[name] ?? (await getConnection(name, entities))
-      if (!connection.isConnected) {
-        await connection.connect()
-      }
-      connections[name] = connection
-      return connection
+  const getNamedConnection = async (name: ConnectionName) => {
+    const connection = connections[name] ?? (await getConnection(name, entities))
+    if (!connection.isConnected) {
+      await connection.connect()
     }
+    connections[name] = connection
+    return connection
+  }
+  return {
+    getReadOnlyConnection: async () => getNamedConnection('ro'),
+    getReadWriteConnection: async () => getNamedConnection('rw')
   }
 }

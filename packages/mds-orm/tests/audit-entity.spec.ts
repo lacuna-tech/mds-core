@@ -12,7 +12,7 @@ const manager = ConnectionManager(AuditEntity)
 
 describe('Write/Read Audits', () => {
   it(records > 1 ? `Write ${records} Audits(s)` : 'Write Audit', async () => {
-    const connection = await manager.getConnection('rw')
+    const connection = await manager.getReadWriteConnection()
     const audits = Array.from({ length: records }, (_, index) => ({
       audit_trip_id: uuid(),
       audit_subject_id: 'auditor@agency.city',
@@ -45,7 +45,7 @@ describe('Write/Read Audits', () => {
   })
 
   it(records > 1 ? `Read ${records} Audits(s)` : 'Read Audit', async () => {
-    const connection = await manager.getConnection('ro')
+    const connection = await manager.getReadOnlyConnection()
     try {
       const audits = await connection.manager.find(AuditEntity, { where: { audit_device_id }, order: { id: 'ASC' } })
       test.value(audits.length).is(records)

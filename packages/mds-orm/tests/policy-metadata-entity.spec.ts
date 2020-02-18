@@ -7,7 +7,7 @@ const manager = ConnectionManager(PolicyMetadataEntity)
 
 describe('Write/Read Policies', () => {
   it('writes and reads a Policy', async () => {
-    const RWConnection = await manager.getConnection('rw')
+    const RWConnection = await manager.getReadWriteConnection()
     try {
       const repository = RWConnection.getRepository(PolicyMetadataEntity)
       await repository
@@ -19,7 +19,7 @@ describe('Write/Read Policies', () => {
     } finally {
       await RWConnection.close()
     }
-    const ROConnection = await manager.getConnection('ro')
+    const ROConnection = await manager.getReadOnlyConnection()
     try {
       const policy_metadata = await ROConnection.manager.find(PolicyMetadataEntity, {
         where: { policy_id: POLICY_UUID }

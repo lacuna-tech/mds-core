@@ -12,7 +12,7 @@ const manager = ConnectionManager(DeviceEntity)
 
 describe('Write/Read Devices', () => {
   it(records > 1 ? `Write ${records} Device(s)` : 'Write Device', async () => {
-    const connection = await manager.getConnection('rw')
+    const connection = await manager.getReadWriteConnection()
     const devices = Array.from({ length: records }, (_, index) => ({
       device_id: uuid(),
       provider_id: MOCHA_PROVIDER_ID,
@@ -36,7 +36,7 @@ describe('Write/Read Devices', () => {
   })
 
   it(records > 1 ? `Read ${records} Device(s)` : 'Read Device', async () => {
-    const connection = await manager.getConnection('ro')
+    const connection = await manager.getReadOnlyConnection()
     try {
       const devices = await connection.manager.find(DeviceEntity, { where: { recorded }, order: { id: 'ASC' } })
       test.value(devices.length).is(records)

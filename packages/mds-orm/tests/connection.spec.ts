@@ -5,12 +5,12 @@ const manager = ConnectionManager()
 
 describe('Test Connection', () => {
   it('Create R/W Connection', async () => {
-    const connection = await manager.getConnection('rw')
+    const connection = await manager.getReadWriteConnection()
     test.value(connection.name).is('rw')
     test.value(connection.isConnected).is(true)
     await connection.close()
     test.value(connection.isConnected).is(false)
-    const reused = await manager.getConnection('rw')
+    const reused = await manager.getReadWriteConnection()
     test.value(connection).is(reused)
     test.value(connection.isConnected).is(true)
     await connection.close()
@@ -18,12 +18,12 @@ describe('Test Connection', () => {
   })
 
   it('Create R/O Connection', async () => {
-    const connection = await manager.getConnection('ro')
+    const connection = await manager.getReadOnlyConnection()
     test.value(connection.name).is('ro')
     test.value(connection.isConnected).is(true)
     await connection.close()
     test.value(connection.isConnected).is(false)
-    const reused = await manager.getConnection('ro')
+    const reused = await manager.getReadOnlyConnection()
     test.value(connection).is(reused)
     test.value(connection.isConnected).is(true)
     await connection.close()
