@@ -807,10 +807,12 @@ installNsc() {
 
   [[ ! -d ${configs[nats]} ]] && mkdir -p ${configs[nats]}
 
-  [[ ! -f ${configs[nats]}/resolver.conf ]] && \
+  [[ ! -f ${configs[nats]}/resolver.conf ]] &&
     (export NKEYS_PATH=${nkeysPath}
       export NSC_HOME=${nscHome}
       nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf)
+
+  unset nkeysPath nscHome
 }
 
 installNats() {
