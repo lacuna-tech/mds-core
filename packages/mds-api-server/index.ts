@@ -133,7 +133,7 @@ export const ApiServer = (
   api: (server: express.Express) => express.Express,
   { handleCors, authorizer }: Partial<CorsMiddlewareOptions & AuthorizerMiddlewareOptions> = {},
   app: express.Express = express()
-) => {
+): express.Express => {
   // Disable x-powered-by header
   app.disable('x-powered-by')
 
