@@ -327,10 +327,12 @@ describe('Tests app', () => {
 
     it('verifies cannot GET non-existent geography metadata', done => {
       request
-        .get(`/geographies/beepbapboop/meta`)
+        .get(`/geographies/${uuid()}/meta`)
         .set('Authorization', POLICIES_READ_SCOPE)
         .expect(404)
         .end((err, result) => {
+          console.log('ress ress')
+          console.log(result)
           test.assert(result.body.result === 'not found')
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)

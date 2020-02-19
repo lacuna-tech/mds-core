@@ -1,5 +1,5 @@
 import { Geography, GeographySummary, UUID, Recorded, GeographyMetadata } from '@mds-core/mds-types'
-import { NotFoundError, ValidationError } from '@mds-core/mds-utils'
+import { NotFoundError, DataMissingError, AlreadyPublishedError } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 
 import schema from './schema'
@@ -134,7 +134,7 @@ export async function editGeography(geography: Geography) {
 
 export async function deleteGeography(geography_id: UUID) {
   if (await isGeographyPublished(geography_id)) {
-    throw new Error('Cannot edit published Geography')
+    throw new AlreadyPublishedError('Cannot edit published Geography')
   }
 
   const client = await getWriteableClient()
@@ -182,7 +182,7 @@ export async function writeGeographyMetadata(geography_metadata: GeographyMetada
     }: { rows: Recorded<Geography>[] } = await client.query(sql, values)
     return { ...geography_metadata, ...recorded_metadata }
   } catch (NotFoundError) {
-    throw new ValidationError(`metadata not written, because no geography exists for geography_id ${geography_metadata.geography_id}`)
+    throw new DataMissingError(`metadata not written, because no geography exists for geography_id ${geography_metadata.geography_id}`)
   }
 }
 

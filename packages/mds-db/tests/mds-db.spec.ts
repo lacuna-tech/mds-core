@@ -479,7 +479,7 @@ if (pg_info.database) {
         }
         await assert.rejects(
           async () => { await MDSDBPostgres.writeGeographyMetadata(geographyMetadata) },
-          { name: 'ValidationError' }
+          { name: 'DataMissingError' }
         )
         await MDSDBPostgres.writeGeography(LAGeography)
         await MDSDBPostgres.writeGeographyMetadata(geographyMetadata)
