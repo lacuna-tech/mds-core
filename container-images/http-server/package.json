@@ -1,0 +1,24 @@
+{
+  "name": "@container-images/http-server",
+  "version": "0.1.0",
+  "description": "Http server code for MDS APIs",
+  "main": "dist/index.js",
+  "files": [
+    "dist/"
+  ],
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "test": "yarn test:eslint && yarn test:unit",
+    "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
+    "test:unit": "exit 0"
+  },
+  "keywords": [
+    "mds"
+  ],
+  "author": "City of Los Angeles",
+  "dependencies": {
+    "@container-images/env-inject": "0.1.25",
+    "express": "4.17.1"
+  },
+  "license": "Apache-2.0"
+}

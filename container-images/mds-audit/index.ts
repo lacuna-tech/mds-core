@@ -14,15 +14,8 @@
     limitations under the License.
  */
 
-// Express local
 import { ApiServer } from '@mds-core/mds-api-server'
 import { api } from '@mds-core/mds-audit'
-import { env } from '@container-images/env-inject'
+import { HttpServer } from '@container-images/http-server'
 
-const { npm_package_name, npm_package_version, npm_package_git_commit, PORT = 4002 } = env()
-
-ApiServer(api).listen(PORT, () =>
-  /* eslint-reason avoids import of logger */
-  /* eslint-disable-next-line no-console */
-  console.log(`${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) running on port ${PORT}`)
-)
+HttpServer(Number(process.env.PORT ?? 4002), ApiServer(api))

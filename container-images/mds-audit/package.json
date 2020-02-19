@@ -20,7 +20,7 @@
   ],
   "author": "City of Los Angeles",
   "dependencies": {
-    "@container-images/env-inject": "0.1.25",
+    "@container-images/http-server": "0.1.0",
     "@mds-core/mds-api-server": "0.1.26",
     "@mds-core/mds-audit": "0.1.38"
   },

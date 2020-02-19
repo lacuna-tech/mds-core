@@ -14,22 +14,8 @@
     limitations under the License.
  */
 
-// Express local
 import { ApiServer } from '@mds-core/mds-api-server'
 import { api } from '@mds-core/mds-agency'
-import { env } from '@container-images/env-inject'
+import { HttpServer } from '@container-images/http-server'
 
-const { npm_package_name, npm_package_version, npm_package_git_commit, PORT = 4001, HTTP_KEEP_ALIVE = 15000 } = env()
-
-const keepAliveTimeout = Number(HTTP_KEEP_ALIVE)
-
-const server = ApiServer(api).listen(PORT, () =>
-  /* eslint-reason avoids import of logger */
-  /* eslint-disable-next-line no-console */
-  console.log(
-    `${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) running on port ${PORT}; (Timeout: ${keepAliveTimeout})`
-  )
-)
-
-server.keepAliveTimeout = keepAliveTimeout
-server.headersTimeout = keepAliveTimeout + 5000
+HttpServer(Number(process.env.PORT ?? 4001), ApiServer(api))
