@@ -87,6 +87,7 @@ declare -A configs=(
   ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
+  ["credentials-repository"]="${MDS_CREDENTIALS_REPOSITORY:-}"
   ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats,stan}"
   ["install"]="${MDS_INSTALL:-mds}"
   ["test"]="${MDS_TEST:-unit,integration}"
@@ -103,6 +104,7 @@ declare -A configs=(
   ["nats"]="${MDS_NATS_PATH:-${configs[workdir]}/nats}"
   ["grafana-plugins"]="${MDS_GRAFANA_PLUGINS:-devopsprodigy-kubegraf-app}"
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
+  ["credentials"]="${MDS_CREDENTIALS:-${configs[workdir]}/credentials}"
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
   ["ingress-gateway-key-path"]="${MDS_INGRESS_GATEWAY_KEY_PATH:-}"
   ["ingress-gateway-certificate-path"]="${MDS_INGRESS_GATEWAY_CERTIFICATE_PATH:-}"
@@ -773,16 +775,42 @@ installSimulator() {
       ${configs[dryrun]:+--dry-run --debug})
 }
 
+installCredentials() {
+  check ${FUNCNAME[0]}
+
+  if [[ ! -d ${configs[credentials]} ]]; then
+    mkdir -p ${configs[workdir]}
+    (cd ${configs[workdir]};
+      git clone ${configs[credentials-repository]} ${configs[credentials]};
+      cd ${configs[credentials]};
+      git pull)
+  fi
+}
+
 installNsc() {
   check ${FUNCNAME[0]}
 
-  $(nsc env > /dev/null 2>&1) || nsc init --name KO
-  $(nsc describe operator --name KO > /dev/null 2>&1) || nsc add operator --name KO
-  $(nsc describe account --name SYS > /dev/null 2>&1) || nsc add account --name SYS
-  $(nsc describe user --account SYS --name sys > /dev/null 2>&1) || nsc add user --account SYS --name sys
+  nkeysPath=~/.nkeys
+  nscHome=~/.nsc
+
+  [[ -d ${configs[credentials]}/nsc/nkeys && -d ${configs[credentials]}/nsc/nsc ]] && {
+    nkeysPath=${configs[credentials]}/nsc/nkeys
+    nscHome=${configs[credentials]}/nsc/nsc
+  }
+
+  (export NKEYS_PATH=${nkeysPath}
+    export NSC_HOME=${nscHome}
+    nsc init --name KO > /dev/null 2>&1 || echo "trusted operator already exists"
+    nsc describe operator --name KO > /dev/null 2>&1 || nsc add operator --name KO
+    nsc describe account --name SYS > /dev/null 2>&1 || nsc add account --name SYS
+    nsc describe user --account SYS --name sys > /dev/null 2>&1 || nsc add user --account SYS --name sys)
 
   [[ ! -d ${configs[nats]} ]] && mkdir -p ${configs[nats]}
-  [[ ! -f ${configs[nats]}/resolver.conf ]] && nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf
+
+  [[ ! -f ${configs[nats]}/resolver.conf ]] && \
+    (export NKEYS_PATH=${nkeysPath}
+      export NSC_HOME=${nscHome}
+      nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf)
 }
 
 installNats() {
@@ -1118,6 +1146,15 @@ uninstallSimulator() {
   fi
 }
 
+uninstallCredentials() {
+  check ${FUNCNAME[0]}
+
+  # todo: not sure we want to rm local creds repo just yet
+  # if [ -z "${configs[keep-cache]}" ]; then
+  #   [ -d ${configs[credentials]} ] && /bin/rm -rf ${configs[credentials]}
+  # fi
+}
+
 uninstallFallbackCertificate() {
   check ${FUNCNAME[0]}
 
@@ -1385,7 +1422,8 @@ check() {
     # installNas) installNats;;
     installMds)
       [[ "$(exists helm)" != "0" ]] && bootstrap
-      kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;;
+      kubectl get namespace istio-system > /dev/null 2>&1 || installIstio
+      installNsc;;
       # fixme: ??? || installStan
     installMetrics) kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installHelm | installIstio | installLogging | installMetricsAdapter | testUnit | \

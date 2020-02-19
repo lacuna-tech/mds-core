@@ -1,0 +1,6 @@
+observations: |
+  {
+    "name": "mds.telemetry",
+    "topic": "mds.events",
+    "credential": "/var/run/nats/secrets/sys.creds"
+  }
