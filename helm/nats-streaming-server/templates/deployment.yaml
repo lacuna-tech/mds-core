@@ -86,9 +86,11 @@ spec:
           - --store
           - file
           - --max_msgs
-          - "0"
+          - {{ $.Values.maximumMessages | default "0" | quote }}
+          - --max_age
+          - {{ $.Values.maximumAge | default "72h"  | quote }}
           - --max_bytes
-          - "0"
+          - {{ $.Values.maximumBytes | default "10GB" | quote }}
           - -clustered
           - --cluster_node_id
           - "$(POD_NAME)"

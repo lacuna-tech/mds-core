@@ -795,12 +795,12 @@ kubectl_spin() {
 installNats() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-nats]}-nats-operatorx)" = "${configs[namespace-nats]}-nats-operatorx" ]] || {
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-operator)" = "${configs[namespace-nats]}-nats-operator" ]] || {
     systemAccount=$(nsc describe account --name SYS | grep "Account ID" | awk '{print $5}')
     # todo: ?better way?; $(nsc env | grep "Stores Dir") isn't panning
     operatorJwt=$(<~/.nsc/nats/KO/KO.jwt)
 
-    helm install ${configs[home]}/helm/nats-operatorx --name ${configs[namespace-nats]}-nats-operatorx \
+    helm install ${configs[home]}/helm/nats-operator --name ${configs[namespace-nats]}-nats-operator \
       ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
@@ -817,61 +817,6 @@ installNats() {
     kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --all \
       --timeout=${configs[pause-kubectl]}s || error "nats-operator installation error"
   }
-  # [[ "$(helm list --short ${configs[namespace-nats]}-nats-init)" = "${configs[namespace-nats]}-nats-init" ]] || {
-  #   helm install ${configs[home]}/helm/nats-init --name ${configs[namespace-nats]}-nats-init \
-  #     ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
-  #     ${configs[values]:+$(helmOptions values ${configs[values]})} \
-  #     ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
-  #     ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-  #     ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
-  #     ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-  #     ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
-  #     ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-  #     ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
-  #     ${configs[dryrun]:+--dry-run --debug}
-
-  #   [[ $(kubectl_spin describe namespace ${configs[namespace-nats]} > /dev/null 2>&1; echo $?) == "0" ]] || \
-  #     error "failed kubectl: describe namespace ${configs[namespace-nats]}"
-  # }
-
-  # [[ "$(helm list --short ${configs[namespace-nats]}-nats-operator)" = "${configs[namespace-nats]}-nats-operator" ]] || {
-  #   helm install ${configs[home]}/helm/nats-operator --name ${configs[namespace-nats]}-nats-operator \
-  #     ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
-  #     ${configs[values]:+$(helmOptions values ${configs[values]})} \
-  #     ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
-  #     ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-  #     ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
-  #     ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-  #     ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
-  #     ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-  #     ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
-  #     ${configs[dryrun]:+--dry-run --debug}
-  #   kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready \
-  #     pod/$(kubectl --namespace ${configs[namespace-nats]} get pods --selector=name=nats-operator --output jsonpath='{.items[0].metadata.name}') \
-  #     --timeout=${configs[pause-kubectl]}s || error "nats-operator installation error"
-  # }
-
-  # [[ "$(helm list --short ${configs[namespace-nats]}-nats-cluster)" = "${configs[namespace-nats]}-nats-cluster" ]] || {
-  #   systemAccount=$(nsc describe account --name SYS | grep "Account ID" | awk '{print $5}')
-  #   # todo: ?better way?; $(nsc env | grep "Stores Dir") isn't panning
-  #   operatorJwt=$(<~/.nsc/nats/KO/KO.jwt)
-
-  #   helm install ${configs[home]}/helm/nats-cluster --name ${configs[namespace-nats]}-nats-cluster \
-  #     ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
-  #     ${configs[values]:+$(helmOptions values ${configs[values]})} \
-  #     ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
-  #     ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-  #     ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
-  #     ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-  #     ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
-  #     $(helmOptions set systemAccount=${systemAccount}) \
-  #     $(helmOptions set operatorJwt=${operatorJwt}) \
-  #     ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-  #     ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
-  #     ${configs[dryrun]:+--dry-run --debug}
-  #   kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --all \
-  #     --timeout=${configs[pause-kubectl]}s || error "nats-cluster installation error"
-  # }
 }
 
 installNas() {
@@ -1248,12 +1193,8 @@ uninstallNats() {
 
   uninstallNas
 
-  [[ "$(helm list --short ${configs[namespace-nats]}-nats-operatorx)" = "${configs[namespace-nats]}-nats-operatorx" ]] && \
-      helm delete --purge ${configs[namespace-nats]}-nats-operatorx
-  # for n in nats-init nats-operator nats-cluster; do # nats-server; do
-  #   [[ "$(helm list --short ${configs[namespace-nats]}-${n})" = "${configs[namespace-nats]}-${n}" ]] && \
-  #     helm delete --purge ${configs[namespace-nats]}-${n}
-  # done; unset n
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-operator)" = "${configs[namespace-nats]}-nats-operator" ]] && \
+      helm delete --purge ${configs[namespace-nats]}-nats-operator
 
   for n in namespace/${configs[namespace-nats]} crd/natsserviceroles.nats.io crd/natsclusters.nats.io; do
     kubectl delete ${n}
@@ -1505,7 +1446,9 @@ preset() {
         is+="${is:+,}presets+=resourcesLimitsMemory=200Mi"
         is+="${is:+,}presets+=resourcesRequestsCpu=20m"
         is+="${is:+,}presets+=resourcesRequestsMemory=32Mi"
-        is+="${is:+,}presets-nats+=cluster.size=1";;
+        is+="${is:+,}presets-nats+=cluster.size=1"
+        is+="${is:+,}presets-nats+=maximumAge=4h"
+        is+="${is:+,}presets-nats+=maximumBytes=1GB";;
       no-persistence)
         is+="${is:+,}sets-mds+=postgresql.persistence.enabled=false"
         is+="${is:+,}sets-mds+=postgresql.volumePermissions.enabled=true"
