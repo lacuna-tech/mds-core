@@ -25,8 +25,8 @@ metadata:
 data:
   test.json: |
     {
-      "name": "latency.on.test",
-      "topic": "latency.on.test",
+      "name": "mds.telemetry",
+      "topic": "mds.events",
       "credential": "/var/run/nats/secrets/sys.creds"
     }
 ---
@@ -54,9 +54,6 @@ spec:
       - name: creds-volume
         secret:
           secretName: stan-creds
-      # - name: test-creds-volume
-      #   secret:
-      #     secretName: nats-test-creds
       containers:
       - name: nats-surveyor
         image: synadia/nats-surveyor:0.0.1-alpha4
@@ -74,8 +71,6 @@ spec:
             mountPath: /etc/nats/observations
           - name: creds-volume
             mountPath: /var/run/nats/secrets
-          # - name: test-creds-volume
-          #   mountPath: /var/run/nats/creds/test
 
         # Disable all cpu limits for the server.
         #

@@ -781,17 +781,6 @@ installNsc() {
   [[ ! -f ${configs[nats]}/resolver.conf ]] && nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf
 }
 
-kubectl_spin() {
-  local cap=4
-  local i=0
-  while true; do
-    kubectl "${@}" > /dev/null 2>&1 && return 0
-    [[ "${i}" -ge ${cap} ]] && break || sleep ${configs[pause]}
-    i=$((i+1))
-  done
-  [[ "${i}" -ge ${cap} ]] && return 1
-}
-
 installNats() {
   check ${FUNCNAME[0]}
 
@@ -884,7 +873,6 @@ installStan() {
     kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pod --selector=app=nats-streaming-stateful \
       --timeout=${configs[pause-kubectl]}s || error "nats-streaming-server installation error"
   }
-
 }
 
 installSurveyor() {
