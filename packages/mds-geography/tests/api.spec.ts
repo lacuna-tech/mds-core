@@ -205,7 +205,7 @@ describe('Tests app', () => {
         .expect(403)
     })
 
-    it('verifies PUTing geography metadata to create', async () => {
+    it('sends the correct error code if it cannot retrieve the metadata', async () => {
       sandbox.stub(db, 'readBulkGeographyMetadata').callsFake(function stubAThrow() {
         throw new Error('err')
       })
@@ -215,7 +215,7 @@ describe('Tests app', () => {
         .expect(404)
     })
 
-    it('sends the correct error code if it cannot retrieve the metadata', async () => {
+    it('verifies PUTing geography metadata to create', async () => {
       const metadata = { some_arbitrary_thing: 'boop' }
       await request
         .put(`/geographies/${GEOGRAPHY_UUID}/meta`)
@@ -235,6 +235,16 @@ describe('Tests app', () => {
         .expect(200)
       const result = await db.readSingleGeographyMetadata(GEOGRAPHY_UUID)
       test.assert(result.geography_metadata.some_arbitrary_thing === 'beep')
+    })
+
+    it('verifies that metadata cannot be created without a preexisting geography', async () => {
+      const metadata = { some_arbitrary_thing: 'beep' }
+      const nonexistentGeoUUID = uuid()
+      await request
+        .put(`/geographies/${nonexistentGeoUUID}/meta`)
+        .set('Authorization', POLICIES_WRITE_SCOPE)
+        .send({ geography_id: nonexistentGeoUUID, geography_metadata: metadata })
+        .expect(400)
     })
 
     it('cannot GET geographies (no auth)', done => {
@@ -417,7 +427,7 @@ describe('Tests app', () => {
         .expect(403)
     })
 
-    it('can do bulk geography metadata reads', async () => {
+    it('correctly retrieves all geography metadata', async () => {
       await db.writeGeography({ name: 'Geography 2', geography_id: GEOGRAPHY2_UUID, geography_json: DISTRICT_SEVEN })
       await db.writeGeographyMetadata({ geography_id: GEOGRAPHY2_UUID, geography_metadata: { earth: 'isround' } })
 
@@ -436,6 +446,15 @@ describe('Tests app', () => {
         .expect(200)
       test.value(result).hasHeader('content-type', APP_JSON)
       test.assert(result.body.geography_id === GEOGRAPHY2_UUID)
+    })
+
+    it('correctly retrieves only the metadata associated with published geographies', async () => {
+      const result = await request
+        .get(`/geographies/meta?get_read_only=true`)
+        .set('Authorization', POLICIES_READ_SCOPE)
+        .expect(200)
+      test.assert(result.body.length === 1)
+      test.value(result).hasHeader('content-type', APP_JSON)
     })
 
     it('cannot publish a geography (wrong auth)', async () => {

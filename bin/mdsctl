@@ -21,14 +21,16 @@ hash brew > /dev/null 2>&1 || {
       hash brew > /dev/null 2>&1 || \
         /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)";;
     ${linux})
-      mkdir -p ~/.linuxbrew/bin
-      hash git > /dev/null 2>&1 || (apt-get update; apt-get install -y git)
-      git clone https://github.com/Homebrew/brew ~/.linuxbrew/Homebrew
-      ln -s ~/.linuxbrew/Homebrew/bin/brew ~/.linuxbrew/bin
-      [ $(grep -Fxq "eval \$(~/.linuxbrew/bin/brew shellenv)" ~/.bashrc; echo $?) == "1" ] && \
-        echo "eval \$(~/.linuxbrew/bin/brew shellenv)" >> ~/.bashrc
-      hash curl > /dev/null 2>&1 || (apt-get update; apt-get install -y curl)
-      eval $(~/.linuxbrew/bin/brew shellenv);;
+      if [ ! -d ~/.linuxbrew/bin ] then
+        mkdir -p ~/.linuxbrew/bin
+        hash git > /dev/null 2>&1 || (apt-get update; apt-get install -y git)
+        git clone https://github.com/Homebrew/brew ~/.linuxbrew/Homebrew
+        ln -s ~/.linuxbrew/Homebrew/bin/brew ~/.linuxbrew/bin
+        [ $(grep -Fxq "eval \$(~/.linuxbrew/bin/brew shellenv)" ~/.bashrc; echo $?) == "1" ] && \
+          echo "eval \$(~/.linuxbrew/bin/brew shellenv)" >> ~/.bashrc
+        hash curl > /dev/null 2>&1 || (apt-get update; apt-get install -y curl)
+        eval $(~/.linuxbrew/bin/brew shellenv);;
+      fi
     *) usage "unsupported os: $(uname)";;
   esac
 }
