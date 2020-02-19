@@ -1448,7 +1448,9 @@ preset() {
         is+="${is:+,}presets+=resourcesRequestsMemory=32Mi"
         is+="${is:+,}presets-nats+=cluster.size=1"
         is+="${is:+,}presets-nats+=maximumAge=4h"
-        is+="${is:+,}presets-nats+=maximumBytes=1GB";;
+        is+="${is:+,}presets-nats+=maximumBytes=1GB"
+        is+="${is:+,}presets-nats+=cluster.size=1"
+        is+="${is:+,}presets-nats+=clusterSize=1";;
       no-persistence)
         is+="${is:+,}sets-mds+=postgresql.persistence.enabled=false"
         is+="${is:+,}sets-mds+=postgresql.volumePermissions.enabled=true"

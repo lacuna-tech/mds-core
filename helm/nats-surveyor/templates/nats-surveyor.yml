@@ -66,7 +66,7 @@ spec:
         command:
           - "/nats-surveyor"
           - "-s=nats://nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222"
-          - "-c=1"
+          - "-c={{ $.Values.clusterSize | default 3 }}"
           - "-creds=/var/run/nats/secrets/sys.creds"
           - "-observe=/etc/nats/observations/"
         volumeMounts:
