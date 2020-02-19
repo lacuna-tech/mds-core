@@ -159,7 +159,7 @@ export async function publishGeography(params: PublishGeographiesParams) {
     const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} where geography_id=${vals.add(geography_id)}`
 
     const res = await client.query(sql, vals.values())
-    return geography_id
+    return res
   } catch (err) {
     await log.error(err)
     throw err
@@ -168,7 +168,7 @@ export async function publishGeography(params: PublishGeographiesParams) {
 
 export async function writeGeographyMetadata(geography_metadata: GeographyMetadata) {
   try {
-    readSingleGeography(geography_metadata.geography_id)
+    await readSingleGeography(geography_metadata.geography_id)
     const client = await getWriteableClient()
     const sql = `INSERT INTO ${schema.TABLE.geography_metadata} (${cols_sql(
       schema.TABLE_COLUMNS.geography_metadata
@@ -181,8 +181,10 @@ export async function writeGeographyMetadata(geography_metadata: GeographyMetada
       rows: [recorded_metadata]
     }: { rows: Recorded<Geography>[] } = await client.query(sql, values)
     return { ...geography_metadata, ...recorded_metadata }
-  } catch (NotFoundError) {
-    throw new DataMissingError(`metadata not written, because no geography exists for geography_id ${geography_metadata.geography_id}`)
+  } catch (err) {
+    throw new DataMissingError(
+      `metadata not written, because no geography exists for geography_id ${geography_metadata.geography_id}`
+    )
   }
 }
 

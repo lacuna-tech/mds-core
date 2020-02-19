@@ -170,7 +170,7 @@ function api(app: express.Express): express.Express {
           } catch (writeErr) {
             await log.error('failed to write geography metadata', writeErr.stack)
             if (writeErr instanceof DataMissingError) {
-              return res.status(400).send({ result: `no geography found for ${geography_id}`})
+              return res.status(400).send({ result: `no geography found for ${geography_id}` })
             }
             return res.status(500).send(new ServerError())
           }
@@ -192,7 +192,7 @@ function api(app: express.Express): express.Express {
         return res.status(200).send({ geography_id })
       } catch (updateErr) {
         if (updateErr instanceof NotFoundError) {
-          return res.status(400).send({ result: `unable to find geography of ${geography_id}`})
+          return res.status(400).send({ result: `unable to find geography of ${geography_id}` })
         }
         return res.status(500).send(new ServerError())
       }
