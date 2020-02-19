@@ -1,6 +1,3 @@
-import { env } from '@container-images/env-inject'
-import express from 'express'
-
 /*
     Copyright 2019 City of Los Angeles.
 
@@ -16,6 +13,10 @@ import express from 'express'
     See the License for the specific language governing permissions and
     limitations under the License.
  */
+
+import { env } from '@container-images/env-inject'
+import express from 'express'
+
 const {
   npm_package_name,
   npm_package_version,
@@ -31,7 +32,7 @@ export const HttpServer = (port: number, api: express.Express) => {
     console.log(`${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) running on port ${port}`)
   )
 
-  // Increase default timeout values to reduce spurious 503 errors from Istio
+  // Increase default timeout values to mitigate spurious 503 errors from Istio
   server.keepAliveTimeout = Number(HTTP_KEEP_ALIVE_TIMEOUT)
   server.headersTimeout = Number(HTTP_HEADERS_TIMEOUT)
 
