@@ -683,6 +683,9 @@ installMds() {
 
     pause 5
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
+
+    # todo: make better
+    stanCreds=${HOME}/.nkeys/creds/KO/SYS/sys.creds
     helm install ${configs[home]}/helm/mds --name ${configs[namespace-mds]} \
       --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -693,6 +696,7 @@ installMds() {
       ${configs[sets-mds]:+$(helmOptions set ${configs[sets-mds]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-mds]:+$(helmOptions set-file ${configs[setfiles-mds]})} \
+      $(helmOptions set-file stanCreds=${stanCreds}) \
       ${configs[dryrun]:+--dry-run --debug}
     pause 12
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all

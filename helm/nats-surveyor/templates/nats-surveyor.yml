@@ -23,12 +23,7 @@ metadata:
   name: nats-surveyor-observations
   namespace: {{ $.Release.Namespace }}
 data:
-  test.json: |
-    {
-      "name": "mds.telemetry",
-      "topic": "mds.events",
-      "credential": "/var/run/nats/secrets/sys.creds"
-    }
+  test.json: {{ toJson $.Values.observations }}
 ---
 apiVersion: apps/v1
 kind: Deployment
