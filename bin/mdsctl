@@ -800,6 +800,7 @@ installNsc() {
 
   (export NKEYS_PATH=${nkeysPath}
     export NSC_HOME=${nscHome}
+    cd ${nscHome}/nats
     nsc init --name KO > /dev/null 2>&1 || echo "trusted operator already exists"
     nsc describe operator --name KO > /dev/null 2>&1 || nsc add operator --name KO
     nsc describe account --name SYS > /dev/null 2>&1 || nsc add account --name SYS
@@ -810,6 +811,7 @@ installNsc() {
   [[ ! -f ${configs[nats]}/resolver.conf ]] &&
     (export NKEYS_PATH=${nkeysPath}
       export NSC_HOME=${nscHome}
+      cd ${nscHome}/nats
       nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf)
 
   unset nkeysPath nscHome
