@@ -134,12 +134,12 @@ data:
   postgresql-password: {{ .Values.postgresql.password | b64enc }}
   {{- end }}
 type: Opaque
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: stan-creds
-  namespace: {{ $.Release.Namespace }}
-data:
-  sys.creds: {{ $.Values.stanCreds | b64enc }}
-type: Opaque
+# ---
+# apiVersion: v1
+# kind: Secret
+# metadata:
+#   name: stan-creds
+#   namespace: {{ $.Release.Namespace }}
+# data:
+#   sys.creds: {{ $.Values.stanCreds | b64enc }}
+# type: Opaque

@@ -1,5 +1,5 @@
 ---
-apiVersion: v1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: nats-account-server
@@ -9,32 +9,41 @@ metadata:
   annotations:
     sidecar.istio.io/inject: 'false'
 spec:
-  volumes:
-  - name: nsc-operator
-    hostPath:
-      path: {{ $.Values.nscOperatorDirectory }}
-      type: Directory
-  containers:
-    - name: nats-account-server
-      image: synadia/nats-account-server:0.8.4
-      imagePullPolicy: Always
-      resources:
-        limits:
-          cpu: {{ $.Values.resourcesLimitsCpu | default "500m" }}
-          memory: {{ $.Values.resourcesLimitsMemory | default "512Mi" }}
-        requests:
-          cpu: {{ $.Values.resourcesRequestsCpu | default "50m" }}
-          memory: {{ $.Values.resourcesRequestsMemory | default "128Mi" }}
-      volumeMounts:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nats-account-server
+  template:
+    metadata:
+      labels:
+        app: nats-account-server
+    spec:
+      volumes:
       - name: nsc-operator
-        mountPath: /nsc-operator
-      command:
-        - 'nats-account-server'
-        - '-DV'
-        - '-hp'
-        - '0.0.0.0:9090'
-        - '-nsc'
-        - '/nsc-operator/KO'
+        hostPath:
+          path: {{ $.Values.nscOperatorDirectory }}
+          type: Directory
+      containers:
+        - name: nats-account-server
+          image: synadia/nats-account-server:0.8.4
+          imagePullPolicy: Always
+          resources:
+            limits:
+              cpu: {{ $.Values.resourcesLimitsCpu | default "500m" }}
+              memory: {{ $.Values.resourcesLimitsMemory | default "512Mi" }}
+            requests:
+              cpu: {{ $.Values.resourcesRequestsCpu | default "50m" }}
+              memory: {{ $.Values.resourcesRequestsMemory | default "128Mi" }}
+          volumeMounts:
+          - name: nsc-operator
+            mountPath: /nsc-operator
+          command:
+            - 'nats-account-server'
+            - '-DV'
+            - '-hp'
+            - '0.0.0.0:9090'
+            - '-nsc'
+            - '/nsc-operator/KO'
 ---
 apiVersion: v1
 kind: Service

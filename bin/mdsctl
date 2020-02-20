@@ -599,7 +599,7 @@ installIstio() {
     # pause 20
     kubectl --namespace istio-system wait --for=condition=Ready \
       $(kubectl -n istio-system get pod --selector app=istio-ingressgateway --output name --no-headers) \
-      --timeout=${configs[pause-kubectl]}s || error "istio installation error"
+      --timeout=$((${configs[pause-kubectl]} + 15))s || error "istio installation error"
   }
 }
 
