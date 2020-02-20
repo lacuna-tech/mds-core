@@ -688,6 +688,7 @@ installMds() {
 
     # todo: make better
     stanCreds=${HOME}/.nkeys/creds/KO/SYS/sys.creds
+
     helm install ${configs[home]}/helm/mds --name ${configs[namespace-mds]} \
       --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -906,7 +907,7 @@ installStan() {
       $(helmOptions set-file stanCreds=${stanCreds}) \
       ${configs[dryrun]:+--dry-run --debug}
 
-    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pod --selector=app=nats-streaming-stateful \
+    kubectl --namespace ${configs[namespace-nats-stan]} wait --for=condition=Ready pod --selector=app=nats-streaming-stateful \
       --timeout=${configs[pause-kubectl]}s || error "nats-streaming-server installation error"
   }
 }
@@ -966,6 +967,9 @@ installSurveyor() {
   }
 
   [[ "$(helm list --short ${configs[namespace-nats]}-nats-surveyor)" = "${configs[namespace-nats]}-nats-surveyor" ]] || {
+    # todo: make better
+    stanCreds=${HOME}/.nkeys/creds/KO/SYS/sys.creds
+
     helm install ${configs[home]}/helm/nats-surveyor --name ${configs[namespace-nats]}-nats-surveyor \
       ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -976,6 +980,7 @@ installSurveyor() {
       ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      $(helmOptions set-file stanCreds=${stanCreds}) \
       ${configs[dryrun]:+--dry-run --debug}
 
     # kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pod --selector=app=nats-surveyor \

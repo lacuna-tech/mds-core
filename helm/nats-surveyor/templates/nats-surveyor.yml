@@ -120,3 +120,12 @@ spec:
       app: nats-surveyor
   endpoints:
   - port: metrics
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: stan-creds
+  namespace: {{ $.Release.Namespace }}
+data:
+  sys.creds: {{ $.Values.stanCreds | b64enc }}
+type: Opaque
