@@ -1,5 +1,5 @@
 import { Geography, GeographySummary, UUID, Recorded, GeographyMetadata } from '@mds-core/mds-types'
-import { NotFoundError } from '@mds-core/mds-utils'
+import { NotFoundError, DataMissingError, AlreadyPublishedError } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 
 import schema from './schema'
@@ -10,18 +10,18 @@ import { getReadOnlyClient, getWriteableClient } from './client'
 import { ReadGeographiesParams, PublishGeographiesParams } from './types'
 
 export async function readSingleGeography(geography_id: UUID): Promise<Geography> {
-  try {
-    const client = await getReadOnlyClient()
+  const client = await getReadOnlyClient()
 
-    const sql = `select * from ${schema.TABLE.geographies} where geography_id = '${geography_id}'`
-    const { rows } = await client.query(sql)
+  const sql = `select * from ${schema.TABLE.geographies} where geography_id = '${geography_id}'`
+  const { rows } = await client.query(sql)
 
-    const { id, ...geography } = rows[0]
-    return geography
-  } catch (err) {
-    await log.error('readSingleGeography', err)
-    throw new NotFoundError(`could not find geography ${geography_id}`)
+  if (rows.length === 0) {
+    await log.info(`readSingleGeography failed for ${geography_id}`)
+    throw new NotFoundError(`geography of id ${geography_id} not found`)
   }
+
+  const { id, ...geography } = rows[0]
+  return geography
 }
 
 export async function readGeographies(params: Partial<ReadGeographiesParams> = {}): Promise<Geography[]> {
@@ -134,7 +134,7 @@ export async function editGeography(geography: Geography) {
 
 export async function deleteGeography(geography_id: UUID) {
   if (await isGeographyPublished(geography_id)) {
-    throw new Error('Cannot edit published Geography')
+    throw new AlreadyPublishedError('Cannot edit published Geography')
   }
 
   const client = await getWriteableClient()
@@ -158,8 +158,8 @@ export async function publishGeography(params: PublishGeographiesParams) {
     conditions.push(`publish_date = ${vals.add(publish_date)}`)
     const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} where geography_id=${vals.add(geography_id)}`
 
-    await client.query(sql, vals.values())
-    return geography_id
+    const res = await client.query(sql, vals.values())
+    return res
   } catch (err) {
     await log.error(err)
     throw err
@@ -167,18 +167,25 @@ export async function publishGeography(params: PublishGeographiesParams) {
 }
 
 export async function writeGeographyMetadata(geography_metadata: GeographyMetadata) {
-  const client = await getWriteableClient()
-  const sql = `INSERT INTO ${schema.TABLE.geography_metadata} (${cols_sql(
-    schema.TABLE_COLUMNS.geography_metadata
-  )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.geography_metadata)}) RETURNING *`
-  const values = vals_list(schema.TABLE_COLUMNS.geography_metadata, {
-    geography_id: geography_metadata.geography_id,
-    geography_metadata: geography_metadata.geography_metadata
-  })
-  const {
-    rows: [recorded_metadata]
-  }: { rows: Recorded<Geography>[] } = await client.query(sql, values)
-  return { ...geography_metadata, ...recorded_metadata }
+  try {
+    await readSingleGeography(geography_metadata.geography_id)
+    const client = await getWriteableClient()
+    const sql = `INSERT INTO ${schema.TABLE.geography_metadata} (${cols_sql(
+      schema.TABLE_COLUMNS.geography_metadata
+    )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.geography_metadata)}) RETURNING *`
+    const values = vals_list(schema.TABLE_COLUMNS.geography_metadata, {
+      geography_id: geography_metadata.geography_id,
+      geography_metadata: geography_metadata.geography_metadata
+    })
+    const {
+      rows: [recorded_metadata]
+    }: { rows: Recorded<Geography>[] } = await client.query(sql, values)
+    return { ...geography_metadata, ...recorded_metadata }
+  } catch (err) {
+    throw new DataMissingError(
+      `metadata not written, because no geography exists for geography_id ${geography_metadata.geography_id}`
+    )
+  }
 }
 
 export async function readSingleGeographyMetadata(geography_id: UUID): Promise<GeographyMetadata> {

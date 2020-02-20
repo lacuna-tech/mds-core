@@ -73,3 +73,9 @@ export class ParseError extends BaseError {
     super('ParseError', reason(error), info)
   }
 }
+
+export class DataMissingError extends BaseError {
+  public constructor(error?: Error | string, public info?: unknown) {
+    super('DataMissingError', reason(error), info)
+  }
+}

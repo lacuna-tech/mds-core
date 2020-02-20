@@ -477,15 +477,16 @@ if (pg_info.database) {
           geography_id: GEOGRAPHY_UUID,
           geography_metadata: { foo: 'afoo' }
         }
-        try {
-          await MDSDBPostgres.writeGeographyMetadata(geographyMetadata)
-          throw new Error('Should have thrown')
-        } catch (err) {
-          await MDSDBPostgres.writeGeography(LAGeography)
-          await MDSDBPostgres.writeGeographyMetadata(geographyMetadata)
-          const geographyMetadataResult = await MDSDBPostgres.readSingleGeographyMetadata(GEOGRAPHY_UUID)
-          assert.deepEqual(geographyMetadataResult, geographyMetadata)
-        }
+        await assert.rejects(
+          async () => {
+            await MDSDBPostgres.writeGeographyMetadata(geographyMetadata)
+          },
+          { name: 'DataMissingError' }
+        )
+        await MDSDBPostgres.writeGeography(LAGeography)
+        await MDSDBPostgres.writeGeographyMetadata(geographyMetadata)
+        const geographyMetadataResult = await MDSDBPostgres.readSingleGeographyMetadata(GEOGRAPHY_UUID)
+        assert.deepEqual(geographyMetadataResult, geographyMetadata)
       })
 
       it('can do bulk GeographyMetadata reads', async () => {
