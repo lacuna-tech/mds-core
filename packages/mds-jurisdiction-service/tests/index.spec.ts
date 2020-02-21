@@ -1,15 +1,11 @@
 import test from 'unit.js'
 import uuid from 'uuid'
 import { ConnectionManager } from '@mds-core/mds-orm'
-import { InsertReturning } from '@mds-core/mds-orm/types'
-import { NotFoundError } from 'packages/mds-utils'
-import { days } from '@mds-core/mds-utils'
-import { JurisdictionEntity } from '../entities/jurisdiction-entity'
+import { NotFoundError, days } from '@mds-core/mds-utils'
 import { JurisdictionService } from '../index'
 import ormconfig from '../ormconfig'
 
 const records = 5_000
-const recorded = Date.now()
 const manager = ConnectionManager(ormconfig)
 
 const JURISDICTION_ID = uuid()
@@ -23,38 +19,18 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it(`Write ${records} Jurisdiction${records > 1 ? 's' : ''}`, async () => {
-    const connection = await manager.getReadWriteConnection()
-    const jurisdictions: Omit<JurisdictionEntity, 'id'>[] = Array.from({ length: records }, (_, index) => ({
-      jurisdiction_id: index ? uuid() : JURISDICTION_ID,
-      agency_key: `agency-${index}`,
-      versions: [
-        {
-          timestamp: TODAY,
-          agency_name: `Agency ${index}`,
-          geography_id: uuid()
-        },
-        {
-          timestamp: YESTERDAY,
-          agency_name: `Agency ${index}`,
-          geography_id: uuid()
-        }
-      ],
-      recorded
-    }))
-    try {
-      const repository = connection.getRepository(JurisdictionEntity)
-      const { raw: returning }: InsertReturning<JurisdictionEntity> = await repository
-        .createQueryBuilder()
-        .insert()
-        .values(jurisdictions)
-        .returning('*')
-        .onConflict('DO NOTHING')
-        .execute()
-      test.value(returning.some(jurisdiction => jurisdiction.id === undefined)).is(false)
-      test.value(returning[0].jurisdiction_id).is(JURISDICTION_ID)
-    } finally {
-      await connection.close()
-    }
+    const [error, jurisdictions] = await JurisdictionService.createJurisdictions(
+      Array.from({ length: records }, (_, index) => ({
+        jurisdiction_id: index ? uuid() : JURISDICTION_ID,
+        agency_key: `agency-key-${index}`,
+        agency_name: `Agency Name ${index}`,
+        timestamp: YESTERDAY,
+        geography_id: uuid()
+      }))
+    )
+    test.value(jurisdictions).isNot(null)
+    test.value(jurisdictions?.[0].jurisdiction_id).is(JURISDICTION_ID)
+    test.value(error).is(null)
   })
 
   it(`Read ${records} Jurisdiction${records > 1 ? 's' : ''}`, async () => {
@@ -65,23 +41,62 @@ describe('Write/Read Jurisdictions', () => {
     test.value(error).is(null)
   })
 
-  it('Read Specific Jurisdiction (current version)', async () => {
-    const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(JURISDICTION_ID)
+  it('Write One Jurisdiction', async () => {
+    const [error, jurisdiction] = await JurisdictionService.createJurisdiction({
+      agency_key: 'agency-key-one',
+      agency_name: 'Agency Name One',
+      geography_id: uuid()
+    })
     test.value(jurisdiction).isNot(null)
-    test.value(jurisdiction?.jurisdiction_id).is(JURISDICTION_ID)
-    test.value(jurisdiction?.timestamp).is(TODAY)
+    test.value(jurisdiction?.jurisdiction_id).isNot(null)
+    test.value(jurisdiction?.timestamp).isNot(null)
     test.value(error).is(null)
   })
 
-  it('Read Specific Jurisdiction (prior version)', async () => {
-    const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(JURISDICTION_ID, {
-      effective: YESTERDAY
+  it('Write One Jurisdiction (duplicate id)', async () => {
+    const [error, jurisdiction] = await JurisdictionService.createJurisdiction({
+      jurisdiction_id: JURISDICTION_ID,
+      agency_key: 'agency-key-two',
+      agency_name: 'Agency Name One',
+      geography_id: uuid()
     })
+    test
+      .value(error)
+      .isNot(null)
+      .isInstanceOf(Error)
+    test.value(jurisdiction).is(null)
+  })
+
+  it('Write One Jurisdiction (duplicate key)', async () => {
+    const [error, jurisdiction] = await JurisdictionService.createJurisdiction({
+      agency_key: 'agency-key-one',
+      agency_name: 'Agency Name One',
+      geography_id: uuid()
+    })
+    test
+      .value(error)
+      .isNot(null)
+      .isInstanceOf(Error)
+    test.value(jurisdiction).is(null)
+  })
+
+  it('Read Specific Jurisdiction (current version)', async () => {
+    const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(JURISDICTION_ID)
     test.value(jurisdiction).isNot(null)
     test.value(jurisdiction?.jurisdiction_id).is(JURISDICTION_ID)
     test.value(jurisdiction?.timestamp).is(YESTERDAY)
     test.value(error).is(null)
   })
+
+  // it('Read Specific Jurisdiction (prior version)', async () => {
+  //   const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(JURISDICTION_ID, {
+  //     effective: YESTERDAY
+  //   })
+  //   test.value(jurisdiction).isNot(null)
+  //   test.value(jurisdiction?.jurisdiction_id).is(JURISDICTION_ID)
+  //   test.value(jurisdiction?.timestamp).is(YESTERDAY)
+  //   test.value(error).is(null)
+  // })
 
   it('Read Specific Jurisdiction (no version)', async () => {
     const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(JURISDICTION_ID, {

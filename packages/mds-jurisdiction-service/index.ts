@@ -1,8 +1,13 @@
 import { UUID, Timestamp } from '@mds-core/mds-types'
 import { ConnectionManager } from '@mds-core/mds-orm'
-import { NotFoundError } from 'packages/mds-utils'
+import { NotFoundError } from '@mds-core/mds-utils'
+import { DeepPartial } from 'typeorm'
+import { InsertReturning } from '@mds-core/mds-orm/types'
+import logger from '@mds-core/mds-logger'
 import { JurisdictionEntity } from './entities'
 import ormconfig from './ormconfig'
+
+import uuid = require('uuid')
 
 interface Jurisdiction {
   jurisdiction_id: UUID
@@ -12,13 +17,9 @@ interface Jurisdiction {
   timestamp: Timestamp
 }
 
-type JurisdictionServiceSuccess<TSuccess> = [null, TSuccess]
-const Success = <TSuccess>(result: TSuccess): JurisdictionServiceSuccess<TSuccess> => [null, result]
-
-type JurisdictionServiceFailure = [Error, null]
-const Failure = (error: Error): JurisdictionServiceFailure => [error, null]
-
-type JurisdictionServiceResult<TSuccess> = JurisdictionServiceSuccess<TSuccess> | JurisdictionServiceFailure
+type JurisdictionServiceResult<TSuccess> = [Error | null, TSuccess | null]
+const Success = <TSuccess>(result: TSuccess): JurisdictionServiceResult<TSuccess> => [null, result]
+const Failure = <TSuccess>(error: Error): JurisdictionServiceResult<TSuccess> => [error, null]
 
 interface GetJurisdictionOptions {
   effective: Timestamp
@@ -26,7 +27,9 @@ interface GetJurisdictionOptions {
 
 const manager = ConnectionManager(ormconfig)
 
-const AsJurisdiction = (effective: Timestamp) => (entity: JurisdictionEntity | undefined): Jurisdiction | null => {
+const AsJurisdiction = (effective: Timestamp = Date.now()) => (
+  entity: JurisdictionEntity | undefined
+): Jurisdiction | null => {
   if (entity) {
     const { jurisdiction_id, agency_key, versions } = entity
     const version = versions.find(properties => effective >= properties.timestamp)
@@ -46,6 +49,50 @@ const AsJurisdiction = (effective: Timestamp) => (entity: JurisdictionEntity | u
   return null
 }
 
+export type CreateJurisdictionType = Partial<Pick<Jurisdiction, 'jurisdiction_id' | 'timestamp'>> &
+  Pick<Jurisdiction, 'agency_key' | 'agency_name' | 'geography_id'>
+
+const AsJurisdictionEntity = (jurisdiction: CreateJurisdictionType): DeepPartial<JurisdictionEntity> => {
+  const recorded = Date.now()
+  const { jurisdiction_id = uuid(), agency_key, agency_name, geography_id, timestamp = recorded } = jurisdiction
+  // TODO: Validation
+  const entity: DeepPartial<JurisdictionEntity> = {
+    jurisdiction_id,
+    agency_key,
+    versions: [{ timestamp, agency_name, geography_id }],
+    recorded
+  }
+  return entity
+}
+
+const createJurisdictions = async (
+  jurisdictions: CreateJurisdictionType[]
+): Promise<JurisdictionServiceResult<Jurisdiction[]>> => {
+  try {
+    const connection = await manager.getReadWriteConnection()
+    const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
+      .getRepository(JurisdictionEntity)
+      .createQueryBuilder()
+      .insert()
+      .values(jurisdictions.map(AsJurisdictionEntity))
+      .returning('*')
+      .execute()
+    return Success(
+      entities.map(AsJurisdiction()).filter((jurisdiction): jurisdiction is Jurisdiction => jurisdiction !== null)
+    )
+  } catch (error) {
+    await logger.error(error.message)
+    return Failure(error)
+  }
+}
+
+const createJurisdiction = async (
+  jurisdiction: CreateJurisdictionType
+): Promise<JurisdictionServiceResult<Jurisdiction>> => {
+  const [error, jurisdictions] = await createJurisdictions([jurisdiction])
+  return [error, jurisdictions?.[0] ?? null]
+}
+
 const getAllJurisdictions = async ({
   effective = Date.now()
 }: Partial<GetJurisdictionOptions> = {}): Promise<JurisdictionServiceResult<Jurisdiction[]>> => {
@@ -60,6 +107,7 @@ const getAllJurisdictions = async ({
       .filter((jurisdiction): jurisdiction is Jurisdiction => jurisdiction !== null)
     return Success(jurisdictions)
   } catch (error) {
+    await logger.error(error.message)
     return Failure(error)
   }
 }
@@ -75,13 +123,19 @@ const getOneJurisdiction = async (
       .createQueryBuilder()
       .where({ jurisdiction_id })
       .getOne()
-    const jurisdiction = AsJurisdiction(effective)(entity)
+    const [jurisdiction] = [entity].map(AsJurisdiction(effective))
     return jurisdiction
       ? Success(jurisdiction)
       : Failure(new NotFoundError('Jurisdiction Not Found', { jurisdiction_id }))
   } catch (error) {
+    await logger.error(error.message, error)
     return Failure(error)
   }
 }
 
-export const JurisdictionService = { getAllJurisdictions, getOneJurisdiction }
+export const JurisdictionService = {
+  createJurisdictions,
+  createJurisdiction,
+  getAllJurisdictions,
+  getOneJurisdiction
+}
