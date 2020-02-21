@@ -16,7 +16,7 @@
 
 // Express local
 import { ApiServer } from '@mds-core/mds-api-server'
-import { api } from '@mds-core/mds-geography'
+import { api } from '@mds-core/mds-geography-author'
 import { env } from '@container-images/env-inject'
 
 const { npm_package_name, npm_package_version, npm_package_git_commit, PORT = 4010 } = env()
