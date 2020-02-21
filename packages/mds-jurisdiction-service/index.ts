@@ -27,6 +27,8 @@ interface GetJurisdictionOptions {
 
 const manager = ConnectionManager(ormconfig)
 
+const initialize = async () => manager.initialize()
+
 const AsJurisdiction = (effective: Timestamp = Date.now()) => (
   entity: JurisdictionEntity | undefined
 ): Jurisdiction | null => {
@@ -133,9 +135,13 @@ const getOneJurisdiction = async (
   }
 }
 
+const shutdown = async () => manager.shutdown()
+
 export const JurisdictionService = {
+  initialize,
   createJurisdictions,
   createJurisdiction,
   getAllJurisdictions,
-  getOneJurisdiction
+  getOneJurisdiction,
+  shutdown
 }

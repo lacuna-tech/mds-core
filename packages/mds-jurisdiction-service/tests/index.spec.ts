@@ -1,12 +1,9 @@
 import test from 'unit.js'
 import uuid from 'uuid'
-import { ConnectionManager } from '@mds-core/mds-orm'
 import { NotFoundError, days } from '@mds-core/mds-utils'
 import { JurisdictionService } from '../index'
-import ormconfig from '../ormconfig'
 
 const records = 5_000
-const manager = ConnectionManager(ormconfig)
 
 const JURISDICTION_ID = uuid()
 const TODAY = Date.now()
@@ -15,7 +12,7 @@ const LAST_WEEK = TODAY - days(7)
 
 describe('Write/Read Jurisdictions', () => {
   before(async () => {
-    await manager.initialize()
+    await JurisdictionService.initialize()
   })
 
   it(`Write ${records} Jurisdiction${records > 1 ? 's' : ''}`, async () => {
@@ -119,6 +116,6 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   after(async () => {
-    await manager.shutdown()
+    await JurisdictionService.shutdown()
   })
 })
