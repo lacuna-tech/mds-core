@@ -9,7 +9,7 @@ import ormconfig from './ormconfig'
 
 import uuid = require('uuid')
 
-interface Jurisdiction {
+export interface Jurisdiction {
   jurisdiction_id: UUID
   agency_key: string
   agency_name: string

@@ -29,6 +29,7 @@ export const Connections = (options: Partial<PostgresConnectionOptions> = {}): C
     maxQueryExecutionTime: 3000,
     logger: 'simple-console',
     synchronize: false,
+    migrationsRun: true,
     migrationsTableName: 'migration_history',
 
     namingStrategy: new MdsNamingStrategy(),
