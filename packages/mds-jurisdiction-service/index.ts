@@ -1,6 +1,6 @@
 import { UUID, Timestamp } from '@mds-core/mds-types'
 import { ConnectionManager } from '@mds-core/mds-orm'
-import { NotFoundError } from '@mds-core/mds-utils'
+import { NotFoundError, ServerError } from '@mds-core/mds-utils'
 import { DeepPartial } from 'typeorm'
 import { InsertReturning } from '@mds-core/mds-orm/types'
 import logger from '@mds-core/mds-logger'
@@ -17,7 +17,7 @@ export interface Jurisdiction {
   timestamp: Timestamp
 }
 
-type JurisdictionServiceResult<TSuccess> = [Error | null, TSuccess | null]
+type JurisdictionServiceResult<TSuccess> = [Error, null] | [null, TSuccess]
 const Success = <TSuccess>(result: TSuccess): JurisdictionServiceResult<TSuccess> => [null, result]
 const Failure = <TSuccess>(error: Error): JurisdictionServiceResult<TSuccess> => [error, null]
 
@@ -92,7 +92,7 @@ const createJurisdiction = async (
   jurisdiction: CreateJurisdictionType
 ): Promise<JurisdictionServiceResult<Jurisdiction>> => {
   const [error, jurisdictions] = await createJurisdictions([jurisdiction])
-  return [error, jurisdictions?.[0] ?? null]
+  return error || !jurisdictions ? Failure(error ?? new ServerError()) : Success(jurisdictions[0])
 }
 
 const getAllJurisdictions = async ({
