@@ -1,0 +1,28 @@
+{
+  "name": "@mds-core/mds-jurisdiction-service",
+  "version": "0.1.0",
+  "description": "Mobility Data Specification Jurisdiction Service",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/"
+  ],
+  "keywords": [
+    "mds",
+    "database"
+  ],
+  "scripts": {
+    "build": "tsc --build tsconfig.build.json",
+    "test": "yarn test:eslint && yarn test:unit",
+    "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
+    "test:unit": "yarn typeorm schema:drop && yarn typeorm migration:run && DOTENV_CONFIG_PATH=../../.env nyc --lines 90 ts-mocha --project ../../tsconfig.json",
+    "typeorm": "DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config ../../node_modules/typeorm/cli.js -c rw"
+  },
+  "author": "City of Los Angeles",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@mds-core/mds-orm": "0.1.0",
+    "typeorm": "0.2.22"
+  },
+  "devDependencies": {}
+}
