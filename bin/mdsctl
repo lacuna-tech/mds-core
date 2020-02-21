@@ -65,6 +65,7 @@ declare -A os=(
   ["osx"]="${osx}"
   ["linux"]="${linux}")
 declare -A configs=(
+  ["profiles"]="${MDS_PROFILE:-}"
   ["local-context"]="${MDS_LOCACL_CONTEXT:-docker-desktop|docker-for-desktop|minikube}"
   ["home"]="${MDS_HOME:-$(installDir)}"
   ["os"]="${MDS_OS:-`uname`}"
@@ -1520,6 +1521,7 @@ preset() {
   unset is
 }
 
+[[ -z ${configs[profiles]} ]] & preset "$(normalize ${configs[profiles]})"
 initialize
 check $(basename ${0})
 
