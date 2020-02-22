@@ -13,8 +13,8 @@ prometheus:
           labels:
             severity: warning
           annotations:
-            summary: "Low memory (instance {{ $labels.kubernetes_node }})"
-            description: "Node memory is filling up (< 20% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+            summary: "Low memory"
+            description: "Low memory on node {{ $labels.kubernetes_node }} ({{ $value }}% available)"
 
         - alert: NodeMemoryCritical
           expr: node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes * 100 < 10
@@ -22,8 +22,8 @@ prometheus:
           labels:
             severity: critical
           annotations:
-            summary: "Very low memory (instance {{ $labels.kubernetes_node }})"
-            description: "Node memory is filling up (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+            summary: "Very low memory"
+            description: "Very low memory on node {{ $labels.kubernetes_node }} ({{ $value }}% available)"
 
         - alert: NodeDiskSpaceWarn
           expr: (node_filesystem_used_bytes / node_filesystem_size_bytes) * 100 < 20
@@ -31,8 +31,8 @@ prometheus:
           labels:
             severity: warning
           annotations:
-            summary: "Low disk space (instance {{ $labels.kubernetes_node }})"
-            description: "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+            summary: "Low disk space"
+            description: "Low disk space on node {{ $labels.kubernetes_node }} ({{ $value }}% available)"
 
         - alert: NodeDiskSpaceCritical
           expr: (node_filesystem_used_bytes / node_filesystem_size_bytes) * 100 < 10
@@ -40,8 +40,8 @@ prometheus:
           labels:
             severity: critical
           annotations:
-            summary: "Very low disk space (instance {{ $labels.kubernetes_node }})"
-            description: "Disk is almost full (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+            summary: "Very low disk space"
+            description: "Very low disk space on node {{ $labels.kubernetes_node }} ({{ $value }}% available)"
 
         - alert: NodeInodesWarn
           expr: node_filesystem_files_free{mountpoint ="/"} / node_filesystem_files{mountpoint ="/"} * 100 < 20
@@ -49,8 +49,8 @@ prometheus:
           labels:
             severity: warning
           annotations:
-            summary: "Low inodes (instance {{ $labels.kubernetes_node }})"
-            description: "Disk is almost running out of available inodes (< 20% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+            summary: "Low filesystem inodes"
+            description: "Low filesystem inodes on node {{ $labels.kubernetes_node }} ({{ $value }}% available)"
 
         - alert: NodeInodesCritical
           expr: node_filesystem_files_free{mountpoint ="/"} / node_filesystem_files{mountpoint ="/"} * 100 < 10
@@ -58,8 +58,8 @@ prometheus:
           labels:
             severity: critical
           annotations:
-            summary: "Very Low inodes (instance {{ $labels.kubernetes_node }})"
-            description: "Disk is almost running out of available inodes (< 10% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+            summary: "Low filesystem inodes"
+            description: "Low filesystem inodes on node {{ $labels.kubernetes_node }} ({{ $value }}% available)"
 
         - alert: NodeCpuLoadWarn
           expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
@@ -67,8 +67,8 @@ prometheus:
           labels:
             severity: warning
           annotations:
-            summary: "High CPU load (instance {{ $labels.kubernetes_node }})"
-            description: "CPU load is > 80%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+            summary: "High CPU load"
+            description: "High CPU usage on node {{ $labels.kubernetes_node }} ({{ $value }}%)"
 
         - alert: NodeCpuLoadCritical
           expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 90
@@ -76,20 +76,20 @@ prometheus:
           labels:
             severity: warning
           annotations:
-            summary: "High CPU load (instance {{ $labels.kubernetes_node }})"
-            description: "CPU load is > 90%\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+            summary: "High CPU load"
+            description: "High CPU usage on node {{ $labels.kubernetes_node }} ({{ $value }}%)"
 
       - name: Pods
         rules:
 
-        - alert: PersistentVolumeOutOfDiskSpace
+        - alert: PersistentVolumeDiskWarning
           expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 20
           for: 5m
           labels:
             severity: warning
           annotations:
-            summary: "Volume out of disk space (instance {{ $labels.instance }})"
-            description: "Volume is almost full (< 20% left)\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+            summary: "Low PV disk space"
+            description: "Low disk space for PV {{ $labels.namespace }}/{{ $labels.persistenvolumeclaim }} ({{ $value }}% available)"
 
         - alert: StatefulsetDown
           expr: (kube_statefulset_status_replicas_ready / kube_statefulset_status_replicas_current) != 1
@@ -97,8 +97,8 @@ prometheus:
           labels:
             severity: error
           annotations:
-            summary: "StatefulSet down (instance {{ $labels.instance }})"
-            description: "A StatefulSet went down\n  VALUE = {{ $value }}\n  LABELS: {{ $labels }}"
+            summary: "StatefulSet down"
+            description: "StatefulSet went down\n  VALUE = {{ $value }}"
 
         - alert: PodRestartsWarning
           expr: kube_pod_container_status_restarts_total > 5
@@ -106,8 +106,8 @@ prometheus:
           labels:
             severity: warning
           annotations:
-            summary: "Pod frequent restarts (instance {{ $labels.instance }})"
-            description: "Pod restarted {{ $value }} times in 5 minutes\n  LABELS: {{ $labels }}"
+            summary: "Pod container frequent restarts"
+            description: "Pod container {{ $labels.namespace }}/{{ $labels.pod }} restarted {{ $value }} times"
 
         - alert: PodContainerStatusWaiting
           expr: kube_pod_container_status_waiting_reason == 1
@@ -115,17 +115,17 @@ prometheus:
           labels:
             severity: error
           annotations:
-            summary: "Pod stuck in waiting state (instance {{ $labels.instance }})"
-            description: "Pod stuck in state {{ $labels.reason }} for past 5 minutes\n  LABELS: {{ $labels }}"
+            summary: "Pod container waiting"
+            description: "Pod {{ $labels.namespace }}/{{ $labels.pod }} waiting in state {{ $labels.reason }}"
 
-alertmanagerFiles:
-  alertmanager.yml:
+  alertmanagerFiles:
+    alertmanager.yml:
 
-    global:
-      slack_api_url: "https://hooks.slack.com/services/REDACTED/REDACTED/REDACTED"
+      global:
+        slack_api_url: "https://hooks.slack.com/services/REDACTED/REDACTED/REDACTED"
 
-    receivers:
-    - name: default-receiver
-      slack_configs:
-      - channel: '#k8s-alerts'
-        send_resolved: false
+      receivers:
+      - name: default-receiver
+        slack_configs:
+        - channel: '#k8s-alerts'
+          send_resolved: false
