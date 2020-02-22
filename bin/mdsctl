@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+[[ -f ~/.mdsctl ]] && . ~/.mdsctl
 osx=darwin
 linux=linux
 
@@ -687,9 +688,6 @@ installMds() {
     pause 5
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
 
-    nkeysPath=$([[ -d ${configs[credentials]}/nats/nsc/nkeys ]] && echo ${configs[credentials]}/nats/nsc/nkeys || echo ${HOME}/.nkeys)
-    stanCreds=${nkeysPath}/creds/KO/SYS/sys.creds
-
     helm install ${configs[home]}/helm/mds --name ${configs[namespace-mds]} \
       --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -700,7 +698,7 @@ installMds() {
       ${configs[sets-mds]:+$(helmOptions set ${configs[sets-mds]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-mds]:+$(helmOptions set-file ${configs[setfiles-mds]})} \
-      $(helmOptions set-file stanCreds=${stanCreds}) \
+      $(helmOptions set-file stanCreds=$(stanCreds)) \
       ${configs[dryrun]:+--dry-run --debug}
     pause 12
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
@@ -780,24 +778,31 @@ installSimulator() {
 installCredentials() {
   check ${FUNCNAME[0]}
 
-  if [[ ! -d ${configs[credentials]} ]]; then
+  [[ ! -d ${configs[credentials]} && -n "${configs[credentials-repository]}" ]] && {
     mkdir -p ${configs[workdir]}
     (cd ${configs[workdir]};
       git clone ${configs[credentials-repository]} ${configs[credentials]} || usage "invalid repository: ${configs[credentials-repository]}";
       cd ${configs[credentials]};
       git pull)
-  fi
+  } || return 0
+}
+
+nkeysPath() {
+  echo $([[ -d ${configs[credentials]}/nats/nsc/nkeys ]] && \
+    echo ${configs[credentials]}/nats/nsc/nkeys || echo ${HOME}/.nkeys)/creds/KO/SYS/sys.creds
+}
+
+nscHome() {
+  echo $([[ -d ${configs[credentials]}/nats/nsc/nsc/nats ]] && \
+    echo ${configs[credentials]}/nats/nsc/nsc/nats || echo ${HOME}/.nsc/nats)
 }
 
 installNsc() {
   check ${FUNCNAME[0]}
 
-  nkeysPath=$([[ -d ${configs[credentials]}/nats/nsc/nkeys ]] && echo ${configs[credentials]}/nats/nsc/nkeys || echo ${HOME}/.nkeys)
-  nscHome=$([[ -d ${configs[credentials]}/nats/nsc/nsc/nats ]] && echo ${configs[credentials]}/nats/nsc/nsc/nats || echo ${HOME}/.nsc/nats)
-
-  (export NKEYS_PATH=${nkeysPath}
-    export NSC_HOME=${nscHome}
-    cd ${nscHome}
+  (export NKEYS_PATH=$(nkeysPath)
+    export NSC_HOME=$(nscHome)
+    cd ${NSC_HOME}
     nsc init --name KO > /dev/null 2>&1 || echo "trusted operator already exists"
     nsc describe operator --name KO > /dev/null 2>&1 || nsc add operator --name KO
     nsc describe account --name SYS > /dev/null 2>&1 || nsc add account --name SYS
@@ -806,12 +811,10 @@ installNsc() {
   [[ ! -d ${configs[nats]} ]] && mkdir -p ${configs[nats]}
 
   [[ ! -f ${configs[nats]}/resolver.conf ]] &&
-    (export NKEYS_PATH=${nkeysPath}
-      export NSC_HOME=${nscHome}
-      cd ${nscHome}
+    (export NKEYS_PATH=$(nkeysPath)
+      export NSC_HOME=$(nscHome)
+      cd ${NSC_HOME}
       nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf)
-
-  unset nkeysPath nscHome
 }
 
 installNats() {
@@ -887,9 +890,6 @@ installStan() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short ${configs[namespace-nats-stan]}-nats-streaming-server)" = "${configs[namespace-nats-stan]}-nats-streaming-server" ]] || {
-    nkeysPath=$([[ -d ${configs[credentials]}/nats/nsc/nkeys ]] && echo ${configs[credentials]}/nats/nsc/nkeys || echo ${HOME}/.nkeys)
-    stanCreds=${nkeysPath}/creds/KO/SYS/sys.creds
-
     helm install ${configs[home]}/helm/nats-streaming-server --name ${configs[namespace-nats-stan]}-nats-streaming-server \
       ${configs[namespace-nats-stan]:+--namespace ${configs[namespace-nats-stan]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -900,7 +900,7 @@ installStan() {
       ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
-      $(helmOptions set-file stanCreds=${stanCreds}) \
+      $(helmOptions set-file stanCreds=$(nkeysPath)/creds/KO/SYS/sys.creds) \
       ${configs[dryrun]:+--dry-run --debug}
 
     kubectl --namespace ${configs[namespace-nats-stan]} wait --for=condition=Ready pod --selector=app=nats-streaming-stateful \
@@ -963,9 +963,6 @@ installSurveyor() {
   }
 
   [[ "$(helm list --short ${configs[namespace-nats]}-nats-surveyor)" = "${configs[namespace-nats]}-nats-surveyor" ]] || {
-    nkeysPath=$([[ -d ${configs[credentials]}/nats/nsc/nkeys ]] && echo ${configs[credentials]}/nats/nsc/nkeys || echo ${HOME}/.nkeys)
-    stanCreds=${nkeysPath}/creds/KO/SYS/sys.creds
-
     helm install ${configs[home]}/helm/nats-surveyor --name ${configs[namespace-nats]}-nats-surveyor \
       ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
@@ -976,7 +973,7 @@ installSurveyor() {
       ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
-      $(helmOptions set-file stanCreds=${stanCreds}) \
+      $(helmOptions set-file stanCreds=$(stanCreds)) \
       ${configs[dryrun]:+--dry-run --debug}
 
     # kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pod --selector=app=nats-surveyor \
@@ -1417,8 +1414,7 @@ check() {
       #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
     build | testIntegration)
       [[ "$(exists yarn)" != "0" ]] && bootstrap;;
-    installCredentials)
-      [[ ! -d ${configs[credentials]} && ! "${configs[credentials-repository]}" ]] && usage "unspecified credentials repository";;
+    installCredentials) ;;
     installNsc) installCredentials;;
     installNas) installNsc;;
     installNats) installNas;;
@@ -1526,8 +1522,8 @@ while getopts ":w:s:c:p:q-:h-:" opt; do
   case "${opt}" in
     -)
       case "${OPTARG}" in
-        configure) configure "$(echo ${!OPTIND} | cut -d ':' -f 2-)"; OPTIND=$(( ${OPTIND} + 1 ));;
-        configure=*) configure "$(echo "${OPTARG#*=}" | cut -d ':' -f 2-)";;
+        configure) configure "$(echo ${!OPTIND})"; OPTIND=$(( ${OPTIND} + 1 ));;
+        configure=*) configure "$(echo ${OPTARG#*=})";;
         preset) preset "$(normalize ${!OPTIND})"; OPTIND=$(( ${OPTIND} + 1 ));;
         preset=*) preset "$(normalize ${OPTARG#*=})";;
         workdir) configs[workdir]="${!OPTIND}"; OPTIND=$(( ${OPTIND} + 1 ));;
@@ -1538,7 +1534,7 @@ while getopts ":w:s:c:p:q-:h-:" opt; do
         help) usage;;
         *) [ "${OPTERR}" = 1 ] && [ "${optspec:0:1}" != ":" ] && error "unknown option --${OPTARG}";;
       esac;;
-    c) configure "$(echo ${OPTARG} | cut -d ':' -f 2-)";;
+    c) configure "$(echo ${OPTARG})";;
     p) preset "$(normalize ${OPTARG})";;
     w) configs[workdir]=${OPTARG};;
     s) configs[pause]=${OPTARG};;
