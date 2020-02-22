@@ -758,7 +758,8 @@ installSimulator() {
   if [[ ! -d ${configs[simulator]} ]]; then
     mkdir -p ${configs[workdir]}
     (cd ${configs[workdir]};
-      git clone ${configs[simulator-repository]} ${configs[simulator]} || usage "invalid repository: ${configs[simulator-repository]}";
+      git clone ${configs[simulator-repository]} ${configs[simulator]} || \
+        usage "invalid repository: ${configs[simulator-repository]}";
       cd ${configs[simulator]};
       git pull)
   fi
@@ -781,7 +782,8 @@ installCredentials() {
   [[ ! -d ${configs[credentials]} && -n "${configs[credentials-repository]}" ]] && {
     mkdir -p ${configs[workdir]}
     (cd ${configs[workdir]};
-      git clone ${configs[credentials-repository]} ${configs[credentials]} || usage "invalid repository: ${configs[credentials-repository]}";
+      git clone ${configs[credentials-repository]} ${configs[credentials]} || \
+        usage "invalid repository: ${configs[credentials-repository]}";
       cd ${configs[credentials]};
       git pull)
   } || return 0
@@ -808,12 +810,11 @@ installNsc() {
     nsc describe account --name SYS > /dev/null 2>&1 || nsc add account --name SYS
     nsc describe user --account SYS --name sys > /dev/null 2>&1 || nsc add user --account SYS --name sys)
 
-  [[ ! -d ${configs[nats]} ]] && mkdir -p ${configs[nats]}
-
   [[ ! -f ${configs[nats]}/resolver.conf ]] &&
     (export NKEYS_PATH=$(nkeysPath)
       export NSC_HOME=$(nscHome)
       cd ${NSC_HOME}
+      mkdir -p ${configs[nats]}
       nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf)
 }
 
