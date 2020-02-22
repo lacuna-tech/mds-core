@@ -687,8 +687,8 @@ installMds() {
     pause 5
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
 
-    # todo: make better
-    stanCreds=${HOME}/.nkeys/creds/KO/SYS/sys.creds
+    nkeysPath=$([[ -d ${configs[credentials]}/nats/nsc/nkeys ]] && echo ${configs[credentials]}/nats/nsc/nkeys || echo ${HOME}/.nkeys)
+    stanCreds=${nkeysPath}/creds/KO/SYS/sys.creds
 
     helm install ${configs[home]}/helm/mds --name ${configs[namespace-mds]} \
       --namespace ${configs[namespace-mds]} \
@@ -760,7 +760,7 @@ installSimulator() {
   if [[ ! -d ${configs[simulator]} ]]; then
     mkdir -p ${configs[workdir]}
     (cd ${configs[workdir]};
-      git clone ${configs[simulator-repository]} ${configs[simulator]};
+      git clone ${configs[simulator-repository]} ${configs[simulator]} || usage "invalid repository: ${configs[simulator-repository]}";
       cd ${configs[simulator]};
       git pull)
   fi
@@ -783,7 +783,7 @@ installCredentials() {
   if [[ ! -d ${configs[credentials]} ]]; then
     mkdir -p ${configs[workdir]}
     (cd ${configs[workdir]};
-      git clone ${configs[credentials-repository]} ${configs[credentials]};
+      git clone ${configs[credentials-repository]} ${configs[credentials]} || usage "invalid repository: ${configs[credentials-repository]}";
       cd ${configs[credentials]};
       git pull)
   fi
@@ -792,17 +792,12 @@ installCredentials() {
 installNsc() {
   check ${FUNCNAME[0]}
 
-  nkeysPath=~/.nkeys
-  nscHome=~/.nsc
-
-  [[ -d ${configs[credentials]}/nsc/nkeys && -d ${configs[credentials]}/nsc/nsc ]] && {
-    nkeysPath=${configs[credentials]}/nsc/nkeys
-    nscHome=${configs[credentials]}/nsc/nsc
-  }
+  nkeysPath=$([[ -d ${configs[credentials]}/nats/nsc/nkeys ]] && echo ${configs[credentials]}/nats/nsc/nkeys || echo ${HOME}/.nkeys)
+  nscHome=$([[ -d ${configs[credentials]}/nats/nsc/nsc/nats ]] && echo ${configs[credentials]}/nats/nsc/nsc/nats || echo ${HOME}/.nsc/nats)
 
   (export NKEYS_PATH=${nkeysPath}
     export NSC_HOME=${nscHome}
-    cd ${nscHome}/nats
+    cd ${nscHome}
     nsc init --name KO > /dev/null 2>&1 || echo "trusted operator already exists"
     nsc describe operator --name KO > /dev/null 2>&1 || nsc add operator --name KO
     nsc describe account --name SYS > /dev/null 2>&1 || nsc add account --name SYS
@@ -813,7 +808,7 @@ installNsc() {
   [[ ! -f ${configs[nats]}/resolver.conf ]] &&
     (export NKEYS_PATH=${nkeysPath}
       export NSC_HOME=${nscHome}
-      cd ${nscHome}/nats
+      cd ${nscHome}
       nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf)
 
   unset nkeysPath nscHome
@@ -892,8 +887,8 @@ installStan() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short ${configs[namespace-nats-stan]}-nats-streaming-server)" = "${configs[namespace-nats-stan]}-nats-streaming-server" ]] || {
-    # todo: make better
-    stanCreds=${HOME}/.nkeys/creds/KO/SYS/sys.creds
+    nkeysPath=$([[ -d ${configs[credentials]}/nats/nsc/nkeys ]] && echo ${configs[credentials]}/nats/nsc/nkeys || echo ${HOME}/.nkeys)
+    stanCreds=${nkeysPath}/creds/KO/SYS/sys.creds
 
     helm install ${configs[home]}/helm/nats-streaming-server --name ${configs[namespace-nats-stan]}-nats-streaming-server \
       ${configs[namespace-nats-stan]:+--namespace ${configs[namespace-nats-stan]}} \
@@ -968,8 +963,8 @@ installSurveyor() {
   }
 
   [[ "$(helm list --short ${configs[namespace-nats]}-nats-surveyor)" = "${configs[namespace-nats]}-nats-surveyor" ]] || {
-    # todo: make better
-    stanCreds=${HOME}/.nkeys/creds/KO/SYS/sys.creds
+    nkeysPath=$([[ -d ${configs[credentials]}/nats/nsc/nkeys ]] && echo ${configs[credentials]}/nats/nsc/nkeys || echo ${HOME}/.nkeys)
+    stanCreds=${nkeysPath}/creds/KO/SYS/sys.creds
 
     helm install ${configs[home]}/helm/nats-surveyor --name ${configs[namespace-nats]}-nats-surveyor \
       ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
@@ -1422,7 +1417,9 @@ check() {
       #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
     build | testIntegration)
       [[ "$(exists yarn)" != "0" ]] && bootstrap;;
-    installNsc) ;;
+    installCredentials)
+      [[ ! -d ${configs[credentials]} && ! "${configs[credentials-repository]}" ]] && usage "unspecified credentials repository";;
+    installNsc) installCredentials;;
     installNas) installNsc;;
     installNats) installNas;;
     installStan) installNats;;
