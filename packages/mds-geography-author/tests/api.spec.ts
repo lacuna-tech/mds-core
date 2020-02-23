@@ -442,12 +442,18 @@ describe('Tests app', () => {
     })
 
     it('can publish a geography (correct auth)', async () => {
+      const beforeResult = await request
+        .get(`/geographies/${GEOGRAPHY2_UUID}`)
+        .set('Authorization', POLICIES_READ_SCOPE)
+        .expect(200)
+      test.assert(beforeResult.body.publish_date === null)
       const result = await request
         .put(`/geographies/${GEOGRAPHY2_UUID}/publish`)
         .set('Authorization', POLICIES_WRITE_SCOPE)
         .expect(200)
       test.value(result).hasHeader('content-type', APP_JSON)
       test.assert(result.body.geography_id === GEOGRAPHY2_UUID)
+      test.assert(result.body.publish_date)
     })
 
     it('correctly retrieves only the metadata associated with published geographies', async () => {

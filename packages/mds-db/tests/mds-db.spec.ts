@@ -373,7 +373,7 @@ if (pg_info.database) {
         await MDSDBPostgres.readSingleGeography(LAGeography.geography_id).should.be.rejected()
       })
 
-      it('can write, read, and publish a Geography', async () => {
+      it.only('can write, read, and publish a Geography', async () => {
         await MDSDBPostgres.initialize()
         await MDSDBPostgres.writeGeography(LAGeography)
         const result = await MDSDBPostgres.readSingleGeography(LAGeography.geography_id)

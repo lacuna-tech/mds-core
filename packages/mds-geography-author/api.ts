@@ -189,7 +189,8 @@ function api(app: express.Express): express.Express {
       const publish_date_param = Number(publish_date)
       try {
         await db.publishGeography({ publish_date: publish_date_param, geography_id })
-        return res.status(200).send({ geography_id })
+        const published_geo = await db.readSingleGeography(geography_id)
+        return res.status(200).send(published_geo)
       } catch (updateErr) {
         if (updateErr instanceof NotFoundError) {
           return res.status(400).send({ result: `unable to find geography of ${geography_id}` })
