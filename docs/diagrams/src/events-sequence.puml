@@ -1,0 +1,11 @@
+@startuml
+autonumber
+Agency -> Nats: publish
+Nats -> Authentication: auth request
+Nats <- Authentication: auth response
+Nats <-> Stan: stream
+collections Processors
+Processors <- Nats: subscribe
+Processors -> Redis: read
+Processors -> PostgreSql: read
+@enduml

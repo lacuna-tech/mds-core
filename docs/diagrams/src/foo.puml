@@ -1,8 +1,0 @@
-@startuml
-Agency -> Nats: publish
-Nats -> Authentication: authenticate request
-Nats <- Authentication: authentication response
-Nats <-> Stan: stream
-collections Processors
-Processors <- Nats: subscribe
-@enduml

@@ -1,0 +1,28 @@
+@startuml
+node mds {
+  card agency
+  queue stan
+  card event_processor
+}
+node istio {
+  card gateway
+}
+node nats {
+  queue nat
+  card authentication
+  card surveyor
+}
+node redis {
+}
+database postgresql {
+}
+
+gateway -> agency
+agency -> nat
+event_processor -> nat
+event_processor -> redis
+event_processor -> postgresql
+nat <-> stan
+nat -> authentication
+surveyor -> nat
+@enduml

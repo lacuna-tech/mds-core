@@ -885,6 +885,7 @@ installNatsbox() {
       ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      $(helmOptions set-file stanCreds=$(nkeysPath)/creds/KO/SYS/sys.creds) \
       ${configs[dryrun]:+--dry-run --debug}
 }
 
