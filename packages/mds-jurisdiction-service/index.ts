@@ -128,7 +128,7 @@ const getOneJurisdiction = async (
     const [jurisdiction] = [entity].map(AsJurisdiction(effective))
     return jurisdiction
       ? Success(jurisdiction)
-      : Failure(new NotFoundError('Jurisdiction Not Found', { jurisdiction_id }))
+      : Failure(new NotFoundError('Jurisdiction Not Found', { jurisdiction_id, effective }))
   } catch (error) {
     await logger.error(error.message, error)
     return Failure(error)

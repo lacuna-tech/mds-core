@@ -17,7 +17,7 @@
 import { ApiRequest, ApiResponse, ApiResponseLocals } from '@mds-core/mds-api-server'
 import { UUID } from '@mds-core/mds-types'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
-import { Jurisdiction } from '@mds-core/mds-jurisdiction-service'
+import { Jurisdiction, CreateJurisdictionType } from '@mds-core/mds-jurisdiction-service'
 
 // Place newer versions at the beginning of the list
 const JURISDICTION_API_VERSIONS = ['0.1.0'] as const
@@ -28,7 +28,7 @@ export const [JurisdictionApiCurrentVersion] = JURISDICTION_API_VERSIONS
 export type JurisdictionApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
 
 // Allow adding type definitions for Express Response objects
-export interface JurisdictionApiResponse<T extends JurisdictionApiResponseBody> extends ApiResponse<T> {
+export interface JurisdictionApiResponse<T> extends ApiResponse<{ version: JURISDICTION_API_VERSION } & T> {
   locals: ApiResponseLocals & {
     jurisdiction_id: UUID
   }
@@ -43,14 +43,32 @@ export interface JurisdictionApiGetJurisdictionsRequest extends JurisdictionApiR
   >
 }
 
-interface JurisdictionApiResponseBody {
-  version: JURISDICTION_API_VERSION
-}
-
-interface JurisdictionApiGetJurisdictionsResponseBody extends JurisdictionApiResponseBody {
+export type JurisdictionApiGetJurisdictionsResponse = JurisdictionApiResponse<{
   jurisdictions: Jurisdiction[]
+}>
+
+export interface JurisdictionApiGetJurisdictionRequest extends JurisdictionApiRequest<{ jurisdiction_id: UUID }> {
+  // Query string parameters always come in as strings
+  query: Partial<
+    {
+      [P in 'effective']: string
+    }
+  >
 }
 
-export type JurisdictionApiGetJurisdictionsResponse = JurisdictionApiResponse<
-  JurisdictionApiGetJurisdictionsResponseBody
+export type JurisdictionApiGetJurisdictionResponse = JurisdictionApiResponse<{
+  jurisdiction: Jurisdiction
+}>
+
+export interface JurisdictionApiCreateJurisdictionRequest extends JurisdictionApiRequest {
+  body: CreateJurisdictionType | CreateJurisdictionType[]
+}
+
+export type JurisdictionApiCreateJurisdictionResponse = JurisdictionApiResponse<
+  | {
+      jurisdiction: Jurisdiction
+    }
+  | {
+      jurisdictions: Jurisdiction[]
+    }
 >
