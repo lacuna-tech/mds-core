@@ -3,5 +3,9 @@
   "compilerOptions": {
     "outDir": "dist"
   },
-  "references": [{ "path": "../../packages/mds-orm/tsconfig.build.json" }]
+  "references": [
+    { "path": "../../packages/mds-orm/tsconfig.build.json" },
+    { "path": "../../packages/mds-types/tsconfig.build.json" },
+    { "path": "../../packages/mds-schema-validators/tsconfig.build.json" }
+  ]
 }

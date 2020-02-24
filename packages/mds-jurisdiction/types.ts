@@ -15,9 +15,9 @@
  */
 
 import { ApiRequest, ApiResponse, ApiResponseLocals } from '@mds-core/mds-api-server'
-import { UUID } from '@mds-core/mds-types'
+import { UUID, Jurisdiction } from '@mds-core/mds-types'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
-import { Jurisdiction, CreateJurisdictionType } from '@mds-core/mds-jurisdiction-service'
+import { CreateJurisdictionType } from '@mds-core/mds-jurisdiction-service'
 
 // Place newer versions at the beginning of the list
 const JURISDICTION_API_VERSIONS = ['0.1.0'] as const

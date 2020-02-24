@@ -1,6 +1,6 @@
 import test from 'unit.js'
 import uuid from 'uuid'
-import { NotFoundError, days } from '@mds-core/mds-utils'
+import { NotFoundError, ValidationError, days, ConflictError } from '@mds-core/mds-utils'
 import { JurisdictionService } from '../index'
 
 const records = 5_000
@@ -60,7 +60,7 @@ describe('Write/Read Jurisdictions', () => {
     test
       .value(error)
       .isNot(null)
-      .isInstanceOf(Error)
+      .isInstanceOf(ConflictError)
     test.value(jurisdiction).is(null)
   })
 
@@ -73,7 +73,20 @@ describe('Write/Read Jurisdictions', () => {
     test
       .value(error)
       .isNot(null)
-      .isInstanceOf(Error)
+      .isInstanceOf(ConflictError)
+    test.value(jurisdiction).is(null)
+  })
+
+  it('Write One Jurisdiction (validation error)', async () => {
+    const [error, jurisdiction] = await JurisdictionService.createJurisdiction({
+      agency_key: '',
+      agency_name: 'Agency Name One',
+      geography_id: uuid()
+    })
+    test
+      .value(error)
+      .isNot(null)
+      .isInstanceOf(ValidationError)
     test.value(jurisdiction).is(null)
   })
 
@@ -85,6 +98,8 @@ describe('Write/Read Jurisdictions', () => {
     test.value(error).is(null)
   })
 
+  // Requires updateJurisdiction
+  //
   // it('Read Specific Jurisdiction (prior version)', async () => {
   //   const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(JURISDICTION_ID, {
   //     effective: YESTERDAY

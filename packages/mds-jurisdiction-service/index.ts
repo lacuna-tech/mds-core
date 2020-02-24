@@ -1,21 +1,14 @@
-import { UUID, Timestamp } from '@mds-core/mds-types'
+import { UUID, Timestamp, Jurisdiction } from '@mds-core/mds-types'
 import { ConnectionManager } from '@mds-core/mds-orm'
-import { NotFoundError, ServerError } from '@mds-core/mds-utils'
+import { NotFoundError, ServerError, ConflictError, ValidationError } from '@mds-core/mds-utils'
 import { DeepPartial } from 'typeorm'
 import { InsertReturning } from '@mds-core/mds-orm/types'
 import logger from '@mds-core/mds-logger'
+import { validateJurisdiction } from '@mds-core/mds-schema-validators'
 import { JurisdictionEntity } from './entities'
 import ormconfig from './ormconfig'
 
 import uuid = require('uuid')
-
-export interface Jurisdiction {
-  jurisdiction_id: UUID
-  agency_key: string
-  agency_name: string
-  geography_id: UUID
-  timestamp: Timestamp
-}
 
 type JurisdictionServiceResult<TSuccess> = [Error, null] | [null, TSuccess]
 const Success = <TSuccess>(result: TSuccess): JurisdictionServiceResult<TSuccess> => [null, result]
@@ -57,7 +50,7 @@ export type CreateJurisdictionType = Partial<Pick<Jurisdiction, 'jurisdiction_id
 const AsJurisdictionEntity = (jurisdiction: CreateJurisdictionType): DeepPartial<JurisdictionEntity> => {
   const recorded = Date.now()
   const { jurisdiction_id = uuid(), agency_key, agency_name, geography_id, timestamp = recorded } = jurisdiction
-  // TODO: Validation
+  validateJurisdiction({ jurisdiction_id, agency_key, agency_name, geography_id, timestamp })
   const entity: DeepPartial<JurisdictionEntity> = {
     jurisdiction_id,
     agency_key,
@@ -84,7 +77,7 @@ const createJurisdictions = async (
     )
   } catch (error) {
     await logger.error(error.message)
-    return Failure(error)
+    return Failure(error instanceof ValidationError ? error : new ConflictError(error))
   }
 }
 
