@@ -95,7 +95,7 @@ services:
   jurisdiction:
     image: mds-jurisdiction:$JURISDICTION_VERSION
     ports:
-      - "4010"
+      - "4011"
     environment:
       PATH_PREFIX: /jurisdiction
       PG_HOST: postgres
