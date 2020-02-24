@@ -55,6 +55,22 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Server: mds-compliance",
+      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
+      "args": ["server.ts"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-compliance",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
+        "npm_package_name": "@mds-core/mds-compliance",
+        "PATH_PREFIX": "/compliance"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Server: mds-daily",
       "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
       "args": ["server.ts"],
@@ -71,17 +87,17 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Server: mds-compliance",
+      "name": "Server: mds-jursidiction",
       "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
       "args": ["server.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/mds-compliance",
+      "cwd": "${workspaceFolder}/packages/mds-jurisdiction",
       "env": {
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
-        "npm_package_name": "@mds-core/mds-compliance",
-        "PATH_PREFIX": "/compliance"
+        "npm_package_name": "@mds-core/mds-jurisdiction",
+        "PATH_PREFIX": "/jurisdiction"
       }
     },
     {
