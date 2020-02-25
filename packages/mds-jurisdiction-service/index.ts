@@ -26,9 +26,13 @@ import ormconfig from './ormconfig'
 
 import uuid = require('uuid')
 
-type JurisdictionServiceResult<TSuccess> = [Error, null] | [null, TSuccess]
-const Success = <TSuccess>(result: TSuccess): JurisdictionServiceResult<TSuccess> => [null, result]
-const Failure = <TSuccess>(error: Error): JurisdictionServiceResult<TSuccess> => [error, null]
+type JurisdictionServiceResult<TResult, TError extends Error> = [null, TResult] | [TError | ServerError, null]
+
+const Success = <TResult>(result: TResult): JurisdictionServiceResult<TResult, never> => [null, result]
+const Failure = <TError extends Error>(error: TError | ServerError): JurisdictionServiceResult<never, TError> => [
+  error,
+  null
+]
 
 interface GetJurisdictionOptions {
   effective: Timestamp
@@ -78,7 +82,7 @@ const AsJurisdictionEntity = (jurisdiction: CreateJurisdictionType): DeepPartial
 
 const createJurisdictions = async (
   jurisdictions: CreateJurisdictionType[]
-): Promise<JurisdictionServiceResult<Jurisdiction[]>> => {
+): Promise<JurisdictionServiceResult<Jurisdiction[], ValidationError | ConflictError>> => {
   try {
     const connection = await manager.getReadWriteConnection()
     const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
@@ -99,14 +103,14 @@ const createJurisdictions = async (
 
 const createJurisdiction = async (
   jurisdiction: CreateJurisdictionType
-): Promise<JurisdictionServiceResult<Jurisdiction>> => {
+): Promise<JurisdictionServiceResult<Jurisdiction, ValidationError | ConflictError>> => {
   const [error, jurisdictions] = await createJurisdictions([jurisdiction])
   return error || !jurisdictions ? Failure(error ?? new ServerError()) : Success(jurisdictions[0])
 }
 
 const getAllJurisdictions = async ({
   effective = Date.now()
-}: Partial<GetJurisdictionOptions> = {}): Promise<JurisdictionServiceResult<Jurisdiction[]>> => {
+}: Partial<GetJurisdictionOptions> = {}): Promise<JurisdictionServiceResult<Jurisdiction[], ServerError>> => {
   try {
     const connection = await manager.getReadOnlyConnection()
     const entities = await connection
@@ -126,7 +130,7 @@ const getAllJurisdictions = async ({
 const getOneJurisdiction = async (
   jurisdiction_id: UUID,
   { effective = Date.now() }: Partial<GetJurisdictionOptions> = {}
-): Promise<JurisdictionServiceResult<Jurisdiction>> => {
+): Promise<JurisdictionServiceResult<Jurisdiction, NotFoundError>> => {
   try {
     const connection = await manager.getReadOnlyConnection()
     const entity = await connection

@@ -15,7 +15,7 @@
  */
 
 import express from 'express'
-import { pathsFor, ServerError, NotFoundError } from '@mds-core/mds-utils'
+import { pathsFor, ServerError, NotFoundError, ValidationError, ConflictError } from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
 import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
 import {
@@ -27,6 +27,9 @@ import {
   JurisdictionApiGetJurisdictionResponse,
   JurisdictionApiGetJurisdictionRequest
 } from './types'
+
+const UnexpectedServiceError = (error: ServerError | null) =>
+  error instanceof ServerError ? error : new ServerError('Unexected Service Error', { error })
 
 function api(app: express.Express): express.Express {
   app.get(
@@ -43,7 +46,7 @@ function api(app: express.Express): express.Express {
           jurisdictions
         })
       }
-      return res.status(400).send({ error: error ?? new ServerError() })
+      return res.status(500).send({ error: UnexpectedServiceError(error) })
     }
   )
 
@@ -62,10 +65,10 @@ function api(app: express.Express): express.Express {
           jurisdiction
         })
       }
-      if (error) {
-        return res.status(error instanceof NotFoundError ? 404 : 400).send({ error })
+      if (error instanceof NotFoundError) {
+        return res.status(404).send({ error })
       }
-      return res.status(500).send({ error: new ServerError() })
+      return res.status(500).send({ error: UnexpectedServiceError(error) })
     }
   )
 
@@ -73,24 +76,22 @@ function api(app: express.Express): express.Express {
     pathsFor('/jurisdictions'),
     checkAccess(scopes => true),
     async (req: JurisdictionApiCreateJurisdictionRequest, res: JurisdictionApiCreateJurisdictionResponse) => {
-      if (Array.isArray(req.body)) {
-        const [error, jurisdictions] = await JurisdictionService.createJurisdictions(req.body)
-        if (jurisdictions) {
-          return res.status(201).send({
-            version: JurisdictionApiCurrentVersion,
-            jurisdictions
-          })
-        }
-        return res.status(400).send({ error: error ?? new ServerError() })
+      const [error, jurisdictions] = await JurisdictionService.createJurisdictions(
+        Array.isArray(req.body) ? req.body : [req.body]
+      )
+      if (jurisdictions) {
+        const [jurisdiction] = jurisdictions
+        return Array.isArray(req.body)
+          ? res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdictions })
+          : res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdiction })
       }
-      const [error, jurisdiction] = await JurisdictionService.createJurisdiction(req.body)
-      if (jurisdiction) {
-        return res.status(201).send({
-          version: JurisdictionApiCurrentVersion,
-          jurisdiction
-        })
+      if (error instanceof ValidationError) {
+        return res.status(400).send({ error })
       }
-      return res.status(400).send({ error: error ?? new ServerError() })
+      if (error instanceof ConflictError) {
+        return res.status(409).send({ error })
+      }
+      return res.status(500).send({ error: UnexpectedServiceError(error) })
     }
   )
 
