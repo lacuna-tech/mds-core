@@ -15,7 +15,7 @@
  */
 
 import express from 'express'
-import { pathsFor, ServerError } from '@mds-core/mds-utils'
+import { pathsFor, ServerError, NotFoundError } from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
 import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
 import {
@@ -62,7 +62,10 @@ function api(app: express.Express): express.Express {
           jurisdiction
         })
       }
-      return res.status(400).send({ error: error ?? new ServerError() })
+      if (error) {
+        return res.status(error instanceof NotFoundError ? 404 : 400).send({ error })
+      }
+      return res.status(500).send({ error: new ServerError() })
     }
   )
 
