@@ -16,6 +16,7 @@ export interface ApiResponseLocals {
 }
 
 export interface ApiResponse<TBody = unknown> extends express.Response {
+  locals: ApiResponseLocals
   send: (body: TBody | { error: Error }) => this
 }
 
@@ -116,11 +117,10 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
     const values = header ? header.split(',').map(value => value.trim()) : []
 
     // Parse the version and q properties from all values matching the specified mime type
-    const accepted = values.reduce<{ mime: string; version: string; q: number }[] | null>((accept, value) => {
+    const accepted = values.reduce<{ version: string; q: number }[] | null>((accept, value) => {
       const [mime, ...properties] = value.split(';').map(property => property.trim())
       return mime === mimeType
         ? (accept ?? []).concat({
-            mime,
             ...properties.reduce<{ version: string; q: number }>(
               (info, property) => {
                 const [key, val] = property.split('=').map(keyvalue => keyvalue.trim())
@@ -136,7 +136,6 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
         : accept
     }, null) ?? [
       {
-        mime: mimeType,
         version: preferred,
         q: 1.0
       }
