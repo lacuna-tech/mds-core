@@ -18,11 +18,15 @@ spec:
       labels:
         app: nats-account-server
     spec:
-      volumes:
-      - name: nsc-operator
-        hostPath:
-          path: {{ $.Values.nscOperatorDirectory }}
-          type: Directory
+      initContainers:
+      - name: nats-operator-data
+        image: busybox:1.28
+        command: ["unzip", "/tmp/nats-operator-data.zip", "-d", "/nsc-operator"]
+        volumeMounts:
+        - mountPath: /nsc-operator
+          name: nsc-operator
+        - mountPath: /tmp
+          name: nsc-operator-data
       containers:
         - name: nats-account-server
           image: synadia/nats-account-server:0.8.4
@@ -44,6 +48,12 @@ spec:
             - '0.0.0.0:9090'
             - '-nsc'
             - '/nsc-operator/KO'
+      volumes:
+      - name: nsc-operator
+        emptyDir: {}
+      - name: nsc-operator-data
+        configMap:
+          name: nats-operator-data
 ---
 apiVersion: v1
 kind: Service

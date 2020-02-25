@@ -840,6 +840,7 @@ installNats() {
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
       ${configs[dryrun]:+--dry-run --debug}
 
+    pause 1
     kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --all \
       --timeout=${configs[pause-kubectl]}s || error "nats-operator installation error"
   }
@@ -849,8 +850,10 @@ installNas() {
   check ${FUNCNAME[0]}
 
   [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] || {
-    # todo: ?better way?; $(nsc env | grep "Stores Dir") isn't panning
-    nscOperatorDirectory=${HOME}/.nsc/nats
+    nscOperatorData=${configs[nats]}/nats-operator-data.zip
+
+    [[ ! -f ${nscOperatorData} ]] && (cd $(nscHome); zip -r ${nscOperatorData} .)
+    # [[ ! -f helm/nats-account-server/nats-operator-data.zip ]] && ln -s ${nscOperatorData} helm/nats-account-server/nats-operator-data.zip
 
     helm install ${configs[home]}/helm/nats-account-server --name ${configs[namespace-nats-account-server]}-nats-account-server \
       ${configs[namespace-nats-account-server]:+--namespace ${configs[namespace-nats-account-server]}} \
@@ -860,13 +863,14 @@ installNas() {
       ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
       ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
       ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
-      $(helmOptions set nscOperatorDirectory=${nscOperatorDirectory})
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      # $(helmOptions set nscOperatorData=nats-operator-data.zip) \
       ${configs[dryrun]:+--dry-run --debug}
+    # todo: push to helm chart
+    kubectl --namespace ${configs[namespace-nats-account-server]} create configmap nats-operator-data --from-file ${nscOperatorData}
 
-    pause 1
-    kubectl --namespace ${configs[namespace-nats-account-server]} wait --for=condition=Ready pod/nats-account-server \
+    kubectl --namespace ${configs[namespace-nats-account-server]} wait --for=condition=Ready pod --selector=app=nats-account-server \
         --timeout=${configs[pause-kubectl]}s || error "nas installation error"
   }
 }
