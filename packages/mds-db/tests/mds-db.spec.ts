@@ -373,7 +373,7 @@ if (pg_info.database) {
         await MDSDBPostgres.readSingleGeography(LAGeography.geography_id).should.be.rejected()
       })
 
-      it.only('can write, read, and publish a Geography', async () => {
+      it('can write, read, and publish a Geography', async () => {
         await MDSDBPostgres.initialize()
         await MDSDBPostgres.writeGeography(LAGeography)
         const result = await MDSDBPostgres.readSingleGeography(LAGeography.geography_id)
@@ -383,7 +383,10 @@ if (pg_info.database) {
         const noGeos = await MDSDBPostgres.readGeographies({ get_read_only: true })
         assert.deepEqual(noGeos.length, 0)
 
-        await MDSDBPostgres.publishGeography({ geography_id: LAGeography.geography_id, publish_date: now() })
+        await MDSDBPostgres.publishGeography({
+          geography_id: LAGeography.geography_id,
+          publish_date: now()
+        })
         const writeableGeographies = await MDSDBPostgres.readGeographies({ get_read_only: false })
         assert.deepEqual(writeableGeographies.length, 1)
       })
@@ -481,7 +484,7 @@ if (pg_info.database) {
           async () => {
             await MDSDBPostgres.writeGeographyMetadata(geographyMetadata)
           },
-          { name: 'DataMissingError' }
+          { name: 'DependencyMissingError' }
         )
         await MDSDBPostgres.writeGeography(LAGeography)
         await MDSDBPostgres.writeGeographyMetadata(geographyMetadata)
@@ -496,6 +499,15 @@ if (pg_info.database) {
         assert.deepEqual(readOnlyResult.length, 0)
         const notReadOnlyResult = await MDSDBPostgres.readBulkGeographyMetadata({ get_read_only: false })
         assert.deepEqual(notReadOnlyResult.length, 1)
+      })
+
+      it('updates GeographyMetadata', async () => {
+        const geographyMetadata = {
+          geography_id: GEOGRAPHY_UUID,
+          geography_metadata: { foo: 'notafoo' }
+        }
+        const res = await MDSDBPostgres.updateGeographyMetadata(geographyMetadata)
+        assert.deepEqual(res.geography_metadata.foo, 'notafoo')
       })
     })
   })

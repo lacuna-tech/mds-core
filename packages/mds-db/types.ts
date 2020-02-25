@@ -100,6 +100,6 @@ export interface ReadGeographiesParams {
 }
 
 export interface PublishGeographiesParams {
-  publish_date: Timestamp
+  publish_date?: Timestamp
   geography_id: UUID
 }

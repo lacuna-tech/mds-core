@@ -1,5 +1,5 @@
 import { Geography, GeographySummary, UUID, Recorded, GeographyMetadata } from '@mds-core/mds-types'
-import { NotFoundError, DataMissingError, AlreadyPublishedError } from '@mds-core/mds-utils'
+import { NotFoundError, DependencyMissingError, AlreadyPublishedError } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 
 import schema from './schema'
@@ -111,7 +111,7 @@ export async function isGeographyPublished(geography_id: UUID) {
   return Boolean(result.rows[0].publish_date)
 }
 
-export async function editGeography(geography: Geography) {
+export async function editGeography(geography: Geography): Promise<Geography> {
   // validate TODO
   if (await isGeographyPublished(geography.geography_id)) {
     throw new Error('Cannot edit published Geography')
@@ -128,8 +128,10 @@ export async function editGeography(geography: Geography) {
     }
   })
   const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} WHERE geography_id='${geography.geography_id}' AND publish_date IS NULL`
+
   await client.query(sql, vals.values())
-  return geography
+  const res = await readSingleGeography(geography.geography_id)
+  return res
 }
 
 export async function deleteGeography(geography_id: UUID) {
@@ -143,8 +145,12 @@ export async function deleteGeography(geography_id: UUID) {
   return geography_id
 }
 
-export async function publishGeography(params: PublishGeographiesParams) {
-  const { geography_id, publish_date } = params
+export async function publishGeography(params: PublishGeographiesParams): Promise<Geography> {
+  /* publish_date is a param instead of a default, because when a Policy is published,
+   * we want to be able to set the publish_date of any associated Geography to be
+   * identical to the publish_date of the Policy.
+   */
+  const { geography_id, publish_date = Date.now() } = params
   try {
     const client = await getWriteableClient()
 
@@ -157,8 +163,9 @@ export async function publishGeography(params: PublishGeographiesParams) {
     const conditions = []
     conditions.push(`publish_date = ${vals.add(publish_date)}`)
     const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} where geography_id=${vals.add(geography_id)}`
+    await client.query(sql, vals.values())
 
-    const res = await client.query(sql, vals.values())
+    const res = await readSingleGeography(geography_id)
     return res
   } catch (err) {
     await log.error(err)
@@ -166,7 +173,7 @@ export async function publishGeography(params: PublishGeographiesParams) {
   }
 }
 
-export async function writeGeographyMetadata(geography_metadata: GeographyMetadata) {
+export async function writeGeographyMetadata(geography_metadata: GeographyMetadata): Promise<GeographyMetadata> {
   try {
     await readSingleGeography(geography_metadata.geography_id)
     const client = await getWriteableClient()
@@ -182,7 +189,7 @@ export async function writeGeographyMetadata(geography_metadata: GeographyMetada
     }: { rows: Recorded<Geography>[] } = await client.query(sql, values)
     return { ...geography_metadata, ...recorded_metadata }
   } catch (err) {
-    throw new DataMissingError(
+    throw new DependencyMissingError(
       `metadata not written, because no geography exists for geography_id ${geography_metadata.geography_id}`
     )
   }
@@ -198,7 +205,7 @@ export async function readSingleGeographyMetadata(geography_id: UUID): Promise<G
   return { geography_id, geography_metadata: result.rows[0].geography_metadata }
 }
 
-export async function updateGeographyMetadata(geography_metadata: GeographyMetadata) {
+export async function updateGeographyMetadata(geography_metadata: GeographyMetadata): Promise<GeographyMetadata> {
   await readSingleGeographyMetadata(geography_metadata.geography_id)
   const client = await getWriteableClient()
   const sql = `UPDATE ${schema.TABLE.geography_metadata}
