@@ -1,7 +1,7 @@
 import express from 'express'
 import db from '@mds-core/mds-db'
 
-import { pathsFor, ServerError, NotFoundError, DataMissingError } from '@mds-core/mds-utils'
+import { pathsFor, ServerError, NotFoundError, DependencyMissingError } from '@mds-core/mds-utils'
 import { geographyValidationDetails } from '@mds-core/mds-schema-validators'
 import log from '@mds-core/mds-logger'
 
@@ -169,7 +169,7 @@ function api(app: express.Express): express.Express {
             return res.status(201).send(geography_metadata)
           } catch (writeErr) {
             await log.error('failed to write geography metadata', writeErr.stack)
-            if (writeErr instanceof DataMissingError) {
+            if (writeErr instanceof DependencyMissingError) {
               return res.status(400).send({ result: `no geography found for ${geography_id}` })
             }
             return res.status(500).send(new ServerError())
