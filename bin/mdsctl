@@ -185,7 +185,7 @@ initialize() {
   # if [[ ! "$(helm version --short | grep -i client | cut -d ':' -f 2)" == *"${configs[helm-version]}"* ]]; then
     os=$(os)
 
-    if [[ ! -x ${configs[workdir]}/helm/${os}-amd64 ]]; then
+    if [[ ! -x ${configs[workdir]}/helm/${os}-amd64/helm ]]; then
       mkdir -p ${configs[workdir]}/helm
       curl -o ${configs[workdir]}/helm/helm-v${helmVersion}.tgz ${configs[helm-distribution]/{os\}/${os}} > /dev/null 2>&1
       (cd ${configs[workdir]}/helm; tar zxvf ${configs[workdir]}/helm/helm-v${helmVersion}.tgz > /dev/null 2>&1)
@@ -818,6 +818,35 @@ installNsc() {
       nsc generate config --mem-resolver --sys-account sys > ${configs[nats]}/resolver.conf)
 }
 
+installNas() {
+  check ${FUNCNAME[0]}
+
+  [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] || {
+    nscOperatorData=${configs[nats]}/nats-operator-data.zip
+
+    [[ ! -f ${nscOperatorData} ]] && (cd $(nscHome); zip -r ${nscOperatorData} .)
+    # [[ ! -f helm/nats-account-server/nats-operator-data.zip ]] && ln -s ${nscOperatorData} helm/nats-account-server/nats-operator-data.zip
+
+    helm install ${configs[home]}/helm/nats-account-server --name ${configs[namespace-nats-account-server]}-nats-account-server \
+      ${configs[namespace-nats-account-server]:+--namespace ${configs[namespace-nats-account-server]}} \
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      # $(helmOptions set nscOperatorData=nats-operator-data.zip) \
+      ${configs[dryrun]:+--dry-run --debug}
+    # fixme: push to helm chart
+    kubectl --namespace ${configs[namespace-nats-account-server]} create configmap nats-operator-data --from-file ${nscOperatorData}
+
+    kubectl --namespace ${configs[namespace-nats-account-server]} wait --for=condition=Ready pod --selector=app=nats-account-server \
+        --timeout=${configs[pause-kubectl]}s || error "nas installation error"
+  }
+}
+
 installNats() {
   check ${FUNCNAME[0]}
 
@@ -843,35 +872,6 @@ installNats() {
     pause 1
     kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --all \
       --timeout=${configs[pause-kubectl]}s || error "nats-operator installation error"
-  }
-}
-
-installNas() {
-  check ${FUNCNAME[0]}
-
-  [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] || {
-    nscOperatorData=${configs[nats]}/nats-operator-data.zip
-
-    [[ ! -f ${nscOperatorData} ]] && (cd $(nscHome); zip -r ${nscOperatorData} .)
-    # [[ ! -f helm/nats-account-server/nats-operator-data.zip ]] && ln -s ${nscOperatorData} helm/nats-account-server/nats-operator-data.zip
-
-    helm install ${configs[home]}/helm/nats-account-server --name ${configs[namespace-nats-account-server]}-nats-account-server \
-      ${configs[namespace-nats-account-server]:+--namespace ${configs[namespace-nats-account-server]}} \
-      ${configs[values]:+$(helmOptions values ${configs[values]})} \
-      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
-      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
-      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
-      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
-      # $(helmOptions set nscOperatorData=nats-operator-data.zip) \
-      ${configs[dryrun]:+--dry-run --debug}
-    # todo: push to helm chart
-    kubectl --namespace ${configs[namespace-nats-account-server]} create configmap nats-operator-data --from-file ${nscOperatorData}
-
-    kubectl --namespace ${configs[namespace-nats-account-server]} wait --for=condition=Ready pod --selector=app=nats-account-server \
-        --timeout=${configs[pause-kubectl]}s || error "nas installation error"
   }
 }
 
