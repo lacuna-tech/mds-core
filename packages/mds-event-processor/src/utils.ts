@@ -33,6 +33,8 @@ export async function getTripId(deviceState: StateEntry): Promise<string | null>
     log.info(`NO PRIOR TRIP EVENTS FOUND for ${provider_id}:${device_id}`)
     return null
   }
+  log.info(`matched tripsEvents:${tripsEvents}`)
+
   try {
     const sortedStartEvents = getSortedTripStarts(tripsEvents)
     const match = sortedStartEvents.find(tripStartData => {

@@ -140,6 +140,21 @@ export interface VehicleCountMetricObj {
   dead: number | null
 }
 
+export interface TNCMetricsTableRow {
+  timestamp: Timestamp
+  provider_id: UUID
+  /** Total number of TRIP_END and TRIP_LEAVE events */
+  trip_count: number
+  /** trip_count where events indicate a ride is shared */
+  shared_trip_count: number
+  /** Total fees the airport generates form trips in the time bin (Currently $4 per trip for LAWA) */
+  total_fees_dollars: number
+  /** Average time between RESERVE events and TRIP_START events in milliseconds */
+  avg_wait_time_ms: number
+  /** Average time between RESERVE_STOP and TRIP_START events. OR Avg time between TRIP_STOP and TRIP_RESUME events in milliseconds */
+  avg_dwell_time_ms: number
+}
+
 export interface MetricsTableRow {
   recorded: Timestamp
   /** Timestamp for start of bin (currently houry bins). */

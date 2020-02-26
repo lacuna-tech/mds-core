@@ -53,17 +53,24 @@ async function calcVehicleCounts(providerID: UUID, vehicleType: VEHICLE_TYPE): P
   /* FIXME: This is a temporary placeholder until device cache restructuring
   supports provider awareness or stream metric replacement */
   const allRegisteredVehicles = await cache.readKeys('device:*:device')
-  const registeredForProvider: UUID[] = []
-  await Promise.all(
-    allRegisteredVehicles?.map(async device => {
-      const id = device.slice(device.indexOf(':') + 1, device.lastIndexOf(':'))
-      if ((await cache.getVehicleProvider(id)) === providerID && (await cache.getVehicleType(id)) === vehicleType) {
-        registeredForProvider.push(device)
-      }
-    }) ?? []
+  const registeredForProvider = (
+    await Promise.all(
+      allRegisteredVehicles?.map(deviceKey => {
+        const [, id] = deviceKey.split(':')
+        return Promise.all([id, cache.getVehicleProvider(id), cache.getVehicleType(id)])
+      }) ?? []
+    )
   )
-  const registered = registeredForProvider.length
+    .filter(deviceInfo => {
+      const [, provider_id, vehicle_type] = deviceInfo
+      return provider_id === providerID && vehicle_type === vehicleType
+    })
+    .map(deviceInfo => {
+      const [device_id] = deviceInfo
+      return device_id
+    })
 
+  const registered = registeredForProvider.length
   /*
   Calculate total number of vehicle in Right of way
   */

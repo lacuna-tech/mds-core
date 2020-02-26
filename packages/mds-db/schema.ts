@@ -18,7 +18,8 @@ const TABLE = Enum(
   'reports_providers',
   'reports_trips',
   'stops',
-  'telemetry'
+  'telemetry',
+  'tnc_metrics'
 )
 export type TABLE_NAME = keyof typeof TABLE
 const TABLES = Object.keys(TABLE) as TABLE_NAME[]
@@ -38,7 +39,9 @@ const COLUMN = Enum(
   'audit_issue_code',
   'audit_subject_id',
   'audit_trip_id',
+  'avg_dwell_time_ms',
   'avg_violation_dist',
+  'avg_wait_time_ms',
   'bad_events',
   'base_url',
   'bin_size',
@@ -98,6 +101,7 @@ const COLUMN = Enum(
   'rental_methods',
   'reservation_cost',
   'service_area_id',
+  'shared_trip_count',
   'short_name',
   'sla',
   'speed',
@@ -113,6 +117,7 @@ const COLUMN = Enum(
   'thumbnail_mimetype',
   'timestamp',
   'timezone',
+  'total_fees_dollars',
   'trip_count',
   'trip_id',
   'type',
@@ -278,6 +283,15 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.charge,
     COLUMN.recorded
   ],
+  [TABLE.tnc_metrics]: [
+    COLUMN.timestamp,
+    COLUMN.provider_id,
+    COLUMN.trip_count,
+    COLUMN.shared_trip_count,
+    COLUMN.total_fees_dollars,
+    COLUMN.avg_wait_time_ms,
+    COLUMN.avg_dwell_time_ms
+  ],
   [TABLE.stops]: [
     COLUMN.id,
     COLUMN.stop_id,
@@ -319,7 +333,8 @@ const TABLE_KEY: { [T in TABLE_NAME]: COLUMN_NAME[] } = {
   [TABLE.reports_providers]: [COLUMN.provider_id, COLUMN.vehicle_type, COLUMN.start_time],
   [TABLE.reports_trips]: [COLUMN.provider_id, COLUMN.device_id, COLUMN.trip_id],
   [TABLE.stops]: [COLUMN.stop_id],
-  [TABLE.telemetry]: [COLUMN.device_id, COLUMN.timestamp]
+  [TABLE.telemetry]: [COLUMN.device_id, COLUMN.timestamp],
+  [TABLE.tnc_metrics]: [COLUMN.timestamp, COLUMN.provider_id]
 }
 
 const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
@@ -336,7 +351,9 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.audit_issue_code]: 'varchar(31)',
   [COLUMN.audit_subject_id]: 'varchar(255) NOT NULL',
   [COLUMN.audit_trip_id]: 'uuid NOT NULL',
+  [COLUMN.avg_dwell_time_ms]: 'double precision NOT NULL',
   [COLUMN.avg_violation_dist]: 'double precision',
+  [COLUMN.avg_wait_time_ms]: 'double precision NOT NULL',
   [COLUMN.bad_events]: 'json',
   [COLUMN.base_url]: 'varchar(127) NOT NULL',
   [COLUMN.bin_size]: 'varchar(31)',
@@ -396,6 +413,7 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.rental_methods]: 'varchar(255)',
   [COLUMN.reservation_cost]: 'jsonb',
   [COLUMN.service_area_id]: 'uuid',
+  [COLUMN.shared_trip_count]: 'bigint NOT NULL',
   [COLUMN.short_name]: 'varchar(31)',
   [COLUMN.sla]: 'json',
   [COLUMN.speed]: 'real',
@@ -411,6 +429,7 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.thumbnail_mimetype]: 'varchar(64)',
   [COLUMN.timestamp]: 'bigint NOT NULL',
   [COLUMN.timezone]: 'varchar(255)',
+  [COLUMN.total_fees_dollars]: 'bigint NOT NULL',
   [COLUMN.trip_count]: 'int',
   [COLUMN.trip_id]: 'uuid',
   [COLUMN.type]: 'varchar(31) NOT NULL',
