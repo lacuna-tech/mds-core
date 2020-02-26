@@ -1,10 +1,7 @@
 name: mds-agency
 namespace: mds
 image: node:12
-# Usage: What command should be run upon establishing a connection
-# Docs: https://okteto.com/docs/reference/manifest/index.html#command-string-optional
 command: ['bash']
-# Docs: https://okteto.com/docs/reference/manifest/index.html#forward-string-optional
 forward:
   - 9229:9229
 resources:
