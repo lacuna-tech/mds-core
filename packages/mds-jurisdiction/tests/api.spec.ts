@@ -19,7 +19,7 @@ import test from 'unit.js'
 import { ApiServer } from '@mds-core/mds-api-server'
 import uuid from 'uuid'
 import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
-import { SCOPED_AUTH } from 'packages/mds-test-data'
+import { SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { Jurisdiction } from '@mds-core/mds-types'
 import { api } from '../api'
 
@@ -103,14 +103,14 @@ describe('', () => {
   it('Get One Jurisdiction (incorrect jurisdiction claim)', async () => {
     await request
       .get(`/jurisdictions/${JURISDICTION2.jurisdiction_id}`)
-      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:agency'], JURISDICTION1.agency_key))
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:claim'], JURISDICTION1.agency_key))
       .expect(403)
   })
 
   it('Get One Jurisdiction (proper jurisdiction claim)', async () => {
     const result = await request
       .get(`/jurisdictions/${JURISDICTION2.jurisdiction_id}`)
-      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:agency'], JURISDICTION2.agency_key))
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:claim'], JURISDICTION2.agency_key))
       .expect(200)
     test.object(result.body.jurisdiction).hasProperty('jurisdiction_id', JURISDICTION2.jurisdiction_id)
   })
@@ -140,7 +140,7 @@ describe('', () => {
   it('Get Multiple Jurisdictions (no jurisdictions claim)', async () => {
     const result = await request
       .get('/jurisdictions')
-      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:agency']))
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:claim']))
       .expect(200)
     test.value((result.body.jurisdictions as Jurisdiction[]).length).is(0)
   })
@@ -148,7 +148,7 @@ describe('', () => {
   it('Get Multiple Jurisdictions (jurisdictions claim)', async () => {
     const result = await request
       .get('/jurisdictions')
-      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:agency'], JURISDICTION2.agency_key))
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:claim'], JURISDICTION2.agency_key))
       .expect(200)
     test.value((result.body.jurisdictions as Jurisdiction[]).length).is(1)
   })

@@ -47,7 +47,7 @@ const HasJurisdictionClaim = <T>(res: JurisdictionApiResponse<T>) => (jurisdicti
 function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/jurisdictions'),
-    checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:agency')),
+    checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')),
     async (req: JurisdictionApiGetJurisdictionsRequest, res: JurisdictionApiGetJurisdictionsResponse) => {
       const { effective } = req.query
 
@@ -70,7 +70,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/jurisdictions/:jurisdiction_id'),
-    checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:agency')),
+    checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')),
     async (req: JurisdictionApiGetJurisdictionRequest, res: JurisdictionApiGetJurisdictionResponse) => {
       const { effective } = req.query
       const { jurisdiction_id } = req.params
