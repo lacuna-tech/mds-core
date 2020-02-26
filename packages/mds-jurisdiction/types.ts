@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { ApiRequest, ApiResponse, ApiResponseLocals } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
 import { UUID, Jurisdiction } from '@mds-core/mds-types'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
 import { CreateJurisdictionType } from '@mds-core/mds-jurisdiction-service'
@@ -28,11 +28,7 @@ export const [JurisdictionApiCurrentVersion] = JURISDICTION_API_VERSIONS
 export type JurisdictionApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
 
 // Allow adding type definitions for Express Response objects
-export interface JurisdictionApiResponse<T> extends ApiResponse<{ version: JURISDICTION_API_VERSION } & T> {
-  locals: ApiResponseLocals & {
-    jurisdiction_id: UUID
-  }
-}
+export type JurisdictionApiResponse<T> = ApiResponse<{ version: JURISDICTION_API_VERSION } & T>
 
 export interface JurisdictionApiGetJurisdictionsRequest extends JurisdictionApiRequest {
   // Query string parameters always come in as strings

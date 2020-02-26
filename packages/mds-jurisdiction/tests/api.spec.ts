@@ -96,8 +96,23 @@ describe('', () => {
       .expect(404)
   })
 
-  it('Get One Jurisdiction (forbidden)', async () => {
-    await request.get(`/jurisdictions/${uuid()}`).expect(403)
+  it('Get One Jurisdiction (no scope)', async () => {
+    await request.get(`/jurisdictions/${JURISDICTION2.jurisdiction_id}`).expect(403)
+  })
+
+  it('Get One Jurisdiction (incorrect jurisdiction claim)', async () => {
+    await request
+      .get(`/jurisdictions/${JURISDICTION2.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:agency'], JURISDICTION1.agency_key))
+      .expect(403)
+  })
+
+  it('Get One Jurisdiction (proper jurisdiction claim)', async () => {
+    const result = await request
+      .get(`/jurisdictions/${JURISDICTION2.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:agency'], JURISDICTION2.agency_key))
+      .expect(200)
+    test.object(result.body.jurisdiction).hasProperty('jurisdiction_id', JURISDICTION2.jurisdiction_id)
   })
 
   it('Get Multiple Jurisdictions', async () => {
@@ -116,6 +131,26 @@ describe('', () => {
           ).length
       )
       .is(3)
+  })
+
+  it('Get Multiple Jurisdictions (no scope)', async () => {
+    await request.get('/jurisdictions').expect(403)
+  })
+
+  it('Get Multiple Jurisdictions (no jurisdictions claim)', async () => {
+    const result = await request
+      .get('/jurisdictions')
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:agency']))
+      .expect(200)
+    test.value((result.body.jurisdictions as Jurisdiction[]).length).is(0)
+  })
+
+  it('Get Multiple Jurisdictions (jurisdictions claim)', async () => {
+    const result = await request
+      .get('/jurisdictions')
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read:agency'], JURISDICTION2.agency_key))
+      .expect(200)
+    test.value((result.body.jurisdictions as Jurisdiction[]).length).is(1)
   })
 
   after(async () => JurisdictionService.shutdown())

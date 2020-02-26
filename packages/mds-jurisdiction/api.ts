@@ -15,9 +15,17 @@
  */
 
 import express from 'express'
-import { pathsFor, ServerError, NotFoundError, ValidationError, ConflictError } from '@mds-core/mds-utils'
+import {
+  pathsFor,
+  ServerError,
+  NotFoundError,
+  ValidationError,
+  ConflictError,
+  AuthorizationError
+} from '@mds-core/mds-utils'
 import { checkAccess } from '@mds-core/mds-api-server'
 import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
+import { Jurisdiction } from '@mds-core/mds-types'
 import {
   JurisdictionApiGetJurisdictionsRequest,
   JurisdictionApiGetJurisdictionsResponse,
@@ -25,11 +33,16 @@ import {
   JurisdictionApiCreateJurisdictionRequest,
   JurisdictionApiCreateJurisdictionResponse,
   JurisdictionApiGetJurisdictionResponse,
-  JurisdictionApiGetJurisdictionRequest
+  JurisdictionApiGetJurisdictionRequest,
+  JurisdictionApiResponse
 } from './types'
 
 const UnexpectedServiceError = (error: ServerError | null) =>
   error instanceof ServerError ? error : new ServerError('Unexected Service Error', { error })
+
+const HasJurisdictionClaim = <T>(res: JurisdictionApiResponse<T>) => (jurisdiction: Jurisdiction): boolean =>
+  res.locals.scopes.includes('jurisdictions:read') ||
+  (res.locals.claims?.jurisdictions?.split(' ') ?? []).includes(jurisdiction.agency_key)
 
 function api(app: express.Express): express.Express {
   app.get(
@@ -38,15 +51,15 @@ function api(app: express.Express): express.Express {
     async (req: JurisdictionApiGetJurisdictionsRequest, res: JurisdictionApiGetJurisdictionsResponse) => {
       const { effective } = req.query
 
-      const [error, result] = await JurisdictionService.getAllJurisdictions({
+      const [error, jurisdictions] = await JurisdictionService.getAllJurisdictions({
         effective: effective ? Number(effective) : undefined
       })
 
       // Handle result
-      if (result) {
+      if (jurisdictions) {
         return res.status(200).send({
           version: JurisdictionApiCurrentVersion,
-          jurisdictions: result
+          jurisdictions: jurisdictions.filter(HasJurisdictionClaim(res))
         })
       }
 
@@ -62,16 +75,18 @@ function api(app: express.Express): express.Express {
       const { effective } = req.query
       const { jurisdiction_id } = req.params
 
-      const [error, result] = await JurisdictionService.getOneJurisdiction(jurisdiction_id, {
+      const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(jurisdiction_id, {
         effective: effective ? Number(effective) : undefined
       })
 
       // Handle result
-      if (result) {
-        return res.status(200).send({
-          version: JurisdictionApiCurrentVersion,
-          jurisdiction: result
-        })
+      if (jurisdiction) {
+        return HasJurisdictionClaim(res)(jurisdiction)
+          ? res.status(200).send({
+              version: JurisdictionApiCurrentVersion,
+              jurisdiction
+            })
+          : res.status(403).send({ error: new AuthorizationError('Access Denied', { jurisdiction_id }) })
       }
 
       // Handle errors
@@ -87,15 +102,15 @@ function api(app: express.Express): express.Express {
     pathsFor('/jurisdictions'),
     checkAccess(scopes => scopes.includes('jurisdictions:write')),
     async (req: JurisdictionApiCreateJurisdictionRequest, res: JurisdictionApiCreateJurisdictionResponse) => {
-      const [error, result] = await JurisdictionService.createJurisdictions(
+      const [error, jurisdictions] = await JurisdictionService.createJurisdictions(
         Array.isArray(req.body) ? req.body : [req.body]
       )
 
       // Handle result
-      if (result) {
+      if (jurisdictions) {
         return Array.isArray(req.body)
-          ? res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdictions: result })
-          : res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdiction: result[0] })
+          ? res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdictions })
+          : res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdiction: jurisdictions[0] })
       }
 
       // Handle errors
