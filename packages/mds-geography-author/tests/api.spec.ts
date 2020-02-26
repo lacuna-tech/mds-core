@@ -23,14 +23,13 @@
 
 /* eslint-reason extends object.prototype */
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
-import should from 'should'
+import assert from 'assert'
 import sinon from 'sinon'
 import supertest from 'supertest'
 import test from 'unit.js'
 import db from '@mds-core/mds-db'
 import uuid from 'uuid'
 import { Geography } from '@mds-core/mds-types'
-import { NotFoundError } from '@mds-core/mds-utils'
 import { ApiServer } from '@mds-core/mds-api-server'
 import {
   POLICY_UUID,
@@ -57,7 +56,7 @@ const sandbox = sinon.createSandbox()
 
 describe('Tests app', () => {
   describe('Geography endpoint tests', () => {
-    afterEach(function() {
+    afterEach(() => {
       sandbox.restore()
     })
 
@@ -244,7 +243,7 @@ describe('Tests app', () => {
         .put(`/geographies/${nonexistentGeoUUID}/meta`)
         .set('Authorization', POLICIES_WRITE_SCOPE)
         .send({ geography_id: nonexistentGeoUUID, geography_metadata: metadata })
-        .expect(400)
+        .expect(404)
     })
 
     it('cannot GET geographies (no auth)', done => {
@@ -331,8 +330,6 @@ describe('Tests app', () => {
         .set('Authorization', POLICIES_READ_SCOPE)
         .expect(404)
         .end((err, result) => {
-          console.log('ress ress')
-          console.log(result)
           test.assert(result.body.result === 'not found')
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
@@ -466,9 +463,6 @@ describe('Tests app', () => {
     })
 
     it('cannot publish a geography (wrong auth)', async () => {
-      sandbox.stub(db, 'publishGeography').callsFake(function stubAThrow() {
-        throw new Error('err')
-      })
       await request
         .put(`/geographies/${GEOGRAPHY2_UUID}/publish`)
         .set('Authorization', EMPTY_SCOPE)
@@ -485,11 +479,40 @@ describe('Tests app', () => {
     it('can delete a geography (correct auth)', async () => {
       const testUUID = uuid()
       await db.writeGeography({ geography_id: testUUID, geography_json: LA_CITY_BOUNDARY, name: 'testafoo' })
+      await db.writeGeographyMetadata({ geography_id: testUUID, geography_metadata: { foo: 'afoo' } })
       await request
         .delete(`/geographies/${testUUID}`)
         .set('Authorization', POLICIES_DELETE_SCOPE)
         .expect(200)
-      await db.readSingleGeography(testUUID).should.be.rejectedWith(NotFoundError)
+      await assert.rejects(
+        async () => {
+          await db.readSingleGeography(testUUID)
+        },
+        { name: 'NotFoundError' }
+      )
+      await assert.rejects(
+        async () => {
+          await db.readSingleGeographyMetadata(testUUID)
+        },
+        { name: 'NotFoundError' }
+      )
+    })
+
+    it('cannot delete a published geography (correct auth)', async () => {
+      await request
+        .delete(`/geographies/${GEOGRAPHY2_UUID}`)
+        .set('Authorization', POLICIES_DELETE_SCOPE)
+        .expect(405)
+    })
+
+    it('sends the correct error code if something blows up on the backend during delete', async () => {
+      sandbox.stub(db, 'deleteGeography').callsFake(function stubAThrow() {
+        throw new Error('random backend err')
+      })
+      await request
+        .delete(`/geographies/${uuid()}`)
+        .set('Authorization', POLICIES_DELETE_SCOPE)
+        .expect(500)
     })
   })
 })

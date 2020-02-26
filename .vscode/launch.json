@@ -8,8 +8,17 @@
       "type": "node",
       "request": "launch",
       "name": "Server: mds-agency",
-      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
-      "args": ["server.ts"],
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": [
+        "server.ts"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -24,8 +33,17 @@
       "type": "node",
       "request": "launch",
       "name": "Server: mds-audit",
-      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
-      "args": ["server.ts"],
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": [
+        "server.ts"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -40,8 +58,17 @@
       "type": "node",
       "request": "launch",
       "name": "Server: mds-config",
-      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
-      "args": ["server.ts"],
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": [
+        "server.ts"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -56,8 +83,17 @@
       "type": "node",
       "request": "launch",
       "name": "Server: mds-daily",
-      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
-      "args": ["server.ts"],
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": [
+        "server.ts"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -72,8 +108,17 @@
       "type": "node",
       "request": "launch",
       "name": "Server: mds-compliance",
-      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
-      "args": ["server.ts"],
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": [
+        "server.ts"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -88,8 +133,17 @@
       "type": "node",
       "request": "launch",
       "name": "Server: mds-native",
-      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
-      "args": ["server.ts"],
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": [
+        "server.ts"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -104,8 +158,17 @@
       "type": "node",
       "request": "launch",
       "name": "Server: mds-policy",
-      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
-      "args": ["server.ts"],
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": [
+        "server.ts"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -119,9 +182,43 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Server: mds-geography-author",
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": [
+        "server.ts"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-geography-author",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
+        "npm_package_name": "@mds-core/mds-geography-author",
+        "PATH_PREFIX": "/geography-author"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Server: mds-policy-author",
-      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
-      "args": ["server.ts"],
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": [
+        "server.ts"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -136,8 +233,17 @@
       "type": "node",
       "request": "launch",
       "name": "Server: mds-metrics",
-      "runtimeArgs": ["-r", "ts-node/register", "-r", "tsconfig-paths/register", "-r", "dotenv/config"],
-      "args": ["server.ts"],
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": [
+        "server.ts"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -153,7 +259,14 @@
       "request": "launch",
       "name": "Tests: mds-agency",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -168,7 +281,14 @@
       "request": "launch",
       "name": "Tests: mds-api-authorizer",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -182,7 +302,14 @@
       "request": "launch",
       "name": "Tests: mds-api-server",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -198,7 +325,14 @@
       "request": "launch",
       "name": "Tests: mds-audit",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -213,7 +347,14 @@
       "request": "launch",
       "name": "Tests: mds-compliance",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -228,7 +369,14 @@
       "request": "launch",
       "name": "Tests: mds-config",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -243,7 +391,14 @@
       "request": "launch",
       "name": "Tests: mds-config-service",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -257,7 +412,14 @@
       "request": "launch",
       "name": "Tests: mds-daily",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -272,7 +434,14 @@
       "request": "launch",
       "name": "Tests: mds-db",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -286,7 +455,14 @@
       "request": "launch",
       "name": "Tests: mds-event-server",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -302,7 +478,14 @@
       "request": "launch",
       "name": "Tests: mds-logger",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -316,7 +499,14 @@
       "request": "launch",
       "name": "Tests: mds-native",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -331,7 +521,14 @@
       "request": "launch",
       "name": "Tests: mds-policy",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -346,7 +543,14 @@
       "request": "launch",
       "name": "Tests: mds-policy-author",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -361,7 +565,14 @@
       "request": "launch",
       "name": "Tests: mds-types",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -375,7 +586,14 @@
       "request": "launch",
       "name": "Tests: mds-utils",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -389,7 +607,14 @@
       "request": "launch",
       "name": "Tests: mds-metrics",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",

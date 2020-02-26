@@ -107,7 +107,6 @@ export async function isGeographyPublished(geography_id: UUID) {
   if (result.rows.length === 0) {
     throw new NotFoundError(`geography_id ${geography_id} not found`)
   }
-  log.info('is geography published', geography_id, Boolean(result.rows[0].publish_date))
   return Boolean(result.rows[0].publish_date)
 }
 
@@ -135,8 +134,12 @@ export async function editGeography(geography: Geography): Promise<Geography> {
 }
 
 export async function deleteGeography(geography_id: UUID) {
+  console.log('deletegeo')
+  console.log(geography_id)
+  const r = await readSingleGeography(geography_id)
+  console.log(r)
   if (await isGeographyPublished(geography_id)) {
-    throw new AlreadyPublishedError('Cannot edit published Geography')
+    throw new AlreadyPublishedError('Cannot delete published Geography')
   }
 
   const client = await getWriteableClient()
@@ -218,4 +221,17 @@ export async function updateGeographyMetadata(geography_metadata: GeographyMetad
     ...geography_metadata,
     ...recorded_metadata
   }
+}
+
+export async function deleteGeographyMetadata(geography_id: UUID) {
+  const client = await getWriteableClient()
+  try {
+    await readSingleGeographyMetadata(geography_id)
+    const sql = `DELETE FROM ${schema.TABLE.geography_metadata} WHERE geography_id = '${geography_id}'`
+    await client.query(sql)
+  } catch (err) {
+    // nothing to do if we attempted to delete a non-existent metadata 
+    await log.error(`deleteGeographyMetadata called on non-existent metadata for ${geography_id}`, err.stack)
+  }
+  return geography_id
 }
