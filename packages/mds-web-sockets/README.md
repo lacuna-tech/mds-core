@@ -32,7 +32,7 @@ Currently, this package only supports the `Bearer` scheme for tokens. See [Messa
 ### Subscription Model
 MDS-Web-Sockets uses a basic pub/sub model. For a client to subscribe to server-side entity updates, they must send a `SUB` message (see [Message Headers](#message-headers)).
 
-#### Subscribe-able Entities
+#### Subscribable Entities
 | Entity        | Response Type | Response Format              | Example Response  |
 |---------------|---------------|------------------------------|-------------------|
 | `EVENTS`      | String        | `EVENTS%VEHICLE_EVENT_JSON`  | `EVENTS%...`      |
