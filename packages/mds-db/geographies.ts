@@ -167,7 +167,6 @@ export async function publishGeography(params: PublishGeographiesParams): Promis
     conditions.push(`publish_date = ${vals.add(publish_date)}`)
     const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} where geography_id=${vals.add(geography_id)}`
     await client.query(sql, vals.values())
-
     const res = await readSingleGeography(geography_id)
     return res
   } catch (err) {
