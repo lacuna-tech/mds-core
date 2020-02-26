@@ -82,16 +82,29 @@ describe('', () => {
   })
 
   it('Get One Jurisdiction', async () => {
-    const result = await request.get(`/jurisdictions/${JURISDICTION2.jurisdiction_id}`).expect(200)
+    const result = await request
+      .get(`/jurisdictions/${JURISDICTION2.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read']))
+      .expect(200)
     test.object(result.body.jurisdiction).hasProperty('jurisdiction_id', JURISDICTION2.jurisdiction_id)
   })
 
   it('Get One Jurisdiction (not found)', async () => {
-    await request.get(`/jurisdictions/${uuid()}`).expect(404)
+    await request
+      .get(`/jurisdictions/${uuid()}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read']))
+      .expect(404)
+  })
+
+  it('Get One Jurisdiction (forbidden)', async () => {
+    await request.get(`/jurisdictions/${uuid()}`).expect(403)
   })
 
   it('Get Multiple Jurisdictions', async () => {
-    const result = await request.get('/jurisdictions').expect(200)
+    const result = await request
+      .get('/jurisdictions')
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read']))
+      .expect(200)
     test
       .value(
         (result.body.jurisdictions as Jurisdiction[])

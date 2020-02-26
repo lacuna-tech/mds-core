@@ -34,6 +34,7 @@ const UnexpectedServiceError = (error: ServerError | null) =>
 function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/jurisdictions'),
+    checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:agency')),
     async (req: JurisdictionApiGetJurisdictionsRequest, res: JurisdictionApiGetJurisdictionsResponse) => {
       const { effective } = req.query
 
@@ -56,6 +57,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/jurisdictions/:jurisdiction_id'),
+    checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:agency')),
     async (req: JurisdictionApiGetJurisdictionRequest, res: JurisdictionApiGetJurisdictionResponse) => {
       const { effective } = req.query
       const { jurisdiction_id } = req.params
