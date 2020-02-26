@@ -33,10 +33,10 @@ Currently, this package only supports the `Bearer` scheme for tokens. See [Messa
 MDS-Web-Sockets uses a basic pub/sub model. For a client to subscribe to server-side entity updates, they must send a `SUB` message (see [Message Headers](#message-headers)).
 
 #### Subscribable Entities
-| Entity        | Response Type | Response Format              | Example Response  |
-|---------------|---------------|------------------------------|-------------------|
-| `EVENTS`      | String        | `EVENTS%VEHICLE_EVENT_JSON`  | `EVENTS%...`      |
-| `TELEMETRIES` | String        | `TELEMETRIES%TELEMETRY_JSON` | `TELEMETRIES%...` |
+| Entity        | Response Type | Response Format              |
+|---------------|---------------|------------------------------|
+| `EVENTS`      | String        | `EVENTS%VEHICLE_EVENT_JSON`  |
+| `TELEMETRIES` | String        | `TELEMETRIES%TELEMETRY_JSON` |
 
 ## Quick Start and Tests
 See [Quick Start](../../README.md#Installation)
