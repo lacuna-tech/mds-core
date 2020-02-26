@@ -20,7 +20,7 @@ export class JurisdictionEntity extends RecordedEntity implements JursidictionPe
   @Column('uuid', { primary: true })
   jurisdiction_id: UUID
 
-  @Column('varchar', { length: 31 })
+  @Column('varchar', { length: 63 })
   @Index({ unique: true })
   agency_key: string
 

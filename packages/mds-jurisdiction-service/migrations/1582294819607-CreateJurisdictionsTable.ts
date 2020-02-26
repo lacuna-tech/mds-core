@@ -5,7 +5,7 @@ export class CreateJurisdictionsTable1582294819607 implements MigrationInterface
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE "jurisdictions" ("id" bigint GENERATED ALWAYS AS IDENTITY, "recorded" bigint NOT NULL, "jurisdiction_id" uuid NOT NULL, "agency_key" character varying(31) NOT NULL, "versions" json NOT NULL, CONSTRAINT "jurisdictions_pkey" PRIMARY KEY ("jurisdiction_id"))`,
+      `CREATE TABLE "jurisdictions" ("id" bigint GENERATED ALWAYS AS IDENTITY, "recorded" bigint NOT NULL, "jurisdiction_id" uuid NOT NULL, "agency_key" character varying(63) NOT NULL, "versions" json NOT NULL, CONSTRAINT "jurisdictions_pkey" PRIMARY KEY ("jurisdiction_id"))`,
       undefined
     )
     await queryRunner.query(`CREATE UNIQUE INDEX "idx_id_jurisdictions" ON "jurisdictions" ("id") `, undefined)

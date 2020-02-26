@@ -34,63 +34,76 @@ const UnexpectedServiceError = (error: ServerError | null) =>
 function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/jurisdictions'),
-    checkAccess(scopes => true),
     async (req: JurisdictionApiGetJurisdictionsRequest, res: JurisdictionApiGetJurisdictionsResponse) => {
       const { effective } = req.query
-      const [error, jurisdictions] = await JurisdictionService.getAllJurisdictions({
+
+      const [error, result] = await JurisdictionService.getAllJurisdictions({
         effective: effective ? Number(effective) : undefined
       })
-      if (jurisdictions) {
+
+      // Handle result
+      if (result) {
         return res.status(200).send({
           version: JurisdictionApiCurrentVersion,
-          jurisdictions
+          jurisdictions: result
         })
       }
+
+      // Handle errors
       return res.status(500).send({ error: UnexpectedServiceError(error) })
     }
   )
 
   app.get(
     pathsFor('/jurisdictions/:jurisdiction_id'),
-    checkAccess(scopes => true),
     async (req: JurisdictionApiGetJurisdictionRequest, res: JurisdictionApiGetJurisdictionResponse) => {
       const { effective } = req.query
       const { jurisdiction_id } = req.params
-      const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(jurisdiction_id, {
+
+      const [error, result] = await JurisdictionService.getOneJurisdiction(jurisdiction_id, {
         effective: effective ? Number(effective) : undefined
       })
-      if (jurisdiction) {
+
+      // Handle result
+      if (result) {
         return res.status(200).send({
           version: JurisdictionApiCurrentVersion,
-          jurisdiction
+          jurisdiction: result
         })
       }
+
+      // Handle errors
       if (error instanceof NotFoundError) {
         return res.status(404).send({ error })
       }
+
       return res.status(500).send({ error: UnexpectedServiceError(error) })
     }
   )
 
   app.post(
     pathsFor('/jurisdictions'),
-    checkAccess(scopes => true),
+    checkAccess(scopes => scopes.includes('jurisdictions:write')),
     async (req: JurisdictionApiCreateJurisdictionRequest, res: JurisdictionApiCreateJurisdictionResponse) => {
-      const [error, jurisdictions] = await JurisdictionService.createJurisdictions(
+      const [error, result] = await JurisdictionService.createJurisdictions(
         Array.isArray(req.body) ? req.body : [req.body]
       )
-      if (jurisdictions) {
-        const [jurisdiction] = jurisdictions
+
+      // Handle result
+      if (result) {
         return Array.isArray(req.body)
-          ? res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdictions })
-          : res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdiction })
+          ? res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdictions: result })
+          : res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdiction: result[0] })
       }
+
+      // Handle errors
       if (error instanceof ValidationError) {
         return res.status(400).send({ error })
       }
       if (error instanceof ConflictError) {
         return res.status(409).send({ error })
       }
+
       return res.status(500).send({ error: UnexpectedServiceError(error) })
     }
   )
