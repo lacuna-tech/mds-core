@@ -8540,7 +8540,7 @@ mocha@7.0.1:
     yargs-parser "13.1.1"
     yargs-unparser "1.6.0"
 
-mochawesome-report-generator@^4.0.0:
+mochawesome-report-generator@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/mochawesome-report-generator/-/mochawesome-report-generator-4.1.0.tgz#f303e6acb5b30fd900f2ed8a0ba2054a034c9c39"
   integrity sha512-8diUnfzLqMPybIsq3aw3Zc4Npw9W2ZCx8/fMR0ShAXfDTtPH4t2mRykXEWBhsBA5+jM74mjWpwEqY6Pmz+pCsw==
@@ -8559,21 +8559,21 @@ mochawesome-report-generator@^4.0.0:
     validator "^10.11.0"
     yargs "^13.2.2"
 
-mochawesome@4.1.0:
-  version "4.1.0"
-  resolved "https://registry.yarnpkg.com/mochawesome/-/mochawesome-4.1.0.tgz#57cdb9509a9fc54790884ec867e109644ba949ee"
-  integrity sha512-U23K19mLqmuBqFyIBl7FVkcIuG/2JYStCj+91WmxK1/psLgHlWBEZsNe25U0x4t1Eqgu55aHv+0utLwzfhnupw==
+mochawesome@5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/mochawesome/-/mochawesome-5.0.0.tgz#eb3d96e589ccdd30146bbde581fb3deec01bcbec"
+  integrity sha512-1Vb0G8rqURptOZUmU5xLkLUWKYlx97IoMF2/xW18tL08Z1CZaUbzLAGbgq/s3DCn/vOrb8Dy7swb/cszp3Ylpg==
   dependencies:
-    chalk "^2.4.1"
+    chalk "^3.0.0"
     diff "^4.0.1"
     json-stringify-safe "^5.0.1"
     lodash.isempty "^4.4.0"
     lodash.isfunction "^3.0.9"
     lodash.isobject "^3.0.2"
     lodash.isstring "^4.0.1"
-    mochawesome-report-generator "^4.0.0"
-    strip-ansi "^5.0.0"
-    uuid "^3.3.2"
+    mochawesome-report-generator "^4.1.0"
+    strip-ansi "^6.0.0"
+    uuid "^7.0.0"
 
 mockdate@2.0.5:
   version "2.0.5"
@@ -12164,6 +12164,11 @@ uuid@3.4.0, uuid@^3.0.1, uuid@^3.3.2, uuid@^3.3.3:
   version "3.4.0"
   resolved "https://registry.yarnpkg.com/uuid/-/uuid-3.4.0.tgz#b23e4358afa8a202fe7a100af1f5f883f02007ee"
   integrity sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==
+
+uuid@^7.0.0:
+  version "7.0.1"
+  resolved "https://registry.yarnpkg.com/uuid/-/uuid-7.0.1.tgz#95ed6ff3d8c881cbf85f0f05cc3915ef994818ef"
+  integrity sha512-yqjRXZzSJm9Dbl84H2VDHpM3zMjzSJQ+hn6C4zqd5ilW+7P4ZmLEEqwho9LjP+tGuZlF4xrHQXT0h9QZUS/pWA==
 
 v8-compile-cache@2.0.3:
   version "2.0.3"
