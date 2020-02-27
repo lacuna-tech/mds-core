@@ -567,13 +567,25 @@ describe('Tests app', () => {
         })
     })
 
-    it('can GET all published policies', done => {
+    // This test has been replaced by a less flaky unit test
+    // TODO re-evaluate integration test strategy
+    // it('can GET all published policies', done => {
+    //   request
+    //     .get(`/policies?get_published=true`)
+    //     .set('Authorization', POLICIES_READ_SCOPE)
+    //     .expect(200)
+    //     .end(async (policies_err, policies_result) => {
+    //       test.assert(policies_result.body.length === 2)
+    //       done(policies_err)
+    //     })
+    // })
+
+    it('throws an exception if both get_unpublished and get_published are submitted', done => {
       request
-        .get(`/policies?get_published=true`)
+        .get(`/policies?get_unpublished=true&get_published=true`)
         .set('Authorization', POLICIES_READ_SCOPE)
-        .expect(200)
-        .end(async (policies_err, policies_result) => {
-          test.assert(policies_result.body.length === 2)
+        .expect(400)
+        .end(async policies_err => {
           done(policies_err)
         })
     })
@@ -585,16 +597,6 @@ describe('Tests app', () => {
         .expect(200)
         .end(async (policies_err, policies_result) => {
           test.assert(policies_result.body.length === 2)
-          done(policies_err)
-        })
-    })
-
-    it('throws an exception if both get_unpublished and get_published are submitted', done => {
-      request
-        .get(`/policies?get_unpublished=true&get_published=true`)
-        .set('Authorization', POLICIES_READ_SCOPE)
-        .expect(400)
-        .end(async policies_err => {
           done(policies_err)
         })
     })

@@ -22,10 +22,16 @@ import { api } from '../api'
 
 const request = supertest(ApiServer(api))
 
+const { MDS_CONFIG_PATH } = process.env
+
 describe('Testing API', () => {
-  it(`Missing Config File`, done => {
+  before(() => {
+    process.env.MDS_CONFIG_PATH = './'
+  })
+
+  it(`Default Settings File (missing)`, done => {
     request
-      .get(`/config/settings/missing`)
+      .get(`/config/settings`)
       .expect(404)
       .end((err, result) => {
         test.value(result.body.name).is('NotFoundError')
@@ -33,8 +39,37 @@ describe('Testing API', () => {
       })
   })
 
-  it(`Read Config File`, done => {
-    process.env.MDS_CONFIG_PATH = './'
+  it(`Default Settings File (partial)`, done => {
+    request
+      .get(`/config/settings?partial=true`)
+      .expect(200)
+      .end((err, result) => {
+        test.value(result.body.settings).is(null)
+        done(err)
+      })
+  })
+
+  it(`Single Settings File (missing)`, done => {
+    request
+      .get(`/config/settings?p=missing`)
+      .expect(404)
+      .end((err, result) => {
+        test.value(result.body.name).is('NotFoundError')
+        done(err)
+      })
+  })
+
+  it(`Single Settings File (partial)`, done => {
+    request
+      .get(`/config/settings/missing?partial=true`)
+      .expect(200)
+      .end((err, result) => {
+        test.value(result.body.missing).is(null)
+        done(err)
+      })
+  })
+
+  it(`Single Settings File`, done => {
     request
       .get(`/config/settings/package`)
       .expect(200)
@@ -42,5 +77,40 @@ describe('Testing API', () => {
         test.value(result.body.name).is('@mds-core/mds-config')
         done(err)
       })
+  })
+
+  it(`Multiple Settings File (missing)`, done => {
+    request
+      .get(`/config/settings?p=package&p=missing`)
+      .expect(404)
+      .end((err, result) => {
+        test.value(result.body.name).is('NotFoundError')
+        done(err)
+      })
+  })
+
+  it(`Multiple Settings File (partial)`, done => {
+    request
+      .get(`/config/settings?p=package&p=missing&partial=true`)
+      .expect(200)
+      .end((err, result) => {
+        test.value(result.body.name).is('@mds-core/mds-config')
+        test.value(result.body.missing).is(null)
+        done(err)
+      })
+  })
+
+  it(`Multiple Settings Files`, done => {
+    request
+      .get(`/config/settings?p=package&p=tsconfig.build`)
+      .expect(200)
+      .end((err, result) => {
+        test.value(result.body.name).is('@mds-core/mds-config')
+        done(err)
+      })
+  })
+
+  after(() => {
+    process.env.MDS_CONFIG_PATH = MDS_CONFIG_PATH
   })
 })

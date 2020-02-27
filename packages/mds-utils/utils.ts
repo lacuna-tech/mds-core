@@ -26,15 +26,23 @@ import {
   BoundingBox,
   Geography,
   Rule,
-  VEHICLE_EVENTS,
-  VEHICLE_STATUSES,
   EVENT_STATUS_MAP,
   VEHICLE_STATUS,
-  BBox
+  BBox,
+  TripTelemetryField,
+  TripTelemetry,
+  VEHICLE_EVENT
 } from '@mds-core/mds-types'
 import { TelemetryRecord } from '@mds-core/mds-db/types'
 import log from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
+import { point as turfPoint } from '@turf/helpers'
+import turf from '@turf/boolean-point-in-polygon'
+import { serviceAreaMap } from 'ladot-service-areas'
+
+import { isArray } from 'util'
+import { getNextState } from './state-machine'
+import { parseRelative, getCurrentDate } from './date-time-utils'
 
 const RADIUS = 30.48 // 100 feet, in meters
 const NUMBER_OF_EDGES = 32 // Number of edges to add, geojson doesn't support real circles
@@ -498,86 +506,13 @@ function isInsideBoundingBox(telemetry: Telemetry | undefined | null, bbox: Boun
   return false
 }
 
-function isStateTransitionValid(eventA: VehicleEvent, eventB: VehicleEvent) {
-  switch (EVENT_STATUS_MAP[eventA.event_type]) {
-    case VEHICLE_STATUSES.available:
-      switch (eventB.event_type) {
-        case VEHICLE_EVENTS.deregister:
-          return true
-        case VEHICLE_EVENTS.agency_pick_up:
-          return true
-        case VEHICLE_EVENTS.service_end:
-          return true
-        case VEHICLE_EVENTS.trip_start:
-          return true
-        default:
-          return false
-      }
-    case VEHICLE_STATUSES.elsewhere:
-      switch (eventB.event_type) {
-        case VEHICLE_EVENTS.trip_enter:
-          return true
-        case VEHICLE_EVENTS.provider_pick_up:
-          return true
-        case VEHICLE_EVENTS.deregister:
-          return true
-        case VEHICLE_EVENTS.provider_drop_off:
-          return true
-        default:
-          return false
-      }
-    case VEHICLE_STATUSES.inactive:
-      switch (eventB.event_type) {
-        default:
-          return false
-      }
-    case VEHICLE_STATUSES.removed:
-      switch (eventB.event_type) {
-        case VEHICLE_EVENTS.register:
-          return true
-        case VEHICLE_EVENTS.trip_enter:
-          return true
-        case VEHICLE_EVENTS.provider_drop_off:
-          return true
-        case VEHICLE_EVENTS.deregister:
-          return true
-        default:
-          return false
-      }
-    case VEHICLE_STATUSES.reserved:
-      switch (eventB.event_type) {
-        case VEHICLE_EVENTS.trip_start:
-          return true
-        case VEHICLE_EVENTS.cancel_reservation:
-          return true
-        default:
-          return false
-      }
-    case VEHICLE_STATUSES.trip:
-      switch (eventB.event_type) {
-        case VEHICLE_EVENTS.trip_leave:
-          return true
-        case VEHICLE_EVENTS.trip_end:
-          return true
-        default:
-          return false
-      }
-    case VEHICLE_STATUSES.unavailable:
-      switch (eventB.event_type) {
-        case VEHICLE_EVENTS.service_start:
-          return true
-        case VEHICLE_EVENTS.deregister:
-          return true
-        case VEHICLE_EVENTS.agency_pick_up:
-          return true
-        case VEHICLE_EVENTS.provider_pick_up:
-          return true
-        default:
-          return false
-      }
-    default:
-      return false
-  }
+function isStateTransitionValid(
+  eventA: VehicleEvent & { event_type: VEHICLE_EVENT },
+  eventB: VehicleEvent & { event_type: VEHICLE_EVENT }
+) {
+  const currState = EVENT_STATUS_MAP[eventA.event_type]
+  const nextState = getNextState(currState, eventB.event_type)
+  return nextState !== undefined
 }
 
 function getPolygon(geographies: Geography[], geography: string): Geometry | FeatureCollection {
@@ -636,6 +571,60 @@ function filterEmptyHelper<T>(warnOnEmpty?: boolean) {
   }
 }
 
+function findServiceAreas(lng: number, lat: number): { id: string; type: string }[] {
+  const turfPT = turfPoint([lng, lat])
+  return Object.keys(serviceAreaMap)
+    .filter(i => turf(turfPT, serviceAreaMap[i].area))
+    .map(key => {
+      return { id: key, type: 'district' }
+    })
+}
+
+function moved(latA: number, lngA: number, latB: number, lngB: number) {
+  const limit = 0.00001 // arbitrary amount
+  const latDiff = Math.abs(latA - latB)
+  const lngDiff = Math.abs(lngA - lngB)
+  return lngDiff > limit || latDiff > limit // very computational efficient basic check (better than sqrts & trig)
+}
+
+const calcDistance = (telemetry: TripTelemetryField): { distance: number; points: number[] } => {
+  const points: number[] = []
+  let distance = 0
+  let telemetryList: TripTelemetry[] = []
+  for (const tripSegment of Object.values(telemetry)) {
+    telemetryList = telemetryList.concat(tripSegment)
+  }
+  telemetryList.reduce((lastPoint, currPoint) => {
+    if (
+      currPoint.latitude !== null &&
+      currPoint.longitude !== null &&
+      lastPoint.latitude !== null &&
+      lastPoint.longitude !== null
+    ) {
+      const pointDist = routeDistance([
+        { lat: lastPoint.latitude, lng: lastPoint.longitude },
+        { lat: currPoint.latitude, lng: currPoint.longitude }
+      ])
+      distance += pointDist
+      points.push(pointDist)
+    } else {
+      throw new Error('TRIP POINT MISSING LAT/LNG')
+    }
+    return currPoint
+  })
+  return { distance, points }
+}
+
+function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[] {
+  if (elementToNormalize === undefined) {
+    return []
+  }
+  if (isArray(elementToNormalize)) {
+    return elementToNormalize
+  }
+  return [elementToNormalize]
+}
+
 export {
   UUID_REGEX,
   isUUID,
@@ -676,5 +665,11 @@ export {
   isInStatesOrEvents,
   routeDistance,
   clone,
-  filterEmptyHelper
+  filterEmptyHelper,
+  findServiceAreas,
+  moved,
+  calcDistance,
+  normalizeToArray,
+  parseRelative,
+  getCurrentDate
 }

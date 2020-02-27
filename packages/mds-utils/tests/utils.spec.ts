@@ -16,7 +16,9 @@
 
 import test from 'unit.js'
 import assert from 'assert'
-import { routeDistance, filterEmptyHelper } from '../utils'
+import { VEHICLE_EVENTS, VehicleEvent } from '@mds-core/mds-types'
+import { routeDistance, filterEmptyHelper, isStateTransitionValid, normalizeToArray } from '../utils'
+import { expectedTransitions } from './state-transition-expected'
 
 const Boston = { lat: 42.360081, lng: -71.058884 }
 const LosAngeles = { lat: 34.052235, lng: -118.243683 }
@@ -69,5 +71,32 @@ describe('Tests Utilities', () => {
     //   Sinon.restore()
     //   log.warn = oldLogWarn
     // })
+  })
+
+  describe('Normalize to array', () => {
+    it('Normalizes undefined to empty array', () => {
+      assert.deepStrictEqual(normalizeToArray(undefined), [])
+    })
+    it('Normalizes single element into singleton array', () => {
+      assert.deepStrictEqual(normalizeToArray('test'), ['test'])
+    })
+    it('Leaves array untouched', () => {
+      assert.deepStrictEqual(normalizeToArray(['test1', 'test2']), ['test1', 'test2'])
+    })
+  })
+
+  describe('State machine', () => {
+    it('Tests state transitions', () => {
+      const events = Object.keys(VEHICLE_EVENTS)
+      for (const event_type_A of events) {
+        for (const event_type_B of events) {
+          const eventA = { event_type: event_type_A } as VehicleEvent
+          const eventB = { event_type: event_type_B } as VehicleEvent
+          const actual = isStateTransitionValid(eventA, eventB)
+          const transitionKey = `${eventA.event_type}, ${eventB.event_type}`
+          assert.strictEqual(actual, expectedTransitions[eventA.event_type][eventB.event_type], transitionKey)
+        }
+      }
+    })
   })
 })

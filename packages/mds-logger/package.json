@@ -15,12 +15,12 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@slack/client": "5.0.2",
-    "pushover-notifications": "1.2.1"
+    "pushover-notifications": "1.2.2"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
-    "test:unit": "DOTENV_CONFIG_PATH=../../.env nyc --lines 65 ts-mocha --project ../../tsconfig.json tests/**/*.ts"
+    "test:unit": "DOTENV_CONFIG_PATH=../../.env nyc --lines 65 ts-mocha --project ../../tsconfig.json"
   }
 }

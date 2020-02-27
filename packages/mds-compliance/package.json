@@ -12,7 +12,7 @@
     "start": "PATH_PREFIX=/compliance yarn watch server",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
-    "test:unit": "PATH_PREFIX=/compliance DOTENV_CONFIG_PATH=../../.env nyc --lines 90 ts-mocha --project ../../tsconfig.json tests/**/*.ts",
+    "test:unit": "PATH_PREFIX=/compliance DOTENV_CONFIG_PATH=../../.env nyc --lines 90 ts-mocha --project ../../tsconfig.json --exit",
     "watch": "nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec yarn watch:exec --",
     "watch:exec": "yarn build && DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config"
   },
@@ -34,13 +34,12 @@
     "express": "4.17.1",
     "fs": "0.0.1-security",
     "moment-timezone": "0.5.27",
-    "uuid": "3.3.3",
-    "yargs": "15.0.2"
+    "uuid": "3.4.0",
+    "yargs": "15.1.0"
   },
   "devDependencies": {
     "@mds-core/mds-agency": "0.0.28",
     "@mds-core/mds-policy": "0.0.27",
-    "@mds-core/mds-provider": "1.0.26",
     "@mds-core/mds-test-data": "0.1.26"
   }
 }

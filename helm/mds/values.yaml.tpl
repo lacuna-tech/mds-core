@@ -1,9 +1,4 @@
 apis:
-  mds-provider:
-    enabled: true
-    pathPrefix: /provider
-    version: ${PROVIDER_VERSION}
-    migration: false
   mds-agency:
     enabled: true
     pathPrefix: /agency
@@ -49,3 +44,24 @@ apis:
     pathPrefix: /config
     version: ${CONFIG_VERSION}
     migration: false
+  mds-web-sockets:
+    enabled: true
+    pathPrefix: /web-sockets
+    version: ${WEB_SOCKETS_VERSION}
+    migration: false
+  mds-event-processor:
+    enabled: true
+    pathPrefix: /event-processor
+    version: ${EVENT_PROCESSOR_VERSION}
+    migration: false
+cronjobs:
+  mds-trip-processor:
+    enabled: true
+    version: ${TRIP_PROCESSOR_VERSION}
+    migration: false
+    schedule: '0 * * * *'
+  mds-provider-processor:
+    enabled: true
+    version: ${PROVIDER_PROCESSOR_VERSION}
+    migration: false
+    schedule: '0 * * * *'

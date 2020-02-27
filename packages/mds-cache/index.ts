@@ -23,22 +23,44 @@ import {
   Timestamp,
   Device,
   VehicleEvent,
+  TripEvent,
+  TripsEvents,
+  TripTelemetry,
   Telemetry,
+  StateEntry,
+  DeviceStates,
   BoundingBox,
   EVENT_STATUS_MAP,
-  VEHICLE_STATUSES
+  VEHICLE_STATUSES,
+  VEHICLE_TYPE
 } from '@mds-core/mds-types'
 import redis from 'redis'
 import bluebird from 'bluebird'
 
-import { parseTelemetry, parseEvent, parseDevice, parseCachedItem } from './unflatteners'
+import {
+  parseDeviceState,
+  parseAllDeviceStates,
+  parseTripEvents,
+  parseTripTelemetry,
+  parseAllTripsEvents,
+  parseTelemetry,
+  parseEvent,
+  parseDevice,
+  parseCachedItem
+} from './unflatteners'
 import {
   CacheReadDeviceResult,
   CachedItem,
+  CachedHashItem,
   StringifiedCacheReadDeviceResult,
   StringifiedEventWithTelemetry,
   StringifiedTelemetry,
-  StringifiedEvent
+  StringifiedEvent,
+  StringifiedStateEntry,
+  StringifiedAllDeviceStates,
+  StringifiedTripEvents,
+  StringifiedTripTelemetries,
+  StringifiedAllTripsEvents
 } from './types'
 
 const { env } = process
@@ -52,6 +74,9 @@ declare module 'redis' {
     flushdbAsync: () => Promise<'OK'>
     hdelAsync: (...args: (string | number)[]) => Promise<number>
     hgetallAsync: (arg1: string) => Promise<{ [key: string]: string }>
+    hgetAsync: (key: string, field: string) => Promise<string>
+    hscanAsync: (key: string, cursor: number, condition: string, pattern: string) => Promise<[string, string[]]>
+    hsetAsync: (key: string, field: string, value: string) => Promise<number>
     hmsetAsync: (...args: unknown[]) => Promise<'OK'>
     infoAsync: () => Promise<string>
     keysAsync: (arg1: string) => Promise<string[]>
@@ -59,11 +84,20 @@ declare module 'redis' {
     zrangebyscoreAsync: (key: string, min: number | string, max: number | string) => Promise<string[]>
     georadiusAsync: (key: string, longitude: number, latitude: number, radius: number, unit: string) => Promise<UUID[]>
   }
+  interface Multi {
+    hgetallAsync: (arg1: string) => Promise<{ [key: string]: string }>
+  }
 }
 
 bluebird.promisifyAll(redis.RedisClient.prototype)
+bluebird.promisifyAll(redis.Multi.prototype)
 
 let cachedClient: redis.RedisClient | null
+
+// optionally prefix a 'tenantId' key given the redis is a shared service across deployments
+function decorateKey(key: string): string {
+  return env.TENANT_ID ? `${env.TENANT_ID}:${key}` : key
+}
 
 async function getClient() {
   if (!cachedClient) {
@@ -105,18 +139,118 @@ async function info() {
   return data
 }
 
+async function hget(key: string, field: UUID): Promise<CachedItem | CachedHashItem | null> {
+  const client = await getClient()
+  const flat = await client.hgetAsync(decorateKey(key), field)
+  if (flat) {
+    return unflatten(flat)
+  }
+  return null
+}
+
+async function hgetall(key: string): Promise<CachedItem | CachedHashItem | null> {
+  const client = await getClient()
+  const flat = await client.hgetallAsync(decorateKey(key))
+  if (flat) {
+    return unflatten(flat)
+  }
+  return null
+}
+
+/* TODO: explore alternatives to pattern match on field */
+async function hscan(key: string, pattern: string): Promise<string[] | null> {
+  /* hscanAsync returns contain an array of two elements, a string representing the cursor and a sub-array containing an array of alternating key/values */
+  const [, entry] = await (await getClient()).hscanAsync(decorateKey(key), 0, 'MATCH', pattern)
+  if (entry.length > 0) {
+    return entry
+  }
+  return null
+}
+
+async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE | null> {
+  const client = await getClient()
+  const type = await client.hgetAsync(decorateKey(`device:${keyID}:device`), 'type')
+  return (type as VEHICLE_TYPE) ?? null
+}
+
+async function readDeviceState(field: UUID): Promise<StateEntry | null> {
+  const deviceState = await hget('device:state', field)
+  return deviceState ? parseDeviceState(deviceState as StringifiedStateEntry) : null
+}
+
+/* TODO: Increase performance with provider pattern based fetch */
+async function readAllDeviceStates(): Promise<DeviceStates | null> {
+  const allDeviceStates = await hgetall('device:state')
+  return allDeviceStates ? parseAllDeviceStates(allDeviceStates as StringifiedAllDeviceStates) : null
+}
+
+async function writeDeviceState(field: UUID, data: StateEntry) {
+  return (await getClient()).hsetAsync(decorateKey('device:state'), field, JSON.stringify(data))
+}
+
+async function readTripEvents(field: UUID): Promise<TripEvent[] | null> {
+  const tripEvents = await hget(decorateKey('trips:events'), field)
+  return tripEvents ? parseTripEvents(tripEvents as StringifiedTripEvents) : null
+}
+
+/* TODO: Investigate alternatives, this should be used temporarily. O(n) runtime for streaming is not ideal. */
+async function readDeviceTripsEvents(pattern: string): Promise<TripsEvents | null> {
+  /*
+    hscan returns list of alternating key and value strings (i.e. [keyA, valueA, keyB, valueB])
+    Here we must construct an object of StringifiedAllTripsEvents from such list to pass to our unflattener method
+  */
+  const allFilteredTripEventsList = await hscan('trips:events', pattern)
+  if (allFilteredTripEventsList) {
+    const allFilteredTripEvents = allFilteredTripEventsList.reduce((acc, entry, index) => {
+      if (index % 2 === 1) {
+        const key = allFilteredTripEventsList[index - 1]
+        acc[key] = entry
+      }
+      return acc
+    }, {} as StringifiedAllTripsEvents)
+    return parseAllTripsEvents(allFilteredTripEvents)
+  }
+  return null
+}
+
+async function readAllTripsEvents(): Promise<TripsEvents | null> {
+  const allTripsEvents = await hgetall('trips:events')
+  return allTripsEvents ? parseAllTripsEvents(allTripsEvents as StringifiedAllTripsEvents) : null
+}
+
+async function writeTripEvents(field: UUID, data: TripEvent[]) {
+  return (await getClient()).hsetAsync(decorateKey('trips:events'), field, JSON.stringify(data))
+}
+
+async function deleteTripEvents(field: UUID) {
+  return (await getClient()).hdelAsync(decorateKey('trips:events'), field)
+}
+
+async function readTripTelemetry(field: UUID): Promise<TripTelemetry[] | null> {
+  const tripTelemetry = await hget(decorateKey('trips:telemetry'), field)
+  return tripTelemetry ? parseTripTelemetry(tripTelemetry as StringifiedTripTelemetries) : null
+}
+
+async function writeTripTelemetry(field: UUID, data: TripTelemetry[]) {
+  return (await getClient()).hsetAsync(decorateKey('trips:telemetry'), field, JSON.stringify(data))
+}
+
+async function deleteTripTelemetry(field: UUID) {
+  return (await getClient()).hdelAsync(decorateKey('trips:telemetry'), field)
+}
+
 // update the ordered list of (device_id, timestamp) tuples
 // so that we can trivially get a list of "updated since ___" device_ids
 async function updateVehicleList(device_id: UUID, timestamp?: Timestamp) {
   const when = timestamp || now()
   // log.info('redis zadd', device_id, when)
-  return (await getClient()).zaddAsync('device-ids', when, device_id)
+  return (await getClient()).zaddAsync(decorateKey('device-ids'), when, device_id)
 }
 async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
   if (!device_id) {
     throw new Error(`hread: tried to read ${suffix} for device_id ${device_id}`)
   }
-  const key = `device:${device_id}:${suffix}`
+  const key = decorateKey(`device:${device_id}:${suffix}`)
   const flat = await (await getClient()).hgetallAsync(key)
   if (flat) {
     return unflatten({ ...flat, device_id })
@@ -128,7 +262,7 @@ async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
 async function addGeospatialHash(device_id: UUID, coordinates: [number, number]) {
   const client = await getClient()
   const [lat, lng] = coordinates
-  const res = await client.geoadd('locations', lng, lat, device_id)
+  const res = await client.geoadd(decorateKey('locations'), lng, lat, device_id)
   return res
 }
 
@@ -141,7 +275,7 @@ async function getEventsInBBox(bbox: BoundingBox) {
   })
   const [lng, lat] = [(pt1[0] + pt2[0]) / 2, (pt1[1] + pt2[1]) / 2]
   const radius = routeDistance(points)
-  const events = client.georadiusAsync('locations', lng, lat, radius, 'm')
+  const events = client.georadiusAsync(decorateKey('locations'), lng, lat, radius, 'm')
   const finish = now()
   const timeElapsed = finish - start
   log.info(`MDS-CACHE getEventsInBBox ${JSON.stringify(bbox)} time elapsed: ${timeElapsed}ms`)
@@ -162,7 +296,11 @@ async function hreads(
   // bleah
   const multi = (await getClient()).multi()
 
-  suffixes.map(suffix => ids.map(id => multi.hgetall(`${prefix}:${id}:${suffix}`)))
+  suffixes.map(suffix =>
+    ids.map(async id => {
+      await multi.hgetallAsync(decorateKey(`${prefix}:${id}:${suffix}`))
+    })
+  )
 
   /* eslint-reason external lib weirdness */
   /* eslint-disable-next-line promise/avoid-new */
@@ -204,7 +342,7 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
   if (nulls.length > 0) {
     // redis doesn't store null keys, so we have to delete them
     // TODO unit-test
-    await (await getClient()).hdelAsync(key, ...nulls)
+    await (await getClient()).hdelAsync(decorateKey(key), ...nulls)
   }
 
   const client = await getClient()
@@ -227,7 +365,7 @@ async function writeDevice(device: Device) {
 }
 
 async function readKeys(pattern: string) {
-  return (await getClient()).keysAsync(pattern)
+  return (await getClient()).keysAsync(decorateKey(pattern))
 }
 
 async function getMostRecentEventByProvider(): Promise<{ provider_id: string; max: number }[]> {
@@ -243,7 +381,11 @@ async function getMostRecentEventByProvider(): Promise<{ provider_id: string; ma
 }
 
 async function wipeDevice(device_id: UUID) {
-  const keys = [`device:${device_id}:event`, `device:${device_id}:telemetry`, `device:${device_id}:device`]
+  const keys = [
+    decorateKey(`device:${device_id}:event`),
+    decorateKey(`device:${device_id}:telemetry`),
+    decorateKey(`device:${device_id}:device`)
+  ]
   if (keys.length > 0) {
     log.info('del', ...keys)
     return (await getClient()).delAsync(...keys)
@@ -353,49 +495,41 @@ async function readDevices(device_ids: UUID[]) {
 }
 
 async function readDeviceStatus(device_id: UUID) {
-  let event: VehicleEvent
-  let device: Device
-  const cachedInfo = []
-  try {
-    event = await readEvent(device_id)
-    cachedInfo.push(event)
-  } catch (err) {
-    if (err.name !== 'NotFoundError') {
-      throw err
-    }
-    log.info('Missing vehicle event', 'device_id', device_id)
-  }
-  try {
-    device = await readDevice(device_id)
-    cachedInfo.push(device)
-  } catch (err) {
-    if (err.name !== 'NotFoundError') {
-      throw err
-    }
-    log.info('Missing vehicle device', 'device_id', device_id)
-  }
-
+  // Read event and device in parallel, catching NotFoundErrors
+  const promises = [readEvent(device_id), readDevice(device_id)].map((p: Promise<{}>) =>
+    /* eslint-disable-next-line promise/prefer-await-to-callbacks */
+    p.catch((err: Error) => {
+      if (err.name !== 'NotFoundError') {
+        throw err
+      }
+    })
+  )
+  const results = await Promise.all(promises).catch(err => log.error('Error reading device status', err))
   const deviceStatusMap: { [device_id: string]: CachedItem | {} } = {}
-  cachedInfo.map(item => {
-    deviceStatusMap[item.device_id] = deviceStatusMap[item.device_id] || {}
-    Object.assign(deviceStatusMap[item.device_id], item)
-  })
+  results
+    .filter((item: CachedItem) => item !== undefined)
+    .map((item: CachedItem) => {
+      deviceStatusMap[item.device_id] = deviceStatusMap[item.device_id] || {}
+      Object.assign(deviceStatusMap[item.device_id], item)
+    })
   const statuses = Object.values(deviceStatusMap)
-  const statusWithTelemetry = statuses.find((status: any) => status.telemetry)
-  if (statusWithTelemetry === undefined) {
-    log.info('Missing vehicle telemetry', 'device_id', device_id)
-    return statuses[0]
-  }
-  return statusWithTelemetry
+  return statuses.find((status: any) => status.telemetry) || statuses[0] || null
 }
 
 /* eslint-reason redis external lib weirdness */
 /* eslint-disable promise/prefer-await-to-then */
 /* eslint-disable promise/catch-or-return */
-async function readDevicesStatus(query: { since?: number; skip?: number; take?: number; bbox: BoundingBox }) {
+async function readDevicesStatus(query: {
+  since?: number
+  skip?: number
+  take?: number
+  bbox: BoundingBox
+  strict?: boolean
+}) {
   log.info('readDevicesStatus', JSON.stringify(query), 'start')
   const start = query.since || 0
   const stop = now()
+  const strictChecking = query.strict
 
   log.info('redis zrangebyscore device-ids', start, stop)
   const client = await getClient()
@@ -404,7 +538,9 @@ async function readDevicesStatus(query: { since?: number; skip?: number; take?: 
   const { bbox } = query
   const deviceIdsInBbox = await getEventsInBBox(bbox)
   const deviceIdsRes =
-    deviceIdsInBbox.length === 0 ? await client.zrangebyscoreAsync('device-ids', start, stop) : deviceIdsInBbox
+    deviceIdsInBbox.length === 0
+      ? await client.zrangebyscoreAsync(decorateKey('device-ids'), start, stop)
+      : deviceIdsInBbox
   const skip = query.skip || 0
   const take = query.take || 100000000000
   const deviceIds = deviceIdsRes.slice(skip, skip + take)
@@ -418,12 +554,12 @@ async function readDevicesStatus(query: { since?: number; skip?: number; take?: 
       try {
         const parsedItem = parseEvent(item)
         if (
-          EVENT_STATUS_MAP[parsedItem.event_type] !== VEHICLE_STATUSES.removed &&
-          parsedItem.telemetry &&
-          isInsideBoundingBox(parsedItem.telemetry, query.bbox)
+          EVENT_STATUS_MAP[parsedItem.event_type] === VEHICLE_STATUSES.removed ||
+          !parsedItem.telemetry ||
+          (strictChecking && !isInsideBoundingBox(parsedItem.telemetry, query.bbox))
         )
-          return [...acc, parsedItem]
-        return acc
+          return acc
+        return [...acc, parsedItem]
       } catch (err) {
         return acc
       }
@@ -602,6 +738,18 @@ export = {
   initialize,
   health,
   info,
+  getVehicleType,
+  readDeviceState,
+  readAllDeviceStates,
+  writeDeviceState,
+  readTripEvents,
+  readDeviceTripsEvents,
+  readAllTripsEvents,
+  writeTripEvents,
+  deleteTripEvents,
+  readTripTelemetry,
+  writeTripTelemetry,
+  deleteTripTelemetry,
   seed,
   reset,
   startup,
