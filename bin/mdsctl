@@ -863,7 +863,7 @@ installNatsInit() {
       ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
-      ${configs[dryrun]:+--dry-run --debug} > /dev/null 2>&1
+      ${configs[dryrun]:+--dry-run --debug} # > /dev/null 2>&1
     # fixme: do better; wait for crd(natsclusters.nats.io, natsservicerles.nats.io)
     pause 3
   }

@@ -1,7 +1,7 @@
 ## Specify if RBAC authorization is enabled.
 ## ref: https://kubernetes.io/docs/reference/access-authn-authz/rbac/
 ##
-rbacEnabled: false #true
+rbacEnabled: true
 
 ## Operator scope
 ## NOTE: If true
