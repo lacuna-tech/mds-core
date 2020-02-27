@@ -1,5 +1,5 @@
 import { Geography, GeographySummary, UUID, Recorded, GeographyMetadata } from '@mds-core/mds-types'
-import { NotFoundError, DependencyMissingError, AlreadyPublishedError } from '@mds-core/mds-utils'
+import { BadParamsError, NotFoundError, DependencyMissingError, AlreadyPublishedError } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 
 import schema from './schema'
@@ -28,15 +28,30 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
   try {
     const client = await getReadOnlyClient()
 
-    const { get_read_only } = { get_read_only: false, ...params }
+    const { 
+      get_published, get_unpublished, geography_ids } = { get_published: false, get_unpublished: false, ...params }
+    if (get_published && get_unpublished) {
+      throw new BadParamsError('cannot have get_unpublished and get_published both be true')
+    }
 
     let sql = `SELECT * FROM ${schema.TABLE.geographies}`
 
     const conditions = []
     const vals = new SqlVals()
 
-    if (get_read_only) {
+    if (get_published) {
       conditions.push(`publish_date IS NOT NULL`)
+    }
+
+    if (get_unpublished) {
+      conditions.push(`publish_date IS NULL`)
+    }
+
+    if (geography_ids) {
+      const SQLified_geography_ids = geography_ids.map(id => {
+      return `'${id}'`
+  })
+      conditions.push(`geography_id in (${SQLified_geography_ids.join(',')})`)
     }
 
     if (conditions.length) {
@@ -58,7 +73,7 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
   }
 }
 
-export async function readGeographySummaries(params?: { get_read_only?: boolean }): Promise<GeographySummary[]> {
+export async function readGeographySummaries(params?: ReadGeographiesParams): Promise<GeographySummary[]> {
   const geographies = await readGeographies(params)
   return geographies.map(geography => {
     const { geography_json, ...geographySummary } = geography
@@ -66,7 +81,7 @@ export async function readGeographySummaries(params?: { get_read_only?: boolean 
   })
 }
 
-export async function readBulkGeographyMetadata(params?: { get_read_only?: boolean }): Promise<GeographyMetadata[]> {
+export async function readBulkGeographyMetadata(params?: ReadGeographiesParams): Promise<GeographyMetadata[]> {
   const geographies = await readGeographies(params)
   const geography_ids = geographies.map(geography => {
     return `'${geography.geography_id}'`
@@ -134,10 +149,7 @@ export async function editGeography(geography: Geography): Promise<Geography> {
 }
 
 export async function deleteGeography(geography_id: UUID) {
-  console.log('deletegeo')
-  console.log(geography_id)
-  const r = await readSingleGeography(geography_id)
-  console.log(r)
+  await readSingleGeography(geography_id)
   if (await isGeographyPublished(geography_id)) {
     throw new AlreadyPublishedError('Cannot delete published Geography')
   }
@@ -229,7 +241,7 @@ export async function deleteGeographyMetadata(geography_id: UUID) {
     const sql = `DELETE FROM ${schema.TABLE.geography_metadata} WHERE geography_id = '${geography_id}'`
     await client.query(sql)
   } catch (err) {
-    // nothing to do if we attempted to delete a non-existent metadata 
+    // nothing to do if we attempted to delete a non-existent metadata
     await log.error(`deleteGeographyMetadata called on non-existent metadata for ${geography_id}`, err.stack)
   }
   return geography_id

@@ -176,6 +176,7 @@ function api(app: express.Express): express.Express {
       }),
     async (req, res) => {
       const summary = req.query.summary === 'true'
+      const { get_published = null, get_unpublished = null } = req.query
       try {
         const geographies = summary ? await db.readGeographySummaries() : await db.readGeographies()
         return res.status(200).send(geographies)

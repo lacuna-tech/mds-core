@@ -96,7 +96,9 @@ export interface VehicleEventCountResult {
 }
 
 export interface ReadGeographiesParams {
-  get_read_only: boolean
+  get_published?: boolean
+  get_unpublished?: boolean
+  geography_ids?: Array<UUID>
 }
 
 export interface PublishGeographiesParams {
