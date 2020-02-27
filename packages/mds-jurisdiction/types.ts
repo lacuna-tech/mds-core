@@ -14,21 +14,27 @@
     limitations under the License.
  */
 
-import { ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiVersionedResponse } from '@mds-core/mds-api-server'
 import { UUID, Jurisdiction } from '@mds-core/mds-types'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
 import { CreateJurisdictionType } from '@mds-core/mds-jurisdiction-service'
 
-// Place newer versions at the beginning of the list
-const JURISDICTION_API_VERSIONS = ['0.1.0'] as const
-type JURISDICTION_API_VERSION = typeof JURISDICTION_API_VERSIONS[number]
-export const [JurisdictionApiCurrentVersion] = JURISDICTION_API_VERSIONS
+export const JURISDICTION_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
+export type JURISDICTION_API_SUPPORTED_VERSION = typeof JURISDICTION_API_SUPPORTED_VERSIONS[number]
+export const [JURISDICTION_API_DEFAULT_VERSION] = JURISDICTION_API_SUPPORTED_VERSIONS
 
 // Allow adding type definitions for Express Request objects
 export type JurisdictionApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
 
 // Allow adding type definitions for Express Response objects
-export type JurisdictionApiResponse<T> = ApiResponse<{ version: JURISDICTION_API_VERSION } & T>
+export type JurisdictionApiResponseBody<TBody extends {}> = {
+  version: JURISDICTION_API_SUPPORTED_VERSION
+} & TBody
+
+export type JurisdictionApiResponse<TBody extends {}> = ApiVersionedResponse<
+  JURISDICTION_API_SUPPORTED_VERSION,
+  JurisdictionApiResponseBody<TBody>
+>
 
 export interface JurisdictionApiGetJurisdictionsRequest extends JurisdictionApiRequest {
   // Query string parameters always come in as strings

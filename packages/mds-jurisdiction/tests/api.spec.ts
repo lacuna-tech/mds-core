@@ -22,6 +22,7 @@ import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { Jurisdiction } from '@mds-core/mds-types'
 import { api } from '../api'
+import { JURISDICTION_API_DEFAULT_VERSION } from '../types'
 
 const request = supertest(ApiServer(api))
 
@@ -41,6 +42,7 @@ describe('', () => {
       .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
       .send(JURISDICTION0)
       .expect(201)
+    test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test.object(result.body.jurisdiction).hasProperty('timestamp')
     test.object(result.body.jurisdiction).hasProperty('jurisdiction_id', JURISDICTION0.jurisdiction_id)
   })
@@ -75,6 +77,7 @@ describe('', () => {
       .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
       .send([JURISDICTION1, JURISDICTION2])
       .expect(201)
+    test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test.object(result.body.jurisdictions).hasProperty('length', 2)
     test
       .value(result.body.jurisdictions.map((jurisdiction: Jurisdiction) => jurisdiction.jurisdiction_id))
@@ -86,6 +89,7 @@ describe('', () => {
       .get(`/jurisdictions/${JURISDICTION2.jurisdiction_id}`)
       .set('Authorization', SCOPED_AUTH(['jurisdictions:read']))
       .expect(200)
+    test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test.object(result.body.jurisdiction).hasProperty('jurisdiction_id', JURISDICTION2.jurisdiction_id)
   })
 
@@ -112,6 +116,7 @@ describe('', () => {
       .get(`/jurisdictions/${JURISDICTION2.jurisdiction_id}`)
       .set('Authorization', SCOPED_AUTH(['jurisdictions:read:claim'], JURISDICTION2.agency_key))
       .expect(200)
+    test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test.object(result.body.jurisdiction).hasProperty('jurisdiction_id', JURISDICTION2.jurisdiction_id)
   })
 
@@ -120,6 +125,7 @@ describe('', () => {
       .get('/jurisdictions')
       .set('Authorization', SCOPED_AUTH(['jurisdictions:read']))
       .expect(200)
+    test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test
       .value(
         (result.body.jurisdictions as Jurisdiction[])
@@ -142,6 +148,7 @@ describe('', () => {
       .get('/jurisdictions')
       .set('Authorization', SCOPED_AUTH(['jurisdictions:read:claim']))
       .expect(200)
+    test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test.value((result.body.jurisdictions as Jurisdiction[]).length).is(0)
   })
 
@@ -150,6 +157,7 @@ describe('', () => {
       .get('/jurisdictions')
       .set('Authorization', SCOPED_AUTH(['jurisdictions:read:claim'], JURISDICTION2.agency_key))
       .expect(200)
+    test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test.value((result.body.jurisdictions as Jurisdiction[]).length).is(1)
   })
 

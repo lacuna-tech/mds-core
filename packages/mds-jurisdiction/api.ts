@@ -23,28 +23,37 @@ import {
   ConflictError,
   AuthorizationError
 } from '@mds-core/mds-utils'
-import { checkAccess } from '@mds-core/mds-api-server'
+import { checkAccess, ApiVersionMiddleware } from '@mds-core/mds-api-server'
 import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
 import { Jurisdiction } from '@mds-core/mds-types'
 import {
   JurisdictionApiGetJurisdictionsRequest,
   JurisdictionApiGetJurisdictionsResponse,
-  JurisdictionApiCurrentVersion,
   JurisdictionApiCreateJurisdictionRequest,
   JurisdictionApiCreateJurisdictionResponse,
   JurisdictionApiGetJurisdictionResponse,
   JurisdictionApiGetJurisdictionRequest,
-  JurisdictionApiResponse
+  JurisdictionApiResponse,
+  JURISDICTION_API_DEFAULT_VERSION,
+  JURISDICTION_API_SUPPORTED_VERSIONS
 } from './types'
 
 const UnexpectedServiceError = (error: ServerError | null) =>
   error instanceof ServerError ? error : new ServerError('Unexected Service Error', { error })
 
-const HasJurisdictionClaim = <T>(res: JurisdictionApiResponse<T>) => (jurisdiction: Jurisdiction): boolean =>
+const HasJurisdictionClaim = <TBody extends {}>(res: JurisdictionApiResponse<TBody>) => (
+  jurisdiction: Jurisdiction
+): boolean =>
   res.locals.scopes.includes('jurisdictions:read') ||
   (res.locals.claims?.jurisdictions?.split(' ') ?? []).includes(jurisdiction.agency_key)
 
 function api(app: express.Express): express.Express {
+  app.use(
+    ApiVersionMiddleware(
+      'application/vnd.mds.jurisdiction+json',
+      JURISDICTION_API_SUPPORTED_VERSIONS
+    ).withDefaultVersion(JURISDICTION_API_DEFAULT_VERSION)
+  )
   app.get(
     pathsFor('/jurisdictions'),
     checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')),
@@ -58,7 +67,7 @@ function api(app: express.Express): express.Express {
       // Handle result
       if (jurisdictions) {
         return res.status(200).send({
-          version: JurisdictionApiCurrentVersion,
+          version: res.locals.version,
           jurisdictions: jurisdictions.filter(HasJurisdictionClaim(res))
         })
       }
@@ -83,7 +92,7 @@ function api(app: express.Express): express.Express {
       if (jurisdiction) {
         return HasJurisdictionClaim(res)(jurisdiction)
           ? res.status(200).send({
-              version: JurisdictionApiCurrentVersion,
+              version: res.locals.version,
               jurisdiction
             })
           : res.status(403).send({ error: new AuthorizationError('Access Denied', { jurisdiction_id }) })
@@ -109,8 +118,8 @@ function api(app: express.Express): express.Express {
       // Handle result
       if (jurisdictions) {
         return Array.isArray(req.body)
-          ? res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdictions })
-          : res.status(201).send({ version: JurisdictionApiCurrentVersion, jurisdiction: jurisdictions[0] })
+          ? res.status(201).send({ version: res.locals.version, jurisdictions })
+          : res.status(201).send({ version: res.locals.version, jurisdiction: jurisdictions[0] })
       }
 
       // Handle errors
