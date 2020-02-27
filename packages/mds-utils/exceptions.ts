@@ -79,3 +79,9 @@ export class DependencyMissingError extends BaseError {
     super('DependencyMissingError', reason(error), info)
   }
 }
+
+export class InsufficientPermissionsError extends BaseError {
+  public constructor(error?: Error | string, public info?: unknown) {
+    super('InsufficientPermissionsError', reason(error), info)
+  }
+}

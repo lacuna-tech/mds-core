@@ -7,7 +7,8 @@ import {
   NotFoundError,
   DependencyMissingError,
   ValidationError,
-  AlreadyPublishedError
+  AlreadyPublishedError,
+  InsufficientPermissionsError
 } from '@mds-core/mds-utils'
 import { geographyValidationDetails } from '@mds-core/mds-schema-validators'
 import log from '@mds-core/mds-logger'
@@ -17,7 +18,8 @@ import { checkAccess } from '@mds-core/mds-api-server'
 function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/geographies/meta/'),
-    checkAccess(scopes => scopes.includes('policies:read')),
+    checkAccess((scopes) =>  {
+       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished') }),
     async (req, res) => {
       const get_read_only = req.query.get_read_only === 'true'
       try {
@@ -34,26 +36,35 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id'),
-    checkAccess(scopes => scopes.includes('policies:read')),
+    checkAccess((scopes) =>  {
+       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished') }),
     async (req, res) => {
       const { geography_id } = req.params
       try {
         const geography = await db.readSingleGeography(geography_id)
-        res.status(200).send(geography)
+        if (geography.publish_date && !res.locals.scopes.includes('geographies:read:published')) {
+          throw new InsufficientPermissionsError('permission to read published geographies missing')
+        } else {
+          return res.status(200).send(geography)
+        }
       } catch (err) {
         await log.error('failed to read geography', err.stack)
         if (err instanceof NotFoundError) {
           return res.status(404).send({ error: err })
         }
-        res.status(500)
-        return res.send({ error: new ServerError() })
+
+        if (err instanceof InsufficientPermissionsError) {
+          return res.status(403).send({ error: err })
+        }
+
+        return res.status(500).send({ error: new ServerError() })
       }
     }
   )
 
   app.post(
     pathsFor('/geographies/'),
-    checkAccess(scopes => scopes.includes('policies:write')),
+    checkAccess(scopes => scopes.includes('geographies:write')),
     async (req, res) => {
       const geography = req.body
 
@@ -84,7 +95,7 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/geographies/:geography_id'),
-    checkAccess(scopes => scopes.includes('policies:write')),
+    checkAccess(scopes => scopes.includes('geographies:write')),
     async (req, res) => {
       const geography = req.body
       try {
@@ -109,7 +120,7 @@ function api(app: express.Express): express.Express {
 
   app.delete(
     pathsFor('/geographies/:geography_id'),
-    checkAccess(scopes => scopes.includes('policies:delete')),
+    checkAccess(scopes => scopes.includes('geographies:write')),
     async (req, res) => {
       const { geography_id } = req.params
       try {
@@ -131,25 +142,38 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id/meta'),
-    checkAccess(scopes => scopes.includes('policies:read')),
+    checkAccess((scopes) =>  
+      {
+        return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
+      }),
     async (req, res) => {
       const { geography_id } = req.params
       try {
         const geography_metadata = await db.readSingleGeographyMetadata(geography_id)
+        const geography = await db.readSingleGeography(geography_id)
+        if (geography.publish_date && !res.locals.scopes.includes('geographies:read:published')) {
+          throw new InsufficientPermissionsError('permission to read metadata of published geographies missing')
+        }
         return res.status(200).send(geography_metadata)
       } catch (err) {
         await log.error('failed to read geography metadata', err.stack)
         if (err instanceof NotFoundError) {
-          return res.status(404).send({ result: 'not found' })
+          return res.status(404).send({ error: err })
         }
-        return res.status(500).send(new ServerError())
+        if (err instanceof InsufficientPermissionsError) {
+          return res.status(403).send({ error: err })
+        }
+        return res.status(500).send({ error: new ServerError() })
       }
     }
   )
 
   app.get(
     pathsFor('/geographies'),
-    checkAccess(scopes => scopes.includes('policies:read')),
+    checkAccess((scopes) =>  
+      {
+        return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
+      }),
     async (req, res) => {
       const summary = req.query.summary === 'true'
       try {
@@ -167,7 +191,7 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/geographies/:geography_id/meta'),
-    checkAccess(scopes => scopes.includes('policies:write')),
+    checkAccess(scopes => scopes.includes('geographies:write')),
     async (req, res) => {
       const geography_metadata = req.body
       try {
@@ -194,7 +218,7 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/geographies/:geography_id/publish'),
-    checkAccess(scopes => scopes.includes('policies:write')),
+    checkAccess(scopes => scopes.includes('geographies:publish')),
     async (req, res) => {
       const { geography_id } = req.params
       try {
