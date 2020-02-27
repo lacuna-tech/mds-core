@@ -21,7 +21,11 @@ spec:
       initContainers:
       - name: nats-operator-data
         image: busybox:1.28
-        command: ["unzip", "/tmp/nats-operator-data.zip", "-d", "/nsc-operator"]
+        command:
+          - 'unzip'
+          - '/tmp/nats-operator-data.zip'
+          - '-d'
+          - '/nsc-operator'
         volumeMounts:
         - mountPath: /nsc-operator
           name: nsc-operator

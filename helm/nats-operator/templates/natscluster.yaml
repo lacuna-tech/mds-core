@@ -4,9 +4,10 @@ apiVersion: "nats.io/v1alpha2"
 kind: "NatsCluster"
 metadata:
   name: {{ .Values.cluster.name }}
-  namespace: {{ $.Release.Namespace | default "nats" }}
 {{- if and .Values.clusterScoped .Values.cluster.namespace }}
   namespace: {{ .Values.cluster.namespace }}
+{{ else }}
+  namespace: {{ $.Release.Namespace | default "nats" }}
 {{- end }}
 spec:
   size: {{ .Values.cluster.size }}
@@ -52,9 +53,10 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ .Values.cluster.name }}
-  namespace: {{ $.Release.Namespace | default "nats" }}
 {{- if and .Values.clusterScoped .Values.cluster.namespace }}
   namespace: {{ .Values.cluster.namespace }}
+{{ else }}
+  namespace: {{ $.Release.Namespace | default "nats" }}
 {{- end }}
   labels:
     app: nats

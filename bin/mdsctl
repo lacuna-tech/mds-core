@@ -97,7 +97,7 @@ declare -A configs=(
   ["forward"]="${MDS_FORWARD:-default}"
   ["reinstall"]="${MDS_REINSTALL:-mds}"
   ["pause"]="${MDS_PAUSE:-3}"
-  ["pause-kubectl"]="${MDS_PAUSE_KUBECTL:-60}"
+  ["pause-kubectl"]="${MDS_PAUSE_KUBECTL:-45}"
   # note: istio-version=1.4.2 (latest) has been verified for development environments
   ["istio-version"]="${MDS_ISTIO_VERSION:-1.3.6}"
   # note: fails when installing istio-nodeagent (i.e. -istio-sds-auth)
@@ -133,7 +133,8 @@ declare -A configs=(
   ["namespace-mds"]="${MDS_NAMESPACE_MDS:-mds}"
   ["namespace-simulator"]="${MDS_NAMESPACE_SIMULATOR:-${configs[namespace-mds]}}"
   ["namespace-nats"]="${MDS_NAMESPACE_NATS:-nats}"
-  ["namespace-nats-stan"]="${MDS_NAMESPACE_NATS:-${configs[namespace-nats]}}" #mds]}}"
+  ["namespace-nats-init"]="${MDS_NAMESPACE_NATS_INIT:-nats-admin}"
+  ["namespace-nats-stan"]="${MDS_NAMESPACE_NATS_STAN:-${configs[namespace-nats]}}" #mds]}}"
   ["namespace-nats-account-server"]="${MDS_NAMESPACE_NATS_ACCOUNT_SERVER:-${configs[namespace-nats]}}"
   ["namespace-nats-box"]="${MDS_NAMESPACE_NATS_BOX:-${configs[namespace-nats]}}"
   ["namespace-dns"]="${MDS_NAMESPACE_DNS:-default}"
@@ -601,7 +602,7 @@ installIstio() {
     # pause 20
     kubectl --namespace istio-system wait --for=condition=Ready \
       $(kubectl -n istio-system get pod --selector app=istio-ingressgateway --output name --no-headers) \
-      --timeout=${configs[pause-kubectl]}s || error "istio installation error"
+      --timeout=$((${configs[pause-kubectl]}+30))s || error "istio installation error"
   }
 }
 
@@ -844,6 +845,27 @@ installNas() {
 
     kubectl --namespace ${configs[namespace-nats-account-server]} wait --for=condition=Ready pod --selector=app=nats-account-server \
         --timeout=${configs[pause-kubectl]}s || error "nas installation error"
+    pause 3
+  }
+}
+
+installNatsInit() {
+  check ${FUNCNAME[0]}
+
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-init)" = "${configs[namespace-nats]}-nats-init" ]] || {
+    helm install ${configs[home]}/helm/nats-init --name ${configs[namespace-nats]}-nats-init \
+      ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}}
+      ${configs[values]:+$(helmOptions values ${configs[values]})} \
+      ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
+      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+      ${configs[presets-nats]:+$(helmOptions set ${configs[presets-nats]})} \
+      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+      ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
+      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+      ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
+      ${configs[dryrun]:+--dry-run --debug} > /dev/null 2>&1
+    # fixme: do better; wait for crd(natsclusters.nats.io, natsservicerles.nats.io)
+    pause 3
   }
 }
 
@@ -852,8 +874,7 @@ installNats() {
 
   [[ "$(helm list --short ${configs[namespace-nats]}-nats-operator)" = "${configs[namespace-nats]}-nats-operator" ]] || {
     systemAccount=$(nsc describe account --name SYS | grep "Account ID" | awk '{print $5}')
-    # todo: ?better way?; $(nsc env | grep "Stores Dir") isn't panning
-    operatorJwt=$(<~/.nsc/nats/KO/KO.jwt)
+    operatorJwt=$(< $(nscHome)/KO/KO.jwt)
 
     helm install ${configs[home]}/helm/nats-operator --name ${configs[namespace-nats]}-nats-operator \
       ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
@@ -870,7 +891,8 @@ installNats() {
       ${configs[dryrun]:+--dry-run --debug}
 
     pause 1
-    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --all \
+    # fixme: check on nats pod status
+    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --selector=app=nats \
       --timeout=${configs[pause-kubectl]}s || error "nats-operator installation error"
   }
 }
@@ -1224,6 +1246,21 @@ uninstallNas() {
 
   [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] && \
     helm delete --purge ${configs[namespace-nats-account-server]}-nats-account-server
+
+  kubectl --namespace ${configs[namespace-nats-account-server]} delete configmap nats-operator-data
+}
+
+uninstallNatsInit() {
+  check ${FUNCNAME[0]}
+
+  uninstallNas
+
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-init)" = "${configs[namespace-nats]}-nats-init" ]] && \
+      helm delete --purge ${configs[namespace-nats]}-nats-init
+
+  for c in crd/natsclusters.nats.io crd/natsserviceroles.nats.io; do
+    kubectl delete ${c}
+  done; unset c
 }
 
 uninstallNats() {
@@ -1234,9 +1271,10 @@ uninstallNats() {
   [[ "$(helm list --short ${configs[namespace-nats]}-nats-operator)" = "${configs[namespace-nats]}-nats-operator" ]] && \
       helm delete --purge ${configs[namespace-nats]}-nats-operator
 
-  for n in namespace/${configs[namespace-nats]} crd/natsserviceroles.nats.io crd/natsclusters.nats.io; do
-    kubectl delete ${n}
-  done; unset n
+  kubectl delete namespace ${configs[namespace-nats]}
+  # for n in enpoints/nats-operator secret/default-token-* secret/istio.default serviceaccount/default do
+  #   kubectl -n ${configs[namespace-nats]} delete ${n}
+  # done; unset n
 }
 
 uninstallNsc() {
@@ -1424,7 +1462,8 @@ check() {
     installCredentials) ;;
     installNsc) installCredentials;;
     installNas) installNsc;;
-    installNats) installNas;;
+    installNatsInit) ;;
+    installNats) installNas; installNatsInit;;
     installStan) installNats;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
