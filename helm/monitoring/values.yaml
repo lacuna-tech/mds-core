@@ -88,26 +88,26 @@ prometheus:
           labels:
             severity: warning
           annotations:
-            identifier: "{{ $labels.namespace }}/{{ $labels.persistenvolumeclaim }} "
+            identifier: "{{ $labels.namespace }}/{{ $labels.persistenvolumeclaim }}"
             description: "Low disk space for PV ({{ $value }}% available)"
 
         - alert: StatefulsetDown
-          expr: (kube_statefulset_status_replicas_ready / kube_statefulset_status_replicas_current) != 1
+          expr: (kube_statefulset_status_replicas_current - kube_statefulset_status_replicas_ready) != 0
           for: 5m
           labels:
             severity: error
           annotations:
-            identifier: "StatefulSet down"
-            description: "StatefulSet went down\n  VALUE = {{ $value }}"
+            identifier: "{{ $labels.namespace }}/{{ $labels.statefulset }}"
+            description: "StatefulSet failure - {{ $value }} member(s) down"
 
         - alert: PodRestartsWarning
-          expr: kube_pod_container_status_restarts_total > 5
+          expr: count_over_time(kube_pod_container_status_restarts_total[5m]) > 5
           for: 5m
           labels:
             severity: warning
           annotations:
             identifier: "{{ $labels.namespace }}/{{ $labels.pod }} "
-            description: "Pod container restarted {{ $value }} times"
+            description: "Pod container restarted {{ $value }} times in last 5 minutes"
 
         - alert: PodContainerStatusWaiting
           expr: kube_pod_container_status_waiting_reason == 1
