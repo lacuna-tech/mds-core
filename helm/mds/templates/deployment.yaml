@@ -22,9 +22,11 @@ spec:
         - name: mds-config-files
           configMap:
             name: mds-config-files
+        {{- if $.Values.nats.enabled }}
         - name: creds-volume
           secret:
             secretName: stan-creds
+        {{- end }}
       containers:
       - name: {{ $name }}
         image: {{ if $.Values.registry }}{{ printf "%s/" $.Values.registry }}{{- end}}{{ $name }}:{{ $api.version }}
@@ -45,8 +47,10 @@ spec:
         volumeMounts:
         - name: mds-config-files
           mountPath: /mds-config/
+        {{- if $.Values.nats.enabled }}
         - name: creds-volume
           mountPath: /var/run/nats/secrets
+        {{- end }}
         env:
           - name: PORT
             value: "4000"
@@ -89,12 +93,14 @@ spec:
           {{- end }}
           - name: REDIS_PORT
             value: {{ $.Values.redis.port | quote }}
+          {{- if $.Values.nats.enabled }}
           - name: NATS
             value: nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
           - name: STAN_CLUSTER
             value: {{ $.Values.tenantId | default "mds" }}
           - name: STAN_CREDS
             value: /var/run/nats/secrets/sys.creds
+          {{- end }}
           - name: TENANT_ID
           {{- if hasKey $.Values "tenantId" }}
             value: {{ $.Values.tenantId }}
@@ -134,12 +140,12 @@ data:
   postgresql-password: {{ .Values.postgresql.password | b64enc }}
   {{- end }}
 type: Opaque
-# ---
-# apiVersion: v1
-# kind: Secret
-# metadata:
-#   name: stan-creds
-#   namespace: {{ $.Release.Namespace }}
-# data:
-#   sys.creds: {{ $.Values.stanCreds | b64enc }}
-# type: Opaque
+---
+---apiVersion: v1
+---kind: Secret
+---metadata:
+---  name: stan-creds
+---  namespace: {{ $.Release.Namespace }}
+---data:
+---  sys.creds: {{ $.Values.stanCreds | b64enc }}
+---type: Opaque

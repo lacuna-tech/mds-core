@@ -1,3 +1,4 @@
+{{- if $.Values.nats.enabled }}
 {{- $natsNamespace := default "nats" .Values.natsNamespace }}
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry
@@ -24,6 +25,7 @@ spec:
     tls:
       mode: DISABLE
 ---
+{{- end }}
 {{- if (eq .Values.postgresql.internal false) }}
 apiVersion: networking.istio.io/v1alpha3
 kind: ServiceEntry

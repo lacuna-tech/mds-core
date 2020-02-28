@@ -65,6 +65,8 @@ cronjobs:
     version: latest
     migration: false
     schedule: '0 * * * *'
+nats:
+  enabled: true
 tenantId:
 timezone: America/Los_Angeles
 registry:
