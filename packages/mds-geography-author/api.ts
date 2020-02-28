@@ -21,13 +21,13 @@ function api(app: express.Express): express.Express {
     checkAccess((scopes) =>  {
        return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished') }),
     async (req, res) => {
-      const get_read_only = req.query.get_read_only === 'true'
+      const get_published = req.query.get_published === 'true'
       try {
-        const metadata = await db.readBulkGeographyMetadata({ get_read_only })
+        const metadata = await db.readBulkGeographyMetadata({ get_published })
         res.status(200).send(metadata)
       } catch (err) {
         await log.error('failed to read geography metadata', err)
-        return res.status(404).send({
+        return res.status(500).send({
           error: err
         })
       }
@@ -177,8 +177,9 @@ function api(app: express.Express): express.Express {
     async (req, res) => {
       const summary = req.query.summary === 'true'
       const { get_published = null, get_unpublished = null } = req.query
+      const params = { get_published, get_unpublished }
       try {
-        const geographies = summary ? await db.readGeographySummaries() : await db.readGeographies()
+        const geographies = summary ? await db.readGeographySummaries(params) : await db.readGeographies(params)
         return res.status(200).send(geographies)
       } catch (err) {
         /* We don't throw a NotFoundError if the number of results is zero, so the error handling
