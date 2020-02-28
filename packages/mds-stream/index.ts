@@ -20,7 +20,7 @@ import bluebird from 'bluebird'
 import stan from 'node-nats-streaming'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
-import uuid from 'uuid'
+import { v4 as uuid } from 'uuid'
 import {
   Stream,
   StreamItem,
@@ -53,6 +53,10 @@ const getNats = () => {
       url: `nats://${env.NATS}:4222`,
       userCreds: env.STAN_CREDS,
       reconnect: true
+    })
+
+    nats.on('error', async message => {
+      await logger.error(message)
     })
   }
 
@@ -119,7 +123,7 @@ declare module 'redis' {
 
   interface Multi {
     xadd: (...args: unknown[]) => string
-    execAsync: () => Promise<string[]>
+    execAsync: () => Promise<object[]>
   }
 }
 

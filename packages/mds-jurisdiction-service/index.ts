@@ -21,10 +21,9 @@ import { DeepPartial } from 'typeorm'
 import { InsertReturning } from '@mds-core/mds-orm/types'
 import logger from '@mds-core/mds-logger'
 import { validateJurisdiction } from '@mds-core/mds-schema-validators'
+import { v4 as uuid } from 'uuid'
 import { JurisdictionEntity } from './entities'
 import ormconfig from './ormconfig'
-
-import uuid = require('uuid')
 
 type JurisdictionServiceResult<TResult, TError extends Error> = [null, TResult] | [TError | ServerError, null]
 

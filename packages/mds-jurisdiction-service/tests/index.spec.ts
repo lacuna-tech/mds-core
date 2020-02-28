@@ -15,7 +15,7 @@
  */
 
 import test from 'unit.js'
-import uuid from 'uuid'
+import { v4 as uuid } from 'uuid'
 import { NotFoundError, ValidationError, days, ConflictError } from '@mds-core/mds-utils'
 import { JurisdictionService } from '../index'
 

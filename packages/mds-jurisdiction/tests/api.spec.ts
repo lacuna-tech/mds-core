@@ -17,7 +17,7 @@
 import supertest from 'supertest'
 import test from 'unit.js'
 import { ApiServer } from '@mds-core/mds-api-server'
-import uuid from 'uuid'
+import { v4 as uuid } from 'uuid'
 import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { Jurisdiction } from '@mds-core/mds-types'
