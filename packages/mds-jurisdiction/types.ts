@@ -15,9 +15,7 @@
  */
 
 import { ApiRequest, ApiVersionedResponse } from '@mds-core/mds-api-server'
-import { UUID, Jurisdiction } from '@mds-core/mds-types'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
-import { CreateJurisdictionType } from '@mds-core/mds-jurisdiction-service'
 
 export const JURISDICTION_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
 export type JURISDICTION_API_SUPPORTED_VERSION = typeof JURISDICTION_API_SUPPORTED_VERSIONS[number]
@@ -34,43 +32,4 @@ export type JurisdictionApiResponseBody<TBody extends {}> = {
 export type JurisdictionApiResponse<TBody extends {}> = ApiVersionedResponse<
   JURISDICTION_API_SUPPORTED_VERSION,
   JurisdictionApiResponseBody<TBody>
->
-
-export interface JurisdictionApiGetJurisdictionsRequest extends JurisdictionApiRequest {
-  // Query string parameters always come in as strings
-  query: Partial<
-    {
-      [P in 'effective']: string
-    }
-  >
-}
-
-export type JurisdictionApiGetJurisdictionsResponse = JurisdictionApiResponse<{
-  jurisdictions: Jurisdiction[]
-}>
-
-export interface JurisdictionApiGetJurisdictionRequest extends JurisdictionApiRequest<{ jurisdiction_id: UUID }> {
-  // Query string parameters always come in as strings
-  query: Partial<
-    {
-      [P in 'effective']: string
-    }
-  >
-}
-
-export type JurisdictionApiGetJurisdictionResponse = JurisdictionApiResponse<{
-  jurisdiction: Jurisdiction
-}>
-
-export interface JurisdictionApiCreateJurisdictionRequest extends JurisdictionApiRequest {
-  body: CreateJurisdictionType | CreateJurisdictionType[]
-}
-
-export type JurisdictionApiCreateJurisdictionResponse = JurisdictionApiResponse<
-  | {
-      jurisdiction: Jurisdiction
-    }
-  | {
-      jurisdictions: Jurisdiction[]
-    }
 >
