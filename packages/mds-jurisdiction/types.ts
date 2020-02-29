@@ -24,12 +24,4 @@ export const [JURISDICTION_API_DEFAULT_VERSION] = JURISDICTION_API_SUPPORTED_VER
 // Allow adding type definitions for Express Request objects
 export type JurisdictionApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
 
-// Allow adding type definitions for Express Response objects
-export type JurisdictionApiResponseBody<TBody extends {}> = {
-  version: JURISDICTION_API_SUPPORTED_VERSION
-} & TBody
-
-export type JurisdictionApiResponse<TBody extends {}> = ApiVersionedResponse<
-  JURISDICTION_API_SUPPORTED_VERSION,
-  JurisdictionApiResponseBody<TBody>
->
+export type JurisdictionApiResponse<TBody extends {}> = ApiVersionedResponse<JURISDICTION_API_SUPPORTED_VERSION, TBody>

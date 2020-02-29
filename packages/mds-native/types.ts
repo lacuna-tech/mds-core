@@ -25,13 +25,7 @@ export const [NATIVE_API_DEFAULT_VERSION] = NATIVE_API_SUPPORTED_VERSIONS
 // Allow adding type definitions for Express Request objects
 export type NativeApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
 
-// Allow adding type definitions for Express Response objects
-interface NativeApiResponseBody {
-  version: NATIVE_API_SUPPORTED_VERSION
-}
-
-export interface NativeApiResponse<TBody extends NativeApiResponseBody>
-  extends ApiVersionedResponse<NATIVE_API_SUPPORTED_VERSION, TBody> {
+export interface NativeApiResponse<TBody extends {}> extends ApiVersionedResponse<NATIVE_API_SUPPORTED_VERSION, TBody> {
   locals: ApiVersionedResponseLocals<NATIVE_API_SUPPORTED_VERSION> & {
     provider_id: UUID
   }
@@ -46,25 +40,19 @@ export interface NativeApiGetEventsRequest extends NativeApiRequest<{ cursor: st
   >
 }
 
-interface NativeApiGetEventsReponseBody extends NativeApiResponseBody {
+export type NativeApiGetEventsReponse = NativeApiResponse<{
   events: Omit<Recorded<VehicleEvent>, 'id' | 'service_area_id'>[]
   cursor: string
-}
-
-export type NativeApiGetEventsReponse = NativeApiResponse<NativeApiGetEventsReponseBody>
+}>
 
 export type NativeApiGetVehiclesRequest = NativeApiRequest<{ device_id: UUID }>
 
-interface NativeApiGetVehiclesResponseBody extends NativeApiResponseBody {
+export type NativeApiGetVehiclesResponse = NativeApiResponse<{
   vehicle: Omit<Recorded<Device>, 'id'>
-}
-
-export type NativeApiGetVehiclesResponse = NativeApiResponse<NativeApiGetVehiclesResponseBody>
+}>
 
 export type NativeApiGetProvidersRequest = NativeApiRequest
 
-interface NativeApiGetProvidersResponseBody extends NativeApiResponseBody {
+export type NativeApiGetProvidersResponse = NativeApiResponse<{
   providers: Provider[]
-}
-
-export type NativeApiGetProvidersResponse = NativeApiResponse<NativeApiGetProvidersResponseBody>
+}>
