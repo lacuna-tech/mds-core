@@ -24,9 +24,11 @@ export const CreateJurisdictionHandler = async (req: CreateJurisdictionRequest, 
 
   // Handle result
   if (jurisdictions) {
-    return Array.isArray(req.body)
-      ? res.status(201).send({ version: res.locals.version, jurisdictions })
-      : res.status(201).send({ version: res.locals.version, jurisdiction: jurisdictions[0] })
+    if (!Array.isArray(req.body)) {
+      const [jurisdiction] = jurisdictions
+      return res.status(201).send({ version: res.locals.version, jurisdiction })
+    }
+    return res.status(201).send({ version: res.locals.version, jurisdictions })
   }
 
   // Handle errors
