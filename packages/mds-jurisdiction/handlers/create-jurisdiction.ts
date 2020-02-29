@@ -4,11 +4,11 @@ import { ValidationError, ConflictError } from '@mds-core/mds-utils'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../types'
 import { UnexpectedServiceError } from './handler-utils'
 
-interface JurisdictionApiCreateJurisdictionRequest extends JurisdictionApiRequest {
+interface CreateJurisdictionRequest extends JurisdictionApiRequest {
   body: CreateJurisdictionType | CreateJurisdictionType[]
 }
 
-type JurisdictionApiCreateJurisdictionResponse = JurisdictionApiResponse<
+type CreateJurisdictionResponse = JurisdictionApiResponse<
   | {
       jurisdiction: Jurisdiction
     }
@@ -17,10 +17,7 @@ type JurisdictionApiCreateJurisdictionResponse = JurisdictionApiResponse<
     }
 >
 
-export const CreateJurisdictionHandler = async (
-  req: JurisdictionApiCreateJurisdictionRequest,
-  res: JurisdictionApiCreateJurisdictionResponse
-) => {
+export const CreateJurisdictionHandler = async (req: CreateJurisdictionRequest, res: CreateJurisdictionResponse) => {
   const [error, jurisdictions] = await JurisdictionService.createJurisdictions(
     Array.isArray(req.body) ? req.body : [req.body]
   )
