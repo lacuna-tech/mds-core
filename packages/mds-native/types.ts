@@ -15,7 +15,7 @@
  */
 
 import { ApiRequest, ApiVersionedResponse, ApiVersionedResponseLocals } from '@mds-core/mds-api-server'
-import { UUID, VehicleEvent, Recorded, Device, Provider } from '@mds-core/mds-types'
+import { UUID } from '@mds-core/mds-types'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
 
 export const NATIVE_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
@@ -30,29 +30,3 @@ export interface NativeApiResponse<TBody extends {}> extends ApiVersionedRespons
     provider_id: UUID
   }
 }
-
-export interface NativeApiGetEventsRequest extends NativeApiRequest<{ cursor: string }> {
-  // Query string parameters always come in as strings
-  query: Partial<
-    {
-      [P in 'limit' | 'device_id' | 'provider_id' | 'start_time' | 'end_time']: string
-    }
-  >
-}
-
-export type NativeApiGetEventsReponse = NativeApiResponse<{
-  events: Omit<Recorded<VehicleEvent>, 'id' | 'service_area_id'>[]
-  cursor: string
-}>
-
-export type NativeApiGetVehiclesRequest = NativeApiRequest<{ device_id: UUID }>
-
-export type NativeApiGetVehiclesResponse = NativeApiResponse<{
-  vehicle: Omit<Recorded<Device>, 'id'>
-}>
-
-export type NativeApiGetProvidersRequest = NativeApiRequest
-
-export type NativeApiGetProvidersResponse = NativeApiResponse<{
-  providers: Provider[]
-}>

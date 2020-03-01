@@ -1,5 +1,5 @@
 import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
-import { Jurisdiction } from 'packages/mds-types'
+import { Jurisdiction } from '@mds-core/mds-types'
 import { HasJurisdictionClaim, UnexpectedServiceError } from './handler-utils'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../types'
 
