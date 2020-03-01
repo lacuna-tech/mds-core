@@ -2,7 +2,7 @@ import { Jurisdiction, UUID } from '@mds-core/mds-types'
 import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
 import { AuthorizationError, NotFoundError } from '@mds-core/mds-utils'
 import { JurisdictionApiResponse, JurisdictionApiRequest } from '../types'
-import { HasJurisdictionClaim, UnexpectedServiceError } from './handler-utils'
+import { HasJurisdictionClaim, UnexpectedServiceError } from './utils'
 
 interface GetOneJurisdictionRequest extends JurisdictionApiRequest<{ jurisdiction_id: UUID }> {
   // Query string parameters always come in as strings

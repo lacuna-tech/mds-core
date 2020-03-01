@@ -4,7 +4,7 @@ import { ValidationError } from '@mds-core/mds-utils'
 import db from '@mds-core/mds-db'
 import logger from '@mds-core/mds-logger'
 import { NativeApiRequest, NativeApiResponse } from '../types'
-import { InternalServerError } from './handler-utils'
+import { InternalServerError } from './utils'
 
 interface GetEventsRequest extends NativeApiRequest<{ cursor: string }> {
   // Query string parameters always come in as strings

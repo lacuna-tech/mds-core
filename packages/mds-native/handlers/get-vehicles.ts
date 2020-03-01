@@ -3,7 +3,7 @@ import { isValidDeviceId } from '@mds-core/mds-schema-validators'
 import { ValidationError, NotFoundError } from '@mds-core/mds-utils'
 import db from '@mds-core/mds-db'
 import { NativeApiRequest, NativeApiResponse } from '../types'
-import { InternalServerError } from './handler-utils'
+import { InternalServerError } from './utils'
 
 type GetVehiclesRequest = NativeApiRequest<{ device_id: UUID }>
 

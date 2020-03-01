@@ -2,7 +2,7 @@ import { CreateJurisdictionType, JurisdictionService } from '@mds-core/mds-juris
 import { Jurisdiction } from '@mds-core/mds-types'
 import { ValidationError, ConflictError } from '@mds-core/mds-utils'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../types'
-import { UnexpectedServiceError } from './handler-utils'
+import { UnexpectedServiceError } from './utils'
 
 interface CreateJurisdictionRequest extends JurisdictionApiRequest {
   body: CreateJurisdictionType | CreateJurisdictionType[]
