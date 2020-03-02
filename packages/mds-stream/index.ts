@@ -21,6 +21,7 @@ import stan from 'node-nats-streaming'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import uuid from 'uuid'
+import prometheus from 'prom-client'
 import {
   Stream,
   StreamItem,
@@ -78,12 +79,18 @@ async function writeCloudEvent(type: string, data: string) {
   return getBinding().emit(event)
 }
 
+const publishCounter = new prometheus.Counter({
+  name: 'stream_publish_counter',
+  help: 'stream_publish_counter_help'
+})
+
 async function writeNatsEvent(type: string, data: string) {
   if (env.NATS) {
     const event = cloudevent()
       .type(`${env.TENANT_ID || 'mds'}.${type}`)
       .source(env.NATS)
       .data(data)
+    publishCounter.inc()
     getNats().publish(`${env.TENANT_ID || 'mds'}.${type}`, JSON.stringify(event))
   }
 }
