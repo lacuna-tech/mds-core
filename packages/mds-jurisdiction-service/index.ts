@@ -145,7 +145,7 @@ const updateJurisdiction = async (
             .update()
             .set({
               ...update,
-              agency_key: updates.agency_key ?? entity?.agency_key,
+              agency_key: updates.agency_key ?? current.agency_key,
               versions:
                 (updates.agency_name ?? current.agency_name) !== current.agency_name ||
                 (updates.geography_id ?? current.geography_id) !== current.geography_id
@@ -156,7 +156,7 @@ const updateJurisdiction = async (
                         timestamp
                       },
                       ...entity.versions
-                    ]
+                    ].sort((a, b) => b.timestamp - a.timestamp)
                   : entity.versions
             })
             .where('jurisdiction_id = :jurisdiction_id', { jurisdiction_id })
