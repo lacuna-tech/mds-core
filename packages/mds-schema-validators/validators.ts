@@ -278,19 +278,6 @@ const jurisdictionSchema = Joi.object().keys({
   timestamp: timestampSchema
 })
 
-/* {
-  provider_id: res.locals.provider_id,
-  device_id: body.device_id,
-  vehicle_id: body.vehicle_id,
-  type: body.type,
-  propulsion: body.propulsion,
-  year: parseInt(body.year) || body.year,
-  mfgr: body.mfgr,
-  model: body.model,
-  recorded,
-  status: VEHICLE_STATUSES.removed
-} */
-
 const deviceSchema = Joi.object().keys({
   device_id: uuidSchema.required(),
   provider_id: uuidSchema.required(),
