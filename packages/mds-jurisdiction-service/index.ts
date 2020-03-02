@@ -18,7 +18,7 @@ import { UUID, Timestamp, Jurisdiction } from '@mds-core/mds-types'
 import { ConnectionManager } from '@mds-core/mds-orm'
 import { NotFoundError, ServerError, ConflictError, ValidationError } from '@mds-core/mds-utils'
 import { DeepPartial } from 'typeorm'
-import { InsertReturning } from '@mds-core/mds-orm/types'
+import { InsertReturning, UpdateReturning } from '@mds-core/mds-orm/types'
 import logger from '@mds-core/mds-logger'
 import { validateJurisdiction } from '@mds-core/mds-schema-validators'
 import { v4 as uuid } from 'uuid'
@@ -100,6 +100,7 @@ const createJurisdictions = async (
       return Failure(error instanceof ValidationError ? error : new ConflictError(error))
     }
   } catch (error) {
+    await logger.error(error.message)
     return Failure(error instanceof ServerError ? error : new ServerError(error))
   }
 }
@@ -109,6 +110,71 @@ const createJurisdiction = async (
 ): Promise<JurisdictionServiceResult<Jurisdiction, ValidationError | ConflictError>> => {
   const [error, jurisdictions] = await createJurisdictions([jurisdiction])
   return error || !jurisdictions ? Failure(error ?? new ServerError()) : Success(jurisdictions[0])
+}
+
+export type UpdateJurisdictionType = DeepPartial<Jurisdiction>
+
+const updateJurisdiction = async (
+  jurisdiction_id: UUID,
+  updates: UpdateJurisdictionType
+): Promise<JurisdictionServiceResult<Jurisdiction, ValidationError | NotFoundError>> => {
+  try {
+    const connection = await manager.getReadWriteConnection()
+    try {
+      const entity = await connection
+        .getRepository(JurisdictionEntity)
+        .createQueryBuilder()
+        .where({ jurisdiction_id })
+        .getOne()
+      if (entity) {
+        const current = AsJurisdiction()(entity)
+        if (current) {
+          const timestamp = updates.timestamp ?? Date.now()
+          if ((updates.jurisdiction_id ?? jurisdiction_id) !== current.jurisdiction_id) {
+            return Failure(new ValidationError('Invalid jurisdiction_id for update'))
+          }
+          if (timestamp <= current.timestamp) {
+            return Failure(new ValidationError('Invalid timestamp for update'))
+          }
+          const { id, ...update } = entity
+          const {
+            raw: [updated]
+          }: UpdateReturning<JurisdictionEntity> = await connection
+            .getRepository(JurisdictionEntity)
+            .createQueryBuilder()
+            .update()
+            .set({
+              ...update,
+              agency_key: updates.agency_key ?? entity?.agency_key,
+              versions:
+                (updates.agency_name ?? current.agency_name) !== current.agency_name ||
+                (updates.geography_id ?? current.geography_id) !== current.geography_id
+                  ? [
+                      {
+                        agency_name: updates.agency_name ?? current.agency_name,
+                        geography_id: updates.geography_id ?? current.geography_id,
+                        timestamp
+                      },
+                      ...entity.versions
+                    ]
+                  : entity.versions
+            })
+            .where('jurisdiction_id = :jurisdiction_id', { jurisdiction_id })
+            .returning('*')
+            .execute()
+          const jurisdiction = AsJurisdiction(timestamp)(updated)
+          return jurisdiction ? Success(jurisdiction) : Failure(new ServerError('Unexpected error during update'))
+        }
+      }
+      return Failure(new NotFoundError('Jurisdiction Not Found', { jurisdiction_id }))
+    } catch (error) {
+      await logger.error(error.message)
+      return Failure(error)
+    }
+  } catch (error) {
+    await logger.error(error.message)
+    return Failure(error instanceof ServerError ? error : new ServerError(error))
+  }
 }
 
 const getAllJurisdictions = async ({
@@ -130,6 +196,7 @@ const getAllJurisdictions = async ({
       return Failure(error)
     }
   } catch (error) {
+    await logger.error(error.message)
     return Failure(error instanceof ServerError ? error : new ServerError(error))
   }
 }
@@ -155,6 +222,7 @@ const getOneJurisdiction = async (
       return Failure(error)
     }
   } catch (error) {
+    await logger.error(error.message)
     return Failure(error instanceof ServerError ? error : new ServerError(error))
   }
 }
@@ -165,6 +233,7 @@ export const JurisdictionService = {
   initialize,
   createJurisdictions,
   createJurisdiction,
+  updateJurisdiction,
   getAllJurisdictions,
   getOneJurisdiction,
   shutdown
