@@ -372,10 +372,10 @@ export const isValidTelemetry = (value: unknown, options: Partial<ValidatorOptio
   Validate(value, telemetrySchema, { property: 'telemetry', ...options })
 
 export const isValidDevice = (value: unknown, options: Partial<ValidatorOptions> = {}): value is Device =>
-  Validate(value, deviceSchema, {})
+  Validate(value, deviceSchema, options)
 
 export const isValidEvent = (value: unknown, options: Partial<ValidatorOptions> = {}): value is VehicleEvent =>
-  Validate(value, eventSchema, { ...options })
+  Validate(value, eventSchema, options)
 
 export const isValidVehicleEventType = (
   value: unknown,
