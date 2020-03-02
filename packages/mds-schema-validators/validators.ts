@@ -80,14 +80,19 @@ const telemetrySchema = Joi.object().keys({
       speed: numberSchema.optional(),
       heading: numberSchema.optional(),
       accuracy: numberSchema.optional(),
-      altitude: numberSchema.optional()
+      hdop: numberSchema.optional(),
+      altitude: numberSchema.optional(),
+      satellites: numberSchema.optional()
     })
     .required(),
   charge: numberSchema.optional(),
   provider_id: providerIdSchema.optional(),
   device_id: uuidSchema.optional(),
-  timestamp: timestampSchema.required()
+  timestamp: timestampSchema.required(),
+  recorded: timestampSchema.optional()
 })
+
+const telemetriesSchema = Joi.array().items(telemetrySchema)
 
 const ruleSchema = Joi.object().keys({
   name: Joi.string().required(),
@@ -195,14 +200,14 @@ const propulsionTypeSchema = stringSchema.valid(Object.keys(PROPULSION_TYPES))
 const vehicleStatusSchema = stringSchema.valid(Object.keys(VEHICLE_STATUSES))
 
 const eventSchema = Joi.object().keys({
-  device_id: uuidSchema,
+  device_id: uuidSchema.required(),
   provider_id: uuidSchema.required(),
-  timestamp: uuidSchema.required(),
+  timestamp: timestampSchema.required(),
   event_type: vehicleEventTypeSchema.required(),
-  telemetry_timestamp: timestampSchema.required(),
+  telemetry_timestamp: timestampSchema.optional(),
   telemetry: telemetrySchema.required(),
-  service_area_id: uuidSchema.optional(),
-  recorded: timestampSchema.required()
+  service_area_id: uuidSchema.allow(null).optional(),
+  recorded: timestampSchema.optional()
 })
 
 const tripEventSchema = eventSchema.keys({
@@ -210,15 +215,15 @@ const tripEventSchema = eventSchema.keys({
 })
 
 const serviceEndEventSchema = eventSchema.keys({
-  event_type_reason: stringSchema.valid(['low_battery', 'maintenance', 'compliance', 'off_hours'])
+  event_type_reason: stringSchema.valid(['low_battery', 'maintenance', 'compliance', 'off_hours']).required()
 })
 
 const providerPickUpEventSchema = eventSchema.keys({
-  event_type_reason: stringSchema.valid(['rebalance', 'maintenance', 'charge', 'compliance'])
+  event_type_reason: stringSchema.valid(['rebalance', 'maintenance', 'charge', 'compliance']).required()
 })
 
 const deregisterEventSchema = eventSchema.keys({
-  event_type_reason: stringSchema.valid(['missing', 'decomissioned'])
+  event_type_reason: stringSchema.valid(['missing', 'decomissioned']).required()
 })
 
 const auditEventTypeSchema = (accept?: AUDIT_EVENT_TYPE[]): Joi.StringSchema =>
@@ -297,7 +302,7 @@ const deviceSchema = Joi.object().keys({
   year: numberSchema.optional(),
   mfgr: stringSchema.optional(),
   model: stringSchema.optional(),
-  recorded: timestampSchema.required(),
+  recorded: timestampSchema.optional(),
   status: vehicleStatusSchema
 })
 
@@ -478,12 +483,17 @@ const validateProviderPickUpEvent = (event: VehicleEvent) => {
   return error
 }
 
+const validateServiceEndEvent = (event: VehicleEvent) => {
+  const { error } = Joi.validate(event, serviceEndEventSchema)
+  return error
+}
+
 const validateDeregisterEvent = (event: VehicleEvent) => {
   const { error } = Joi.validate(event, deregisterEventSchema)
   return error
 }
 
-export function validateEvent(event: VehicleEvent) {
+export const validateEvent = (event: VehicleEvent) => {
   const { event_type } = event
 
   const TRIP_EVENTS: string[] = [
@@ -499,12 +509,25 @@ export function validateEvent(event: VehicleEvent) {
   if (event_type === VEHICLE_EVENTS.provider_pick_up) {
     return validateProviderPickUpEvent(event)
   }
+  if (event_type === VEHICLE_EVENTS.service_end) {
+    return validateServiceEndEvent(event)
+  }
   if (event_type === VEHICLE_EVENTS.deregister) {
     return validateDeregisterEvent(event)
   }
 
   const { error } = Joi.validate(event, eventSchema)
 
+  return error
+}
+
+export const validateTelemetry = (telemetry: Telemetry) => {
+  const { error } = Joi.validate(telemetry, telemetrySchema)
+  return error
+}
+
+export const validateTelemetries = (telemetries: Telemetry[]) => {
+  const { error } = Joi.validate(telemetries, telemetriesSchema)
   return error
 }
 

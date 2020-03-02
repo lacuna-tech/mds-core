@@ -2,7 +2,7 @@ import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
 import areas from 'ladot-service-areas'
 import log from '@mds-core/mds-logger'
 import { isUUID, now, ServerError, ValidationError, NotFoundError, normalizeToArray } from '@mds-core/mds-utils'
-import { isValidStop, validateDevice } from '@mds-core/mds-schema-validators'
+import { isValidStop, validateDevice, validateEvent, validateTelemetry } from '@mds-core/mds-schema-validators'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
@@ -104,7 +104,7 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiRespo
   const details = validateDevice(device)
 
   if (details) {
-    await log.warn(`ValidationError for ${providerName(provider_id)}. Error: ${details}`)
+    log.info(`Device ValidationError for ${providerName(provider_id)}. Error: ${details}`)
   }
 
   const failure = badDevice(device)
@@ -264,6 +264,12 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
     service_area_id: null // added for diagnostic purposes
   }
 
+  const details = validateEvent(event)
+
+  if (details) {
+    log.info(`Event ValidationError for ${providerName(provider_id)}. Error: ${details}`)
+  }
+
   if (event.telemetry) {
     event.telemetry_timestamp = event.telemetry.timestamp
   }
@@ -406,6 +412,12 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
           satellites: gps.satellites
         },
         recorded
+      }
+
+      const details = validateTelemetry(telemetry)
+
+      if (details) {
+        log.info(`Telemetry ValidationError for ${providerName(provider_id)}. Error: ${details}`)
       }
 
       const bad_telemetry: ErrorObject | null = badTelemetry(telemetry)
