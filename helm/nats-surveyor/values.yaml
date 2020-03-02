@@ -1,3 +1,6 @@
+
+natsNamespace: nats
+clusterSize: 3
 observations: |
   {
     "name": "mds.telemetry",

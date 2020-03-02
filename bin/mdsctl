@@ -123,7 +123,7 @@ declare -A configs=(
   # todo: try scaling down istio's resource requirements (e.g. local dev): pilot.resources.requests.memory=512Mi}
   ["sets-istio"]="${MDS_SETS_ISTIO:-}"
   ["sets-logging"]="${MDS_SETS_LOGGING:-fluentbit.backend.es.host=elasticsearch-master.util,fluentbit.backend.es.port=9200,fluentbit.backend.es.tls=off,kibana.env.ELASTICSEARCH_URL=http:elasticsearch-master.util:9200}"
-  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-registry=,jwt.enabled=false}"
+  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-jwt.enabled=false}"
   ["setfiles"]="${MDS_SET_FILES:-}"
   ["setfiles-mds"]="${MDS_SET_FILES_MDS:-}"
   ["namespace"]="${MDS_NAMESPACE:-default}"
@@ -679,19 +679,19 @@ installMds() {
   check ${FUNCNAME[0]}
 
   installFallbackCertificate
-  kubectl get namespace ${configs[namespace-mds]} > /dev/null 2>&1 || {
+  # todo: don't lock on namespace existence
+  [[ "$(helm list --short ${configs[namespace-mds]}-mds)" = "${configs[namespace-mds]}-mds" ]] || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
     # note: remote registries may require image-version overrides
     [ -z "${configs[image-repository]}" ] && \
       configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
-      # configure $(imageVersion) || configure sets-mds+=registry=${configs[image-repository]}
 
     pause 5
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
 
-    helm install ${configs[home]}/helm/mds --name ${configs[namespace-mds]} \
-      --namespace ${configs[namespace-mds]} \
+    helm install ${configs[home]}/helm/mds --name ${configs[namespace-mds]}-mds \
+      --namespace ${configs[namespace-mds]}-mds \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
       ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
@@ -766,16 +766,22 @@ installSimulator() {
       git pull)
   fi
 
-  (cd ${configs[simulator]};
-    docker build -t trackgen .;
-    helm install ${configs[simulator]}/helm --name trackgen \
-      ${configs[namespace-simulator]:+--namespace ${configs[namespace-simulator]}} \
-      ${configs[values]:+$(helmOptions values ${configs[values]})} \
-      ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
-      ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
-      ${configs[sets-simulator]:+$(helmOptions set ${configs[sets-simulator]})} \
-      ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
-      ${configs[dryrun]:+--dry-run --debug})
+  [[ "$(helm list --short ${configs[namespace-simulator]}-trackgen)" = "${configs[namespace-simulator]}-trackgen" ]] || {
+    (cd ${configs[simulator]};
+      docker build -t trackgen .;
+      [[ "${configs[image-repository]}" ]] && {
+        docker tag trackgen:latest ${configs[image-repository]}/trackgen:latest;
+        docker push ${configs[image-repository]}/trackgen:latest;
+      }
+      helm install ${configs[simulator]}/helm --name ${configs[namespace-simulator]}-trackgen \
+        ${configs[namespace-simulator]:+--namespace ${configs[namespace-simulator]}} \
+        ${configs[values]:+$(helmOptions values ${configs[values]})} \
+        ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
+        ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
+        ${configs[sets-simulator]:+$(helmOptions set ${configs[sets-simulator]})} \
+        ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
+        ${configs[dryrun]:+--dry-run --debug})
+  }
 }
 
 installCredentials() {
@@ -1171,11 +1177,13 @@ uninstallHelm() {
 uninstallSimulator() {
   check ${FUNCNAME[0]}
 
-  helm del --purge trackgen
+  [[ "$(helm list --short ${configs[namespace-simulator]}-trackgen)" = "${configs[namespace-simulator]}-trackgen" ]] && {
+    helm del --purge ${configs[namespace-simulator]}-trackgen
 
-  if [ -z "${configs[keep-cache]}" ]; then
-    [ -d ${configs[simulator]} ] && /bin/rm -rf ${configs[simulator]}
-  fi
+    if [ -z "${configs[keep-cache]}" ]; then
+      [ -d ${configs[simulator]} ] && /bin/rm -rf ${configs[simulator]}
+    fi
+  }
 }
 
 uninstallCredentials() {
@@ -1217,8 +1225,10 @@ uninstallGrafana() {
 uninstallMds() {
   check ${FUNCNAME[0]}
 
-  helm delete --purge ${configs[namespace-mds]} ${configs[dryrun]:+--dry-run}
-  uninstallNamespace ${configs[namespace-mds]}
+  [[ "$(helm list --short ${configs[namespace-mds]}-mds)" = "${configs[namespace-mds]}-mds" ]] && {
+    helm delete --purge ${configs[namespace-mds]} ${configs[dryrun]:+--dry-run}
+    uninstallNamespace ${configs[namespace-mds]}
+  }
 }
 
 uninstallSurveyor() {
