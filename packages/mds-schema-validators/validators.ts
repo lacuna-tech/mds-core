@@ -371,7 +371,11 @@ export const isValidAuditDeviceId = (value: unknown, options: Partial<ValidatorO
 export const isValidTelemetry = (value: unknown, options: Partial<ValidatorOptions> = {}): value is Telemetry =>
   Validate(value, telemetrySchema, { property: 'telemetry', ...options })
 
-export const isValidDevice = (device: unknown) => Validate(device, deviceSchema, {})
+export const isValidDevice = (value: unknown, options: Partial<ValidatorOptions> = {}): value is Device =>
+  Validate(value, deviceSchema, {})
+
+export const isValidEvent = (value: unknown, options: Partial<ValidatorOptions> = {}): value is VehicleEvent =>
+  Validate(value, eventSchema, { ...options })
 
 export const isValidVehicleEventType = (
   value: unknown,
@@ -398,9 +402,6 @@ export const isStringifiedCacheReadDeviceResult = (device: unknown): device is S
 
 export const isValidJurisdiction = (value: unknown, options: Partial<ValidatorOptions> = {}): value is Jurisdiction =>
   Validate(value, jurisdictionSchema, { property: 'jurisdiction', ...options })
-
-export const isValidEvent = (event: unknown, options: Partial<ValidatorOptions>): event is VehicleEvent =>
-  Validate(event, eventSchema, { ...options })
 
 export const validateJurisdiction = (value: unknown, options: Partial<ValidatorOptions> = {}): void => {
   isValidJurisdiction(value, options)
