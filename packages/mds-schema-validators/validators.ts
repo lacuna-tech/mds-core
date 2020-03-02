@@ -30,7 +30,10 @@ import {
   Timestamp,
   Telemetry,
   Stop,
-  Jurisdiction
+  Jurisdiction,
+  PROPULSION_TYPES,
+  VEHICLE_STATUSES,
+  Device
 } from '@mds-core/mds-types'
 import * as Joi from '@hapi/joi'
 import joiToJsonSchema from 'joi-to-json-schema'
@@ -181,28 +184,42 @@ export const geographySchema = Joi.object()
 
 const geographiesSchema = Joi.array().items(geographySchema)
 
-const eventsSchema = Joi.array().items(
-  Joi.object().keys({
-    device_id: Joi.string()
-      .guid()
-      .required(),
-    provider_id: Joi.string()
-      .guid()
-      .required(),
-    timestamp: Joi.date()
-      .timestamp('javascript')
-      .required(),
-    event_type: Joi.string().valid(Object.values(VEHICLE_EVENTS)),
-    event_type_reason: Joi.string(),
-    telemetry_timestamp: Joi.date().timestamp('javascript'),
-    telemetry: Joi.object(), // TODO Add telemetry schema
-    trip_id: Joi.string().guid(),
-    service_area_id: Joi.string().guid(),
-    recorded: Joi.date().timestamp('javascript')
-  })
-)
+const eventsSchema = Joi.array().items()
 
 const vehicleEventTypeSchema = stringSchema.valid(Object.keys(VEHICLE_EVENTS))
+
+const vehicleTypeSchema = stringSchema.valid(Object.keys(VEHICLE_TYPES))
+
+const propulsionTypeSchema = stringSchema.valid(Object.keys(PROPULSION_TYPES))
+
+const vehicleStatusSchema = stringSchema.valid(Object.keys(VEHICLE_STATUSES))
+
+const eventSchema = Joi.object().keys({
+  device_id: uuidSchema,
+  provider_id: uuidSchema.required(),
+  timestamp: uuidSchema.required(),
+  event_type: vehicleEventTypeSchema.required(),
+  telemetry_timestamp: timestampSchema.required(),
+  telemetry: telemetrySchema.required(),
+  service_area_id: uuidSchema.optional(),
+  recorded: timestampSchema.required()
+})
+
+const tripEventSchema = eventSchema.keys({
+  trip_id: uuidSchema.required()
+})
+
+const serviceEndEventSchema = eventSchema.keys({
+  event_type_reason: stringSchema.valid(['low_battery', 'maintenance', 'compliance', 'off_hours'])
+})
+
+const providerPickUpEventSchema = eventSchema.keys({
+  event_type_reason: stringSchema.valid(['rebalance', 'maintenance', 'charge', 'compliance'])
+})
+
+const deregisterEventSchema = eventSchema.keys({
+  event_type_reason: stringSchema.valid(['missing', 'decomissioned'])
+})
 
 const auditEventTypeSchema = (accept?: AUDIT_EVENT_TYPE[]): Joi.StringSchema =>
   stringSchema.valid(accept || Object.keys(AUDIT_EVENT_TYPES))
@@ -254,6 +271,34 @@ const jurisdictionSchema = Joi.object().keys({
   agency_name: stringSchema,
   geography_id: uuidSchema,
   timestamp: timestampSchema
+})
+
+/* {
+  provider_id: res.locals.provider_id,
+  device_id: body.device_id,
+  vehicle_id: body.vehicle_id,
+  type: body.type,
+  propulsion: body.propulsion,
+  year: parseInt(body.year) || body.year,
+  mfgr: body.mfgr,
+  model: body.model,
+  recorded,
+  status: VEHICLE_STATUSES.removed
+} */
+
+const deviceSchema = Joi.object().keys({
+  device_id: uuidSchema.required(),
+  provider_id: uuidSchema.required(),
+  vehicle_id: stringSchema.required(),
+  type: vehicleTypeSchema.required(),
+  propulsion: Joi.array()
+    .items(propulsionTypeSchema)
+    .required(),
+  year: numberSchema.optional(),
+  mfgr: stringSchema.optional(),
+  model: stringSchema.optional(),
+  recorded: timestampSchema.required(),
+  status: vehicleStatusSchema
 })
 
 const Format = (property: string, error: Joi.ValidationError): string => {
@@ -416,6 +461,51 @@ export function geographyValidationDetails(geography: Geography): Joi.Validation
 
 export function rawValidatePolicy(policy: Policy): Joi.ValidationResult<Policy> {
   return Joi.validate(policy, policySchema)
+}
+
+export function validateDevice(device: Device) {
+  const { error } = Joi.validate(device, deviceSchema)
+  return error
+}
+
+const validateTripEvent = (event: VehicleEvent) => {
+  const { error } = Joi.validate(event, tripEventSchema)
+  return error
+}
+
+const validateProviderPickUpEvent = (event: VehicleEvent) => {
+  const { error } = Joi.validate(event, providerPickUpEventSchema)
+  return error
+}
+
+const validateDeregisterEvent = (event: VehicleEvent) => {
+  const { error } = Joi.validate(event, deregisterEventSchema)
+  return error
+}
+
+export function validateEvent(event: VehicleEvent) {
+  const { event_type } = event
+
+  const TRIP_EVENTS: string[] = [
+    VEHICLE_EVENTS.trip_start,
+    VEHICLE_EVENTS.trip_end,
+    VEHICLE_EVENTS.trip_enter,
+    VEHICLE_EVENTS.trip_leave
+  ]
+
+  if (TRIP_EVENTS.includes(event_type)) {
+    return validateTripEvent(event)
+  }
+  if (event_type === VEHICLE_EVENTS.provider_pick_up) {
+    return validateProviderPickUpEvent(event)
+  }
+  if (event_type === VEHICLE_EVENTS.deregister) {
+    return validateDeregisterEvent(event)
+  }
+
+  const { error } = Joi.validate(event, eventSchema)
+
+  return error
 }
 
 export const policySchemaJson = joiToJsonSchema(policySchema)

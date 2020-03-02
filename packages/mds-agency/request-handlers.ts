@@ -2,7 +2,7 @@ import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
 import areas from 'ladot-service-areas'
 import log from '@mds-core/mds-logger'
 import { isUUID, now, ServerError, ValidationError, NotFoundError, normalizeToArray } from '@mds-core/mds-utils'
-import { isValidStop } from '@mds-core/mds-schema-validators'
+import { isValidStop, validateDevice } from '@mds-core/mds-schema-validators'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
@@ -82,17 +82,29 @@ export const getServiceAreaById = async (req: AgencyApiRequest, res: AgencyApiRe
 export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   const { body } = req
   const recorded = now()
-  const device: Device = {
-    provider_id: res.locals.provider_id,
-    device_id: body.device_id,
-    vehicle_id: body.vehicle_id,
-    type: body.type,
-    propulsion: body.propulsion,
-    year: parseInt(body.year) || body.year,
-    mfgr: body.mfgr,
-    model: body.model,
+
+  const { provider_id } = res.locals
+  const { device_id, vehicle_id, type, propulsion, year, mfgr, model } = body
+
+  const status = VEHICLE_STATUSES.removed
+
+  const device = {
+    provider_id,
+    device_id,
+    vehicle_id,
+    type,
+    propulsion,
+    year,
+    mfgr,
+    model,
     recorded,
-    status: VEHICLE_STATUSES.removed
+    status
+  }
+
+  const details = validateDevice(device)
+
+  if (details) {
+    await log.warn(`ValidationError for ${providerName(provider_id)}. Error: ${details}`)
   }
 
   const failure = badDevice(device)
