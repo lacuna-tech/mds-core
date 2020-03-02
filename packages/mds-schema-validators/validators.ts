@@ -50,6 +50,7 @@ interface ValidatorOptions {
   property: string
   assert: boolean
   required: boolean
+  allowUnknown: boolean
 }
 
 // Convert empty string to undefined so required/optional works as expected
@@ -91,8 +92,6 @@ const telemetrySchema = Joi.object().keys({
   timestamp: timestampSchema.required(),
   recorded: timestampSchema.optional()
 })
-
-const telemetriesSchema = Joi.array().items(telemetrySchema)
 
 const ruleSchema = Joi.object().keys({
   name: Joi.string().required(),
@@ -300,8 +299,8 @@ const Format = (property: string, error: Joi.ValidationError): string => {
 }
 
 const Validate = <T = unknown>(value: unknown, schema: Joi.Schema, options: Partial<ValidatorOptions>): value is T => {
-  const { assert = true, required = true, property = 'value' } = options
-  const { error } = Joi.validate(value, schema, { presence: required ? 'required' : 'optional' })
+  const { assert = true, required = true, property = 'value', allowUnknown = false } = options
+  const { error } = Joi.validate(value, schema, { presence: required ? 'required' : 'optional', allowUnknown })
   if (error && assert) {
     throw new ValidationError(`invalid_${property}`.toLowerCase(), {
       [property]: value,
@@ -372,6 +371,8 @@ export const isValidAuditDeviceId = (value: unknown, options: Partial<ValidatorO
 export const isValidTelemetry = (value: unknown, options: Partial<ValidatorOptions> = {}): value is Telemetry =>
   Validate(value, telemetrySchema, { property: 'telemetry', ...options })
 
+export const isValidDevice = (device: unknown) => Validate(device, deviceSchema, {})
+
 export const isValidVehicleEventType = (
   value: unknown,
   options: Partial<ValidatorOptions> = {}
@@ -397,6 +398,9 @@ export const isStringifiedCacheReadDeviceResult = (device: unknown): device is S
 
 export const isValidJurisdiction = (value: unknown, options: Partial<ValidatorOptions> = {}): value is Jurisdiction =>
   Validate(value, jurisdictionSchema, { property: 'jurisdiction', ...options })
+
+export const isValidEvent = (event: unknown, options: Partial<ValidatorOptions>): event is VehicleEvent =>
+  Validate(event, eventSchema, { ...options })
 
 export const validateJurisdiction = (value: unknown, options: Partial<ValidatorOptions> = {}): void => {
   isValidJurisdiction(value, options)
@@ -455,67 +459,40 @@ export function rawValidatePolicy(policy: Policy): Joi.ValidationResult<Policy> 
   return Joi.validate(policy, policySchema)
 }
 
-export function validateDevice(device: Device) {
-  const { error } = Joi.validate(device, deviceSchema)
-  return error
-}
+const validateTripEvent = (event: VehicleEvent) => Validate(event, tripEventSchema, {})
 
-const validateTripEvent = (event: VehicleEvent) => {
-  const { error } = Joi.validate(event, tripEventSchema)
-  return error
-}
+const validateProviderPickUpEvent = (event: VehicleEvent) => Validate(event, providerPickUpEventSchema, {})
 
-const validateProviderPickUpEvent = (event: VehicleEvent) => {
-  const { error } = Joi.validate(event, providerPickUpEventSchema)
-  return error
-}
+const validateServiceEndEvent = (event: VehicleEvent) => Validate(event, serviceEndEventSchema, {})
 
-const validateServiceEndEvent = (event: VehicleEvent) => {
-  const { error } = Joi.validate(event, serviceEndEventSchema)
-  return error
-}
+const validateDeregisterEvent = (event: VehicleEvent) => Validate(event, deregisterEventSchema, {})
 
-const validateDeregisterEvent = (event: VehicleEvent) => {
-  const { error } = Joi.validate(event, deregisterEventSchema)
-  return error
-}
+export const validateEvent = (event: unknown) => {
+  if (isValidEvent(event, { allowUnknown: true })) {
+    const { event_type } = event
 
-export const validateEvent = (event: VehicleEvent) => {
-  const { event_type } = event
+    const TRIP_EVENTS: string[] = [
+      VEHICLE_EVENTS.trip_start,
+      VEHICLE_EVENTS.trip_end,
+      VEHICLE_EVENTS.trip_enter,
+      VEHICLE_EVENTS.trip_leave
+    ]
 
-  const TRIP_EVENTS: string[] = [
-    VEHICLE_EVENTS.trip_start,
-    VEHICLE_EVENTS.trip_end,
-    VEHICLE_EVENTS.trip_enter,
-    VEHICLE_EVENTS.trip_leave
-  ]
+    if (TRIP_EVENTS.includes(event_type)) {
+      return validateTripEvent(event)
+    }
+    if (event_type === VEHICLE_EVENTS.provider_pick_up) {
+      return validateProviderPickUpEvent(event)
+    }
+    if (event_type === VEHICLE_EVENTS.service_end) {
+      return validateServiceEndEvent(event)
+    }
+    if (event_type === VEHICLE_EVENTS.deregister) {
+      return validateDeregisterEvent(event)
+    }
 
-  if (TRIP_EVENTS.includes(event_type)) {
-    return validateTripEvent(event)
+    return Validate(event, eventSchema, {})
   }
-  if (event_type === VEHICLE_EVENTS.provider_pick_up) {
-    return validateProviderPickUpEvent(event)
-  }
-  if (event_type === VEHICLE_EVENTS.service_end) {
-    return validateServiceEndEvent(event)
-  }
-  if (event_type === VEHICLE_EVENTS.deregister) {
-    return validateDeregisterEvent(event)
-  }
-
-  const { error } = Joi.validate(event, eventSchema)
-
-  return error
-}
-
-export const validateTelemetry = (telemetry: Telemetry) => {
-  const { error } = Joi.validate(telemetry, telemetrySchema)
-  return error
-}
-
-export const validateTelemetries = (telemetries: Telemetry[]) => {
-  const { error } = Joi.validate(telemetries, telemetriesSchema)
-  return error
 }
 
 export const policySchemaJson = joiToJsonSchema(policySchema)

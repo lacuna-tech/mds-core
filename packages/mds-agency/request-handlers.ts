@@ -2,7 +2,7 @@ import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
 import areas from 'ladot-service-areas'
 import log from '@mds-core/mds-logger'
 import { isUUID, now, ServerError, ValidationError, NotFoundError, normalizeToArray } from '@mds-core/mds-utils'
-import { isValidStop, validateDevice, validateEvent, validateTelemetry } from '@mds-core/mds-schema-validators'
+import { isValidStop, isValidDevice, validateEvent, isValidTelemetry } from '@mds-core/mds-schema-validators'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
@@ -101,10 +101,10 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiRespo
     status
   }
 
-  const details = validateDevice(device)
-
-  if (details) {
-    log.info(`Device ValidationError for ${providerName(provider_id)}. Error: ${details}`)
+  try {
+    isValidDevice(device)
+  } catch (err) {
+    log.info(`Device ValidationError for ${providerName(provider_id)}. Error: ${err}`)
   }
 
   const failure = badDevice(device)
@@ -264,10 +264,10 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
     service_area_id: null // added for diagnostic purposes
   }
 
-  const details = validateEvent(event)
-
-  if (details) {
-    log.info(`Event ValidationError for ${providerName(provider_id)}. Error: ${details}`)
+  try {
+    validateEvent(event)
+  } catch (err) {
+    log.info(`Event ValidationError for ${providerName(provider_id)}. Error: ${err}`)
   }
 
   if (event.telemetry) {
@@ -414,10 +414,10 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
         recorded
       }
 
-      const details = validateTelemetry(telemetry)
-
-      if (details) {
-        log.info(`Telemetry ValidationError for ${providerName(provider_id)}. Error: ${details}`)
+      try {
+        isValidTelemetry(telemetry)
+      } catch (err) {
+        log.info(`Telemetry ValidationError for ${providerName(provider_id)}. Error: ${err}`)
       }
 
       const bad_telemetry: ErrorObject | null = badTelemetry(telemetry)
