@@ -95,11 +95,11 @@ const createJurisdictions = async (
       return Success(
         entities.map(AsJurisdiction()).filter((jurisdiction): jurisdiction is Jurisdiction => jurisdiction !== null)
       )
-    } catch (error) {
+    } catch (error) /* istanbul ignore next */ {
       await logger.error(error.message)
       return Failure(error instanceof ValidationError ? error : new ConflictError(error))
     }
-  } catch (error) {
+  } catch (error) /* istanbul ignore next */ {
     await logger.error(error.message)
     return Failure(error instanceof ServerError ? error : new ServerError(error))
   }
@@ -167,11 +167,11 @@ const updateJurisdiction = async (
         }
       }
       return Failure(new NotFoundError('Jurisdiction Not Found', { jurisdiction_id }))
-    } catch (error) {
+    } catch (error) /* istanbul ignore next */ {
       await logger.error(error.message)
       return Failure(error)
     }
-  } catch (error) {
+  } catch (error) /* istanbul ignore next */ {
     await logger.error(error.message)
     return Failure(error instanceof ServerError ? error : new ServerError(error))
   }
@@ -191,11 +191,11 @@ const getAllJurisdictions = async ({
         .map(AsJurisdiction(effective))
         .filter((jurisdiction): jurisdiction is Jurisdiction => jurisdiction !== null)
       return Success(jurisdictions)
-    } catch (error) {
+    } catch (error) /* istanbul ignore next */ {
       await logger.error(error.message)
       return Failure(error)
     }
-  } catch (error) {
+  } catch (error) /* istanbul ignore next */ {
     await logger.error(error.message)
     return Failure(error instanceof ServerError ? error : new ServerError(error))
   }
@@ -217,11 +217,11 @@ const getOneJurisdiction = async (
       return jurisdiction
         ? Success(jurisdiction)
         : Failure(new NotFoundError('Jurisdiction Not Found', { jurisdiction_id, effective }))
-    } catch (error) {
+    } catch (error) /* istanbul ignore next */ {
       await logger.error(error.message, error)
       return Failure(error)
     }
-  } catch (error) {
+  } catch (error) /* istanbul ignore next */ {
     await logger.error(error.message)
     return Failure(error instanceof ServerError ? error : new ServerError(error))
   }

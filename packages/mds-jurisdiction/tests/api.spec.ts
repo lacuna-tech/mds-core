@@ -84,6 +84,33 @@ describe('', () => {
       .is([JURISDICTION1.jurisdiction_id, JURISDICTION2.jurisdiction_id])
   })
 
+  it('Update Single Jurisdiction (validation error)', async () => {
+    await request
+      .put(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .send({ ...JURISDICTION1, jurisdiction_id: uuid() })
+      .expect(400)
+  })
+
+  it('Update Single Jurisdiction (not found)', async () => {
+    await request
+      .put(`/jurisdictions/${uuid()}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .expect(404)
+  })
+
+  it('Update Single Jurisdiction', async () => {
+    const updated_agency_key = 'updated_agency_key'
+    const result = await request
+      .put(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .send({ ...JURISDICTION1, agency_key: updated_agency_key })
+      .expect(200)
+    test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
+    test.object(result.body.jurisdiction).hasProperty('jurisdiction_id', JURISDICTION1.jurisdiction_id)
+    test.object(result.body.jurisdiction).hasProperty('agency_key', updated_agency_key)
+  })
+
   it('Get One Jurisdiction', async () => {
     const result = await request
       .get(`/jurisdictions/${JURISDICTION2.jurisdiction_id}`)
