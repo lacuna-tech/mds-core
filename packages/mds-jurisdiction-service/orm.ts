@@ -21,8 +21,8 @@ export const readJurisdiction = async (jurisdiction_id: UUID): Promise<Jurisdict
       .getOne()
     return entity
   } catch (error) {
-    await logger.error('Database Error Reading Jurisdiction', { jurisdiction_id }, error)
-    throw new ServerError('Database Error')
+    await logger.error('readJurisdiction', { jurisdiction_id }, error)
+    throw new ServerError('Error Reading Jurisdiction', { jurisdiction_id })
   }
 }
 
@@ -35,8 +35,8 @@ export const readJurisdictions = async (): Promise<JurisdictionEntity[]> => {
       .getMany()
     return entities
   } catch (error) {
-    await logger.error('Database Error Reading Jurisdictions', error)
-    throw new ServerError('Database Error')
+    await logger.error('readJurisdictions', error)
+    throw new ServerError('Error Reading Jurisdictions')
   }
 }
 
@@ -54,8 +54,8 @@ export const writeJurisdictions = async (
       .execute()
     return entities
   } catch (error) {
-    await logger.error('Database Error Writing Jurisdictions', error)
-    throw new ServerError('Database Error')
+    await logger.error('writeJurisdictions', error)
+    throw new ServerError('Error Writing Jurisdictions')
   }
 }
 
@@ -77,8 +77,8 @@ export const updateJurisdiction = async (
       .execute()
     return entity
   } catch (error) {
-    await logger.error('Database Error', 'updateJurisdiction', { jurisdiction_id, jurisdiction }, error)
-    throw new ServerError('Database Error Updating Jurisdiction')
+    await logger.error('updateJurisdiction', { jurisdiction_id, jurisdiction }, error)
+    throw new ServerError('Error Updating Jurisdiction', { jurisdiction_id })
   }
 }
 
