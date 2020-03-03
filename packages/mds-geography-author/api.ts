@@ -128,7 +128,6 @@ function api(app: express.Express): express.Express {
           return res.status(400).send({ error: err })
         }
         /* istanbul ignore next */
-        /* istanbul ignore next */
         return res.status(500).send({ error: err })
       }
     }

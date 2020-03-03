@@ -61,7 +61,7 @@ apis:
     migration: false
   mds-geography-author:
     enabled: true
-    pathPrefix: /geography
+    pathPrefix: /geography-author
     version: ${GEOGRAPHY_AUTHOR_VERSION}
     migration: false
 cronjobs:
