@@ -28,7 +28,7 @@ import sinon from 'sinon'
 import supertest from 'supertest'
 import test from 'unit.js'
 import db from '@mds-core/mds-db'
-import uuid from 'uuid'
+import { v4 as uuid } from 'uuid'
 import { Geography } from '@mds-core/mds-types'
 import { ApiServer } from '@mds-core/mds-api-server'
 import {
