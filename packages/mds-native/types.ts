@@ -15,10 +15,9 @@
  */
 
 import { ApiRequest, ApiVersionedResponse, ApiVersionedResponseLocals } from '@mds-core/mds-api-server'
-import { UUID, VehicleEvent, Recorded, Device, Provider } from '@mds-core/mds-types'
+import { UUID } from '@mds-core/mds-types'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
 
-// Place newer versions at the beginning of the list
 export const NATIVE_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
 export type NATIVE_API_SUPPORTED_VERSION = typeof NATIVE_API_SUPPORTED_VERSIONS[number]
 export const [NATIVE_API_DEFAULT_VERSION] = NATIVE_API_SUPPORTED_VERSIONS
@@ -26,46 +25,8 @@ export const [NATIVE_API_DEFAULT_VERSION] = NATIVE_API_SUPPORTED_VERSIONS
 // Allow adding type definitions for Express Request objects
 export type NativeApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
 
-// Allow adding type definitions for Express Response objects
-export interface NativeApiResponse<TBody extends NativeApiResponseBody>
-  extends ApiVersionedResponse<NATIVE_API_SUPPORTED_VERSION, TBody> {
+export interface NativeApiResponse<TBody extends {}> extends ApiVersionedResponse<NATIVE_API_SUPPORTED_VERSION, TBody> {
   locals: ApiVersionedResponseLocals<NATIVE_API_SUPPORTED_VERSION> & {
     provider_id: UUID
   }
 }
-
-export interface NativeApiGetEventsRequest extends NativeApiRequest<{ cursor: string }> {
-  // Query string parameters always come in as strings
-  query: Partial<
-    {
-      [P in 'limit' | 'device_id' | 'provider_id' | 'start_time' | 'end_time']: string
-    }
-  >
-}
-
-interface NativeApiResponseBody {
-  version: NATIVE_API_SUPPORTED_VERSION
-}
-
-interface NativeApiGetEventsReponseBody extends NativeApiResponseBody {
-  events: Omit<Recorded<VehicleEvent>, 'id' | 'service_area_id'>[]
-  cursor: string
-}
-
-export type NativeApiGetEventsReponse = NativeApiResponse<NativeApiGetEventsReponseBody>
-
-export type NativeApiGetVehiclesRequest = NativeApiRequest<{ device_id: UUID }>
-
-interface NativeApiGetVehiclesResponseBody extends NativeApiResponseBody {
-  vehicle: Omit<Recorded<Device>, 'id'>
-}
-
-export type NativeApiGetVehiclesResponse = NativeApiResponse<NativeApiGetVehiclesResponseBody>
-
-export type NativeApiGetProvidersRequest = NativeApiRequest
-
-interface NativeApiGetProvidersResponseBody extends NativeApiResponseBody {
-  providers: Provider[]
-}
-
-export type NativeApiGetProvidersResponse = NativeApiResponse<NativeApiGetProvidersResponseBody>

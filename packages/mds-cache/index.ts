@@ -86,6 +86,7 @@ declare module 'redis' {
   }
   interface Multi {
     hgetallAsync: (arg1: string) => Promise<{ [key: string]: string }>
+    execAsync: () => Promise<object[]>
   }
 }
 
@@ -167,10 +168,16 @@ async function hscan(key: string, pattern: string): Promise<string[] | null> {
   return null
 }
 
-async function getVehicleType(keyID: UUID): Promise<VEHICLE_TYPE | null> {
+async function getVehicleType(deviceID: UUID): Promise<VEHICLE_TYPE | null> {
   const client = await getClient()
-  const type = await client.hgetAsync(decorateKey(`device:${keyID}:device`), 'type')
+  const type = await client.hgetAsync(decorateKey(`device:${deviceID}:device`), 'type')
   return (type as VEHICLE_TYPE) ?? null
+}
+
+async function getVehicleProvider(deviceID: UUID): Promise<UUID | null> {
+  const client = await getClient()
+  const provider = await client.hgetAsync(decorateKey(`device:${deviceID}:device`), 'provider_id')
+  return (provider as UUID) ?? null
 }
 
 async function readDeviceState(field: UUID): Promise<StateEntry | null> {
@@ -727,6 +734,7 @@ export = {
   health,
   info,
   getVehicleType,
+  getVehicleProvider,
   readDeviceState,
   readAllDeviceStates,
   writeDeviceState,

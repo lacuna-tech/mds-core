@@ -10,10 +10,16 @@ export const AccessTokenScopes = [
   'events:read',
   'events:read:provider',
   'events:write:provider',
+<<<<<<< HEAD
   'geographies:write',
   'geographies:publish',
   'geographies:read:published',
   'geographies:read:unpublished',
+=======
+  'jurisdictions:read',
+  'jurisdictions:read:claim',
+  'jurisdictions:write',
+>>>>>>> origin/develop
   'metrics:read',
   'metrics:read:provider',
   'policies:delete',
