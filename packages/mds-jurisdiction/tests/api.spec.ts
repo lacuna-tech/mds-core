@@ -100,7 +100,7 @@ describe('', () => {
   })
 
   it('Update Single Jurisdiction', async () => {
-    const updated_agency_key = 'updated_agency_key'
+    const updated_agency_key = `${JURISDICTION1.agency_key}-updated`
     const result = await request
       .put(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
       .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
@@ -118,13 +118,6 @@ describe('', () => {
       .expect(200)
     test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test.object(result.body.jurisdiction).hasProperty('jurisdiction_id', JURISDICTION2.jurisdiction_id)
-  })
-
-  it('Get One Jurisdiction (not found)', async () => {
-    await request
-      .get(`/jurisdictions/${uuid()}`)
-      .set('Authorization', SCOPED_AUTH(['jurisdictions:read']))
-      .expect(404)
   })
 
   it('Get One Jurisdiction (no scope)', async () => {
@@ -186,6 +179,28 @@ describe('', () => {
       .expect(200)
     test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test.value((result.body.jurisdictions as Jurisdiction[]).length).is(1)
+  })
+
+  it('Delete One Jurisdiction', async () => {
+    const result = await request
+      .delete(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .expect(200)
+    test.object(result.body).hasProperty('jurisdiction_id', JURISDICTION1.jurisdiction_id)
+  })
+
+  it('Delete One Jurisdiction (not found)', async () => {
+    await request
+      .delete(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .expect(404)
+  })
+
+  it('Get One Jurisdiction (not found)', async () => {
+    await request
+      .get(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read']))
+      .expect(404)
   })
 
   after(async () => JurisdictionService.shutdown())

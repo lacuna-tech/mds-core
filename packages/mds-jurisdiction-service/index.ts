@@ -177,6 +177,53 @@ const updateJurisdiction = async (
   }
 }
 
+const deleteJurisdiction = async (
+  jurisdiction_id: UUID
+): Promise<JurisdictionServiceResult<Pick<Jurisdiction, 'jurisdiction_id'>, NotFoundError>> => {
+  try {
+    const connection = await manager.getReadWriteConnection()
+    try {
+      const entity = await connection
+        .getRepository(JurisdictionEntity)
+        .createQueryBuilder()
+        .where({ jurisdiction_id })
+        .getOne()
+      if (entity) {
+        const current = AsJurisdiction()(entity)
+        if (current) {
+          const { id, ...update } = entity
+          await connection
+            .getRepository(JurisdictionEntity)
+            .createQueryBuilder()
+            .update()
+            .set({
+              ...update,
+              versions: [
+                {
+                  agency_name: current.agency_name,
+                  geography_id: null,
+                  timestamp: Date.now()
+                },
+                ...entity.versions
+              ].sort((a, b) => b.timestamp - a.timestamp)
+            })
+            .where('jurisdiction_id = :jurisdiction_id', { jurisdiction_id })
+            .returning('*')
+            .execute()
+          return Success({ jurisdiction_id })
+        }
+      }
+      return Failure(new NotFoundError('Jurisdiction Not Found', { jurisdiction_id }))
+    } catch (error) /* istanbul ignore next */ {
+      await logger.error(error.message)
+      return Failure(error)
+    }
+  } catch (error) /* istanbul ignore next */ {
+    await logger.error(error.message)
+    return Failure(error instanceof ServerError ? error : new ServerError(error))
+  }
+}
+
 const getAllJurisdictions = async ({
   effective = Date.now()
 }: Partial<GetJurisdictionOptions> = {}): Promise<JurisdictionServiceResult<Jurisdiction[], ServerError>> => {
@@ -234,6 +281,7 @@ export const JurisdictionService = {
   createJurisdictions,
   createJurisdiction,
   updateJurisdiction,
+  deleteJurisdiction,
   getAllJurisdictions,
   getOneJurisdiction,
   shutdown

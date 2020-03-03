@@ -131,7 +131,7 @@ describe('Write/Read Jurisdictions', () => {
     test.value(jurisdiction).is(null)
   })
 
-  it('Update One Jurisdiction (not found_', async () => {
+  it('Update One Jurisdiction (not found)', async () => {
     const [error, jurisdiction] = await JurisdictionService.updateJurisdiction(uuid(), {
       agency_name: 'Some New Name',
       timestamp: TODAY
@@ -190,6 +190,22 @@ describe('Write/Read Jurisdictions', () => {
       .isNot(null)
       .isInstanceOf(NotFoundError)
     test.value(jurisdiction).is(null)
+  })
+
+  it('Delete One Jurisdiction', async () => {
+    const [error, result] = await JurisdictionService.deleteJurisdiction(JURISDICTION_ID)
+    test.value(result).isNot(null)
+    test.value(result?.jurisdiction_id).is(JURISDICTION_ID)
+    test.value(error).is(null)
+  })
+
+  it('Delete One Jurisdiction (not found)', async () => {
+    const [error, result] = await JurisdictionService.deleteJurisdiction(JURISDICTION_ID)
+    test
+      .value(error)
+      .isNot(null)
+      .isInstanceOf(NotFoundError)
+    test.value(result).is(null)
   })
 
   after(async () => {
