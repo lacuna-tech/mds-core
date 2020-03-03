@@ -103,15 +103,6 @@ spec:
                 name: mds-secrets
                 key: slack-token
           {{- end }}
-          {{- if $.Values.slack.channel }}
-          - name: SLACK_CHANNEL
-            value: {{ $.Values.slack.channel }}
-          - name: SLACK_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: mds-secrets
-                key: slack-token
-          {{- end }}
           {{- if $api.env }}
 {{ toYaml $api.env | indent 10 }}
           {{- end }}
