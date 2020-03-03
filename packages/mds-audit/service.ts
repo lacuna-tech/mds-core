@@ -124,6 +124,18 @@ export async function readEvent(device_id: UUID | null): Promise<Recorded<Vehicl
   }
 }
 
+export async function readEvent(device_id: UUID | null): Promise<Recorded<VehicleEvent> | null> {
+  if (!device_id) {
+    return null
+  }
+  try {
+    const provider_event = await db.readEvent(device_id)
+    return provider_event
+  } catch (err) {
+    return null
+  }
+}
+
 export async function readEvents(
   device_id: UUID,
   start_time: Timestamp,
