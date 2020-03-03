@@ -28,8 +28,11 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
   try {
     const client = await getReadOnlyClient()
 
-    const { 
-      get_published, get_unpublished, geography_ids } = { get_published: false, get_unpublished: false, ...params }
+    const { get_published, get_unpublished, geography_ids } = {
+      get_published: false,
+      get_unpublished: false,
+      ...params
+    }
     if (get_published && get_unpublished) {
       throw new BadParamsError('cannot have get_unpublished and get_published both be true')
     }
@@ -49,8 +52,8 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
 
     if (geography_ids) {
       const SQLified_geography_ids = geography_ids.map(id => {
-      return `'${id}'`
-  })
+        return `'${id}'`
+      })
       conditions.push(`geography_id in (${SQLified_geography_ids.join(',')})`)
     }
 

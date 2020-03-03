@@ -14,17 +14,32 @@ import { geographyValidationDetails } from '@mds-core/mds-schema-validators'
 import log from '@mds-core/mds-logger'
 
 import { checkAccess } from '@mds-core/mds-api-server'
+import { ScopeDescriptions } from 'packages/mds-types'
 
 function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/geographies/meta/'),
-    checkAccess((scopes) =>  {
-       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished') }),
+    checkAccess(scopes => {
+      return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
+    }),
     async (req, res) => {
+      // TODO
+      // if get_unpublished is true, and client lacks geographies:read:published, then
+      // unpublished geos should still be filtered out
+      const { scopes } = res.locals
+      const get_unpublished = req.query.get_unpublished === 'true'
       const get_published = req.query.get_published === 'true'
+      const params = { get_unpublished: false, get_published: false }
+
+
       try {
-        const metadata = await db.readBulkGeographyMetadata({ get_published })
-        res.status(200).send(metadata)
+        if (scopes.includes('geographies:read:published') && !scopes.includes('geographies:read:unpublished')) {
+          params.get_published = true
+        } else {
+          params.get_published = req.query.get_published === 'true'
+        }
+        const metadata = await db.readBulkGeographyMetadata(params)
+        return res.status(200).send(metadata)
       } catch (err) {
         await log.error('failed to read geography metadata', err)
         return res.status(500).send({
@@ -36,14 +51,15 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id'),
-    checkAccess((scopes) =>  {
-       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished') }),
+    checkAccess(scopes => {
+      return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
+    }),
     async (req, res) => {
       const { geography_id } = req.params
       try {
         const geography = await db.readSingleGeography(geography_id)
-        if (geography.publish_date && !res.locals.scopes.includes('geographies:read:published')) {
-          throw new InsufficientPermissionsError('permission to read published geographies missing')
+        if (!geography.publish_date && !res.locals.scopes.includes('geographies:read:unpublished')) {
+          throw new InsufficientPermissionsError('permission to read unpublished geographies missing')
         } else {
           return res.status(200).send(geography)
         }
@@ -142,17 +158,16 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id/meta'),
-    checkAccess((scopes) =>  
-      {
-        return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
-      }),
+    checkAccess(scopes => {
+      return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
+    }),
     async (req, res) => {
       const { geography_id } = req.params
       try {
         const geography_metadata = await db.readSingleGeographyMetadata(geography_id)
         const geography = await db.readSingleGeography(geography_id)
-        if (geography.publish_date && !res.locals.scopes.includes('geographies:read:published')) {
-          throw new InsufficientPermissionsError('permission to read metadata of published geographies missing')
+        if (!geography.publish_date && !res.locals.scopes.includes('geographies:read:unpublished')) {
+          throw new InsufficientPermissionsError('permission to read metadata of unpublished geographies missing')
         }
         return res.status(200).send(geography_metadata)
       } catch (err) {
@@ -170,16 +185,22 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies'),
-    checkAccess((scopes) =>  
-      {
-        return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
-      }),
+    checkAccess(scopes => {
+      return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
+    }),
     async (req, res) => {
       const summary = req.query.summary === 'true'
       const { get_published = null, get_unpublished = null } = req.query
+      // TODO
+      // if get_unpublished is true, and client lacks geographies:read:published, then
+      // unpublished geos should still be filtered out
       const params = { get_published, get_unpublished }
       try {
         const geographies = summary ? await db.readGeographySummaries(params) : await db.readGeographies(params)
+        if (!res.locals.scopes.includes('geographies:read:unpublished')) {
+          const filteredGeos = geographies.filter(geo => !!geo.publish_date)
+          return res.status(200).send(filteredGeos)
+        }
         return res.status(200).send(geographies)
       } catch (err) {
         /* We don't throw a NotFoundError if the number of results is zero, so the error handling
