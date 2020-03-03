@@ -158,6 +158,7 @@ const deleteJurisdiction = async (
       if (entity) {
         const current = AsJurisdiction()(entity)
         if (current) {
+          // "Soft" delete the jursidiction by updating it with a new version containing a null geography_id
           await orm.updateJurisdiction(jurisdiction_id, {
             ...entity,
             versions: [
