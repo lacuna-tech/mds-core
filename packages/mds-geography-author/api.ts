@@ -8,7 +8,8 @@ import {
   DependencyMissingError,
   ValidationError,
   AlreadyPublishedError,
-  InsufficientPermissionsError
+  InsufficientPermissionsError,
+  BadParamsError
 } from '@mds-core/mds-utils'
 import { geographyValidationDetails } from '@mds-core/mds-schema-validators'
 import log from '@mds-core/mds-logger'
@@ -27,29 +28,31 @@ function api(app: express.Express): express.Express {
       // if get_unpublished is true, and client lacks geographies:read:published, then
       // unpublished geos should still be filtered out
       const { scopes } = res.locals
-      const params  = req.query
-      const get_unpublished = req.query.get_unpublished === 'true'
-      const get_published = req.query.get_published === 'true'
-
-      if (params.get_published) {
-        params.get_published = params.get_published === 'true'
+      const { get_published = null, get_unpublished =null }  = req.query
+      const params = { get_published, get_unpublished }
+      if (get_published) {
+        params.get_published = get_published === 'true'
       }
 
+      if (get_unpublished) {
+        params.get_unpublished = get_unpublished === 'true'
+      }
 
+      /* If the user can only read published geos, and all they want is the unpublished geos,
+       * save the trip to the DB and return an array fast.
+      */
+      if (!scopes.includes('geographies:read:unpublished') && params.get_unpublished) {
+        return res.status(200).send([])
+      }
       try {
-        if (scopes.includes('geographies:read:published') && !scopes.includes('geographies:read:unpublished')) {
-          params.get_published = true
-        } else {
-          params.get_unpublished = true
-        
-        }
         const metadata = await db.readBulkGeographyMetadata(params)
         return res.status(200).send(metadata)
-      } catch (err) {
-        await log.error('failed to read geography metadata', err)
-        return res.status(500).send({
-          error: err
-        })
+      } catch (error) {
+        await log.error('failed to read geography metadata', error)
+        if (error instanceof BadParamsError) {
+          return res.status(400).send({ error })
+        }
+        return res.status(500).send({ error })
       }
     }
   )
