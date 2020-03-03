@@ -7,15 +7,9 @@
   "editor.insertSpaces": true,
   "editor.tabSize": 2,
   "eslint.enable": true,
-  "eslint.options": {
-    "ignorePath": ".gitignore"
-  },
-  "eslint.validate": [
-    "typescript"
-  ],
-  "prettier.disableLanguages": [
-    "markdown"
-  ],
+  "eslint.options": { "ignorePath": ".gitignore" },
+  "eslint.validate": ["typescript"],
+  "prettier.disableLanguages": ["markdown"],
   "[typescript]": {
     "editor.formatOnSave": false
   },
