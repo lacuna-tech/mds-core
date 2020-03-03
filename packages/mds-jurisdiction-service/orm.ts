@@ -1,7 +1,7 @@
 import { ConnectionManager } from '@mds-core/mds-orm'
 import { UUID } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
-import { ServerError } from 'packages/mds-utils'
+import { ServerError } from '@mds-core/mds-utils'
 import { InsertReturning, UpdateReturning } from '@mds-core/mds-orm/types'
 import { DeepPartial } from 'typeorm'
 import ormconfig from './ormconfig'

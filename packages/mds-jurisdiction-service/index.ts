@@ -18,7 +18,7 @@ import { UUID, Timestamp, Jurisdiction } from '@mds-core/mds-types'
 import { NotFoundError, ServerError, ConflictError, ValidationError } from '@mds-core/mds-utils'
 import { DeepPartial } from 'typeorm'
 import logger from '@mds-core/mds-logger'
-import { validateJurisdiction } from 'packages/mds-schema-validators'
+import { validateJurisdiction } from '@mds-core/mds-schema-validators'
 import { v4 as uuid } from 'uuid'
 import * as orm from './orm'
 import { JurisdictionEntity } from './entities'
@@ -103,31 +103,31 @@ export type UpdateJurisdictionType = DeepPartial<Jurisdiction>
 
 const updateJurisdiction = async (
   jurisdiction_id: UUID,
-  updates: UpdateJurisdictionType
+  update: UpdateJurisdictionType
 ): Promise<JurisdictionServiceResult<Jurisdiction, ValidationError | NotFoundError>> => {
+  if (update.jurisdiction_id && update.jurisdiction_id !== jurisdiction_id) {
+    return Failure(new ValidationError('Invalid jurisdiction_id for update'))
+  }
   try {
     try {
       const entity = await orm.readJurisdiction(jurisdiction_id)
       if (entity) {
         const current = AsJurisdiction()(entity)
         if (current) {
-          const timestamp = updates.timestamp ?? Date.now()
-          if ((updates.jurisdiction_id ?? jurisdiction_id) !== current.jurisdiction_id) {
-            return Failure(new ValidationError('Invalid jurisdiction_id for update'))
-          }
+          const timestamp = update.timestamp ?? Date.now()
           if (timestamp <= current.timestamp) {
             return Failure(new ValidationError('Invalid timestamp for update'))
           }
           const updated = await orm.updateJurisdiction(jurisdiction_id, {
             ...entity,
-            agency_key: updates.agency_key ?? current.agency_key,
+            agency_key: update.agency_key ?? current.agency_key,
             versions:
-              (updates.agency_name && updates.agency_name !== current.agency_name) ||
-              (updates.geography_id && updates.geography_id !== current.geography_id)
+              (update.agency_name && update.agency_name !== current.agency_name) ||
+              (update.geography_id && update.geography_id !== current.geography_id)
                 ? [
                     {
-                      agency_name: updates.agency_name ?? current.agency_name,
-                      geography_id: updates.geography_id ?? current.geography_id,
+                      agency_name: update.agency_name ?? current.agency_name,
+                      geography_id: update.geography_id ?? current.geography_id,
                       timestamp
                     },
                     ...entity.versions
