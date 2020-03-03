@@ -149,11 +149,9 @@ export const EventServer = <TData, TResult>(
 
   server.get(pathsFor('/health'), HealthRequestHandler)
 
-  server.get(pathsFor(`/metrics`), async (req, res) => {
+  server.get(pathsFor('/metrics'), async (req, res) => {
     res.set('Content-Type', prometheus.register.contentType)
-    res.end(prometheus.register.metrics())
-
-    return res
+    res.status(200).send(prometheus.register.metrics)
   })
 
   server.post('/', async (req, res) => {
