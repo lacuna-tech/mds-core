@@ -1,4 +1,4 @@
-import express, { request } from 'express'
+import express from 'express'
 import db from '@mds-core/mds-db'
 
 import {
@@ -15,7 +15,6 @@ import { geographyValidationDetails } from '@mds-core/mds-schema-validators'
 import log from '@mds-core/mds-logger'
 
 import { checkAccess } from '@mds-core/mds-api-server'
-import { ScopeDescriptions } from 'packages/mds-types'
 
 function api(app: express.Express): express.Express {
   app.get(
@@ -28,7 +27,7 @@ function api(app: express.Express): express.Express {
       // if get_unpublished is true, and client lacks geographies:read:published, then
       // unpublished geos should still be filtered out
       const { scopes } = res.locals
-      const { get_published = null, get_unpublished =null }  = req.query
+      const { get_published = null, get_unpublished = null } = req.query
       const params = { get_published, get_unpublished }
       if (get_published) {
         params.get_published = get_published === 'true'
@@ -40,15 +39,33 @@ function api(app: express.Express): express.Express {
 
       /* If the user can only read published geos, and all they want is the unpublished geos,
        * save the trip to the DB and return an array fast.
-      */
+       */
       if (!scopes.includes('geographies:read:unpublished') && params.get_unpublished) {
         return res.status(200).send([])
+      }
+
+      /* If the user has only the read:published scope, they should not be allowed to see
+       * unpublished geos. If they didn't supply any params, we modify them here so as to
+       * filter only for published geo metadata. We have to monkey with the params here
+       * in a way that we don't for the bulk read of the geographies since we can't filter
+       * the DB results, since metadata has no idea if the geo it's associated with is
+       * published or not.
+       */
+      if (
+        !scopes.includes('geographies:read:unpublished') &&
+        params.get_unpublished === null &&
+        params.get_published === null
+      ) {
+        params.get_published = true
       }
       try {
         const metadata = await db.readBulkGeographyMetadata(params)
         return res.status(200).send(metadata)
       } catch (error) {
         await log.error('failed to read geography metadata', error)
+        /* This error is thrown if both get_published and get_unpublished are set.
+         * To get all geos, neither parameter should be set.
+         */
         if (error instanceof BadParamsError) {
           return res.status(400).send({ error })
         }

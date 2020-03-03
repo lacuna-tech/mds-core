@@ -147,7 +147,7 @@ describe('Tests app', () => {
         .get(`/geographies/${GEOGRAPHY_UUID}`)
         .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
         .expect(403)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
@@ -198,7 +198,6 @@ describe('Tests app', () => {
           done(err)
         })
     })
-
 
     it('cannot GET geographies (no auth)', done => {
       request
@@ -455,7 +454,7 @@ describe('Tests app', () => {
     })
   })
 
-    // Geography metadata endpoints
+  // Geography metadata endpoints
 
   describe('Geography metadata endpoint tests', () => {
     afterEach(() => {
@@ -475,7 +474,7 @@ describe('Tests app', () => {
     after(async () => {
       await db.shutdown()
     })
-    
+
     it('cannot GET geography metadata (no auth)', done => {
       request
         .get(`/geographies/${GEOGRAPHY_UUID}/meta`)
@@ -584,7 +583,7 @@ describe('Tests app', () => {
         .get(`/geographies/meta?get_unpublished=true`)
         .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
         .expect(200)
-        console.log('res body')
+      console.log('res body')
       console.log(result.body)
       test.assert(result.body.length === 1)
       test.value(result).hasHeader('content-type', APP_JSON)
