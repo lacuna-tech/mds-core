@@ -40,8 +40,6 @@ const SERVER_ERROR = {
 
 type Item = Pick<Device, 'provider_id' | 'device_id'>
 
-type Item = Pick<Device, 'provider_id' | 'device_id'>
-
 export async function getRawTripData(req: DailyApiRequest, res: DailyApiResponse) {
   try {
     const start = now()
