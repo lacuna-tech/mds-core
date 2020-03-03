@@ -15,15 +15,13 @@
  */
 
 import { UUID, Timestamp, Jurisdiction } from '@mds-core/mds-types'
-import { ConnectionManager } from '@mds-core/mds-orm'
 import { NotFoundError, ServerError, ConflictError, ValidationError } from '@mds-core/mds-utils'
 import { DeepPartial } from 'typeorm'
-import { InsertReturning, UpdateReturning } from '@mds-core/mds-orm/types'
 import logger from '@mds-core/mds-logger'
-import { validateJurisdiction } from '@mds-core/mds-schema-validators'
+import { validateJurisdiction } from 'packages/mds-schema-validators'
 import { v4 as uuid } from 'uuid'
+import * as orm from './orm'
 import { JurisdictionEntity } from './entities'
-import ormconfig from './ormconfig'
 
 type JurisdictionServiceResult<TResult, TError extends Error> = [null, TResult] | [TError | ServerError, null]
 
@@ -36,10 +34,6 @@ const Failure = <TError extends Error>(error: TError | ServerError): Jurisdictio
 interface GetJurisdictionOptions {
   effective: Timestamp
 }
-
-const manager = ConnectionManager(ormconfig)
-
-const initialize = async () => manager.initialize()
 
 const AsJurisdiction = (effective: Timestamp = Date.now()) => (
   entity: JurisdictionEntity | undefined
@@ -83,15 +77,8 @@ const createJurisdictions = async (
   jurisdictions: CreateJurisdictionType[]
 ): Promise<JurisdictionServiceResult<Jurisdiction[], ValidationError | ConflictError>> => {
   try {
-    const connection = await manager.getReadWriteConnection()
     try {
-      const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
-        .getRepository(JurisdictionEntity)
-        .createQueryBuilder()
-        .insert()
-        .values(jurisdictions.map(AsJurisdictionEntity))
-        .returning('*')
-        .execute()
+      const entities = await orm.writeJurisdictions(jurisdictions.map(AsJurisdictionEntity))
       return Success(
         entities.map(AsJurisdiction()).filter((jurisdiction): jurisdiction is Jurisdiction => jurisdiction !== null)
       )
@@ -119,13 +106,8 @@ const updateJurisdiction = async (
   updates: UpdateJurisdictionType
 ): Promise<JurisdictionServiceResult<Jurisdiction, ValidationError | NotFoundError>> => {
   try {
-    const connection = await manager.getReadWriteConnection()
     try {
-      const entity = await connection
-        .getRepository(JurisdictionEntity)
-        .createQueryBuilder()
-        .where({ jurisdiction_id })
-        .getOne()
+      const entity = await orm.readJurisdiction(jurisdiction_id)
       if (entity) {
         const current = AsJurisdiction()(entity)
         if (current) {
@@ -136,32 +118,22 @@ const updateJurisdiction = async (
           if (timestamp <= current.timestamp) {
             return Failure(new ValidationError('Invalid timestamp for update'))
           }
-          const { id, ...update } = entity
-          const {
-            raw: [updated]
-          }: UpdateReturning<JurisdictionEntity> = await connection
-            .getRepository(JurisdictionEntity)
-            .createQueryBuilder()
-            .update()
-            .set({
-              ...update,
-              agency_key: updates.agency_key ?? current.agency_key,
-              versions:
-                (updates.agency_name ?? current.agency_name) !== current.agency_name ||
-                (updates.geography_id ?? current.geography_id) !== current.geography_id
-                  ? [
-                      {
-                        agency_name: updates.agency_name ?? current.agency_name,
-                        geography_id: updates.geography_id ?? current.geography_id,
-                        timestamp
-                      },
-                      ...entity.versions
-                    ].sort((a, b) => b.timestamp - a.timestamp)
-                  : entity.versions
-            })
-            .where('jurisdiction_id = :jurisdiction_id', { jurisdiction_id })
-            .returning('*')
-            .execute()
+          const updated = await orm.updateJurisdiction(jurisdiction_id, {
+            ...entity,
+            agency_key: updates.agency_key ?? current.agency_key,
+            versions:
+              (updates.agency_name && updates.agency_name !== current.agency_name) ||
+              (updates.geography_id && updates.geography_id !== current.geography_id)
+                ? [
+                    {
+                      agency_name: updates.agency_name ?? current.agency_name,
+                      geography_id: updates.geography_id ?? current.geography_id,
+                      timestamp
+                    },
+                    ...entity.versions
+                  ].sort((a, b) => b.timestamp - a.timestamp)
+                : entity.versions
+          })
           const jurisdiction = AsJurisdiction(timestamp)(updated)
           return jurisdiction ? Success(jurisdiction) : Failure(new ServerError('Unexpected error during update'))
         }
@@ -181,35 +153,22 @@ const deleteJurisdiction = async (
   jurisdiction_id: UUID
 ): Promise<JurisdictionServiceResult<Pick<Jurisdiction, 'jurisdiction_id'>, NotFoundError>> => {
   try {
-    const connection = await manager.getReadWriteConnection()
     try {
-      const entity = await connection
-        .getRepository(JurisdictionEntity)
-        .createQueryBuilder()
-        .where({ jurisdiction_id })
-        .getOne()
+      const entity = await orm.readJurisdiction(jurisdiction_id)
       if (entity) {
         const current = AsJurisdiction()(entity)
         if (current) {
-          const { id, ...update } = entity
-          await connection
-            .getRepository(JurisdictionEntity)
-            .createQueryBuilder()
-            .update()
-            .set({
-              ...update,
-              versions: [
-                {
-                  agency_name: current.agency_name,
-                  geography_id: null,
-                  timestamp: Date.now()
-                },
-                ...entity.versions
-              ].sort((a, b) => b.timestamp - a.timestamp)
-            })
-            .where('jurisdiction_id = :jurisdiction_id', { jurisdiction_id })
-            .returning('*')
-            .execute()
+          await orm.updateJurisdiction(jurisdiction_id, {
+            ...entity,
+            versions: [
+              {
+                agency_name: current.agency_name,
+                geography_id: null,
+                timestamp: Date.now()
+              },
+              ...entity.versions
+            ].sort((a, b) => b.timestamp - a.timestamp)
+          })
           return Success({ jurisdiction_id })
         }
       }
@@ -228,12 +187,8 @@ const getAllJurisdictions = async ({
   effective = Date.now()
 }: Partial<GetJurisdictionOptions> = {}): Promise<JurisdictionServiceResult<Jurisdiction[], ServerError>> => {
   try {
-    const connection = await manager.getReadOnlyConnection()
     try {
-      const entities = await connection
-        .getRepository(JurisdictionEntity)
-        .createQueryBuilder()
-        .getMany()
+      const entities = await orm.readJurisdictions()
       const jurisdictions = entities
         .map(AsJurisdiction(effective))
         .filter((jurisdiction): jurisdiction is Jurisdiction => jurisdiction !== null)
@@ -253,13 +208,8 @@ const getOneJurisdiction = async (
   { effective = Date.now() }: Partial<GetJurisdictionOptions> = {}
 ): Promise<JurisdictionServiceResult<Jurisdiction, NotFoundError>> => {
   try {
-    const connection = await manager.getReadOnlyConnection()
     try {
-      const entity = await connection
-        .getRepository(JurisdictionEntity)
-        .createQueryBuilder()
-        .where({ jurisdiction_id })
-        .getOne()
+      const entity = await orm.readJurisdiction(jurisdiction_id)
       const [jurisdiction] = [entity].map(AsJurisdiction(effective))
       return jurisdiction
         ? Success(jurisdiction)
@@ -274,15 +224,13 @@ const getOneJurisdiction = async (
   }
 }
 
-const shutdown = async () => manager.shutdown()
-
 export const JurisdictionService = {
-  initialize,
+  initialize: orm.initialize,
   createJurisdictions,
   createJurisdiction,
   updateJurisdiction,
   deleteJurisdiction,
   getAllJurisdictions,
   getOneJurisdiction,
-  shutdown
+  shutdown: orm.shutdown
 }
