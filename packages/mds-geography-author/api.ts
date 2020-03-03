@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { request } from 'express'
 import db from '@mds-core/mds-db'
 
 import {
@@ -27,16 +27,21 @@ function api(app: express.Express): express.Express {
       // if get_unpublished is true, and client lacks geographies:read:published, then
       // unpublished geos should still be filtered out
       const { scopes } = res.locals
+      const params  = req.query
       const get_unpublished = req.query.get_unpublished === 'true'
       const get_published = req.query.get_published === 'true'
-      const params = { get_unpublished: false, get_published: false }
+
+      if (params.get_published) {
+        params.get_published = params.get_published === 'true'
+      }
 
 
       try {
         if (scopes.includes('geographies:read:published') && !scopes.includes('geographies:read:unpublished')) {
           params.get_published = true
         } else {
-          params.get_published = req.query.get_published === 'true'
+          params.get_unpublished = true
+        
         }
         const metadata = await db.readBulkGeographyMetadata(params)
         return res.status(200).send(metadata)
@@ -191,10 +196,15 @@ function api(app: express.Express): express.Express {
     async (req, res) => {
       const summary = req.query.summary === 'true'
       const { get_published = null, get_unpublished = null } = req.query
-      // TODO
-      // if get_unpublished is true, and client lacks geographies:read:published, then
-      // unpublished geos should still be filtered out
       const params = { get_published, get_unpublished }
+      if (get_published) {
+        params.get_published = get_published === 'true'
+      }
+
+      if (get_unpublished) {
+        params.get_unpublished = get_unpublished === 'true'
+      }
+
       try {
         const geographies = summary ? await db.readGeographySummaries(params) : await db.readGeographies(params)
         if (!res.locals.scopes.includes('geographies:read:unpublished')) {

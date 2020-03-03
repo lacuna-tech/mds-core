@@ -379,7 +379,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('can filter for unpublished geographies, with the unpublished scope and get_published parameter', done => {
+    it('can filter for unpublished geographies, with the unpublished scope and get_unpublished parameter', done => {
       request
         .get(`/geographies?get_unpublished=true`)
         .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
@@ -466,6 +466,10 @@ describe('Tests app', () => {
       await db.initialize()
       await db.writeGeography({ name: 'Geography 1', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY })
       await db.writeGeography({ name: 'Geography 2', geography_id: GEOGRAPHY2_UUID, geography_json: DISTRICT_SEVEN })
+      await db.publishGeography({ geography_id: GEOGRAPHY2_UUID })
+      const res = await db.readGeographySummaries()
+      console.log('all geos')
+      console.log(res)
     })
 
     after(async () => {
@@ -556,10 +560,33 @@ describe('Tests app', () => {
       await db.writeGeographyMetadata({ geography_id: GEOGRAPHY2_UUID, geography_metadata: { earth: 'isround' } })
 
       const result = await request
-        .get(`/geographies/meta?get_unpublished=true`)
+        .get(`/geographies/meta`)
         .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
         .expect(200)
       test.assert(result.body.length === 2)
+      test.value(result).hasHeader('content-type', APP_JSON)
+    })
+
+    it('retrieves only metadata for published geographies, with the unpublished scope and get_published param', async () => {
+      const result = await request
+        .get(`/geographies/meta?get_published=true`)
+        .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
+        .expect(200)
+      test.assert(result.body.length === 1)
+      test.value(result).hasHeader('content-type', APP_JSON)
+    })
+
+    it('correctly retrieves geography metadata when using the param get_unpublished', async () => {
+      const geos = await db.readGeographySummaries()
+      console.log('geos')
+      console.log(geos)
+      const result = await request
+        .get(`/geographies/meta?get_unpublished=true`)
+        .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
+        .expect(200)
+        console.log('res body')
+      console.log(result.body)
+      test.assert(result.body.length === 1)
       test.value(result).hasHeader('content-type', APP_JSON)
     })
 
@@ -572,17 +599,7 @@ describe('Tests app', () => {
       test.value(result).hasHeader('content-type', APP_JSON)
     })
 
-    it('retrieves only metadata for published geographies, with the unpublished scope and get_unpublished param', async () => {
-      await db.publishGeography({ geography_id: GEOGRAPHY_UUID })
-      const result = await request
-        .get(`/geographies/meta?get_published=true`)
-        .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
-        .expect(200)
-      test.assert(result.body.length === 1)
-      test.value(result).hasHeader('content-type', APP_JSON)
-    })
-
-    it('retrieves only metadata for published geographies with both read scopes and the get_unpublished param', async () => {
+    it('retrieves only metadata for published geographies with both read scopes and the get_published param', async () => {
       const result = await request
         .get(`/geographies/meta?get_published=true`)
         .set('Authorization', GEOGRAPHIES_BOTH_READ_SCOPES)
@@ -614,14 +631,22 @@ describe('Tests app', () => {
         .expect(403)
     })
 
-    it('verifies GETing geography metadata', done => {
+    it('verifies GETing a published geography metadata throws a permission error if the scope is wrong', done => {
       request
         .get(`/geographies/${GEOGRAPHY_UUID}/meta`)
         .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
+        .expect(403)
+        .end((err, result) => {
+          done(err)
+        })
+    })
+
+    it('verifies GETing a published geography metadata if the scope is geographies:read:unpublished', done => {
+      request
+        .get(`/geographies/${GEOGRAPHY_UUID}/meta`)
+        .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
         .expect(200)
         .end((err, result) => {
-          test.assert(result.body.geography_metadata.some_arbitrary_thing === 'beep')
-          test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
     })
@@ -633,7 +658,6 @@ describe('Tests app', () => {
         .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
         .expect(404)
         .end((err, result) => {
-          console.log('body body', result.body)
           test.assert(result.body.error.name === `NotFoundError`)
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
