@@ -474,7 +474,6 @@ describe('Tests app', () => {
       await db.writeGeography({ name: 'Geography 1', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY })
       await db.writeGeography({ name: 'Geography 2', geography_id: GEOGRAPHY2_UUID, geography_json: DISTRICT_SEVEN })
       await db.publishGeography({ geography_id: GEOGRAPHY2_UUID })
-      const res = await db.readGeographySummaries()
     })
 
     after(async () => {
@@ -582,7 +581,6 @@ describe('Tests app', () => {
     })
 
     it('correctly retrieves geography metadata when using the param get_unpublished', async () => {
-      const geos = await db.readGeographySummaries()
       const result = await request
         .get(`/geographies/meta?get_unpublished=true`)
         .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
