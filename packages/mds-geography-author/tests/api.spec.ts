@@ -400,12 +400,11 @@ describe('Tests app', () => {
         })
     })
 
-    it('throws an error if only the get_published scope is set and get_unpublished param is set', 
-      async () => {
-        await request
-          .get(`/geographies?get_unpublished=true`)
-          .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
-          .expect(403)
+    it('throws an error if only the get_published scope is set and get_unpublished param is set', async () => {
+      await request
+        .get(`/geographies?get_unpublished=true`)
+        .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
+        .expect(403)
     })
 
     it('cannot publish a geography (wrong auth)', async () => {
@@ -616,12 +615,11 @@ describe('Tests app', () => {
       test.value(result).hasHeader('content-type', APP_JSON)
     })
 
-    it('throws an error if only the get_published scope is set and get_unpublished param is set', 
-      async () => {
-        await request
-          .get(`/geographies/meta?get_unpublished=true`)
-          .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
-          .expect(403)
+    it('throws an error if only the get_published scope is set and get_unpublished param is set', async () => {
+      await request
+        .get(`/geographies/meta?get_unpublished=true`)
+        .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
+        .expect(403)
     })
 
     it('cannot do bulk geography metadata reads (wrong auth)', async () => {
@@ -638,15 +636,14 @@ describe('Tests app', () => {
         .expect(403)
     })
 
-    it('verifies GETing a published geography metadata throws a permission error if the scope is wrong', 
-      done => {
-        request
-          .get(`/geographies/${GEOGRAPHY_UUID}/meta`)
-          .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
-          .expect(403)
-          .end((err) => {
-            done(err)
-          })
+    it('verifies GETing a published geography metadata throws a permission error if the scope is wrong', done => {
+      request
+        .get(`/geographies/${GEOGRAPHY_UUID}/meta`)
+        .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
+        .expect(403)
+        .end(err => {
+          done(err)
+        })
     })
 
     it('verifies GETing a published geography metadata if the scope is geographies:read:unpublished', done => {

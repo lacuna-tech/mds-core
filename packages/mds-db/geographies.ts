@@ -86,14 +86,15 @@ export async function readGeographySummaries(params?: ReadGeographiesParams): Pr
 
 export async function readBulkGeographyMetadata(params?: ReadGeographiesParams): Promise<GeographyMetadata[]> {
   const geographies = await readGeographies(params)
-  const geography_ids = geographies.map(geography => {
-    return `'${geography.geography_id}'`
-  })
+  const geography_ids = geographies.map(geography => `'${geography.geography_id}'`)
 
   if (geography_ids.length === 0) {
     return []
   }
-  const sql = `select * from ${schema.TABLE.geography_metadata} where geography_id in (${geography_ids.join(',')})`
+
+  const sql = `select * from ${schema.TABLE.geography_metadata} where geography_id in (${
+    geography_ids.join(',')
+  })`
 
   const client = await getReadOnlyClient()
   const res = await client.query(sql)
@@ -103,8 +104,6 @@ export async function readBulkGeographyMetadata(params?: ReadGeographiesParams):
 }
 
 export async function writeGeography(geography: Geography): Promise<Recorded<Geography>> {
-  // validate TODO
-  // write
   const client = await getWriteableClient()
   const sql = `INSERT INTO ${schema.TABLE.geographies} (${cols_sql(
     schema.TABLE_COLUMNS.geographies
@@ -144,7 +143,9 @@ export async function editGeography(geography: Geography): Promise<Geography> {
       conditions.push(`${key} = ${vals.add(value)}`)
     }
   })
-  const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} WHERE geography_id='${geography.geography_id}' AND publish_date IS NULL`
+  const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} WHERE geography_id=${vals.add(
+    geography.geography_id
+  )} AND publish_date IS NULL`
 
   await client.query(sql, vals.values())
   return readSingleGeography(geography.geography_id)
@@ -213,8 +214,9 @@ export async function writeGeographyMetadata(geography_metadata: GeographyMetada
 
 export async function readSingleGeographyMetadata(geography_id: UUID): Promise<GeographyMetadata> {
   const client = await getReadOnlyClient()
-  const sql = `SELECT * FROM ${schema.TABLE.geography_metadata} WHERE geography_id = '${geography_id}'`
-  const result = await client.query(sql)
+  const vals = new SqlVals()
+  const sql = `SELECT * FROM ${schema.TABLE.geography_metadata} WHERE geography_id = ${vals.add(geography_id)}`
+  const result = await client.query(sql, vals.values())
   if (result.rows.length === 0) {
     throw new NotFoundError(`Metadata for ${geography_id} not found`)
   }
@@ -224,12 +226,13 @@ export async function readSingleGeographyMetadata(geography_id: UUID): Promise<G
 export async function updateGeographyMetadata(geography_metadata: GeographyMetadata): Promise<GeographyMetadata> {
   await readSingleGeographyMetadata(geography_metadata.geography_id)
   const client = await getWriteableClient()
+  const vals = new SqlVals()
   const sql = `UPDATE ${schema.TABLE.geography_metadata}
-    SET geography_metadata = '${JSON.stringify(geography_metadata.geography_metadata)}'
-    WHERE geography_id = '${geography_metadata.geography_id}'`
+    SET geography_metadata = ${vals.add(JSON.stringify(geography_metadata.geography_metadata))}
+    WHERE geography_id = ${vals.add(geography_metadata.geography_id)}`
   const {
     rows: [recorded_metadata]
-  }: { rows: Recorded<GeographyMetadata>[] } = await client.query(sql)
+  }: { rows: Recorded<GeographyMetadata>[] } = await client.query(sql, vals.values())
   return {
     ...geography_metadata,
     ...recorded_metadata
@@ -241,8 +244,9 @@ export async function deleteGeographyMetadata(geography_id: UUID) {
   try {
     // Putting this DB call in because the SQL won't throw if the metadata isn't there.
     await readSingleGeographyMetadata(geography_id)
-    const sql = `DELETE FROM ${schema.TABLE.geography_metadata} WHERE geography_id = '${geography_id}'`
-    await client.query(sql)
+    const vals = new SqlVals()
+    const sql = `DELETE FROM ${schema.TABLE.geography_metadata} WHERE geography_id = ${vals.add(geography_id)}`
+    await client.query(sql, vals.values())
   } catch (err) {
     await log.error(`deleteGeographyMetadata called on non-existent metadata for ${geography_id}`, err.stack)
     throw err

@@ -530,6 +530,16 @@ if (pg_info.database) {
         const res = await MDSDBPostgres.updateGeographyMetadata(geographyMetadata)
         assert.deepEqual(res.geography_metadata.foo, 'notafoo')
       })
+
+      it('deletes GeographyMetadata', async () => {
+        await MDSDBPostgres.deleteGeographyMetadata(GEOGRAPHY_UUID)
+        await assert.rejects(
+          async () => {
+            await MDSDBPostgres.readSingleGeographyMetadata(GEOGRAPHY_UUID)
+          },
+          { name: 'NotFoundError' }
+        )
+      })
     })
   })
 
