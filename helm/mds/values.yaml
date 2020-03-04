@@ -67,6 +67,7 @@ cronjobs:
     schedule: '0 * * * *'
 nats:
   enabled: true
+  credentials: false
 tenantId:
 timezone: America/Los_Angeles
 registry:

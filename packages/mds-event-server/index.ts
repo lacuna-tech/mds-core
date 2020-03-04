@@ -5,7 +5,6 @@ import { pathsFor } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 import { AboutRequestHandler, HealthRequestHandler, JsonBodyParserMiddleware } from '@mds-core/mds-api-server'
 import Cloudevent, { BinaryHTTPReceiver } from 'cloudevents-sdk/v1'
-import prometheus from 'prom-client'
 
 export type EventProcessor<TData, TResult> = (type: string, data: TData) => Promise<TResult>
 export type CEEventProcessor<TData, TResult> = (type: string, data: TData, event: Cloudevent) => Promise<TResult>
@@ -35,11 +34,6 @@ const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, T
   }
 }
 
-const subscriptionCounter = new prometheus.Counter({
-  name: 'event_server_subscription_counter',
-  help: 'event_server_subscription_counter_help'
-})
-
 const natsSubscriber = async <TData, TResult>({
   nats,
   processor,
@@ -58,7 +52,6 @@ const natsSubscriber = async <TData, TResult>({
   })
 
   subscriber.on('message', async (msg: stan.Message) => {
-    subscriptionCounter.inc()
     return subscriptionCb(processor, msg)
   })
 }
@@ -148,11 +141,6 @@ export const EventServer = <TData, TResult>(
   server.get(pathsFor('/'), AboutRequestHandler)
 
   server.get(pathsFor('/health'), HealthRequestHandler)
-
-  server.get(pathsFor('/metrics'), async (req, res) => {
-    res.set('Content-Type', prometheus.register.contentType)
-    res.status(200).send(prometheus.register.metrics)
-  })
 
   server.post('/', async (req, res) => {
     const { method, headers, body } = req

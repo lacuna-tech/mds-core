@@ -116,7 +116,7 @@ declare -A configs=(
   ["presets"]="${MDS_PRESETS:-}"
   ["presets-mds-database-password"]="${MDS_PRESETS_MDS_DATABASE_PASSWORD:-Password123#}"
   ["presets-mds"]="${MDS_PRESETS_MDS:-postgresql.password=${configs[presets-mds-database-password]},apis.mds-agency.migration=true}"
-  ["presets-nats"]="${MDS_PRESETS_NATS:-}"
+  ["presets-nats"]="${MDS_PRESETS_NATS:-cluster.enabled=true,natsbox.enabled=false}"
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
   ["sets-nats"]="${MDS_SETS_NATS:-}"
@@ -147,7 +147,8 @@ declare -A helmRepositories=(
   ["istio.io"]="https://storage.googleapis.com/istio-release/releases/${configs[istio-version]}/charts"
   ["banzaicloud-stable"]="https://kubernetes-charts.banzaicloud.com"
   ["elastic"]="https://helm.elastic.co"
-  ["bitnami"]="https://charts.bitnami.com/bitnami")
+  ["bitnami"]="https://charts.bitnami.com/bitnami"
+  ["nats"]=" https://nats-io.github.io/k8s/helm/charts")
 declare -A helmPlugins=(
   ["unittest"]=https://github.com/lrills/helm-unittest
   ["secrets"]=https://github.com/futuresimple/helm-secrets
@@ -678,7 +679,8 @@ imageVersion() {
 installMds() {
   check ${FUNCNAME[0]}
 
-  installFallbackCertificate
+  # installFallbackCertificate
+
   # todo: don't lock on namespace existence
   [[ "$(helm list --short ${configs[namespace-mds]}-mds)" = "${configs[namespace-mds]}-mds" ]] || {
     installNamespace ${configs[namespace-mds]}
@@ -879,11 +881,11 @@ installNatsInit() {
 installNats() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-nats]}-nats-operator)" = "${configs[namespace-nats]}-nats-operator" ]] || {
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-server)" = "${configs[namespace-nats]}-nats-server" ]] || {
     systemAccount=$(nsc describe account --name SYS | grep "Account ID" | awk '{print $5}')
     operatorJwt=$(< $(nscHome)/KO/KO.jwt)
 
-    helm install ${configs[home]}/helm/nats-operator --name ${configs[namespace-nats]}-nats-operator \
+    helm install ${configs[home]}/helm/nats-server --name ${configs[namespace-nats]}-nats-server \
       ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-nats]:+$(helmOptions values ${configs[values-nats]})} \
@@ -899,8 +901,8 @@ installNats() {
 
     pause 1
     # fixme: check on nats pod status
-    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --selector=app=nats \
-      --timeout=${configs[pause-kubectl]}s || error "nats-operator installation error"
+    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --selector=app=nats-nats-server \
+      --timeout=${configs[pause-kubectl]}s || error "nats-server installation error"
   }
 }
 
@@ -1277,13 +1279,13 @@ uninstallNatsInit() {
 uninstallNats() {
   check ${FUNCNAME[0]}
 
-  uninstallNas
+  # (creds) uninstallNas
 
-  [[ "$(helm list --short ${configs[namespace-nats]}-nats-operator)" = "${configs[namespace-nats]}-nats-operator" ]] && \
-      helm delete --purge ${configs[namespace-nats]}-nats-operator
+  [[ "$(helm list --short ${configs[namespace-nats]}-nats-server)" = "${configs[namespace-nats]}-nats-server" ]] && \
+      helm delete --purge ${configs[namespace-nats]}-nats-server
 
   kubectl delete namespace ${configs[namespace-nats]}
-  # for n in enpoints/nats-operator secret/default-token-* secret/istio.default serviceaccount/default do
+  # for n in enpoints/nats-server secret/default-token-* secret/istio.default serviceaccount/default do
   #   kubectl -n ${configs[namespace-nats]} delete ${n}
   # done; unset n
 }
@@ -1474,7 +1476,7 @@ check() {
     installNsc) installCredentials;;
     installNas) installNsc;;
     installNatsInit) ;;
-    installNats) installNas; installNatsInit;;
+    installNats) ;; # (creds) installNas; installNatsInit;;
     installStan) installNats;;
     # installImages)
     #   [ "${configs[image-repository]}" ] || \
@@ -1482,14 +1484,14 @@ check() {
     # installNas) installNats;;
     installMds)
       [[ "$(exists helm)" != "0" ]] && bootstrap
-      kubectl get namespace istio-system > /dev/null 2>&1 || installIstio
-      installNsc;;
+      kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;;
+      # (creds) installNsc;;
       # fixme: ??? || installStan
     installMetrics) kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installHelm | installIstio | installLogging | installMetricsAdapter | testUnit | \
       uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)
       [[ "$(exists helm)" != "0" ]] && bootstrap;;
-    uninstallNats) uninstallNas;;
+    uninstallNats) ;; # (creds) uninstallNas;;
     installSimulator)
       [[ ! -d ${configs[simulator]} && ! "${configs[simulator-repository]}" ]] && usage "unspecified simulator repository";;
     app:*) forwardIfNeeded ${1##*:};;

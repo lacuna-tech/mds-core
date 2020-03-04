@@ -22,7 +22,7 @@ spec:
         - name: mds-config-files
           configMap:
             name: mds-config-files
-        {{- if $.Values.nats.enabled }}
+        {{- if and $.Values.nats.enabled $.Values.nats.credentials }}
         - name: creds-volume
           secret:
             secretName: stan-creds
@@ -47,7 +47,7 @@ spec:
         volumeMounts:
         - name: mds-config-files
           mountPath: /mds-config/
-        {{- if $.Values.nats.enabled }}
+        {{- if and $.Values.nats.enabled $.Values.nats.credentials }}
         - name: creds-volume
           mountPath: /var/run/nats/secrets
         {{- end }}
@@ -69,7 +69,7 @@ spec:
                 key: postgresql-password
           - name: PG_HOST
           {{- if $.Values.postgresql.internal }}
-            value: {{ $.Release.Namespace }}-postgresql.{{ $.Release.Namespace }}.svc.cluster.local
+            value: {{ $.Release.Name }}-postgresql.{{ $.Release.Namespace }}.svc.cluster.local
           {{- else }}
             value: {{ $.Values.postgresql.host }}
           {{- end }}
@@ -87,7 +87,7 @@ spec:
           {{- end }}
           - name: REDIS_HOST
           {{- if $.Values.redis.internal }}
-            value: {{ $.Release.Namespace }}-redis-master.{{ $.Release.Namespace }}.svc.cluster.local
+            value: {{ $.Release.Name }}-redis-master.{{ $.Release.Namespace }}.svc.cluster.local
           {{- else }}
             value: {{ $.Values.redis.host }}
           {{- end }}
@@ -95,11 +95,14 @@ spec:
             value: {{ $.Values.redis.port | quote }}
           {{- if $.Values.nats.enabled }}
           - name: NATS
-            value: nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
+            value: nats-nats-server.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
+#            value: nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
           - name: STAN_CLUSTER
             value: {{ $.Values.tenantId | default "mds" }}
+          {{- if and $.Values.nats.enabled $.Values.nats.credentials }}
           - name: STAN_CREDS
             value: /var/run/nats/secrets/sys.creds
+          {{- end }}
           {{- end }}
           - name: TENANT_ID
           {{- if hasKey $.Values "tenantId" }}
@@ -141,11 +144,13 @@ data:
   {{- end }}
 type: Opaque
 ---
----apiVersion: v1
----kind: Secret
----metadata:
----  name: stan-creds
----  namespace: {{ $.Release.Namespace }}
----data:
----  sys.creds: {{ $.Values.stanCreds | b64enc }}
----type: Opaque
+{{- if false }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: stan-creds
+  namespace: {{ $.Release.Namespace }}
+data:
+  sys.creds: {{ $.Values.stanCreds | b64enc }}
+type: Opaque
+{{- end }}

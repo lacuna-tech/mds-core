@@ -8,7 +8,7 @@ data:
   # Look for $(NATS_CLUSTER) usage below
   NATS_CLUSTER: {{ $.Values.tenantId | default "mds" }}
   # This is the NATS hostname to connect to
-  NATS_HOST: nats://nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222
+  NATS_HOST: nats://nats-nats-server.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -18,7 +18,9 @@ metadata:
 data:
   stan.conf: |
     streaming {
+{{- if false }}
       credentials: "/var/run/nats/secrets/sys.creds"
+{{- end }}
     }
 ---
 apiVersion: v1
@@ -144,8 +146,8 @@ spec:
         volumeMounts:
         - name: config-volume
           mountPath: /etc/stan-config
-        - name: creds-volume
-          mountPath: /var/run/nats/secrets
+#        - name: creds-volume
+#          mountPath: /var/run/nats/secrets
           # Contains message payload data, channels, subscriptions
         - name: stan-pvc-data
           mountPath: /opt/stan-data
@@ -176,9 +178,9 @@ spec:
       - name: config-volume
         configMap:
           name: stan-config
-      - name: creds-volume
-        secret:
-          secretName: stan-creds
+#      - name: creds-volume
+#        secret:
+#          secretName: stan-creds
       # This is important to spread pods across nodes
       # If we don't do this a node upgrade might take down more then 1 pod
       # which would compromise quorum
@@ -214,6 +216,7 @@ spec:
           # Adjust as needed value chosen here is arbitrary
           storage: 20Gi
 ---
+{{- if false }}
 apiVersion: v1
 kind: Secret
 metadata:
@@ -222,3 +225,4 @@ metadata:
 data:
   sys.creds: {{ $.Values.stanCreds | b64enc }}
 type: Opaque
+{{- end }}
