@@ -8,7 +8,7 @@ data:
   # Look for $(NATS_CLUSTER) usage below
   NATS_CLUSTER: {{ $.Values.tenantId | default "mds" }}
   # This is the NATS hostname to connect to
-  NATS_HOST: nats://nats-nats-server.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222
+  NATS_HOST: nats://{{ default "nats" $.Values.natsNamespace }}-nats-server.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local:4222
 ---
 apiVersion: v1
 kind: ConfigMap

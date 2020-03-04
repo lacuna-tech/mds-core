@@ -95,7 +95,7 @@ spec:
             value: {{ $.Values.redis.port | quote }}
           {{- if $.Values.nats.enabled }}
           - name: NATS
-            value: nats-nats-server.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
+            value: {{ default "nats" $.Values.natsNamespace }}-nats-server.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
 #            value: nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
           - name: STAN_CLUSTER
             value: {{ $.Values.tenantId | default "mds" }}

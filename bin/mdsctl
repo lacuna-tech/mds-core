@@ -116,7 +116,7 @@ declare -A configs=(
   ["presets"]="${MDS_PRESETS:-}"
   ["presets-mds-database-password"]="${MDS_PRESETS_MDS_DATABASE_PASSWORD:-Password123#}"
   ["presets-mds"]="${MDS_PRESETS_MDS:-postgresql.password=${configs[presets-mds-database-password]},apis.mds-agency.migration=true}"
-  ["presets-nats"]="${MDS_PRESETS_NATS:-cluster.enabled=true,natsbox.enabled=false}"
+  ["presets-nats"]="${MDS_PRESETS_NATS:-cluster.enabled=true}" #,natsbox.enabled=false}"
   ["sets"]="${MDS_SETS:-}"
   ["sets-mds"]="${MDS_SETS_MDS:-}"
   ["sets-nats"]="${MDS_SETS_NATS:-}"
@@ -901,8 +901,9 @@ installNats() {
 
     pause 1
     # fixme: check on nats pod status
-    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods --selector=app=nats-nats-server \
-      --timeout=${configs[pause-kubectl]}s || error "nats-server installation error"
+    kubectl --namespace ${configs[namespace-nats]} wait --for=condition=Ready pods \
+      --selector=app=${configs[namespace-nats]}-nats-server --timeout=${configs[pause-kubectl]}s || \
+      error "nats-server installation error"
   }
 }
 
