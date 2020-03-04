@@ -153,16 +153,43 @@ prometheus:
           send_resolved: false
 
 grafana:
+
   env:
-  - name: GF_AUTH_ANONYMOUS_ENABLED
-    value: "true"
-  - name: GF_AUTH_ANONYMOUS_ORG_ROLE
-    value: "Admin"
-  - name: GF_AUTH_DISABLE_LOGIN_FORM
-    value: "true"
+    GF_AUTH_ANONYMOUS_ENABLED: "true"
+    GF_AUTH_ANONYMOUS_ORG_ROLE: "Admin"
+    GF_AUTH_DISABLE_LOGIN_FORM: "true"
+
   datasources:
-  - name: Prometheus
-    type: prometheus
-    access: direct
-    # FIXME: hard-coded .Release.Name as the prefix here
-    url: http://monitoring-prometheus-server
+   datasources.yaml:
+     apiVersion: 1
+     datasources:
+     - name: Prometheus
+       type: prometheus
+       # FIXME: hard-coded {{.Release.Name }} as the prefix here
+       url: http://monitoring-prometheus-server
+       access: proxy
+       isDefault: true
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'default'
+        orgId: 1
+        folder: ''
+        type: file
+        disableDeletion: true
+        editable: false
+        options:
+          path: /var/lib/grafana/dashboards/default
+
+  dashboards:
+    default:
+      node-exporter:
+        gnetId: 11074
+        revision: 2
+        datasource: Prometheus
+      kubernetes-metrics:
+        gnetId: 8588
+        revision: 1
+        datasource: Prometheus
