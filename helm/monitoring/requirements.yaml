@@ -1,6 +1,6 @@
 dependencies:
 - name: prometheus
-  version: 10.4.0
+  version: 10.5.3
   repository: alias:stable
 - name: grafana
   version: 4.6.3
