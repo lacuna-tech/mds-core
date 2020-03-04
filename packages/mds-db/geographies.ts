@@ -147,8 +147,7 @@ export async function editGeography(geography: Geography): Promise<Geography> {
   const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} WHERE geography_id='${geography.geography_id}' AND publish_date IS NULL`
 
   await client.query(sql, vals.values())
-  const res = await readSingleGeography(geography.geography_id)
-  return res
+  return readSingleGeography(geography.geography_id)
 }
 
 export async function deleteGeography(geography_id: UUID) {
