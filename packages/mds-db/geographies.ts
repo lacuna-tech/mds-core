@@ -240,12 +240,13 @@ export async function updateGeographyMetadata(geography_metadata: GeographyMetad
 export async function deleteGeographyMetadata(geography_id: UUID) {
   const client = await getWriteableClient()
   try {
+    // Putting this DB call in because the SQL won't throw if the metadata isn't there.
     await readSingleGeographyMetadata(geography_id)
     const sql = `DELETE FROM ${schema.TABLE.geography_metadata} WHERE geography_id = '${geography_id}'`
     await client.query(sql)
   } catch (err) {
-    // nothing to do if we attempted to delete a non-existent metadata
     await log.error(`deleteGeographyMetadata called on non-existent metadata for ${geography_id}`, err.stack)
+    throw err
   }
   return geography_id
 }
