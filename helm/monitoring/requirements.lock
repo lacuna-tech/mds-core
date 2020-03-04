@@ -4,6 +4,6 @@ dependencies:
   version: 10.5.3
 - name: grafana
   repository: https://kubernetes-charts.storage.googleapis.com
-  version: 4.6.3
-digest: sha256:7ce194d175482ab0032271e08f2ad9a3cc38e6fdc234e6b1da73c2b5fa8b9597
-generated: "2020-03-03T17:09:23.2297974-08:00"
+  version: 5.0.5
+digest: sha256:76e37f93849f6550b8d83d2a73da68351201a4b10ec52d26161bcd30a3d16353
+generated: "2020-03-04T09:53:49.7248559-08:00"
