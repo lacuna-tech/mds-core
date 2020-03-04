@@ -101,7 +101,7 @@ prometheus:
             description: "StatefulSet failure - {{ $value }} member(s) down"
 
         - alert: PodRestartsWarning
-          expr: rate(kube_pod_container_status_restarts_total[5m]) > 0
+          expr: round(rate(kube_pod_container_status_restarts_total[5m]) * 300) > 0
           for: 5m
           labels:
             severity: warning
