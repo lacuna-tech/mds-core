@@ -92,9 +92,7 @@ export async function readBulkGeographyMetadata(params?: ReadGeographiesParams):
     return []
   }
 
-  const sql = `select * from ${schema.TABLE.geography_metadata} where geography_id in (${
-    geography_ids.join(',')
-  })`
+  const sql = `select * from ${schema.TABLE.geography_metadata} where geography_id in (${geography_ids.join(',')})`
 
   const client = await getReadOnlyClient()
   const res = await client.query(sql)
@@ -164,7 +162,7 @@ export async function deleteGeography(geography_id: UUID) {
 }
 
 export async function publishGeography(params: PublishGeographiesParams): Promise<Geography> {
-  /* publish_date is a param instead of a default, because when a Policy is published,
+  /* publish_date is parameterized, because when a Policy is published,
    * we want to be able to set the publish_date of any associated Geography to be
    * identical to the publish_date of the Policy.
    */
@@ -180,10 +178,13 @@ export async function publishGeography(params: PublishGeographiesParams): Promis
     const vals = new SqlVals()
     const conditions = []
     conditions.push(`publish_date = ${vals.add(publish_date)}`)
-    const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} where geography_id=${vals.add(geography_id)}`
-    await client.query(sql, vals.values())
-    const res = await readSingleGeography(geography_id)
-    return res
+    const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} where geography_id=${vals.add(
+      geography_id
+    )} RETURNING *`
+    const {
+      rows: [recorded_geography]
+    }: { rows: Recorded<Geography>[] } = await client.query(sql, vals.values())
+    return { ...recorded_geography }
   } catch (err) {
     await log.error(err)
     throw err

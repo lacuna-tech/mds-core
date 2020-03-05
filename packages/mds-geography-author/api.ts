@@ -228,7 +228,7 @@ function api(app: express.Express): express.Express {
         await db.deleteGeography(geography_id)
         return res
           .status(200)
-          .send({ result: `Successfully deleted geography and geography metadata of id ${geography_id}` })
+          .send({ result: `Successfully deleted geography and/or geography metadata of id ${geography_id}` })
       } catch (err) {
         await log.error('failed to delete geography', err.stack)
         if (err instanceof NotFoundError) {
