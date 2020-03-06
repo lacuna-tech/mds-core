@@ -1,4 +1,4 @@
-name: mds-web-sockets
+name: mds-agency
 namespace: mds
 image: node:12.14.1
 command: ['bash']
