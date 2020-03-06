@@ -110,6 +110,7 @@ export const initializeStanSubscriber = async <TData, TResult>({
       )
     })
 
+    /* eslint-ignore-next */
     nats.on('error', async err => {
       await log.error(err)
     })
