@@ -109,6 +109,10 @@ export const initializeStanSubscriber = async <TData, TResult>({
         })
       )
     })
+
+    nats.on('error', async err => {
+      await log.error(err)
+    })
   } catch (err) {
     await log.error(err)
   }
