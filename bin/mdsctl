@@ -709,18 +709,10 @@ installMds() {
         ${configs[operations]}/${configs[helm-cluster]}/env.${configs[helm-environment]}.yaml; do
         [[ -f ${f} && -r ${f} ]] && cv+="${cv:+ }${f}"
       done; unset f
-
-      # if [[ -f ${configs[helm-mds]} ]]; then
-      #   cv+="${cv:+,}${configs[helm-mds]}"
-      # elif [[ -f ./dist/values.yaml ]]; then
-      #   # fixme: shouldn't this be added all the time
-      #   cv+="${cv:+,}./dist/values.yaml"
-      # fi
     }
 
-    op=$([ $(helm list -q | grep -E -q "(^| )${configs[helm-environment]}${configs[helm-upgrade-release]}($| )") ] && echo upgrade || echo install)
-
     # fixme: impl upgrade, interactive (diff)
+    op=install #$([ $(helm list --short | grep ${configs[namespace-mds]}-mds${configs[helm-upgrade-release]}) ] && echo upgrade || echo install)
 
     helm ${configs[helm-secrets]:+secrets} ${op} ${configs[home]}/helm/mds \
       --name ${configs[namespace-mds]}-mds${configs[helm-upgrade-release]} \
@@ -736,10 +728,9 @@ installMds() {
       $(helmOptions set-file stanCreds=$(nkeysPath)/creds/KO/SYS/sys.creds) \
       ${cv:+$(helmOptions values ${cv})}
       ${configs[dryrun]:+--dry-run --debug}
+    unset op cv
     pause 12
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
-
-    unset op cv
   }
 }
 
