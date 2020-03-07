@@ -101,7 +101,7 @@ prometheus:
             description: "StatefulSet failure - {{ $value }} member(s) down"
 
         - alert: PodRestartsWarning
-          expr: round(rate(kube_pod_container_status_restarts_total[5m]) * 300) > 0
+          expr: round(rate(kube_pod_container_status_restarts_total[5m]) * 300) > 5
           for: 5m
           labels:
             severity: warning
@@ -111,7 +111,7 @@ prometheus:
 
         - alert: PodContainerStatusWaiting
           expr: kube_pod_container_status_waiting_reason == 1
-          for: 5m
+          for: 10m
           labels:
             severity: error
           annotations:
