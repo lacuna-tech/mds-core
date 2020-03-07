@@ -1,12 +1,10 @@
-suite: test deployment native no-events
+suite: test deployment daily
 templates:
   - deployment.yaml
 tests:
-  - it: doc 4
+  - it: doc 0
     release:
       namespace: mds
-    set:
-      apis.mds-native.useEvents: false
     asserts:
       - isAPIVersion:
           of: apps/v1
@@ -16,11 +14,11 @@ tests:
         documentIndex: 4
       - equal:
           path: metadata.name
-          value: mds-native
+          value: mds-daily
         documentIndex: 4
       - equal:
           path: metadata.labels.app
-          value: mds-native
+          value: mds-daily
         documentIndex: 4
       - equal:
           path: metadata.namespace
@@ -32,23 +30,27 @@ tests:
         documentIndex: 4
       - equal:
           path: spec.selector.matchLabels.app
-          value: mds-native
+          value: mds-daily
         documentIndex: 4
       - equal:
           path: spec.template.metadata.labels.app
-          value: mds-native
+          value: mds-daily
+        documentIndex: 4
+      - equal:
+          path: spec.template.spec.volumes[0].name
+          value: mds-config-files
+        documentIndex: 4
+      - equal:
+          path: spec.template.spec.volumes[0].configMap.name
+          value: mds-config-files
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].name
-          value: mds-native
+          value: mds-daily
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].image
-          value: mds-native:latest
-        documentIndex: 4
-      - equal:
-          path: spec.template.spec.containers[0].imagePullPolicy
-          value: IfNotPresent
+          value: mds-daily:latest
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].resources.limits.cpu
@@ -68,7 +70,7 @@ tests:
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].ports[0].containerPort
-          value: 4006
+          value: 4000
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].ports[0].name
@@ -79,56 +81,64 @@ tests:
           value: TCP
         documentIndex: 4
       - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].name
+          value: mds-config-files
+        documentIndex: 4
+      - equal:
+          path: spec.template.spec.containers[0].volumeMounts[0].mountPath
+          value: /mds-config/
+        documentIndex: 4
+      - equal:
           path: spec.template.spec.containers[0].env[0].name
-          value: PATH_PREFIX
+          value: PORT
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[0].value
-          value: /native
+          value: "4000"
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[1].name
-          value: TIMEZONE
+          value: PATH_PREFIX
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[1].value
-          value: America/Los_Angeles
+          value: /daily
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[2].name
-          value: PG_USER
+          value: TIMEZONE
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[2].value
-          value: mdsadmin
+          value: America/Los_Angeles
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[3].name
-          value: PG_NAME
+          value: PG_USER
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[3].value
-          value: mds
+          value: mdsadmin
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[4].name
-          value: PG_PASS
+          value: PG_NAME
         documentIndex: 4
       - equal:
-          path: spec.template.spec.containers[0].env[4].valueFrom.secretKeyRef.name
-          value: pg-pass
-        documentIndex: 4
-      - equal:
-          path: spec.template.spec.containers[0].env[4].valueFrom.secretKeyRef.key
-          value: postgresql-password
+          path: spec.template.spec.containers[0].env[4].value
+          value: mds
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[5].name
-          value: PG_PORT
+          value: PG_PASS
         documentIndex: 4
       - equal:
-          path: spec.template.spec.containers[0].env[5].value
-          value: "5432"
+          path: spec.template.spec.containers[0].env[5].valueFrom.secretKeyRef.name
+          value: mds-secrets
+        documentIndex: 4
+      - equal:
+          path: spec.template.spec.containers[0].env[5].valueFrom.secretKeyRef.key
+          value: postgresql-password
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[6].name
@@ -140,11 +150,11 @@ tests:
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[7].name
-          value: PG_HOST_READER
+          value: PG_PORT
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[7].value
-          value: mds-postgresql.mds.svc.cluster.local
+          value: "5432"
         documentIndex: 4
       - equal:
           path: spec.template.spec.containers[0].env[8].name
@@ -162,7 +172,26 @@ tests:
           path: spec.template.spec.containers[0].env[9].value
           value: "6379"
         documentIndex: 4
-      # fixme: test non-existence
-      # - isNull:
-      #     path: spec.template.spec.containers[0].env[10]
-      #   documentIndex: 1
+      - equal:
+          path: spec.template.spec.containers[0].env[10].name
+          value: NATS
+        documentIndex: 4
+      - equal:
+          path: spec.template.spec.containers[0].env[10].value
+          value: nats.nats.svc.cluster.local
+        documentIndex: 4
+      - equal:
+          path: spec.template.spec.containers[0].env[11].name
+          value: STAN_CLUSTER
+        documentIndex: 4
+      - equal:
+          path: spec.template.spec.containers[0].env[11].value
+          value: nats-streaming
+        documentIndex: 4
+      - equal:
+          path: spec.template.spec.containers[0].env[12].name
+          value: TENANT_ID
+        documentIndex: 4
+      - isEmpty:
+          path: spec.template.spec.containers[0].env[12].value
+        documentIndex: 4
