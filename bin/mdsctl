@@ -728,6 +728,7 @@ installMds() {
       $(helmOptions set-file stanCreds=$(nkeysPath)/creds/KO/SYS/sys.creds) \
       ${cv:+$(helmOptions values ${cv})}
       ${configs[dryrun]:+--dry-run --debug}
+
     unset op cv
     pause 12
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
@@ -1095,9 +1096,10 @@ testUnit() {
 # todo: enable when tests don't block
 #  yarn test
 
-  for c in $(find ${configs[home]}/helm -type d -depth 1); do
-    helm unittest ${configs[home]} g/helm/$(basename ${c})
-  done; unset c
+helm unittest ${configs[home]}/helm/mds
+  # for c in $(find ${configs[home]}/helm/mds -type d -depth 1); do
+  #   helm unittest ${configs[home]}/helm/mds $(basename ${c})
+  # done; unset c
 }
 
 testIntegration() {
