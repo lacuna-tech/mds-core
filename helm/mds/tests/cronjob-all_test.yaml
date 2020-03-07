@@ -7,4 +7,4 @@ tests:
       namespace: mds
     asserts:
       - hasDocuments:
-          count: 0
+          count: 2
