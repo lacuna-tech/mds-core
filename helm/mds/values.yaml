@@ -24,6 +24,11 @@ apis:
     pathPrefix: /daily
     version: latest
     migration: false
+  mds-jurisdiction:
+    enabled: true
+    pathPrefix: /jurisdiction
+    version: latest
+    migration: false
   mds-metrics:
     enabled: true
     pathPrefix: /metrics
@@ -52,6 +57,11 @@ apis:
   mds-event-processor:
     enabled: true
     pathPrefix: /event-processor
+    version: latest
+    migration: false
+  mds-geography-author:
+    enabled: true
+    pathPrefix: /geography-author
     version: latest
     migration: false
 cronjobs:

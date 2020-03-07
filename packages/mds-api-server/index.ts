@@ -24,7 +24,8 @@ export interface ApiVersionedResponseLocals<TVersion extends string> extends Api
   version: TVersion
 }
 
-export interface ApiVersionedResponse<TVersion extends string, TBody = unknown> extends ApiResponse<TBody> {
+export interface ApiVersionedResponse<TVersion extends string, TBody = unknown>
+  extends ApiResponse<TBody & { version: TVersion }> {
   locals: ApiVersionedResponseLocals<TVersion>
 }
 
@@ -233,16 +234,17 @@ export const ApiServer = (
 }
 
 /* istanbul ignore next */
-export const checkAccess = (validator: (scopes: AccessTokenScope[]) => boolean | Promise<boolean>) =>
+export const checkAccess = (
+  validator: (scopes: AccessTokenScope[], claims: AuthorizerClaims | null) => boolean | Promise<boolean>
+) =>
   process.env.VERIFY_ACCESS_TOKEN_SCOPE === 'false'
     ? async (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
         next() // Bypass
       }
     : async (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
-        const valid = await validator(res.locals.scopes)
+        const { scopes, claims } = res.locals
+        const valid = await validator(scopes, claims)
         return valid
           ? next()
-          : res
-              .status(403)
-              .send({ error: new AuthorizationError('no access without scope', { claims: res.locals.claims }) })
+          : res.status(403).send({ error: new AuthorizationError('no access without scope', { claims }) })
       }

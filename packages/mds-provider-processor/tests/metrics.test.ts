@@ -2,7 +2,7 @@ import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import { now } from '@mds-core/mds-utils'
 import { VEHICLE_EVENTS, VEHICLE_EVENT, VEHICLE_TYPES } from '@mds-core/mds-types'
-import uuid from 'uuid'
+import { v4 as uuid } from 'uuid'
 import assert from 'assert'
 import metric from '../src/metrics'
 
@@ -71,8 +71,8 @@ describe('Proc Metrics', () => {
   })
 
   it('calcVehicleCounts', async () => {
-    const res = await metric.calcVehicleCounts(PROVIDER_ID, VEHICLE_TYPES.scooter, time - 10000, time + 10000)
-    assert.deepStrictEqual(res, { registered: 2, deployed: null, dead: null })
+    const res = await metric.calcVehicleCounts(PROVIDER_ID, VEHICLE_TYPES.scooter)
+    assert.deepStrictEqual(res, { registered: 0, deployed: null, dead: null })
   })
 
   it('calcTripCount', async () => {
