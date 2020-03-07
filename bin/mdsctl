@@ -85,15 +85,22 @@ declare -A configs=(
   ["brew-cask-gcloud"]="google-cloud-sdk"
   ["helm-version"]="${MDS_HELM_VERSION:-2.14.1}"
   ["helm-distribution"]="${MDS_HELM_DISTRIBUTION:-https://get.helm.sh/helm-v${configs[helm-version]}-{os\}-amd64.tar.gz}"
+  ["helm-secrets"]="${MDS_HELM_SECRETS:-}"
+  ["helm-upgrade-release"]="${MDS_HELM_UPGRADE_RELEASE:-}"
+  ["helm-cluster"]="${MDS_HELM_CLUSTER:-}"
+  ["helm-environment"]="${MDS_HELM_ENVIRONMENT:-}"
+  ["helm-mds"]="${MDS_HELM_MDS=:-}"
+  ["interactive"]="${MDS_INTERACTIVE:-}"
   ["paths"]="${MDS_PATHS:-envsubst helm}"
   ["tools"]="${MDS_TOOLCHAIN:-helm,pgcli}"
   ["image-repository"]="${MDS_IMAGE_REPOSITORY:-}"
   ["simulator-repository"]="${MDS_SIMULATOR_REPOSITORY:-}"
+  ["operations-repository"]="${MDS_OPERATIONS_REPOSITORY:-}"
   ["credentials-repository"]="${MDS_CREDENTIALS_REPOSITORY:-}"
   ["bootstrap"]="${MDS_BOOTSTRAP:-helm,istio,nats}"
   ["install"]="${MDS_INSTALL:-mds}"
   ["test"]="${MDS_TEST:-unit,integration}"
-  ["uninstall"]="${MDS_UNINSTALL:-logging,mds,stan,nats,istio,helm}"
+  ["uninstall"]="${MDS_UNINSTALL:-logging,mds,stan,nats,operations,simulator,istio,helm}"
   ["forward"]="${MDS_FORWARD:-default}"
   ["reinstall"]="${MDS_REINSTALL:-mds}"
   ["pause"]="${MDS_PAUSE:-3}"
@@ -106,6 +113,7 @@ declare -A configs=(
   ["nats"]="${MDS_NATS_PATH:-${configs[workdir]}/nats}"
   ["grafana-plugins"]="${MDS_GRAFANA_PLUGINS:-devopsprodigy-kubegraf-app}"
   ["simulator"]="${MDS_SIMULATOR:-${configs[workdir]}/simulator}"
+  ["operations"]="${MDS_OPERATIONS:-${configs[workdir]}/operations}"
   ["credentials"]="${MDS_CREDENTIALS:-${configs[workdir]}/credentials}"
   ["ingress-domain"]="${MDS_INGRESS_DOMAIN:-}"
   ["ingress-gateway-key-path"]="${MDS_INGRESS_GATEWAY_KEY_PATH:-}"
@@ -353,7 +361,7 @@ bootstrap() {
 
   # todo: normalize nvm-env
   . $(brew --prefix nvm)/nvm.sh
-  [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh
+  [ -s "${NVM_DIR}/nvm.sh" ] && . ${NVM_DIR}/nvm.sh
   nvm install ${configs[nvm-version]}
   nvm alias default ${configs[nvm-version]}
 
@@ -385,13 +393,14 @@ build() {
   (cd ${configs[home]};
     # todo: normalize nvm-env
     . $(brew --prefix nvm)/nvm.sh;
-    [ -s "$NVM_DIR/nvm.sh" ] && . ${NVM_DIR}/nvm.sh;
+    [ -s "${NVM_DIR}/nvm.sh" ] && . ${NVM_DIR}/nvm.sh;
     nvm install ${configs[nvm-version]};
     nvm alias default ${configs[nvm-version]};
     [ -z "${configs[keep-cache]}" ] && yarn clean;
     yarn clean;
     yarn;
-    yarn image)
+    yarn image;
+    yarn values)
 
   installImages
 }
@@ -682,7 +691,7 @@ installMds() {
   # installFallbackCertificate
 
   # todo: don't lock on namespace existence
-  [[ "$(helm list --short ${configs[namespace-mds]}-mds)" = "${configs[namespace-mds]}-mds" ]] || {
+  [[ "$(helm list --short ${configs[namespace-mds]}-mds${configs[helm-upgrade-release]})" = "${configs[namespace-mds]}-mds${configs[helm-upgrade-release]}" ]] || {
     installNamespace ${configs[namespace-mds]}
     labelNamespaceIstioInjection ${configs[namespace-mds]}
     # note: remote registries may require image-version overrides
@@ -692,7 +701,29 @@ installMds() {
     pause 5
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
 
-    helm install ${configs[home]}/helm/mds --name ${configs[namespace-mds]}-mds \
+    [[ -d ${configs[operations]}/${configs[helm-cluster]} && "${configs[helm-environment]}" ]] && {
+      for f in \
+        ${configs[operations]}/${configs[helm-cluster]}/values.yaml \
+        ${configs[operations]}/${configs[helm-cluster]}/secrets.yaml \
+        ${configs[operations]}/${configs[helm-cluster]}/secrets.${configs[helm-environment]}.yaml \
+        ${configs[operations]}/${configs[helm-cluster]}/env.${configs[helm-environment]}.yaml; do
+        [[ -f ${f} && -r ${f} ]] && cv+="${cv:+ }${f}"
+      done; unset f
+
+      # if [[ -f ${configs[helm-mds]} ]]; then
+      #   cv+="${cv:+,}${configs[helm-mds]}"
+      # elif [[ -f ./dist/values.yaml ]]; then
+      #   # fixme: shouldn't this be added all the time
+      #   cv+="${cv:+,}./dist/values.yaml"
+      # fi
+    }
+
+    op=$([ $(helm list -q | grep -E -q "(^| )${configs[helm-environment]}${configs[helm-upgrade-release]}($| )") ] && echo upgrade || echo install)
+
+    # fixme: impl upgrade, interactive (diff)
+
+    helm ${configs[helm-secrets]:+secrets} ${op} ${configs[home]}/helm/mds \
+      --name ${configs[namespace-mds]}-mds${configs[helm-upgrade-release]} \
       --namespace ${configs[namespace-mds]} \
       ${configs[values]:+$(helmOptions values ${configs[values]})} \
       ${configs[values-mds]:+$(helmOptions values ${configs[values-mds]})} \
@@ -703,9 +734,12 @@ installMds() {
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-mds]:+$(helmOptions set-file ${configs[setfiles-mds]})} \
       $(helmOptions set-file stanCreds=$(nkeysPath)/creds/KO/SYS/sys.creds) \
+      ${cv:+$(helmOptions values ${cv})}
       ${configs[dryrun]:+--dry-run --debug}
     pause 12
     # kubectl -n ${configs[namespace-mds]} wait --for=condition=complete job --all
+
+    unset op cv
   }
 }
 
@@ -769,14 +803,19 @@ installSimulator() {
   fi
 
   [[ "$(helm list --short ${configs[namespace-simulator]}-trackgen)" = "${configs[namespace-simulator]}-trackgen" ]] || {
+    for i in $(docker images --filter=reference="trackgen" -q); do
+      docker rmi -f ${i}
+    done; unset i
     (cd ${configs[simulator]};
-      docker build -t trackgen .;
+      export version=0.0.1$(getBranchSuffix)$(getCommitHash);
+      docker build -t trackgen:${version} .;
       [[ "${configs[image-repository]}" ]] && {
-        docker tag trackgen:latest ${configs[image-repository]}/trackgen:latest;
-        docker push ${configs[image-repository]}/trackgen:latest;
+        docker tag trackgen:${version} ${configs[image-repository]}/trackgen:${version};
+        docker push ${configs[image-repository]}/trackgen:${version};
       }
       helm install ${configs[simulator]}/helm --name ${configs[namespace-simulator]}-trackgen \
         ${configs[namespace-simulator]:+--namespace ${configs[namespace-simulator]}} \
+        --set version=${version} \
         ${configs[values]:+$(helmOptions values ${configs[values]})} \
         ${configs[presets]:+$(helmOptions set ${configs[presets]})} \
         ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
@@ -784,6 +823,19 @@ installSimulator() {
         ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
         ${configs[dryrun]:+--dry-run --debug})
   }
+}
+
+installOperations() {
+  check ${FUNCNAME[0]}
+
+  if [[ ! -d ${configs[operations]} ]]; then
+    mkdir -p ${configs[workdir]}
+    (cd ${configs[workdir]};
+      git clone ${configs[operations-repository]} ${configs[operations]} || \
+        usage "invalid repository: ${configs[operations-repository]}";
+      cd ${configs[operations]};
+      git pull)
+  fi
 }
 
 installCredentials() {
@@ -1189,6 +1241,14 @@ uninstallSimulator() {
   }
 }
 
+uninstallOperations() {
+  check ${FUNCNAME[0]}
+
+  if [ -z "${configs[keep-cache]}" ]; then
+    [ -d ${configs[operations]} ] && /bin/rm -rf ${configs[operations]}
+  fi
+}
+
 uninstallCredentials() {
   check ${FUNCNAME[0]}
 
@@ -1228,8 +1288,8 @@ uninstallGrafana() {
 uninstallMds() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-mds]}-mds)" = "${configs[namespace-mds]}-mds" ]] && {
-    helm delete --purge ${configs[namespace-mds]}-mds ${configs[dryrun]:+--dry-run}
+  [[ "$(helm list --short ${configs[namespace-mds]}-mds${configs[helm-upgrade-release]})" = "${configs[namespace-mds]}-mds${configs[helm-upgrade-release]}" ]] && {
+    helm delete --purge ${configs[namespace-mds]}-mds${configs[helm-upgrade-release]} ${configs[dryrun]:+--dry-run}
     uninstallNamespace ${configs[namespace-mds]}
   }
 }
@@ -1485,9 +1545,13 @@ check() {
     # installNas) installNats;;
     installMds)
       [[ "$(exists helm)" != "0" ]] && bootstrap
-      kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;;
+      kubectl get namespace istio-system > /dev/null 2>&1 || installIstio
+      # fixme: test ${configs[helm-environment]}
       # (creds) installNsc;;
       # fixme: ??? || installStan
+      [ "${configs[helm-environment]}" ] && installOperations
+      [ ! -d ${configs[operations]}/${configs[helm-cluster]} ] && usage "unspecified cluster"
+      ;;
     installMetrics) kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installHelm | installIstio | installLogging | installMetricsAdapter | testUnit | \
       uninstallMds | uninstallMetrics | uninstallLogging | uninstallIstio)
@@ -1566,6 +1630,8 @@ preset() {
         is+="${is:+,}sets-mds+=postgresql.hostReader=host.docker.internal"
         is+="${is:+,}sets-mds+=redis.internal=false"
         is+="${is:+,}sets-mds+=redis.host=host.docker.internal";;
+      helm-secrets)
+        is+="${is:+,}helm-secrets=true";;
     esac
   done; unset p
 
