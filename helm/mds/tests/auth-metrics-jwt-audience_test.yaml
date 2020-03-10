@@ -1,4 +1,4 @@
-suite: test authetication jwt audience metrics
+suite: test authetication metrics jwt audience
 templates:
   - auth.yaml
 tests:

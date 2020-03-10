@@ -1,4 +1,4 @@
-suite: test authetication jwt audience jurisdiction
+suite: test authetication jurisdiction jwt audience
 templates:
   - auth.yaml
 tests:

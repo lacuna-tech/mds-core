@@ -1,4 +1,4 @@
-suite: test authetication jwt audience event-processor
+suite: test authetication event processor jwt audience
 templates:
   - auth.yaml
 tests:

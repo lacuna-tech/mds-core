@@ -1,4 +1,4 @@
-suite: test authetication jwt audience config
+suite: test authetication config jwt audience
 templates:
   - auth.yaml
 tests:
