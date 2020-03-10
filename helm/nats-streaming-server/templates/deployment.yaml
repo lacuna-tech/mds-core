@@ -206,7 +206,7 @@ spec:
       resources:
         requests:
           # Adjust as needed value chosen here is arbitrary
-          storage: 20Gi
+          storage: 11Gi
   - metadata:
       name: stan-pvc-logs
     spec:
@@ -214,7 +214,7 @@ spec:
       resources:
         requests:
           # Adjust as needed value chosen here is arbitrary
-          storage: 20Gi
+          storage: 11Gi
 ---
 {{- if false }}
 apiVersion: v1
