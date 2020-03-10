@@ -451,7 +451,7 @@ updateHelmDependencies() {
 installHelm() {
   check ${FUNCNAME[0]}
 
-  helm init --upgrade || usage "helm intialization failure"
+  helm init --force-upgrade || usage "helm intialization failure"
   pause 5
 
   for r in "${!helmRepositories[@]}"; do
