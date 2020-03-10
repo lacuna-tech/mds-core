@@ -1099,7 +1099,7 @@ testUnit() {
 # todo: enable when tests don't block
 #  yarn test
 
-helm unittest ${configs[home]}/helm/mds
+  helm unittest ${configs[home]}/helm/mds
   # for c in $(find ${configs[home]}/helm/mds -type d -depth 1); do
   #   helm unittest ${configs[home]}/helm/mds $(basename ${c})
   # done; unset c
