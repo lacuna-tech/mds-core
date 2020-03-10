@@ -122,7 +122,7 @@ declare -A configs=(
   ["values-mds"]="${MDS_VALUES_MDS:-}"
   ["values-nats"]="${MDS_VALUES_NATS:-}"
   ["presets"]="${MDS_PRESETS:-}"
-  ["presets-mds-database-password"]="${MDS_PRESETS_MDS_DATABASE_PASSWORD:-}" #Password123#}"
+  ["presets-mds-database-password"]="${MDS_PRESETS_MDS_DATABASE_PASSWORD:-Password123#}"
   ["presets-mds"]="${MDS_PRESETS_MDS:-postgresql.password=${configs[presets-mds-database-password]},apis.mds-agency.migration=true}"
   ["presets-nats"]="${MDS_PRESETS_NATS:-cluster.enabled=true}" #,natsbox.enabled=false}"
   ["sets"]="${MDS_SETS:-}"
