@@ -5,7 +5,6 @@ import {
   pathsFor,
   ServerError,
   NotFoundError,
-  DependencyMissingError,
   InsufficientPermissionsError,
   BadParamsError
 } from '@mds-core/mds-utils'
