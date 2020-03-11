@@ -1151,9 +1151,9 @@ check() {
 
       for d in docker kubectl; do
         hash ${d} > /dev/null 2>&1 || usage "install: ${d}"
-      done; unset d;;
+      done; unset d
       # todo: include cluster connection check where needed if not globally
-      #kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster"
+      kubectl cluster-info > /dev/null 2>&1 || usage "connect to kubernetes cluster";;
     build | testIntegration)
       hash yarn > /dev/null 2>&1 || bootstrap;;
     installNats) ;;
