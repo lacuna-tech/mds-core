@@ -131,7 +131,7 @@ declare -A configs=(
   # todo: try scaling down istio's resource requirements (e.g. local dev): pilot.resources.requests.memory=512Mi}
   ["sets-istio"]="${MDS_SETS_ISTIO:-}"
   ["sets-logging"]="${MDS_SETS_LOGGING:-fluentbit.backend.es.host=elasticsearch-master.util,fluentbit.backend.es.port=9200,fluentbit.backend.es.tls=off,kibana.env.ELASTICSEARCH_URL=http:elasticsearch-master.util:9200}"
-  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-jwt.enabled=false}"
+  ["sets-simulator"]="${MDS_SETS_SIMULATOR:-jwt.enabled=false,registry=}"
   ["setfiles"]="${MDS_SET_FILES:-}"
   ["setfiles-mds"]="${MDS_SET_FILES_MDS:-}"
   ["namespace"]="${MDS_NAMESPACE:-default}"
@@ -411,8 +411,13 @@ build() {
 installImages() {
   check ${FUNCNAME[0]}
 
-  # todo: (check) aws ecr get-login-password --region us-west-2 | docker login --username AWS --password-stdin ${configs[image-repository]}.amazonaws.com
   if [ "${configs[image-repository]}" ]; then
+    case "${configs[provider],,}" in
+      aws) eval $(aws ecr get-login --no-include-email);;
+      gcp) ;;
+      *) ;;
+    esac
+
     for i in $(docker images --filter "reference=mds-*" --format '{{.Repository}}:{{.Tag}}'); do
       docker tag ${i} ${configs[image-repository]}/${i}
       docker push ${configs[image-repository]}/${i}
