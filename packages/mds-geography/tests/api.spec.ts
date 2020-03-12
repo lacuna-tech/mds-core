@@ -70,76 +70,15 @@ describe('Tests app', () => {
       await db.shutdown()
     })
 
-    // Geography endpoints
-    it('cannot POST one current geography (no auth)', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY }
-      request
-        .post(`/geographies`)
-        .set('Authorization', EMPTY_SCOPE)
-        .send(geography)
-        .expect(403)
-        .end(err => {
-          done(err)
-        })
-    })
-
-    it('cannot POST one current geography (wrong auth)', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY }
-      request
-        .post(`/geographies`)
-        .set('Authorization', EVENTS_READ_SCOPE)
-        .send(geography)
-        .expect(403)
-        .end(err => {
-          done(err)
-        })
-    })
-
-    it('creates one current geography', done => {
+    it('GETs one unpublished geography with unpublished scope', async () => {
       const geography = { name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY }
-      request
-        .post(`/geographies`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .send(geography)
-        .expect(201)
-        .end((err, result) => {
-          const body = result.body
-          log('create one geo response:', body)
-          test.value(result).hasHeader('content-type', APP_JSON)
-          done(err)
-        })
-    })
-
-    it('cannot GETs one current geography (no auth)', done => {
-      request
-        .get(`/geographies/${GEOGRAPHY_UUID}`)
-        .set('Authorization', EMPTY_SCOPE)
-        .expect(403)
-        .end(err => {
-          done(err)
-        })
-    })
-
-    it('cannot GETs one current geography (wrong auth)', done => {
-      request
-        .get(`/geographies/${GEOGRAPHY_UUID}`)
-        .set('Authorization', EVENTS_READ_SCOPE)
-        .expect(403)
-        .end(err => {
-          done(err)
-        })
-    })
-
-    it('GETs one unpublished geography with unpublished scope', done => {
-      request
+      await db.writeGeography(geography)
+      const result = await request
         .get(`/geographies/${GEOGRAPHY_UUID}`)
         .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
         .expect(200)
-        .end((err, result) => {
-          test.assert(result.body.geography_id === GEOGRAPHY_UUID)
-          test.value(result).hasHeader('content-type', APP_JSON)
-          done(err)
-        })
+      test.assert(result.body.geography_id === GEOGRAPHY_UUID)
+      test.value(result).hasHeader('content-type', APP_JSON)
     })
 
     it('cannot GET an unpublished geography with the published scope', done => {
@@ -158,43 +97,6 @@ describe('Tests app', () => {
         .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
         .expect(404)
         .end(err => {
-          done(err)
-        })
-    })
-
-    it('cannot update one geography (no auth)', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: DISTRICT_SEVEN }
-      request
-        .put(`/geographies/${GEOGRAPHY_UUID}`)
-        .set('Authorization', EMPTY_SCOPE)
-        .send(geography)
-        .expect(403)
-        .end(err => {
-          done(err)
-        })
-    })
-
-    it('cannot update one geography (wrong auth)', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: DISTRICT_SEVEN }
-      request
-        .put(`/geographies/${GEOGRAPHY_UUID}`)
-        .set('Authorization', EVENTS_READ_SCOPE)
-        .send(geography)
-        .expect(403)
-        .end(err => {
-          done(err)
-        })
-    })
-
-    it('verifies updating one geography', done => {
-      const geography = { name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: DISTRICT_SEVEN }
-      request
-        .put(`/geographies/${GEOGRAPHY_UUID}`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .send(geography)
-        .expect(201)
-        .end((err, result) => {
-          test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
     })
@@ -245,99 +147,10 @@ describe('Tests app', () => {
         })
     })
 
-    it('cannot PUT geography (no auth)', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: 'garbage_json' }
-      request
-        .put(`/geographies/${GEOGRAPHY_UUID}`)
-        .set('Authorization', EMPTY_SCOPE)
-        .send(geography)
-        .expect(403)
-        .end(err => {
-          done(err)
-        })
-    })
-
-    it('cannot PUT geography (wrong auth)', done => {
-      const geography = { geography_id: GEOGRAPHY_UUID, geography_json: 'garbage_json' }
-      request
-        .put(`/geographies/${GEOGRAPHY_UUID}`)
-        .set('Authorization', EVENTS_READ_SCOPE)
-        .send(geography)
-        .expect(403)
-        .end(err => {
-          done(err)
-        })
-    })
-
-    it('verifies cannot PUT bad geography', done => {
-      const geography = { name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: 'garbage_json' }
-      request
-        .put(`/geographies/${GEOGRAPHY_UUID}`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .send(geography)
-        .expect(400)
-        .end((err, result) => {
-          test.value(result).hasHeader('content-type', APP_JSON)
-          done(err)
-        })
-    })
-
-    it('verifies cannot PUT non-existent geography', done => {
-      const geography = { name: 'LA', geography_id: POLICY_UUID, geography_json: DISTRICT_SEVEN }
-      request
-        .put(`/geographies/${POLICY_UUID}`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .send(geography)
-        .expect(404)
-        .end((err, result) => {
-          test.value(result).hasHeader('content-type', APP_JSON)
-          done(err)
-        })
-    })
-
-    it('verifies cannot POST invalid geography', done => {
-      const geography = { name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: 'garbage_json' }
-      request
-        .post(`/geographies`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .send(geography)
-        .expect(400)
-        .end((err, result) => {
-          test.value(result).hasHeader('content-type', APP_JSON)
-          done(err)
-        })
-    })
-
-    it('cannot POST duplicate geography', done => {
-      const geography = { name: 'LA', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY }
-      request
-        .post(`/geographies`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .send(geography)
-        .expect(409)
-        .end((err, result) => {
-          test.value(result).hasHeader('content-type', APP_JSON)
-          done(err)
-        })
-    })
-
-    it('can publish a geography (correct auth)', async () => {
-      await db.writeGeography({ name: 'Geography 2', geography_id: GEOGRAPHY2_UUID, geography_json: DISTRICT_SEVEN })
-      const beforeResult = await request
-        .get(`/geographies/${GEOGRAPHY2_UUID}`)
-        .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
-        .expect(200)
-      test.assert(beforeResult.body.publish_date === null)
-      const result = await request
-        .put(`/geographies/${GEOGRAPHY2_UUID}/publish`)
-        .set('Authorization', GEOGRAPHIES_PUBLISH_SCOPE)
-        .expect(200)
-      test.value(result).hasHeader('content-type', APP_JSON)
-      test.assert(result.body.geography_id === GEOGRAPHY2_UUID)
-      test.assert(result.body.publish_date)
-    })
 
     it('can read a published geography with both read scopes', async () => {
+      await db.writeGeography({ name: 'Geography 2', geography_id: GEOGRAPHY2_UUID, geography_json: DISTRICT_SEVEN })
+      await db.publishGeography({ geography_id: GEOGRAPHY2_UUID })
       await request
         .get(`/geographies/${GEOGRAPHY2_UUID}`)
         .set('Authorization', GEOGRAPHIES_BOTH_READ_SCOPES)
@@ -406,59 +219,6 @@ describe('Tests app', () => {
         .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
         .expect(403)
     })
-
-    it('cannot publish a geography (wrong auth)', async () => {
-      await request
-        .put(`/geographies/${GEOGRAPHY2_UUID}/publish`)
-        .set('Authorization', EMPTY_SCOPE)
-        .expect(403)
-    })
-
-    it('cannot delete a geography (incorrect auth)', async () => {
-      await request
-        .delete(`/geographies/${GEOGRAPHY2_UUID}`)
-        .set('Authorization', EMPTY_SCOPE)
-        .expect(403)
-    })
-
-    it('can delete a geography (correct auth)', async () => {
-      const testUUID = uuid()
-      await db.writeGeography({ geography_id: testUUID, geography_json: LA_CITY_BOUNDARY, name: 'testafoo' })
-      await db.writeGeographyMetadata({ geography_id: testUUID, geography_metadata: { foo: 'afoo' } })
-      await request
-        .delete(`/geographies/${testUUID}`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .expect(200)
-      await assert.rejects(
-        async () => {
-          await db.readSingleGeography(testUUID)
-        },
-        { name: 'NotFoundError' }
-      )
-      await assert.rejects(
-        async () => {
-          await db.readSingleGeographyMetadata(testUUID)
-        },
-        { name: 'NotFoundError' }
-      )
-    })
-
-    it('cannot delete a published geography (correct auth)', async () => {
-      await request
-        .delete(`/geographies/${GEOGRAPHY2_UUID}`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .expect(405)
-    })
-
-    it('sends the correct error code if something blows up on the backend during delete', async () => {
-      sandbox.stub(db, 'deleteGeography').callsFake(function stubAThrow() {
-        throw new Error('random backend err')
-      })
-      await request
-        .delete(`/geographies/${GEOGRAPHY_UUID}`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .expect(500)
-    })
   })
 
   // Geography metadata endpoints
@@ -499,24 +259,6 @@ describe('Tests app', () => {
         })
     })
 
-    it('cannot PUT geography metadata to create (no auth)', async () => {
-      const metadata = { some_arbitrary_thing: 'boop' }
-      await request
-        .put(`/geographies/${GEOGRAPHY_UUID}/meta`)
-        .set('Authorization', EMPTY_SCOPE)
-        .send({ geography_id: GEOGRAPHY_UUID, geography_metadata: metadata })
-        .expect(403)
-    })
-
-    it('cannot PUT geography metadata to create (wrong auth)', async () => {
-      const metadata = { some_arbitrary_thing: 'boop' }
-      await request
-        .put(`/geographies/${GEOGRAPHY_UUID}/meta`)
-        .set('Authorization', EVENTS_READ_SCOPE)
-        .send({ geography_id: GEOGRAPHY_UUID, geography_metadata: metadata })
-        .expect(403)
-    })
-
     it('sends the correct error code if it cannot retrieve the metadata', async () => {
       sandbox.stub(db, 'readBulkGeographyMetadata').callsFake(function stubAThrow() {
         throw new Error('err')
@@ -527,39 +269,8 @@ describe('Tests app', () => {
         .expect(404)
     })
 
-    it('verifies PUTing geography metadata to create', async () => {
-      const metadata = { some_arbitrary_thing: 'boop' }
-      await request
-        .put(`/geographies/${GEOGRAPHY_UUID}/meta`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .send({ geography_id: GEOGRAPHY_UUID, geography_metadata: metadata })
-        .expect(201)
-      const result = await db.readSingleGeographyMetadata(GEOGRAPHY_UUID)
-      test.assert(result.geography_metadata.some_arbitrary_thing === 'boop')
-    })
-
-    it('verifies PUTing geography metadata to edit', async () => {
-      const metadata = { some_arbitrary_thing: 'beep' }
-      await request
-        .put(`/geographies/${GEOGRAPHY_UUID}/meta`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .send({ geography_id: GEOGRAPHY_UUID, geography_metadata: metadata })
-        .expect(200)
-      const result = await db.readSingleGeographyMetadata(GEOGRAPHY_UUID)
-      test.assert(result.geography_metadata.some_arbitrary_thing === 'beep')
-    })
-
-    it('verifies that metadata cannot be created without a preexisting geography', async () => {
-      const metadata = { some_arbitrary_thing: 'beep' }
-      const nonexistentGeoUUID = uuid()
-      await request
-        .put(`/geographies/${nonexistentGeoUUID}/meta`)
-        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
-        .send({ geography_id: nonexistentGeoUUID, geography_metadata: metadata })
-        .expect(404)
-    })
-
     it('correctly retrieves all geography metadata when using only the unpublished scope', async () => {
+      await db.writeGeographyMetadata({ geography_id: GEOGRAPHY_UUID, geography_metadata: { venus: 'ishot' } })
       await db.writeGeographyMetadata({ geography_id: GEOGRAPHY2_UUID, geography_metadata: { earth: 'isround' } })
 
       const result = await request
