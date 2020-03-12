@@ -23,9 +23,6 @@ function api(app: express.Express): express.Express {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req, res) => {
-      // TODO
-      // if get_unpublished is true, and client lacks geographies:read:published, then
-      // unpublished geos should still be filtered out
       const { scopes } = res.locals
       const { get_published = null, get_unpublished = null } = req.query
       const params = { get_published, get_unpublished }

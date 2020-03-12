@@ -53,10 +53,6 @@ const sandbox = sinon.createSandbox()
 
 describe('Tests app', () => {
   describe('Geography endpoint tests', () => {
-    afterEach(() => {
-      sandbox.restore()
-    })
-
     before(async () => {
       await db.initialize()
     })
