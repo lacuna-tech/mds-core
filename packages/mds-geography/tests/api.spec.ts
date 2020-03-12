@@ -41,19 +41,14 @@ import {
 } from '@mds-core/mds-test-data'
 import { api } from '../api'
 
-/* eslint-disable-next-line no-console */
-const log = console.log.bind(console)
-
 const request = supertest(ApiServer(api))
 
 const APP_JSON = 'application/json; charset=utf-8'
 const EMPTY_SCOPE = SCOPED_AUTH([], '')
 const EVENTS_READ_SCOPE = SCOPED_AUTH(['events:read'])
-const GEOGRAPHIES_WRITE_SCOPE = SCOPED_AUTH(['geographies:write'])
 const GEOGRAPHIES_READ_PUBLISHED_SCOPE = SCOPED_AUTH(['geographies:read:published'])
 const GEOGRAPHIES_READ_UNPUBLISHED_SCOPE = SCOPED_AUTH(['geographies:read:unpublished'])
 const GEOGRAPHIES_BOTH_READ_SCOPES = SCOPED_AUTH(['geographies:read:published', 'geographies:read:unpublished'])
-const GEOGRAPHIES_PUBLISH_SCOPE = SCOPED_AUTH(['geographies:publish'])
 const sandbox = sinon.createSandbox()
 
 describe('Tests app', () => {
@@ -146,7 +141,6 @@ describe('Tests app', () => {
           done(err)
         })
     })
-
 
     it('can read a published geography with both read scopes', async () => {
       await db.writeGeography({ name: 'Geography 2', geography_id: GEOGRAPHY2_UUID, geography_json: DISTRICT_SEVEN })

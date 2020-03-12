@@ -1,13 +1,7 @@
 import express from 'express'
 import db from '@mds-core/mds-db'
 
-import {
-  pathsFor,
-  ServerError,
-  NotFoundError,
-  InsufficientPermissionsError,
-  BadParamsError
-} from '@mds-core/mds-utils'
+import { pathsFor, ServerError, NotFoundError, InsufficientPermissionsError, BadParamsError } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 
 import { checkAccess } from '@mds-core/mds-api-server'
