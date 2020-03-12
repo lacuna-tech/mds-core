@@ -25,41 +25,23 @@ prometheus:
             identifier: "{{ $labels.kubernetes_node }}"
             description: "Low memory on node ({{ $value }}% available)"
 
-        - alert: NodeDiskSpaceWarn
-          expr: (node_filesystem_used_bytes / node_filesystem_size_bytes) * 100 < 20
+        - alert: NodeDiskWarn
+          expr: predict_linear(node_filesystem_free_bytes[1h], 4 * 3600) < 0
           for: 5m
           labels:
-            severity: warning
+            severity: warn
           annotations:
             identifier: "{{ $labels.kubernetes_node }}"
-            description: "Low disk space on node ({{ $value }}% available)"
-
-        - alert: NodeDiskSpaceCritical
-          expr: (node_filesystem_used_bytes / node_filesystem_size_bytes) * 100 < 10
-          for: 5m
-          labels:
-            severity: critical
-          annotations:
-            identifier: "{{ $labels.kubernetes_node }}"
-            description: "Very low disk space on node ({{ $value }}% available)"
+            description: "Disk predicted to fill in under 4 hours"
 
         - alert: NodeInodesWarn
-          expr: node_filesystem_files_free{mountpoint ="/"} / node_filesystem_files{mountpoint ="/"} * 100 < 20
+          expr: predict_linear(node_filesystem_files_free{mountpoint ="/"}[1h], 4 * 3600) < 0
           for: 5m
           labels:
-            severity: warning
+            severity: warn
           annotations:
             identifier: "{{ $labels.kubernetes_node }}"
-            description: "Low filesystem inodes on node ({{ $value }}% available)"
-
-        - alert: NodeInodesCritical
-          expr: node_filesystem_files_free{mountpoint ="/"} / node_filesystem_files{mountpoint ="/"} * 100 < 10
-          for: 5m
-          labels:
-            severity: critical
-          annotations:
-            identifier: "{{ $labels.kubernetes_node }}"
-            description: "Low filesystem inodes on node ({{ $value }}% available)"
+            description: "Disk predicted to run out of inodes in under 4 hours"
 
         - alert: NodeCpuLoadWarn
           expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
@@ -83,13 +65,13 @@ prometheus:
         rules:
 
         - alert: PersistentVolumeDiskWarning
-          expr: kubelet_volume_stats_available_bytes / kubelet_volume_stats_capacity_bytes * 100 < 20
+          expr: predict_linear(kubelet_volume_stats_available_bytes[1h], 4 * 3600) < 0
           for: 5m
           labels:
             severity: warning
           annotations:
             identifier: "{{ $labels.namespace }}/{{ $labels.persistenvolumeclaim }}"
-            description: "Low disk space for PV ({{ $value }}% available)"
+            description: "Persistent volume predicted to run out of space in under 4 hours"
 
         - alert: StatefulsetDown
           expr: (kube_statefulset_status_replicas_current - kube_statefulset_status_replicas_ready) != 0
