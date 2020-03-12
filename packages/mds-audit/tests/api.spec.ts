@@ -39,7 +39,7 @@ import { makeEventsWithTelemetry, makeDevices, makeTelemetryInArea, SCOPED_AUTH 
 import { NotFoundError, now, rangeRandomInt } from '@mds-core/mds-utils'
 import cache from '@mds-core/mds-cache'
 import test from 'unit.js'
-import uuid from 'uuid'
+import { v4 as uuid } from 'uuid'
 import { ApiServer } from '@mds-core/mds-api-server'
 import db from '@mds-core/mds-db'
 import { MOCHA_PROVIDER_ID } from '@mds-core/mds-providers'
@@ -798,7 +798,7 @@ describe('Testing API', () => {
         .attach('file', `./tests/sample.png`)
         .expect(500)
         .end((err, result) => {
-          test.value(result.error.status).is(500)
+          test.value(result.body.error.name).is('ServerError')
           done(err)
         })
     })
