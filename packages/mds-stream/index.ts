@@ -30,7 +30,7 @@ import {
   ReadStreamOptions,
   StreamItemID
 } from './types'
-import { KafkaStream } from './stream-kafka'
+import { KafkaStream } from './kafka/stream-kafka'
 
 const { env } = process
 

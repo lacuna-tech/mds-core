@@ -5,4 +5,5 @@ export interface Stream {
   writeTelemetry: (telemetry: Telemetry[]) => Promise<void>
   writeDevice: (device: Device) => Promise<void>
   shutdown: () => void
+  initialize: () => void
 }
