@@ -137,6 +137,7 @@ declare -A apps=(
   ["mds-audit"]="https://localhost:[port]/audit,mds,app"
   ["mds-compliance"]="https://localhost:[port]/compliance,mds,app"
   ["mds-daily"]="https://localhost:[port]/daily,mds,app"
+  ["mds-geography"]="https://localhost:[port]/geography,mds,app"
   ["mds-geography-author"]="https://localhost:[port]/geography-author,mds,app"
   ["mds-jurisdiction"]="https://localhost:[port]/jurisdiction,mds,app"]
   ["mds-policy"]="https://localhost:[port]/policy,mds,app"
@@ -264,6 +265,7 @@ where app in:
   mds-audit
   mds-compliance
   mds-daily
+  mds-geography
   mds-geography-author
   mds-policy
   mds-policy-author

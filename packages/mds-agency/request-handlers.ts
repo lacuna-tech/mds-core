@@ -20,7 +20,6 @@ import {
   UUID
 } from '@mds-core/mds-types'
 import urls from 'url'
-import * as socket from '@mds-core/mds-web-sockets'
 import {
   badDevice,
   getVehicles,
@@ -336,28 +335,20 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
     // make a note of the service area
     event.service_area_id = getServiceArea(event)
 
-    // database write is crucial; failures of cache/stream should be noted and repaired
-    const recorded_event = await db.writeEvent(event)
-    const { telemetry } = recorded_event
-
+    const { telemetry } = event
     if (telemetry) {
       await db.writeTelemetry(normalizeToArray(telemetry))
     }
 
+    // database write is crucial; failures of cache/stream should be noted and repaired
+    const recorded_event = await db.writeEvent(event)
+
     try {
-      await Promise.all([
-        cache.writeEvent(recorded_event),
-        stream.writeEvent(recorded_event),
-        socket.writeEvent(recorded_event)
-      ])
+      await Promise.all([cache.writeEvent(recorded_event), stream.writeEvent(recorded_event)])
 
       if (telemetry) {
         telemetry.recorded = recorded
-        await Promise.all([
-          cache.writeTelemetry([telemetry]),
-          stream.writeTelemetry([telemetry]),
-          socket.writeTelemetry([telemetry])
-        ])
+        await Promise.all([cache.writeTelemetry([telemetry]), stream.writeTelemetry([telemetry])])
       }
 
       await success()
