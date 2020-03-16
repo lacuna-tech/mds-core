@@ -113,4 +113,4 @@ const shutdown = () => {
   deviceStream.destroy()
 }
 
-export const KafkaStream: Stream & { shutdown: () => void } = { writeEvent, writeTelemetry, writeDevice, shutdown }
+export const KafkaStream: Stream = { writeEvent, writeTelemetry, writeDevice, shutdown }

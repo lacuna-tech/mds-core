@@ -14,7 +14,6 @@ import { PROVIDER_SCOPES, SCOPED_AUTH, makeDevices, makeEventsWithTelemetry } fr
 import { now } from '@mds-core/mds-utils'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
-import stream from '@mds-core/mds-stream'
 import { Telemetry } from '@mds-core/mds-types'
 import { api } from '../api'
 import { StateSnapshotResponse } from '../types'
@@ -27,11 +26,11 @@ const AUTH_NO_SCOPE = SCOPED_AUTH([], TEST1_PROVIDER_ID)
 const CITY_OF_LA = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 
 before(async () => {
-  await Promise.all([db.initialize(), cache.initialize(), stream.initialize()])
+  await Promise.all([db.initialize(), cache.initialize()])
 })
 
 after(async () => {
-  await Promise.all([db.shutdown(), cache.shutdown(), stream.shutdown()])
+  await Promise.all([db.shutdown(), cache.shutdown()])
 })
 
 describe('Tests API Scope Rejections', () => {
