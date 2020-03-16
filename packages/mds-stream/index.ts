@@ -162,6 +162,7 @@ async function getClient() {
 }
 
 async function initialize() {
+  KafkaStream.initialize()
   if (env.SINK) {
     getBinding()
   } else {
