@@ -85,6 +85,7 @@ describe('Tests app', () => {
 
   it('read back one policy', async () => {
     await db.writePolicy(POLICY_JSON)
+    await db.publishGeography({ geography_id: GEOGRAPHY_UUID })
     await db.publishPolicy(POLICY_UUID)
     const result = await request
       .get(`/policies/${POLICY_UUID}`)
@@ -116,6 +117,8 @@ describe('Tests app', () => {
       geography_json: veniceSpecialOpsZone
     })
     await db.writePolicy(POLICY2_JSON)
+    await db.publishGeography({ geography_id: GEOGRAPHY_UUID })
+    await db.publishGeography({ geography_id: GEOGRAPHY2_UUID })
     await db.publishPolicy(POLICY2_JSON.policy_id)
     await db.writePolicy(POLICY3_JSON)
     await db.publishPolicy(POLICY3_JSON.policy_id)
@@ -173,7 +176,6 @@ describe('Tests app', () => {
     log('read back nonexistant policy response:', body)
     test.value(result).hasHeader('content-type', APP_JSON)
   })
-
 
   it('tries to read non-UUID policy', async () => {
     const result = await request
