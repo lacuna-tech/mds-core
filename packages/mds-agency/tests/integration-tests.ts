@@ -29,7 +29,6 @@
 
 import supertest from 'supertest'
 import test from 'unit.js'
-import Sinon from 'sinon'
 import {
   VEHICLE_EVENTS,
   VEHICLE_STATUSES,
@@ -37,8 +36,7 @@ import {
   PROPULSION_TYPES,
   Timestamp,
   Device,
-  VehicleEvent,
-  UUID
+  VehicleEvent
 } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
@@ -123,11 +121,6 @@ const AUTH_UNKNOWN_UUID_PROVIDER = `basic ${Buffer.from(
   `c8f984c5-62a5-4453-b1f7-3b7704a95cfe|${PROVIDER_SCOPES}`
 ).toString('base64')}`
 const AUTH_NO_SCOPE = `basic ${Buffer.from(`${TEST1_PROVIDER_ID}`).toString('base64')}`
-
-const BAD_EVENT = {
-  device_id: JUMP_TEST_DEVICE_1.device_id,
-  timestamp: now()
-}
 
 const JUMP_TEST_DEVICE_1_ID = JUMP_TEST_DEVICE_1.device_id
 
@@ -1355,75 +1348,40 @@ describe('Tests API', () => {
       })
   })
 
-
-  it('verifies get device defaults to `deregister` if event_type is missing', async ()=> {
+  it('verifies get device defaults to `deregister` if cache misses reads for associated events', async () => {
     await request
       .post('/vehicles')
       .set('Authorization', AUTH)
       .send(JUMP_TEST_DEVICE_1)
       .expect(201)
 
-    const JUMP_TELEMETRY = {
-      device_id: JUMP_TEST_DEVICE_1_ID,
-      provider_id: JUMP_TEST_DEVICE_1.provider_id,
-      gps: {
-        lat: 37.3382,
-        lng: -121.8863,
-        speed: 0,
-        hdop: 1,
-        heading: 180
-      },
-      charge: 0.5,
-      timestamp: now()
-    }
-
     await request
-      .post('/vehicles/telemetry')
+      .post(`/vehicles/${JUMP_TEST_DEVICE_1_ID}/event`)
       .set('Authorization', AUTH)
-      .send({
-        data: [JUMP_TELEMETRY]
-      })
+      .send({ device_id: JUMP_TEST_DEVICE_1, timestamp: now(), event_type: VEHICLE_EVENTS.deregister })
       .expect(201)
 
     // @ts-ignore: Spoofing garbage data
-    Sinon.replace(cache, 'readEvent', Sinon.fake.resolves(BAD_EVENT))
-    const resultWithCache = await request
-      .get(`/vehicles/${JUMP_TEST_DEVICE_1_ID}?cached=true`)
+    const result = await request
+      .get(`/vehicles/${JUMP_TEST_DEVICE_1_ID}`)
       .set('Authorization', AUTH)
       .expect(200)
-    test.assert(resultWithCache.body.prev_event === VEHICLE_EVENTS.deregister)
-
-    const resultWithoutCache = await request
-      .get(`/vehicles/${JUMP_TEST_DEVICE_1_ID}?cached=false`)
-      .set('Authorization', AUTH)
-      .expect(200)
-    test.assert(resultWithoutCache.body.prev_event === VEHICLE_EVENTS.deregister)
-    Sinon.restore()
+    test.assert(result.body.status === VEHICLE_STATUSES.inactive)
   })
 
-  it('verifies get multiple devices defaults to `inactive` if event_type is missing', async ()=> {
+  it('verifies get multiple devices defaults to `inactive` if event_type is missing', async () => {
     // @ts-ignore: Spoofing garbage data
-    Sinon.replace(cache, 'readEvents', Sinon.fake.resolves([]))
-    // with cache query
-    const resultWithCache = await request
-      .get(`/vehicles/?cached=true`)
+    const result = await request
+      .get(`/vehicles/`)
       .set('Authorization', AUTH)
       .expect(200)
-    const cacheids: UUID[] = resultWithCache.body.vehicles.map(device => { return device.device_id })
-    resultWithCache.body.vehicles.map(device => {
-      test.assert(device.status === VEHICLE_STATUSES.inactive)
+    const ids = result.body.vehicles.map((device: any) => device.device_id)
+    test.assert(ids.includes(JUMP_TEST_DEVICE_1_ID))
+    result.body.vehicles.map((device: any) => {
+      if (device.device_id === JUMP_TEST_DEVICE_1_ID) {
+        test.assert(device.status === VEHICLE_STATUSES.inactive)
+      }
     })
-
-    // without cache query
-    const resultWithoutCache = await request
-      .get(`/vehicles/?cached=false`)
-      .set('Authorization', AUTH)
-      .expect(200)
-    const nocacheids: UUID[] = resultWithoutCache.body.vehicles.map(device => { return device.device_id })
-    resultWithoutCache.body.vehicles.map(device => {
-      test.assert(device.status === VEHICLE_STATUSES.inactive)
-    })
-    Sinon.restore()
   })
 
   /* eslint-disable @typescript-eslint/no-explicit-any */

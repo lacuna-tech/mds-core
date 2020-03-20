@@ -133,18 +133,16 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiRespo
 export const getVehicleById = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   const { device_id } = req.params
 
-  const { cached } = req.query
-
   const { provider_id } = res.locals.scopes.includes('vehicles:read') ? req.query : res.locals
 
-  log.info(`/vehicles/${device_id}`, cached)
-  const payload = await readPayload(cached, device_id)
+  const payload = await readPayload(device_id)
   if (!payload.device || (provider_id && payload.device.provider_id !== provider_id)) {
     res.status(404).send({
       error: 'not_found'
     })
     return
   }
+
   const compositeData = computeCompositeVehicleData(payload)
   res.status(200).send(compositeData)
 }

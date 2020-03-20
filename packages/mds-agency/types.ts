@@ -25,7 +25,7 @@ export interface ServiceArea {
 export interface VehiclePayload {
   device?: Device
   event?: VehicleEvent
-  telemetry?: Telemetry
+  telemetry?: Telemetry | null
 }
 
 export type TelemetryResult =
