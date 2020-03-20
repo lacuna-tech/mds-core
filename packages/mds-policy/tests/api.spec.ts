@@ -45,7 +45,7 @@ import {
 import { la_city_boundary } from './la-city-boundary'
 import { api } from '../api'
 /* eslint-disable-next-line @typescript-eslint/no-var-requires */
-const veniceSpecialOpsZone = require('../../mds-test-data/ladot-service-areas/venice-special-ops-zone')
+const veniceSpecialOpsZone = require('../../mds-test-data/test-areas/venice-special-ops-zone')
 
 /* eslint-disable-next-line no-console */
 const log = console.log.bind(console)
