@@ -135,7 +135,6 @@ export async function getVehicles(
       eventMap[event.device_id] = event
     }
   })
-  console.log('event map', eventMap)
 
   const deviceIdSuperset = bbox
     ? rows.filter(record => {
@@ -149,15 +148,11 @@ export async function getVehicles(
       throw new Error('device in DB but not in cache')
     }
     const event = eventMap[device.device_id]
-    console.log('this fucking event', event)
     const status = event ? EVENT_STATUS_MAP[event.event_type] : VEHICLE_STATUSES.inactive
-    console.log('this fucking status', status)
     const telemetry = event ? event.telemetry : null
     const updated = event ? event.timestamp : null
     return [...acc, { ...device, status, telemetry, updated }]
   }, [])
-
-  console.log('devices final form?', devices)
 
   const noNext = skip + take >= deviceIdSuperset.length
   const noPrev = skip === 0 || skip > deviceIdSuperset.length
@@ -518,7 +513,6 @@ export async function readPayload(cached: boolean, device_id: UUID): Promise<Veh
       payload.event.event_type = VEHICLE_EVENTS.deregister
     }
   } catch (err) {
-    await log.error('deregister log error shit')
     await log.error(err)
   }
   try {
