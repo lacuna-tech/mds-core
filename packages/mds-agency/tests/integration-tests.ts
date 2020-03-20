@@ -1364,7 +1364,7 @@ describe('Tests API', () => {
       .expect(201)
 
     const JUMP_TELEMETRY = {
-      device_id: JUMP_TEST_DEVICE_1.device_id,
+      device_id: JUMP_TEST_DEVICE_1_ID,
       provider_id: JUMP_TEST_DEVICE_1.provider_id,
       gps: {
         lat: 37.3382,
@@ -1388,13 +1388,13 @@ describe('Tests API', () => {
     // @ts-ignore: Spoofing garbage data
     Sinon.replace(cache, 'readEvent', Sinon.fake.resolves(BAD_EVENT))
     const resultWithCache = await request
-      .get(`/vehicles/${JUMP_TEST_DEVICE_1.device_id}?cached=true`)
+      .get(`/vehicles/${JUMP_TEST_DEVICE_1_ID}?cached=true`)
       .set('Authorization', AUTH)
       .expect(200)
     test.assert(resultWithCache.body.prev_event === VEHICLE_EVENTS.deregister)
 
     const resultWithoutCache = await request
-      .get(`/vehicles/${JUMP_TEST_DEVICE_1.device_id}?cached=false`)
+      .get(`/vehicles/${JUMP_TEST_DEVICE_1_ID}?cached=false`)
       .set('Authorization', AUTH)
       .expect(200)
     test.assert(resultWithoutCache.body.prev_event === VEHICLE_EVENTS.deregister)
