@@ -1367,6 +1367,7 @@ describe('Tests API', () => {
       .set('Authorization', AUTH)
       .expect(200)
     test.assert(result.body.status === VEHICLE_STATUSES.inactive)
+    test.assert(result.body.prev_event === VEHICLE_EVENTS.deregister)
   })
 
   it('verifies get multiple devices defaults to `inactive` if event_type is missing', async () => {

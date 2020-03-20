@@ -483,6 +483,7 @@ export function computeCompositeVehicleData(payload: VehiclePayload) {
     composite.status = (EVENT_STATUS_MAP[event.event_type as VEHICLE_EVENT] || 'unknown') as VEHICLE_STATUS
   } else {
     composite.status = VEHICLE_STATUSES.inactive
+    composite.prev_event = VEHICLE_EVENTS.deregister
   }
   if (telemetry) {
     if (telemetry.gps) {
