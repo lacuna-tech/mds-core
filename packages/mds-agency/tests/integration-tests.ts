@@ -1385,11 +1385,6 @@ describe('Tests API', () => {
       })
       .expect(201)
 
-    const BAD_EVENT = {
-      device_id: JUMP_TEST_DEVICE_1.device_id,
-      timestamp: now()
-    }
-
     // @ts-ignore: Spoofing garbage data
     Sinon.replace(cache, 'readEvent', Sinon.fake.resolves(BAD_EVENT))
     const resultWithCache = await request
