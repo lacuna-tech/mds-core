@@ -467,3 +467,5 @@ export interface Jurisdiction {
   geography_id: UUID
   timestamp: Timestamp
 }
+
+export type Nullable<T> = T | null

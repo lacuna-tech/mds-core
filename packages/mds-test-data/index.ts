@@ -47,8 +47,6 @@ import {
   rangeRandomInt
 } from '@mds-core/mds-utils'
 
-import { serviceAreaMap } from 'ladot-service-areas'
-
 import { v4 as uuid } from 'uuid'
 
 import log from '@mds-core/mds-logger'
@@ -60,6 +58,7 @@ import {
   TEST1_PROVIDER_ID,
   providerName
 } from '@mds-core/mds-providers'
+import { serviceAreaMap } from './ladot-service-areas/ladot-service-areas'
 
 import { LA_CITY_BOUNDARY } from './la-city-boundary'
 import { DISTRICT_SEVEN } from './district-seven'
@@ -588,5 +587,6 @@ export {
   makeTelemetryStream,
   makeStatusChange,
   makeTrip,
-  SCOPED_AUTH
+  SCOPED_AUTH,
+  serviceAreaMap
 }

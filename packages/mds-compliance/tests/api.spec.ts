@@ -45,8 +45,8 @@ const CITY_OF_LA = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 const LA_BEACH = 'ff822e26-a70c-4721-ac32-2f6734beff9b'
 
 /* eslint-disable @typescript-eslint/no-var-requires */
-const restrictedAreas = require('../../ladot-service-areas/restricted-areas')
-const veniceSpecialOpsZone = require('../../ladot-service-areas/venice-special-ops-zone')
+const restrictedAreas = require('../../mds-test-data/ladot-service-areas/restricted-areas')
+const veniceSpecialOpsZone = require('../../mds-test-data/ladot-service-areas/venice-special-ops-zone')
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 let testTimestamp = now()
