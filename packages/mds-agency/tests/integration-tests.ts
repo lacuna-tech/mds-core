@@ -29,6 +29,7 @@
 
 import supertest from 'supertest'
 import test from 'unit.js'
+import Sinon from 'sinon'
 import {
   VEHICLE_EVENTS,
   VEHICLE_STATUSES,
@@ -41,7 +42,7 @@ import {
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
-import { makeDevices, makeEvents } from '@mds-core/mds-test-data'
+import { makeDevices, makeEvents, JUMP_TEST_DEVICE_1 } from '@mds-core/mds-test-data'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID } from '@mds-core/mds-providers'
 import { api } from '../api'
@@ -1344,6 +1345,51 @@ describe('Tests API', () => {
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
+  })
+
+
+  it('verifies get device defaults to `deregister` if event_type is missing', async ()=> {
+    console.log('deregister shit')
+    await request
+      .post('/vehicles')
+      .set('Authorization', AUTH)
+      .send(JUMP_TEST_DEVICE_1)
+      .expect(201)
+
+    const JUMP_TELEMETRY = {
+      device_id: JUMP_TEST_DEVICE_1.device_id,
+      provider_id: JUMP_TEST_DEVICE_1.provider_id,
+      gps: {
+        lat: 37.3382,
+        lng: -121.8863,
+        speed: 0,
+        hdop: 1,
+        heading: 180
+      },
+      charge: 0.5,
+      timestamp: now()
+    }
+
+    await request
+      .post('/vehicles/telemetry')
+      .set('Authorization', AUTH)
+      .send({
+        data: [JUMP_TELEMETRY]
+      })
+      .expect(201)
+
+    const badEvent = {
+      device_id: JUMP_TEST_DEVICE_1.device_id,
+      timestamp: now()
+    }
+
+    // @ts-ignore: Spoofing garbage data
+    Sinon.replace(cache, 'readEvent', Sinon.fake.resolves(badEvent))
+    const result = await request
+      .get(`/vehicles/${JUMP_TEST_DEVICE_1.device_id}?cached=true`)
+      .set('Authorization', AUTH)
+      .expect(200)
+    test.assert(result.body.prev_event === VEHICLE_EVENTS.deregister)
   })
 
   /* eslint-disable @typescript-eslint/no-explicit-any */

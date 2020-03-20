@@ -148,7 +148,7 @@ export async function getVehicles(
       throw new Error('device in DB but not in cache')
     }
     const event = eventMap[device.device_id]
-    const status = event ? EVENT_STATUS_MAP[event.event_type] : VEHICLE_STATUSES.removed
+    const status = event ? EVENT_STATUS_MAP[event.event_type] : VEHICLE_STATUSES.inactive
     const telemetry = event ? event.telemetry : null
     const updated = event ? event.timestamp : null
     return [...acc, { ...device, status, telemetry, updated }]
@@ -499,7 +499,8 @@ const normalizeTelemetry = (telemetry: TelemetryResult) => {
   return telemetry
 }
 
-export async function readPayload(store: typeof cache | typeof db, device_id: UUID): Promise<VehiclePayload> {
+export async function readPayload(cached: boolean, device_id: UUID): Promise<VehiclePayload> {
+  const store = cached ? cache : db
   const payload: VehiclePayload = {}
   try {
     payload.device = await store.readDevice(device_id)
@@ -508,7 +509,11 @@ export async function readPayload(store: typeof cache | typeof db, device_id: UU
   }
   try {
     payload.event = await store.readEvent(device_id)
+    if (payload.event && !payload.event.event_type) {
+      payload.event.event_type = VEHICLE_EVENTS.deregister
+    }
   } catch (err) {
+    await log.error('deregister log error shit')
     await log.error(err)
   }
   try {
