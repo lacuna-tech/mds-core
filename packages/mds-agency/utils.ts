@@ -509,9 +509,6 @@ export async function readPayload(device_id: UUID): Promise<VehiclePayload> {
   try {
     payload.event = await cache.readEvent(device_id)
     if (payload.event) {
-      if (!payload.event.event_type) {
-        payload.event.event_type = VEHICLE_EVENTS.deregister
-      }
       if (payload.event.telemetry) {
         payload.telemetry = normalizeTelemetry(payload.event.telemetry)
       }
