@@ -37,7 +37,8 @@ import {
   PROPULSION_TYPES,
   Timestamp,
   Device,
-  VehicleEvent
+  VehicleEvent,
+  UUID
 } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
@@ -122,6 +123,13 @@ const AUTH_UNKNOWN_UUID_PROVIDER = `basic ${Buffer.from(
   `c8f984c5-62a5-4453-b1f7-3b7704a95cfe|${PROVIDER_SCOPES}`
 ).toString('base64')}`
 const AUTH_NO_SCOPE = `basic ${Buffer.from(`${TEST1_PROVIDER_ID}`).toString('base64')}`
+
+const BAD_EVENT = {
+  device_id: JUMP_TEST_DEVICE_1.device_id,
+  timestamp: now()
+}
+
+const JUMP_TEST_DEVICE_1_ID = JUMP_TEST_DEVICE_1.device_id
 
 before(async () => {
   await Promise.all([db.initialize(), cache.initialize(), stream.initialize()])
@@ -1349,7 +1357,6 @@ describe('Tests API', () => {
 
 
   it('verifies get device defaults to `deregister` if event_type is missing', async ()=> {
-    console.log('deregister shit')
     await request
       .post('/vehicles')
       .set('Authorization', AUTH)
@@ -1378,18 +1385,50 @@ describe('Tests API', () => {
       })
       .expect(201)
 
-    const badEvent = {
+    const BAD_EVENT = {
       device_id: JUMP_TEST_DEVICE_1.device_id,
       timestamp: now()
     }
 
     // @ts-ignore: Spoofing garbage data
-    Sinon.replace(cache, 'readEvent', Sinon.fake.resolves(badEvent))
-    const result = await request
+    Sinon.replace(cache, 'readEvent', Sinon.fake.resolves(BAD_EVENT))
+    const resultWithCache = await request
       .get(`/vehicles/${JUMP_TEST_DEVICE_1.device_id}?cached=true`)
       .set('Authorization', AUTH)
       .expect(200)
-    test.assert(result.body.prev_event === VEHICLE_EVENTS.deregister)
+    test.assert(resultWithCache.body.prev_event === VEHICLE_EVENTS.deregister)
+
+    const resultWithoutCache = await request
+      .get(`/vehicles/${JUMP_TEST_DEVICE_1.device_id}?cached=false`)
+      .set('Authorization', AUTH)
+      .expect(200)
+    test.assert(resultWithoutCache.body.prev_event === VEHICLE_EVENTS.deregister)
+    Sinon.restore()
+  })
+
+  it('verifies get multiple devices defaults to `inactive` if event_type is missing', async ()=> {
+    // @ts-ignore: Spoofing garbage data
+    Sinon.replace(cache, 'readEvents', Sinon.fake.resolves([]))
+    // with cache query
+    const resultWithCache = await request
+      .get(`/vehicles/?cached=true`)
+      .set('Authorization', AUTH)
+      .expect(200)
+    const cacheids: UUID[] = resultWithCache.body.vehicles.map(device => { return device.device_id })
+    resultWithCache.body.vehicles.map(device => {
+      test.assert(device.status === VEHICLE_STATUSES.inactive)
+    })
+
+    // without cache query
+    const resultWithoutCache = await request
+      .get(`/vehicles/?cached=false`)
+      .set('Authorization', AUTH)
+      .expect(200)
+    const nocacheids: UUID[] = resultWithoutCache.body.vehicles.map(device => { return device.device_id })
+    resultWithoutCache.body.vehicles.map(device => {
+      test.assert(device.status === VEHICLE_STATUSES.inactive)
+    })
+    Sinon.restore()
   })
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
