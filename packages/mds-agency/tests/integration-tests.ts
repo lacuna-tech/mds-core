@@ -1369,7 +1369,7 @@ describe('Tests API', () => {
     test.assert(result.body.prev_event === VEHICLE_EVENTS.deregister)
   })
 
-  it('verifies get multiple devices endpoint has vehicle status default to `inactive` if event is missing', async () => {
+  it('get multiple devices endpoint has vehicle status default to `inactive` if event is missing for a device', async () => {
     const result = await request
       .get(`/vehicles/`)
       .set('Authorization', AUTH)
