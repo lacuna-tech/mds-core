@@ -1361,7 +1361,6 @@ describe('Tests API', () => {
       .send({ device_id: JUMP_TEST_DEVICE_1, timestamp: now(), event_type: VEHICLE_EVENTS.deregister })
       .expect(201)
 
-    // @ts-ignore: Spoofing garbage data
     const result = await request
       .get(`/vehicles/${JUMP_TEST_DEVICE_1_ID}`)
       .set('Authorization', AUTH)
@@ -1370,8 +1369,7 @@ describe('Tests API', () => {
     test.assert(result.body.prev_event === VEHICLE_EVENTS.deregister)
   })
 
-  it('verifies get multiple devices defaults to `inactive` if event_type is missing', async () => {
-    // @ts-ignore: Spoofing garbage data
+  it('verifies get multiple devices endpoint has vehicle status default to `inactive` if event is missing', async () => {
     const result = await request
       .get(`/vehicles/`)
       .set('Authorization', AUTH)
