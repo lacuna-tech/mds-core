@@ -32,8 +32,9 @@ import {
 } from './types'
 import { AgencyKafkaStream } from './kafka/agency-stream-kafka'
 
-export { KafkaStreamReader } from './kafka/read-stream'
-export { KafkaStreamWriter } from './kafka/write-stream'
+import { KafkaStreamReader } from './kafka/read-stream'
+import { KafkaStreamWriter } from './kafka/write-stream'
+
 const { env } = process
 
 let nats: stan.Stan
@@ -346,5 +347,7 @@ export = {
   writeEvent,
   writeStream,
   writeStreamBatch,
-  writeTelemetry
+  writeTelemetry,
+  KafkaStreamReader,
+  KafkaStreamWriter
 }
