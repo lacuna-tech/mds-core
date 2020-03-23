@@ -6,7 +6,7 @@ export const KafkaStreamWriter: (name: string) => StreamWriter = name => {
   let stream: ProducerStream | undefined
   return {
     initialize: async () => {
-      stream = await createWriteStreamWrapper({}, { topic: name })
+      if (!stream) stream = await createWriteStreamWrapper({}, { topic: name })
     },
     write: async (message: object) => {
       if (isWriteStreamReady(stream)) {

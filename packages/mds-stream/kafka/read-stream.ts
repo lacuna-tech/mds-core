@@ -9,7 +9,7 @@ export const KafkaStreamReader: (name: string, readCb: (data: Kafka.ConsumerStre
   let stream: ConsumerStream | undefined
   return {
     initialize: async () => {
-      stream = await createReadStreamWrapper({}, { topics: [name] }, readCb)
+      if (!stream) stream = await createReadStreamWrapper({}, { topics: [name] }, readCb)
     },
     shutdown: async () => {
       killReadStream(stream)
