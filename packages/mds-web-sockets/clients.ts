@@ -17,7 +17,7 @@ export class Clients {
     if (!JWKS_URI) throw new Error('No JWKS_URI defined!')
 
     const client = jwks({
-      jwksUri: JWKS_URI,
+      jwksUri: JWKS_URI
     })
 
     /* Technically, this typedef is slightly incorrect, but is to coerce the compiler to happiness without type guarding. One of publicKey or rsaPublicKey *always* exists. */

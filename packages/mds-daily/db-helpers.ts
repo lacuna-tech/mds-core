@@ -71,7 +71,7 @@ export const getTelemetryCountsPerProviderSince = async ({
   start_time,
   end_time,
   provider_info,
-  fail,
+  fail
 }: DbHelperArgs) => {
   try {
     const start = now()
@@ -95,7 +95,7 @@ export const getNumVehiclesRegisteredLast24Hours = async ({
   start_time,
   end_time,
   provider_info,
-  fail,
+  fail
 }: DbHelperArgs) => {
   try {
     const start = now()

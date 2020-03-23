@@ -21,7 +21,7 @@ describe('Test API Authorizer', () => {
 
   it('Basic Authorizaton', (done) => {
     const apiAuthorizer = AuthorizationHeaderApiAuthorizer({
-      headers: { authorization: ADMIN_AUTH },
+      headers: { authorization: ADMIN_AUTH }
     } as express.Request)
     test.object(apiAuthorizer).hasProperty('principalId', MOCHA_PROVIDER_ID).hasProperty('scope', PROVIDER_SCOPES)
 
@@ -32,7 +32,7 @@ describe('Test API Authorizer', () => {
 
   it('Bearer Authorizaton', (done) => {
     const apiAuthorizer = AuthorizationHeaderApiAuthorizer({
-      headers: { authorization: ADMIN_AUTH },
+      headers: { authorization: ADMIN_AUTH }
     } as express.Request)
     test
       .object(apiAuthorizer)

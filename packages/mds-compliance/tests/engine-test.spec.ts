@@ -16,7 +16,7 @@ let low_count_policies: Policy[] = []
 const CITY_OF_LA = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 
 const geographies: Geography[] = [
-  { name: 'la', geography_id: CITY_OF_LA, geography_json: la_city_boundary as FeatureCollection },
+  { name: 'la', geography_id: CITY_OF_LA, geography_json: la_city_boundary as FeatureCollection }
 ]
 
 process.env.TIMEZONE = 'America/Los_Angeles'

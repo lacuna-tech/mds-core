@@ -30,7 +30,7 @@ export const asPagingParams: <T extends Partial<{ [P in keyof PagingParams]: unk
   return {
     ...params,
     skip: Number.isNaN(skip) || skip <= 0 ? 0 : skip,
-    take: Number.isNaN(take) || take <= 0 ? DEFAULT_PAGE_SIZE : Math.min(take, MAX_PAGE_SIZE),
+    take: Number.isNaN(take) || take <= 0 ? DEFAULT_PAGE_SIZE : Math.min(take, MAX_PAGE_SIZE)
   }
 }
 
@@ -39,7 +39,7 @@ const jsonApiLink = (req: express.Request, skip: number, take: number): string =
     protocol: req.get('x-forwarded-proto') || req.protocol,
     host: req.get('host'),
     pathname: req.path,
-    query: { ...req.query, skip, take },
+    query: { ...req.query, skip, take }
   })
 
 export type JsonApiLinks = Partial<{ first: string; prev: string; next: string; last: string }> | undefined

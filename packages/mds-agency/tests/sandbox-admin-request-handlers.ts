@@ -15,7 +15,7 @@ describe('Sandbox admin request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler,
+        send: sendHandler
       } as any)
       res.status = statusHandler
       Sinon.replace(cache, 'info', Sinon.fake.resolves('it-worked'))
@@ -27,7 +27,7 @@ describe('Sandbox admin request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler,
+        send: sendHandler
       } as any)
       res.status = statusHandler
       Sinon.replace(cache, 'info', Sinon.fake.rejects('it-failed'))
@@ -43,7 +43,7 @@ describe('Sandbox admin request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler,
+        send: sendHandler
       } as any)
       res.status = statusHandler
       res.locals = { provider_id } as any
@@ -53,7 +53,7 @@ describe('Sandbox admin request handlers', () => {
         {
           params: { device_id },
           query: { cached: false },
-          get: Sinon.fake.returns('foo') as any,
+          get: Sinon.fake.returns('foo') as any
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )
@@ -66,7 +66,7 @@ describe('Sandbox admin request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler,
+        send: sendHandler
       } as any)
       res.status = statusHandler
       res.locals = { provider_id } as any
@@ -76,7 +76,7 @@ describe('Sandbox admin request handlers', () => {
         {
           params: { device_id },
           query: { cached: false },
-          get: Sinon.fake.returns('foo') as any,
+          get: Sinon.fake.returns('foo') as any
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )
@@ -91,7 +91,7 @@ describe('Sandbox admin request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler,
+        send: sendHandler
       } as any)
       res.status = statusHandler
       res.locals = { provider_id } as any
@@ -101,7 +101,7 @@ describe('Sandbox admin request handlers', () => {
         {
           params: { device_id },
           query: { cached: false },
-          get: Sinon.fake.returns('foo') as any,
+          get: Sinon.fake.returns('foo') as any
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )
@@ -115,7 +115,7 @@ describe('Sandbox admin request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler,
+        send: sendHandler
       } as any)
       res.status = statusHandler
       res.locals = { provider_id } as any
@@ -125,7 +125,7 @@ describe('Sandbox admin request handlers', () => {
         {
           params: { device_id },
           query: { cached: false },
-          get: Sinon.fake.returns('foo') as any,
+          get: Sinon.fake.returns('foo') as any
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )

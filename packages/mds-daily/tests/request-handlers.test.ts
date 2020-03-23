@@ -12,12 +12,12 @@ describe('Request handlers', () => {
       const res: DailyApiResponse = {} as DailyApiResponse
       res.status = (code: number) => {
         return {
-          send: () => code,
+          send: () => code
         } as any
       }
       await getRawTripData(
         {
-          params: { trip_id: 'fake-trip-id' },
+          params: { trip_id: 'fake-trip-id' }
         } as DailyApiRequest<{ trip_id: string }>,
         res as DailyApiResponse
       )

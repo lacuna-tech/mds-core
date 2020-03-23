@@ -23,7 +23,7 @@ import {
   UUID_REGEX,
   NotFoundError,
   BadParamsError,
-  AlreadyPublishedError,
+  AlreadyPublishedError
 } from '@mds-core/mds-utils'
 import { policyValidationDetails } from '@mds-core/mds-schema-validators'
 import log from '@mds-core/mds-logger'
@@ -170,11 +170,11 @@ function api(app: express.Express): express.Express {
         if (err instanceof BadParamsError) {
           res.status(400).send({
             result:
-              'Cannot set both get_unpublished and get_published to be true. If you want all policy metadata, set both params to false or do not send them.',
+              'Cannot set both get_unpublished and get_published to be true. If you want all policy metadata, set both params to false or do not send them.'
           })
         }
         res.status(404).send({
-          result: 'not found',
+          result: 'not found'
         })
       }
     }

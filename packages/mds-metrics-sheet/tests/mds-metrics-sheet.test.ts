@@ -14,7 +14,7 @@ const getStatus = (): VehicleCountRow['status'] => {
     removed: 0,
     inactive: 3,
     trip: 5,
-    elsewhere: 17,
+    elsewhere: 17
   }
 }
 
@@ -33,7 +33,7 @@ const getEvent = (): VehicleCountRow['event_type'] => {
     trip_enter: 42,
     trip_leave: 42,
     trip_end: 42,
-    deregister: 42,
+    deregister: 42
   }
 }
 
@@ -62,7 +62,7 @@ const getLastDayStatsResponse = (provider_id: string): LastDayStatsResponse => {
         trip_enter: 42,
         trip_leave: 42,
         trip_end: 42,
-        deregister: 42,
+        deregister: 42
       },
       late_event_counts_last_24h: {
         register: 42,
@@ -78,9 +78,9 @@ const getLastDayStatsResponse = (provider_id: string): LastDayStatsResponse => {
         trip_enter: 42,
         trip_leave: 42,
         trip_end: 42,
-        deregister: 42,
-      },
-    },
+        deregister: 42
+      }
+    }
   }
 }
 
@@ -92,7 +92,7 @@ const getProvider = (): VehicleCountRow => {
     status: getStatus(),
     event_type: getEvent(),
     areas: {},
-    areas_48h: {},
+    areas_48h: {}
   }
 }
 
@@ -131,7 +131,7 @@ describe('MDS Metrics Sheet', () => {
         trip_enter: 42,
         trip_leave: 42,
         trip_end: 42,
-        deregister: 42,
+        deregister: 42
       }
       const result = eventCountsToStatusCounts(event)
       const expected = {
@@ -141,7 +141,7 @@ describe('MDS Metrics Sheet', () => {
         removed: 126,
         reserved: 42,
         trip: 84,
-        unavailable: 42,
+        unavailable: 42
       }
       assert.deepStrictEqual(result, expected)
     })
@@ -184,7 +184,7 @@ describe('MDS Metrics Sheet', () => {
         trip: 84,
         removed: 126,
         inactive: 42,
-        elsewhere: 42,
+        elsewhere: 42
       }
       assert.deepStrictEqual(result, expected)
     })
@@ -217,7 +217,7 @@ describe('MDS Metrics Sheet', () => {
         trip: 0,
         removed: 0,
         inactive: 0,
-        elsewhere: 0,
+        elsewhere: 0
       }
       assert.deepStrictEqual(result, expected)
     })
@@ -250,7 +250,7 @@ describe('MDS Metrics Sheet', () => {
         trip: 84,
         removed: 126,
         inactive: 42,
-        elsewhere: 42,
+        elsewhere: 42
       }
       assert.deepStrictEqual(result, expected)
     })
@@ -283,7 +283,7 @@ describe('MDS Metrics Sheet', () => {
         trip: 84,
         removed: 126,
         inactive: 42,
-        elsewhere: 42,
+        elsewhere: 42
       }
       assert.deepStrictEqual(result, expected)
     })
@@ -312,7 +312,7 @@ describe('MDS Metrics Sheet', () => {
       'Venice Area': 20,
       'Venice Beach': 5,
       'Venice Beach Special Operations Zone': 5,
-      'Venice Canals': 5,
+      'Venice Canals': 5
     }
     assert.deepStrictEqual(actual, expected)
   })

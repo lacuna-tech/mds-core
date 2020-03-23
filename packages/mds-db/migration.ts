@@ -12,7 +12,7 @@ const MIGRATIONS = [
   'dropDeprecatedProviderTables',
   'dropReadOnlyGeographyColumn',
   'dropAuditEventsColumns',
-  'alterReportsTripsMigration',
+  'alterReportsTripsMigration'
 ] as const
 type MIGRATION = typeof MIGRATIONS[number]
 
@@ -51,14 +51,14 @@ async function addIndex(
   const indexName = `idx_${column}_${table}`
 
   const {
-    rows: { length: hasColumn },
+    rows: { length: hasColumn }
   } = await exec(
     `SELECT column_name FROM information_schema.columns WHERE table_name='${table}' AND column_name='${column}' AND table_catalog=CURRENT_CATALOG AND table_schema=CURRENT_SCHEMA`
   )
 
   if (hasColumn) {
     const {
-      rows: { length: hasIndex },
+      rows: { length: hasIndex }
     } = await exec(`SELECT tablename FROM pg_indexes WHERE tablename='${table}' AND indexname='${indexName}'`)
 
     if (!hasIndex) {

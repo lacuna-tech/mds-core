@@ -20,14 +20,14 @@ export const GetAllJurisdictionsHandler = async (req: GetAllJurisdictionsRequest
   const { effective } = req.query
 
   const [error, jurisdictions] = await JurisdictionService.getAllJurisdictions({
-    effective: effective ? Number(effective) : undefined,
+    effective: effective ? Number(effective) : undefined
   })
 
   // Handle result
   if (jurisdictions) {
     return res.status(200).send({
       version: res.locals.version,
-      jurisdictions: jurisdictions.filter(HasJurisdictionClaim(res)),
+      jurisdictions: jurisdictions.filter(HasJurisdictionClaim(res))
     })
   }
 

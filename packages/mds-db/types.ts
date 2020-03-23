@@ -7,7 +7,7 @@ import {
   VEHICLE_TYPE,
   PROPULSION_TYPE,
   PROVIDER_EVENT,
-  PROVIDER_REASON,
+  PROVIDER_REASON
 } from '@mds-core/mds-types'
 import { Feature, FeatureCollection } from 'geojson'
 

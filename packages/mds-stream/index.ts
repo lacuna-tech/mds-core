@@ -28,7 +28,7 @@ import {
   DEVICE_INDEX_STREAM,
   DEVICE_RAW_STREAM,
   ReadStreamOptions,
-  StreamItemID,
+  StreamItemID
 } from './types'
 
 const { env } = process
@@ -41,7 +41,7 @@ const getBinding = () => {
   if (!binding) {
     binding = new BinaryHTTPEmitter({
       method: 'POST',
-      url: env.SINK,
+      url: env.SINK
     })
   }
   return binding
@@ -52,7 +52,7 @@ const getNats = () => {
     nats = stan.connect(env.STAN_CLUSTER || 'stan', `mds-agency-${uuid()}`, {
       url: `nats://${env.NATS}:4222`,
       userCreds: env.STAN_CREDS,
-      reconnect: true,
+      reconnect: true
     })
 
     nats.on('error', async (message) => {
@@ -136,7 +136,7 @@ let cachedClient: redis.RedisClient | null = null
 
 const STREAM_MAXLEN: { [S in Stream]: number } = {
   'device:index': 10_000,
-  'device:raw': 1_000_000,
+  'device:raw': 1_000_000
 }
 
 async function getClient() {
@@ -237,7 +237,7 @@ async function readStream(
     ...(typeof count === 'number' ? ['COUNT', count] : []),
     'STREAMS',
     stream,
-    id || '$',
+    id || '$'
   ])
 
   if (results) {
@@ -272,7 +272,7 @@ async function readStreamGroup(
       ...(noack ? ['NOACK'] : []),
       'STREAMS',
       stream,
-      id || '>',
+      id || '>'
     ]
   )
 
@@ -301,7 +301,7 @@ async function getStreamInfo(stream: Stream) {
       ,
       firstEntry,
       ,
-      lastEntry,
+      lastEntry
     ] = await client.xinfoAsync('STREAM', stream)
     return { length, radixTreeKeys, radixTreeNodes, groups, lastGeneratedId, firstEntry, lastEntry }
   } catch (err) {
@@ -333,5 +333,5 @@ export = {
   writeEvent,
   writeStream,
   writeStreamBatch,
-  writeTelemetry,
+  writeTelemetry
 }

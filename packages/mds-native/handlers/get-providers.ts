@@ -11,5 +11,5 @@ type GetProvidersResponse = NativeApiResponse<{
 export const GetProvidersHandler = async (req: GetProvidersRequest, res: GetProvidersResponse) =>
   res.status(200).send({
     version: res.locals.version,
-    providers: Object.values(providers),
+    providers: Object.values(providers)
   })

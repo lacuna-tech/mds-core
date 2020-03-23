@@ -20,8 +20,8 @@ const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, T
   try {
     const {
       spec: {
-        payload: { data, type },
-      },
+        payload: { data, type }
+      }
     } = JSON.parse(msg.getRawData().toString())
 
     const parsedData = JSON.parse(data)
@@ -38,7 +38,7 @@ const natsSubscriber = async <TData, TResult>({
   nats,
   processor,
   TENANT_ID,
-  type,
+  type
 }: {
   nats: stan.Stan
   processor: EventProcessor<TData, TResult>
@@ -48,7 +48,7 @@ const natsSubscriber = async <TData, TResult>({
   const subscriber = nats.subscribe(`${TENANT_ID || 'mds'}.${type}`, {
     ...nats.subscriptionOptions(),
     manualAcks: true,
-    maxInFlight: 1,
+    maxInFlight: 1
   })
 
   subscriber.on('message', async (msg: stan.Message) => {
@@ -59,7 +59,7 @@ const natsSubscriber = async <TData, TResult>({
 const initializeNatsClient = ({
   NATS,
   STAN_CLUSTER,
-  STAN_CREDS,
+  STAN_CREDS
 }: {
   NATS: string
   STAN_CLUSTER: string
@@ -68,7 +68,7 @@ const initializeNatsClient = ({
   return stan.connect(STAN_CLUSTER, `mds-event-consumer-${uuid()}`, {
     url: `nats://${NATS}:4222`,
     userCreds: STAN_CREDS,
-    reconnect: true,
+    reconnect: true
   })
 }
 
@@ -77,7 +77,7 @@ export const initializeStanSubscriber = async <TData, TResult>({
   STAN_CLUSTER,
   STAN_CREDS,
   TENANT_ID,
-  processor,
+  processor
 }: {
   NATS: string
   STAN_CLUSTER: string

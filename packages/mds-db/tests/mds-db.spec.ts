@@ -18,7 +18,7 @@ import {
   GEOGRAPHY_UUID,
   GEOGRAPHY2_UUID,
   LA_CITY_BOUNDARY,
-  DISTRICT_SEVEN,
+  DISTRICT_SEVEN
 } from '@mds-core/mds-test-data'
 import { now, clone, NotFoundError } from '@mds-core/mds-utils'
 
@@ -36,7 +36,7 @@ const pg_info: PGInfo = {
   host: env.PG_HOST || 'localhost',
   user: env.PG_USER,
   password: env.PG_PASS,
-  port: Number(env.PG_PORT) || 5432,
+  port: Number(env.PG_PORT) || 5432
 }
 
 const startTime = now() - 200
@@ -44,12 +44,12 @@ const shapeUUID = 'e3ed0a0e-61d3-4887-8b6a-4af4f3769c14'
 const LAGeography: Geography = {
   name: 'Los Angeles',
   geography_id: GEOGRAPHY_UUID,
-  geography_json: LA_CITY_BOUNDARY,
+  geography_json: LA_CITY_BOUNDARY
 }
 const DistrictSeven: Geography = {
   name: 'District Seven',
   geography_id: GEOGRAPHY2_UUID,
-  geography_json: DISTRICT_SEVEN,
+  geography_json: DISTRICT_SEVEN
 }
 
 /* You'll need postgres running and the env variable PG_NAME
@@ -132,7 +132,7 @@ if (pg_info.database) {
         const devicesResult: Device[] = (await MDSDBPostgres.readDeviceIds(JUMP_PROVIDER_ID, 0, 20)) as Device[]
         assert.deepEqual(devicesResult.length, 10)
         const vehicleEventsResult = await MDSDBPostgres.readEvents({
-          start_time: String(startTime),
+          start_time: String(startTime)
         })
         assert.deepEqual(vehicleEventsResult.count, 10)
 
@@ -334,15 +334,15 @@ if (pg_info.database) {
 
         await MDSDBPostgres.writePolicyMetadata({
           policy_id: POLICY_JSON.policy_id,
-          policy_metadata: { name: 'policy_json' },
+          policy_metadata: { name: 'policy_json' }
         })
         await MDSDBPostgres.writePolicyMetadata({
           policy_id: POLICY2_JSON.policy_id,
-          policy_metadata: { name: 'policy2_json' },
+          policy_metadata: { name: 'policy2_json' }
         })
         await MDSDBPostgres.writePolicyMetadata({
           policy_id: POLICY3_JSON.policy_id,
-          policy_metadata: { name: 'policy3_json' },
+          policy_metadata: { name: 'policy3_json' }
         })
 
         const noParamsResult = await MDSDBPostgres.readBulkPolicyMetadata()
@@ -385,7 +385,7 @@ if (pg_info.database) {
 
         await MDSDBPostgres.publishGeography({
           geography_id: LAGeography.geography_id,
-          publish_date: now(),
+          publish_date: now()
         })
         const writeableGeographies = await MDSDBPostgres.readGeographies({ get_published: false })
         assert.deepEqual(writeableGeographies.length, 1)
@@ -418,7 +418,7 @@ if (pg_info.database) {
         await MDSDBPostgres.editGeography({
           name: 'District Seven Updated Name',
           geography_id: DistrictSeven.geography_id,
-          geography_json,
+          geography_json
         })
         const result = await MDSDBPostgres.readSingleGeography(GEOGRAPHY2_UUID)
         assert.notEqual(result.geography_json.features.length, numFeatures)
@@ -432,7 +432,7 @@ if (pg_info.database) {
         await MDSDBPostgres.editGeography({
           name: 'Los Angeles',
           geography_id: LAGeography.geography_id,
-          geography_json: publishedGeographyJSON,
+          geography_json: publishedGeographyJSON
         }).should.be.rejected()
         await MDSDBPostgres.deleteGeography(LAGeography.geography_id).should.be.rejected()
       })
@@ -499,7 +499,7 @@ if (pg_info.database) {
       it('should write a GeographyMetadata only if there is a Geography in the DB', async () => {
         const geographyMetadata = {
           geography_id: GEOGRAPHY_UUID,
-          geography_metadata: { foo: 'afoo' },
+          geography_metadata: { foo: 'afoo' }
         }
         await assert.rejects(
           async () => {
@@ -525,7 +525,7 @@ if (pg_info.database) {
       it('updates GeographyMetadata', async () => {
         const geographyMetadata = {
           geography_id: GEOGRAPHY_UUID,
-          geography_metadata: { foo: 'notafoo' },
+          geography_metadata: { foo: 'notafoo' }
         }
         const res = await MDSDBPostgres.updateGeographyMetadata(geographyMetadata)
         assert.deepEqual(res.geography_metadata.foo, 'notafoo')

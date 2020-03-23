@@ -103,7 +103,7 @@ export async function writeDevice(device: Device): Promise<Recorded<Device>> {
   const values = vals_list(schema.TABLE_COLUMNS.devices, { ...device, recorded: now() })
   await logSql(sql, values)
   const {
-    rows: [recorded_device],
+    rows: [recorded_device]
   }: { rows: Recorded<Device>[] } = await client.query(sql, values)
   return { ...device, ...recorded_device }
 }

@@ -37,7 +37,7 @@ describe('Test Config Client', () => {
 
   it('Multiple Settings File (partial)', async () => {
     const [error, settings] = await client.getSettings<{ name?: string; missing?: unknown }>(['package', 'missing'], {
-      partial: true,
+      partial: true
     })
     test.value(error).is(null)
     test.value(settings).isNot(null)
@@ -48,7 +48,7 @@ describe('Test Config Client', () => {
   it('Multiple Settings File', async () => {
     const [error, settings] = await client.getSettings<{ name?: string; compilerOptions?: { outDir?: string } }>([
       'package',
-      'tsconfig.build',
+      'tsconfig.build'
     ])
     test.value(error).is(null)
     test.value(settings).isNot(null)
@@ -68,7 +68,7 @@ describe('Test Config Client', () => {
 
   it('Config Manager (partial)', async () => {
     const settings = await ConfigurationManager<{ name?: string; missing?: unknown }>(['package', 'missing'], {
-      partial: true,
+      partial: true
     }).settings()
     test.value(settings).isNot(null)
     test.value(settings.name).is('@mds-core/mds-config-service')
@@ -78,7 +78,7 @@ describe('Test Config Client', () => {
   it('Config Manager', async () => {
     const settings = await ConfigurationManager<{ name?: string; compilerOptions?: { outDir?: string } }>([
       'package',
-      'tsconfig.build',
+      'tsconfig.build'
     ]).settings()
     test.value(settings).isNot(null)
     test.value(settings.name).is('@mds-core/mds-config-service')

@@ -32,7 +32,7 @@ import {
   submitVehicleTelemetry,
   registerStop,
   readStop,
-  readStops,
+  readStops
 } from './request-handlers'
 import { readAllVehicleIds } from './agency-candidate-request-handlers'
 import { getCacheInfo, wipeDevice, refreshCache } from './sandbox-admin-request-handlers'
@@ -52,13 +52,13 @@ function api(app: express.Express): express.Express {
           if (!isUUID(provider_id)) {
             await log.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
             return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a UUID`,
+              result: `invalid provider_id ${provider_id} is not a UUID`
             })
           }
 
           if (!isProviderId(provider_id)) {
             return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a known provider`,
+              result: `invalid provider_id ${provider_id} is not a known provider`
             })
           }
 

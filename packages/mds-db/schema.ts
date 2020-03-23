@@ -108,7 +108,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.mimetype,
     COLUMN.thumbnail_filename,
     COLUMN.thumbnail_mimetype,
-    COLUMN.recorded,
+    COLUMN.recorded
   ],
   [TABLE.audit_attachments]: [COLUMN.id, COLUMN.attachment_id, COLUMN.audit_trip_id, COLUMN.recorded],
   [TABLE.audits]: [
@@ -122,7 +122,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.provider_device_id,
     COLUMN.timestamp,
     COLUMN.deleted,
-    COLUMN.recorded,
+    COLUMN.recorded
   ],
   [TABLE.audit_events]: [
     COLUMN.id,
@@ -140,7 +140,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.accuracy,
     COLUMN.altitude,
     COLUMN.charge,
-    COLUMN.recorded,
+    COLUMN.recorded
   ],
   [TABLE.devices]: [
     COLUMN.id,
@@ -152,7 +152,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.year,
     COLUMN.mfgr,
     COLUMN.model,
-    COLUMN.recorded,
+    COLUMN.recorded
   ],
   [TABLE.events]: [
     COLUMN.id,
@@ -164,7 +164,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.telemetry_timestamp,
     COLUMN.trip_id,
     COLUMN.service_area_id,
-    COLUMN.recorded,
+    COLUMN.recorded
   ],
   [TABLE.geographies]: [
     COLUMN.id,
@@ -174,7 +174,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.geography_json,
     COLUMN.publish_date,
     COLUMN.prev_geographies,
-    COLUMN.name,
+    COLUMN.name
   ],
   [TABLE.geography_metadata]: [COLUMN.id, COLUMN.geography_id, COLUMN.geography_metadata],
   [TABLE.migrations]: [COLUMN.id, COLUMN.migration, COLUMN.timestamp],
@@ -192,7 +192,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.accuracy,
     COLUMN.altitude,
     COLUMN.charge,
-    COLUMN.recorded,
+    COLUMN.recorded
   ],
   [TABLE.stops]: [
     COLUMN.id,
@@ -215,8 +215,8 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.num_spots_disabled,
     COLUMN.wheelchair_boarding,
     COLUMN.reservation_cost,
-    COLUMN.recorded,
-  ],
+    COLUMN.recorded
+  ]
 }
 
 const TABLE_KEY: { [T in TABLE_NAME]: COLUMN_NAME[] } = {
@@ -232,7 +232,7 @@ const TABLE_KEY: { [T in TABLE_NAME]: COLUMN_NAME[] } = {
   [TABLE.policies]: [COLUMN.policy_id],
   [TABLE.policy_metadata]: [COLUMN.policy_id],
   [TABLE.stops]: [COLUMN.stop_id],
-  [TABLE.telemetry]: [COLUMN.device_id, COLUMN.timestamp],
+  [TABLE.telemetry]: [COLUMN.device_id, COLUMN.timestamp]
 }
 
 const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
@@ -308,7 +308,7 @@ const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
   [COLUMN.vehicle_id]: 'varchar(255) NOT NULL',
   [COLUMN.wheelchair_boarding]: 'bool DEFAULT FALSE',
   [COLUMN.year]: 'smallint',
-  [COLUMN.zone_id]: 'varchar(255)',
+  [COLUMN.zone_id]: 'varchar(255)'
 }
 
 export default {
@@ -319,5 +319,5 @@ export default {
   TABLE,
   TABLES,
   TABLE_COLUMNS,
-  TABLE_KEY,
+  TABLE_KEY
 }

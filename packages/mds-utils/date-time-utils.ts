@@ -43,7 +43,7 @@ const parseUnit = (offset: string): 'days' | 'hours' => {
     [key: string]: 'days' | 'hours'
   } = {
     d: 'days',
-    h: 'hours',
+    h: 'hours'
   }
   if (offset === 'today' || offset === 'yesterday' || offset === 'now') {
     return 'days'
@@ -79,7 +79,7 @@ const parseOffset = (
     unit,
     operator,
     count,
-    relative,
+    relative
   }
 }
 
@@ -110,7 +110,7 @@ const parseRelative = (
   if (!parsedStartOffset.relative && !parsedEndOffset.relative) {
     return {
       start_time: parseAnchorPoint(startOffset).valueOf(),
-      end_time: parseAnchorPoint(endOffset).valueOf(),
+      end_time: parseAnchorPoint(endOffset).valueOf()
     }
   }
 
@@ -124,7 +124,7 @@ const parseRelative = (
     if (operator === '-') {
       return {
         start_time: anchorPoint.clone().subtract(count, unit).valueOf(),
-        end_time: anchorPoint.valueOf(),
+        end_time: anchorPoint.valueOf()
       }
     }
     throw new BadParamsError(`Invalid starting point: ${startOffset}`)
@@ -136,7 +136,7 @@ const parseRelative = (
     if (operator === '+') {
       return {
         start_time: anchorPoint.valueOf(),
-        end_time: anchorPoint.clone().add(count, unit).valueOf(),
+        end_time: anchorPoint.clone().add(count, unit).valueOf()
       }
     }
     throw new BadParamsError(`Invalid ending point: ${endOffset}`)

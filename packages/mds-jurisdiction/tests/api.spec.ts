@@ -30,7 +30,7 @@ const [JURISDICTION0, JURISDICTION1, JURISDICTION2] = [uuid(), uuid(), uuid()].m
   jurisdiction_id,
   agency_key: `agency-key-${jurisdiction_id}`,
   agency_name: `Agency Name ${jurisdiction_id}`,
-  geography_id: uuid(),
+  geography_id: uuid()
 }))
 
 describe('', () => {

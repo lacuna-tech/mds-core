@@ -63,7 +63,7 @@ export const updateJurisdiction = async (
   const connection = await manager.getReadWriteConnection()
   try {
     const {
-      raw: [entity],
+      raw: [entity]
     }: UpdateReturning<JurisdictionEntity> = await connection
       .getRepository(JurisdictionEntity)
       .createQueryBuilder()

@@ -35,7 +35,7 @@ export type RULE_TYPE = keyof typeof RULE_TYPES
 
 export const RULE_UNIT_MAP = {
   minutes: 60,
-  hours: 60 * 60,
+  hours: 60 * 60
 }
 
 export const PROPULSION_TYPES = Enum('human', 'electric', 'electric_assist', 'hybrid', 'combustion')
@@ -114,7 +114,7 @@ export const EVENT_STATUS_MAP: { [P in VEHICLE_EVENT]: VEHICLE_STATUS } = {
   trip_enter: VEHICLE_STATUSES.trip,
   trip_leave: VEHICLE_STATUSES.elsewhere,
   trip_end: VEHICLE_STATUSES.available,
-  deregister: VEHICLE_STATUSES.inactive,
+  deregister: VEHICLE_STATUSES.inactive
 }
 
 const StatusEventMap = <T extends { [S in VEHICLE_STATUS]: Partial<typeof VEHICLE_EVENTS> }>(map: T) => map
@@ -131,7 +131,7 @@ export const STATUS_EVENT_MAP = StatusEventMap({
   trip: Enum(VEHICLE_EVENTS.trip_start, VEHICLE_EVENTS.trip_enter),
   elsewhere: Enum(VEHICLE_EVENTS.trip_leave),
   removed: Enum(VEHICLE_EVENTS.register, VEHICLE_EVENTS.provider_pick_up, VEHICLE_EVENTS.agency_pick_up),
-  inactive: Enum(VEHICLE_EVENTS.deregister),
+  inactive: Enum(VEHICLE_EVENTS.deregister)
 })
 
 export const DAYS_OF_WEEK = Enum('sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat')

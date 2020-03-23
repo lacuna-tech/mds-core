@@ -60,10 +60,10 @@ const TEST_TELEMETRY: Telemetry = {
     lng: -121.8863,
     speed: 0,
     hdop: 1,
-    heading: 180,
+    heading: 180
   },
   charge: 0.5,
-  timestamp: now(),
+  timestamp: now()
 }
 
 // TODO Inherit all of these from mds-test-data
@@ -80,7 +80,7 @@ before((done) => {
       event_type: VEHICLE_EVENTS.provider_pick_up,
       recorded: testTimestampNow - 90,
       timestamp: testTimestampNow - 90,
-      telemetry: TEST_TELEMETRY,
+      telemetry: TEST_TELEMETRY
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -89,7 +89,7 @@ before((done) => {
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 80,
       timestamp: testTimestampNow - 80,
-      telemetry: TEST_TELEMETRY,
+      telemetry: TEST_TELEMETRY
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -98,7 +98,7 @@ before((done) => {
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 70,
       timestamp: testTimestampNow - 70,
-      telemetry: TEST_TELEMETRY,
+      telemetry: TEST_TELEMETRY
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -106,7 +106,7 @@ before((done) => {
       event_type: VEHICLE_EVENTS.provider_pick_up,
       recorded: testTimestampNow - 60,
       timestamp: testTimestampNow - 60,
-      telemetry: TEST_TELEMETRY,
+      telemetry: TEST_TELEMETRY
     }, // BEGIN BAD TRANSITIONS
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -114,7 +114,7 @@ before((done) => {
       event_type: VEHICLE_EVENTS.service_start,
       recorded: testTimestampNow - 50,
       timestamp: testTimestampNow - 50,
-      telemetry: TEST_TELEMETRY,
+      telemetry: TEST_TELEMETRY
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -123,7 +123,7 @@ before((done) => {
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 40,
       timestamp: testTimestampNow - 40,
-      telemetry: TEST_TELEMETRY,
+      telemetry: TEST_TELEMETRY
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -132,7 +132,7 @@ before((done) => {
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 30,
       timestamp: testTimestampNow - 30,
-      telemetry: TEST_TELEMETRY,
+      telemetry: TEST_TELEMETRY
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -140,8 +140,8 @@ before((done) => {
       event_type: VEHICLE_EVENTS.provider_pick_up,
       recorded: testTimestampNow - 20,
       timestamp: testTimestampNow - 20,
-      telemetry: TEST_TELEMETRY,
-    },
+      telemetry: TEST_TELEMETRY
+    }
   ]
   const telemetry: Telemetry[] = []
   const seedData = { devices, events, telemetry }
@@ -176,7 +176,7 @@ describe('Tests API', () => {
       await agencyMiddleware(
         {
           // skip most of the middleware body with /health path
-          path: '/health',
+          path: '/health'
         } as any,
         {} as any,
         nextSpy
@@ -190,18 +190,18 @@ describe('Tests API', () => {
         return {
           send: () => {
             return statusCode
-          },
+          }
         }
       })
       /* eslint-disable @typescript-eslint/no-explicit-any */
       await agencyMiddleware(
         {
           // follow main code path & do auth logic
-          path: '/foobar',
+          path: '/foobar'
         } as any,
         {
           locals: {} /* leave claims undefined */,
-          status: statusSpy,
+          status: statusSpy
         } as any,
         () => {
           return null

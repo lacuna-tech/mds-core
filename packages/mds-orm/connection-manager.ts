@@ -48,6 +48,6 @@ export const ConnectionManager = (options: ConnectionOptions[] = Connections()) 
     initialize,
     getReadOnlyConnection,
     getReadWriteConnection,
-    shutdown,
+    shutdown
   }
 }

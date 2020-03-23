@@ -33,7 +33,7 @@ import {
   getTripCountsSinceHandler,
   getEventCountsPerProviderSinceHandler,
   getTelemetryCountsPerProviderSinceHandler,
-  getConformanceLast24HoursHandler,
+  getConformanceLast24HoursHandler
 } from './request-handlers'
 
 async function agencyMiddleware(req: DailyApiRequest, res: DailyApiResponse, next: Function) {
@@ -47,7 +47,7 @@ async function agencyMiddleware(req: DailyApiRequest, res: DailyApiResponse, nex
         if (req.path.includes('/admin/')) {
           if (!scope || !scope.includes('admin:all')) {
             return res.status(403).send({
-              result: `no admin access without admin:all scope (${scope})`,
+              result: `no admin access without admin:all scope (${scope})`
             })
           }
         }
@@ -56,13 +56,13 @@ async function agencyMiddleware(req: DailyApiRequest, res: DailyApiResponse, nex
           if (!isUUID(provider_id)) {
             await log.warn(req.originalUrl, 'bogus provider_id', provider_id)
             return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a UUID`,
+              result: `invalid provider_id ${provider_id} is not a UUID`
             })
           }
 
           if (!isProviderId(provider_id)) {
             return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a known provider`,
+              result: `invalid provider_id ${provider_id} is not a known provider`
             })
           }
 
@@ -106,7 +106,7 @@ function api(app: express.Express): express.Express {
       const timeElapsed = finish - start
       await log.info(`MDS-DAILY /admin/events -> cache.readAllEvents() time elapsed: ${timeElapsed}`)
       res.status(200).send({
-        events,
+        events
       })
     }
   )

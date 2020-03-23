@@ -14,7 +14,7 @@ const pg_info: PGInfo = {
   host: env.PG_HOST || 'localhost',
   user: env.PG_USER,
   password: env.PG_PASS,
-  port: Number(env.PG_PORT) || 5432,
+  port: Number(env.PG_PORT) || 5432
 }
 
 interface DBRow {

@@ -7,7 +7,7 @@ import {
   getTelemetryCountsPerProviderSince,
   getNumVehiclesRegisteredLast24Hours,
   getNumEventsLast24Hours,
-  getConformanceLast24Hours,
+  getConformanceLast24Hours
 } from '../db-helpers'
 
 /* eslint-disable promise/avoid-new */
@@ -19,8 +19,8 @@ describe('DB helpers for API', () => {
         resolve([
           {
             provider_id: 'fake-provider-id',
-            count: 10,
-          },
+            count: 10
+          }
         ])
       })
       Sinon.replace(db, 'getTripCountsPerProviderSince', Sinon.fake.returns(fakeRows))
@@ -29,7 +29,7 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail: Sinon.fake.returns('fake'),
+        fail: Sinon.fake.returns('fake')
       })
       const expected_provider_info = { 'fake-provider-id': { trips_last_24h: 10 } }
       assert.deepStrictEqual(provider_info, expected_provider_info)
@@ -44,7 +44,7 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail,
+        fail
       })
       assert.equal(fail.called, true)
       Sinon.restore()
@@ -59,8 +59,8 @@ describe('DB helpers for API', () => {
             provider_id: 'fake-provider-id',
             count: 10,
             event_type: 'fake-event-type',
-            slacount: 10,
-          },
+            slacount: 10
+          }
         ])
       })
       Sinon.replace(db, 'getEventCountsPerProviderSince', Sinon.fake.returns(fakeRows))
@@ -69,17 +69,17 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail: Sinon.fake.returns('fake'),
+        fail: Sinon.fake.returns('fake')
       })
       const expected_provider_info = {
         'fake-provider-id': {
           event_counts_last_24h: {
-            'fake-event-type': 10,
+            'fake-event-type': 10
           },
           late_event_counts_last_24h: {
-            'fake-event-type': 10,
-          },
-        },
+            'fake-event-type': 10
+          }
+        }
       }
       assert.deepStrictEqual(provider_info, expected_provider_info)
       Sinon.restore()
@@ -93,7 +93,7 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail,
+        fail
       })
       assert.equal(fail.called, true)
       Sinon.restore()
@@ -107,8 +107,8 @@ describe('DB helpers for API', () => {
           {
             provider_id: 'fake-provider-id',
             count: 10,
-            slacount: 10,
-          },
+            slacount: 10
+          }
         ])
       })
       Sinon.replace(db, 'getTelemetryCountsPerProviderSince', Sinon.fake.returns(fakeRows))
@@ -117,13 +117,13 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail: Sinon.fake.returns('fake'),
+        fail: Sinon.fake.returns('fake')
       })
       const expected_provider_info = {
         'fake-provider-id': {
           late_telemetry_counts_last_24h: 10,
-          telemetry_counts_last_24h: 10,
-        },
+          telemetry_counts_last_24h: 10
+        }
       }
       assert.deepStrictEqual(provider_info, expected_provider_info)
       Sinon.restore()
@@ -137,7 +137,7 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail,
+        fail
       })
       assert.equal(fail.called, true)
       Sinon.restore()
@@ -151,8 +151,8 @@ describe('DB helpers for API', () => {
           resolve([
             {
               provider_id: 'fake-provider-id',
-              count: 10,
-            },
+              count: 10
+            }
           ])
         }
       )
@@ -162,12 +162,12 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail: Sinon.fake.returns('fake'),
+        fail: Sinon.fake.returns('fake')
       })
       const expected_provider_info = {
         'fake-provider-id': {
-          registered_last_24h: 10,
-        },
+          registered_last_24h: 10
+        }
       }
       assert.deepStrictEqual(provider_info, expected_provider_info)
       Sinon.restore()
@@ -181,7 +181,7 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail,
+        fail
       })
       assert.equal(fail.called, true)
       Sinon.restore()
@@ -194,8 +194,8 @@ describe('DB helpers for API', () => {
         resolve([
           {
             provider_id: 'fake-provider-id',
-            count: 10,
-          },
+            count: 10
+          }
         ])
       })
       Sinon.replace(db, 'getNumEventsLast24HoursByProvider', Sinon.fake.returns(fakeRows))
@@ -204,12 +204,12 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail: Sinon.fake.returns('fake'),
+        fail: Sinon.fake.returns('fake')
       })
       const expected_provider_info = {
         'fake-provider-id': {
-          events_last_24h: 10,
-        },
+          events_last_24h: 10
+        }
       }
       assert.deepStrictEqual(provider_info, expected_provider_info)
       Sinon.restore()
@@ -223,7 +223,7 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail,
+        fail
       })
       assert.equal(fail.called, true)
       Sinon.restore()
@@ -239,8 +239,8 @@ describe('DB helpers for API', () => {
             device_id: 'fake-device-id',
             timestamp: 42,
             event_type: 'register',
-            recorded: 42,
-          },
+            recorded: 42
+          }
         ])
       })
       Sinon.replace(db, 'getEventsLast24HoursPerProvider', Sinon.fake.returns(fakeRows))
@@ -249,12 +249,12 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail: Sinon.fake.returns('fake'),
+        fail: Sinon.fake.returns('fake')
       })
       const expected_provider_info = {
         'fake-provider-id': {
-          events_not_in_conformance: 0,
-        },
+          events_not_in_conformance: 0
+        }
       }
       assert.deepStrictEqual(provider_info, expected_provider_info)
       Sinon.restore()
@@ -268,7 +268,7 @@ describe('DB helpers for API', () => {
         start_time: 10,
         end_time: 20,
         provider_info,
-        fail,
+        fail
       })
       assert.equal(fail.called, true)
       Sinon.restore()

@@ -11,7 +11,7 @@ export const readAllVehicleIds = async (req: AgencyApiRequest, res: AgencyApiRes
   if (query_provider_id && !isUUID(query_provider_id)) {
     return res.status(400).send({
       error: 'bad_param',
-      error_description: `invalid provider_id ${query_provider_id} is not a UUID`,
+      error_description: `invalid provider_id ${query_provider_id} is not a UUID`
     })
   }
 
@@ -34,6 +34,6 @@ export const readAllVehicleIds = async (req: AgencyApiRequest, res: AgencyApiRes
   res.send({
     result: 'success',
     summary,
-    data,
+    data
   })
 }

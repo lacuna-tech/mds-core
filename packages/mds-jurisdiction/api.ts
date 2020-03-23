@@ -23,7 +23,7 @@ import {
   DeleteJurisdictionHandler,
   GetAllJurisdictionsHandler,
   GetOneJurisdictionHandler,
-  UpdateJurisdictionHandler,
+  UpdateJurisdictionHandler
 } from './handlers'
 
 export const api = (app: express.Express): express.Express =>

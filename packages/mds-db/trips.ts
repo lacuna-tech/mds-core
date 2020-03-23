@@ -61,7 +61,7 @@ export async function readTripIds(params: Partial<ReadTripIdsQueryParams> = {}):
     const res2 = await client.query(selectSql, selectVals)
     return {
       tripIds: res2.rows.map((row) => row.trip_id),
-      count,
+      count
     }
   } catch (err) {
     await log.error('readTripIds error', err)

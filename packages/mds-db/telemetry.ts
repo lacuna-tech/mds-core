@@ -5,7 +5,7 @@ import {
   now,
   csv,
   days,
-  yesterday,
+  yesterday
 } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 import { TelemetryRecord } from './types'
@@ -52,7 +52,7 @@ export async function writeTelemetry(telemetries: Telemetry[]): Promise<Recorded
               telemetry.device_id === recorded_telemetry.device_id &&
               telemetry.timestamp === recorded_telemetry.timestamp
           ),
-          ...recorded_telemetry,
+          ...recorded_telemetry
         }) as Recorded<Telemetry>
     )
   } catch (err) {

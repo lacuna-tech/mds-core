@@ -31,7 +31,7 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_EVENT,
   VEHICLE_EVENTS,
-  VEHICLE_STATUSES,
+  VEHICLE_STATUSES
 } from '@mds-core/mds-types'
 import log from '@mds-core/mds-logger'
 import { now } from '@mds-core/mds-utils'
@@ -133,7 +133,7 @@ export async function readEvents(
     const result: { count: number; events: Recorded<VehicleEvent>[] } = await db.readEvents({
       device_id,
       start_time,
-      end_time,
+      end_time
     })
     return result.events
   }
@@ -236,25 +236,25 @@ export async function getVehicles(
     links: {
       first: fmt({
         skip: 0,
-        take,
+        take
       }),
       last: fmt({
         skip: lastSkip,
-        take,
+        take
       }),
       prev: noPrev
         ? null
         : fmt({
             skip: skip - take,
-            take,
+            take
           }),
       next: noNext
         ? null
         : fmt({
             skip: skip + take,
-            take,
-          }),
+            take
+          })
     },
-    vehicles: devices,
+    vehicles: devices
   }
 }

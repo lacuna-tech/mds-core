@@ -19,7 +19,7 @@ export const expectedTransitions: {
     trip_enter: true,
     trip_leave: false,
     trip_end: false,
-    deregister: true,
+    deregister: true
   },
   service_start: {
     register: false,
@@ -35,7 +35,7 @@ export const expectedTransitions: {
     trip_enter: false,
     trip_leave: false,
     trip_end: false,
-    deregister: true,
+    deregister: true
   },
   service_end: {
     register: false,
@@ -51,7 +51,7 @@ export const expectedTransitions: {
     trip_enter: false,
     trip_leave: false,
     trip_end: false,
-    deregister: true,
+    deregister: true
   },
   provider_drop_off: {
     register: false,
@@ -67,7 +67,7 @@ export const expectedTransitions: {
     trip_enter: false,
     trip_leave: false,
     trip_end: false,
-    deregister: true,
+    deregister: true
   },
   provider_pick_up: {
     register: false,
@@ -83,7 +83,7 @@ export const expectedTransitions: {
     trip_enter: true,
     trip_leave: false,
     trip_end: false,
-    deregister: true,
+    deregister: true
   },
   agency_pick_up: {
     register: false,
@@ -99,7 +99,7 @@ export const expectedTransitions: {
     trip_enter: true,
     trip_leave: false,
     trip_end: false,
-    deregister: true,
+    deregister: true
   },
   agency_drop_off: {
     register: false,
@@ -115,7 +115,7 @@ export const expectedTransitions: {
     trip_enter: false,
     trip_leave: false,
     trip_end: false,
-    deregister: true,
+    deregister: true
   },
   reserve: {
     register: false,
@@ -131,7 +131,7 @@ export const expectedTransitions: {
     trip_enter: false,
     trip_leave: false,
     trip_end: false,
-    deregister: false,
+    deregister: false
   },
   cancel_reservation: {
     register: false,
@@ -147,7 +147,7 @@ export const expectedTransitions: {
     trip_enter: false,
     trip_leave: false,
     trip_end: false,
-    deregister: true,
+    deregister: true
   },
   trip_start: {
     register: false,
@@ -163,7 +163,7 @@ export const expectedTransitions: {
     trip_enter: false,
     trip_leave: true,
     trip_end: true,
-    deregister: false,
+    deregister: false
   },
   trip_enter: {
     register: false,
@@ -179,7 +179,7 @@ export const expectedTransitions: {
     trip_enter: false,
     trip_leave: true,
     trip_end: true,
-    deregister: false,
+    deregister: false
   },
   trip_leave: {
     register: false,
@@ -195,7 +195,7 @@ export const expectedTransitions: {
     trip_enter: true,
     trip_leave: false,
     trip_end: false,
-    deregister: true,
+    deregister: true
   },
   trip_end: {
     register: false,
@@ -211,7 +211,7 @@ export const expectedTransitions: {
     trip_enter: false,
     trip_leave: false,
     trip_end: false,
-    deregister: true,
+    deregister: true
   },
   deregister: {
     register: true,
@@ -227,6 +227,6 @@ export const expectedTransitions: {
     trip_enter: false,
     trip_leave: false,
     trip_end: false,
-    deregister: false,
-  },
+    deregister: false
+  }
 }

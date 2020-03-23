@@ -33,7 +33,7 @@ import {
   isValidAuditNote,
   isValidNumber,
   ValidationError,
-  validateEvent,
+  validateEvent
 } from '../validators'
 
 describe('Tests validators', () => {
@@ -191,7 +191,7 @@ describe('Tests validators', () => {
           provider_id: 'b54c08c7-884a-4c5f-b9ed-2c7dc24638cb',
           event_type: 'deregister',
           telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-          timestamp: Date.now(),
+          timestamp: Date.now()
         }),
       ValidationError
     )
@@ -202,7 +202,7 @@ describe('Tests validators', () => {
           provider_id: 'b54c08c7-884a-4c5f-b9ed-2c7dc24638cb',
           event_type: 'provider_pick_up',
           telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-          timestamp: Date.now(),
+          timestamp: Date.now()
         }),
       ValidationError
     )
@@ -213,7 +213,7 @@ describe('Tests validators', () => {
           provider_id: 'b54c08c7-884a-4c5f-b9ed-2c7dc24638cb',
           event_type: 'service_end',
           telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-          timestamp: Date.now(),
+          timestamp: Date.now()
         }),
       ValidationError
     )
@@ -227,7 +227,7 @@ describe('Tests validators', () => {
             event_type: 'deregister',
             event_type_reason,
             telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-            timestamp: Date.now(),
+            timestamp: Date.now()
           })
         )
         .is(true)
@@ -242,7 +242,7 @@ describe('Tests validators', () => {
             event_type: 'provider_pick_up',
             event_type_reason,
             telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-            timestamp: Date.now(),
+            timestamp: Date.now()
           })
         )
         .is(true)
@@ -257,7 +257,7 @@ describe('Tests validators', () => {
             event_type: 'service_end',
             event_type_reason,
             telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-            timestamp: Date.now(),
+            timestamp: Date.now()
           })
         )
         .is(true)

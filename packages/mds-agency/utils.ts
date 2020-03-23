@@ -20,7 +20,7 @@ import {
   Timestamp,
   Recorded,
   VEHICLE_STATUS,
-  VEHICLE_EVENT,
+  VEHICLE_EVENT
 } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import log from '@mds-core/mds-logger'
@@ -33,27 +33,27 @@ export function badDevice(device: Device): Partial<{ error: string; error_descri
   if (!device.device_id) {
     return {
       error: 'missing_param',
-      error_description: 'missing device_id',
+      error_description: 'missing device_id'
     }
   }
   if (!isUUID(device.device_id)) {
     return {
       error: 'bad_param',
-      error_description: `device_id ${device.device_id} is not a UUID`,
+      error_description: `device_id ${device.device_id} is not a UUID`
     }
   }
   // propulsion is a list
   if (!Array.isArray(device.propulsion)) {
     return {
       error: 'missing_param',
-      error_description: 'missing propulsion types',
+      error_description: 'missing propulsion types'
     }
   }
   for (const prop of device.propulsion) {
     if (!isEnum(PROPULSION_TYPES, prop)) {
       return {
         error: 'bad_param',
-        error_description: `invalid propulsion type ${prop}`,
+        error_description: `invalid propulsion type ${prop}`
       }
     }
   }
@@ -67,26 +67,26 @@ export function badDevice(device: Device): Partial<{ error: string; error_descri
     if (!Number.isInteger(device.year)) {
       return {
         error: 'bad_param',
-        error_description: `invalid device year ${device.year} is not an integer`,
+        error_description: `invalid device year ${device.year} is not an integer`
       }
     }
     if (device.year < 1980 || device.year > 2020) {
       return {
         error: 'bad_param',
-        error_description: `invalid device year ${device.year} is out of range`,
+        error_description: `invalid device year ${device.year} is out of range`
       }
     }
   }
   if (device.type === undefined) {
     return {
       error: 'missing_param',
-      error_description: 'missing enum field "type"',
+      error_description: 'missing enum field "type"'
     }
   }
   if (!isEnum(VEHICLE_TYPES, device.type)) {
     return {
       error: 'bad_param',
-      error_description: `invalid device type ${device.type}`,
+      error_description: `invalid device type ${device.type}`
     }
   }
   // if (device.mfgr === undefined) {
@@ -164,26 +164,26 @@ export async function getVehicles(
     links: {
       first: fmt({
         skip: 0,
-        take,
+        take
       }),
       last: fmt({
         skip: lastSkip,
-        take,
+        take
       }),
       prev: noPrev
         ? null
         : fmt({
             skip: skip - take,
-            take,
+            take
           }),
       next: noNext
         ? null
         : fmt({
             skip: skip + take,
-            take,
-          }),
+            take
+          })
     },
-    vehicles: devices,
+    vehicles: devices
   }
 }
 
@@ -191,14 +191,14 @@ const usBounds = {
   latMax: 49.45,
   latMin: 24.74,
   lonMax: -66.94,
-  lonMin: -124.79,
+  lonMin: -124.79
 }
 
 export function badTelemetry(telemetry: Telemetry | null | undefined): ErrorObject | null {
   if (!telemetry) {
     return {
       error: 'missing_param',
-      error_description: 'invalid missing telemetry',
+      error_description: 'invalid missing telemetry'
     }
   }
 
@@ -207,7 +207,7 @@ export function badTelemetry(telemetry: Telemetry | null | undefined): ErrorObje
   if (typeof gps !== 'object') {
     return {
       error: 'missing_param',
-      error_description: 'invalid missing gps',
+      error_description: 'invalid missing gps'
     }
   }
 
@@ -218,55 +218,55 @@ export function badTelemetry(telemetry: Telemetry | null | undefined): ErrorObje
   if (!isUUID(device_id)) {
     return {
       error: 'missing_param',
-      error_description: 'no device_id included in telemetry',
+      error_description: 'no device_id included in telemetry'
     }
   }
   if (typeof lat !== 'number' || Number.isNaN(lat) || lat < usBounds.latMin || lat > usBounds.latMax) {
     return {
       error: 'bad_param',
-      error_description: `invalid lat ${lat}`,
+      error_description: `invalid lat ${lat}`
     }
   }
   if (typeof lng !== 'number' || Number.isNaN(lng) || lng < usBounds.lonMin || lng > usBounds.lonMax) {
     return {
       error: 'bad_param',
-      error_description: `invalid lng ${lng}`,
+      error_description: `invalid lng ${lng}`
     }
   }
   if (altitude !== undefined && !isFloat(altitude)) {
     return {
       error: 'bad_param',
-      error_description: `invalid altitude ${altitude}`,
+      error_description: `invalid altitude ${altitude}`
     }
   }
   if (accuracy !== undefined && !isFloat(accuracy)) {
     return {
       error: 'bad_param',
-      error_description: `invalid accuracy ${accuracy}`,
+      error_description: `invalid accuracy ${accuracy}`
     }
   }
   if (speed !== undefined && !isFloat(speed)) {
     return {
       error: 'bad_param',
-      error_description: `invalid speed ${speed}`,
+      error_description: `invalid speed ${speed}`
     }
   }
   if (satellites !== undefined && satellites !== null && !Number.isInteger(satellites)) {
     return {
       error: 'bad_param',
-      error_description: `invalid satellites ${satellites}`,
+      error_description: `invalid satellites ${satellites}`
     }
   }
   if (charge !== undefined && !isPct(charge)) {
     return {
       error: 'bad_param',
-      error_description: `invalid charge ${charge}`,
+      error_description: `invalid charge ${charge}`
     }
   }
   if (!isTimestamp(timestamp)) {
     return {
       error: 'bad_param',
-      error_description: `invalid timestamp ${timestamp} (note: should be in milliseconds)`,
+      error_description: `invalid timestamp ${timestamp} (note: should be in milliseconds)`
     }
   }
   return null
@@ -277,33 +277,33 @@ export async function badEvent(event: VehicleEvent) {
   if (event.timestamp === undefined) {
     return {
       error: 'missing_param',
-      error_description: 'missing enum field "timestamp"',
+      error_description: 'missing enum field "timestamp"'
     }
   }
   if (!isTimestamp(event.timestamp)) {
     return {
       error: 'bad_param',
-      error_description: `invalid timestamp ${event.timestamp}`,
+      error_description: `invalid timestamp ${event.timestamp}`
     }
   }
   if (event.event_type === undefined) {
     return {
       error: 'missing_param',
-      error_description: 'missing enum field "event_type"',
+      error_description: 'missing enum field "event_type"'
     }
   }
 
   if (!isEnum(VEHICLE_EVENTS, event.event_type)) {
     return {
       error: 'bad_param',
-      error_description: `invalid event_type ${event.event_type}`,
+      error_description: `invalid event_type ${event.event_type}`
     }
   }
 
   if (event.event_type_reason && !isEnum(VEHICLE_REASONS, event.event_type_reason)) {
     return {
       error: 'bad_param',
-      error_description: `invalid event_type_reason ${event.event_type_reason}`,
+      error_description: `invalid event_type_reason ${event.event_type_reason}`
     }
   }
 
@@ -317,7 +317,7 @@ export async function badEvent(event: VehicleEvent) {
   if (trip_id !== null && trip_id !== undefined && !isUUID(event.trip_id)) {
     return {
       error: 'bad_param',
-      error_description: `invalid trip_id ${event.trip_id} is not a UUID`,
+      error_description: `invalid trip_id ${event.trip_id} is not a UUID`
     }
   }
 
@@ -325,7 +325,7 @@ export async function badEvent(event: VehicleEvent) {
     if (!trip_id) {
       return {
         error: 'missing_param',
-        error_description: 'missing trip_id',
+        error_description: 'missing trip_id'
       }
     }
     return null
@@ -399,7 +399,7 @@ export async function writeTelemetry(telemetry: Telemetry | Telemetry[]) {
     await Promise.all([
       cache.writeTelemetry(recorded_telemetry),
       stream.writeTelemetry(recorded_telemetry),
-      socket.writeTelemetry(recorded_telemetry),
+      socket.writeTelemetry(recorded_telemetry)
     ])
   } catch (err) {
     await log.warn(`Failed to write telemetry to cache/socket/stream, ${err}`)
@@ -437,7 +437,7 @@ export async function validateDeviceId(req: express.Request, res: express.Respon
     await log.warn('agency: missing device_id', req.originalUrl)
     res.status(400).send({
       error: 'missing_param',
-      error_description: 'missing device_id',
+      error_description: 'missing device_id'
     })
     return
   }
@@ -445,7 +445,7 @@ export async function validateDeviceId(req: express.Request, res: express.Respon
     await log.warn('agency: bogus device_id', device_id, req.originalUrl)
     res.status(400).send({
       error: 'bad_param',
-      error_description: `invalid device_id ${device_id} is not a UUID`,
+      error_description: `invalid device_id ${device_id} is not a UUID`
     })
     return
   }
@@ -463,7 +463,7 @@ export async function writeRegisterEvent(device: Device, recorded: number) {
     trip_id: null,
     recorded,
     telemetry_timestamp: undefined,
-    service_area_id: null,
+    service_area_id: null
   }
   try {
     const recorded_event = await db.writeEvent(event)
@@ -483,7 +483,7 @@ export function computeCompositeVehicleData(payload: VehiclePayload) {
   const { device, event, telemetry } = payload
 
   const composite: Partial<Device & { prev_event?: string; updated?: Timestamp; gps?: Recorded<Telemetry>['gps'] }> = {
-    ...device,
+    ...device
   }
 
   if (event) {

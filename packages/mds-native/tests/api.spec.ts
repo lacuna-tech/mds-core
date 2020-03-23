@@ -43,12 +43,12 @@ describe('Verify API', () => {
         provider_id,
         device_id,
         timestamp,
-        gps: { lat: 37.4230723, lng: -122.13742939999999 },
+        gps: { lat: 37.4230723, lng: -122.13742939999999 }
       },
       telemetry_timestamp: timestamp,
       trip_id: uuid(),
       timestamp,
-      recorded: timestamp,
+      recorded: timestamp
     }
     db.writeDevice({
       device_id,
@@ -56,15 +56,15 @@ describe('Verify API', () => {
       vehicle_id: 'test-vehicle',
       propulsion: [PROPULSION_TYPES.electric],
       type: VEHICLE_TYPES.scooter,
-      recorded: timestamp,
+      recorded: timestamp
     }).then(() => {
       db.writeEvent({
         ...baseEvent,
-        ...{ timestamp: olderTimestamp, telemetry_timestamp: olderTimestamp },
+        ...{ timestamp: olderTimestamp, telemetry_timestamp: olderTimestamp }
       })
       db.writeEvent({
         ...baseEvent,
-        ...{ timestamp: oldTimestamp, telemetry_timestamp: oldTimestamp },
+        ...{ timestamp: oldTimestamp, telemetry_timestamp: oldTimestamp }
       })
       db.writeEvent(baseEvent).then(() => done())
     })

@@ -114,7 +114,7 @@ export async function writePolicy(policy: Policy): Promise<Recorded<Policy>> {
   )}) RETURNING *`
   const values = vals_list(schema.TABLE_COLUMNS.policies, { ...policy, policy_json: policy })
   const {
-    rows: [recorded_policy],
+    rows: [recorded_policy]
   }: { rows: Recorded<Policy>[] } = await client.query(sql, values)
   return { ...policy, ...recorded_policy }
 }
@@ -211,14 +211,14 @@ export async function writePolicyMetadata(policy_metadata: PolicyMetadata) {
   )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.policy_metadata)}) RETURNING *`
   const values = vals_list(schema.TABLE_COLUMNS.policy_metadata, {
     policy_id: policy_metadata.policy_id,
-    policy_metadata: policy_metadata.policy_metadata,
+    policy_metadata: policy_metadata.policy_metadata
   })
   const {
-    rows: [recorded_metadata],
+    rows: [recorded_metadata]
   }: { rows: Recorded<PolicyMetadata>[] } = await client.query(sql, values)
   return {
     ...policy_metadata,
-    ...recorded_metadata,
+    ...recorded_metadata
   }
 }
 
@@ -230,11 +230,11 @@ export async function updatePolicyMetadata(policy_metadata: PolicyMetadata) {
       SET policy_metadata = '${JSON.stringify(policy_metadata.policy_metadata)}'
       WHERE policy_id = '${policy_metadata.policy_id}'`
     const {
-      rows: [recorded_metadata],
+      rows: [recorded_metadata]
     }: { rows: Recorded<PolicyMetadata>[] } = await client.query(sql)
     return {
       ...policy_metadata,
-      ...recorded_metadata,
+      ...recorded_metadata
     }
   } catch (err) {
     await log.error(err)

@@ -38,15 +38,15 @@ const about = () => {
       npm_package_git_branch: branch,
       npm_package_git_commit: commit,
       npm_package_build_date: date,
-      MAINTENANCE: maintenance,
-    },
+      MAINTENANCE: maintenance
+    }
   } = process
   return {
     name,
     version,
     build: { date, branch, commit },
     node,
-    status: maintenance ? `${maintenance} (MAINTENANCE)` : 'Running',
+    status: maintenance ? `${maintenance} (MAINTENANCE)` : 'Running'
   }
 }
 
@@ -61,7 +61,7 @@ export const RequestLoggingMiddleware = (): express.RequestHandler =>
         tokens.res(req, res, 'content-length'),
         '-',
         tokens['response-time'](req, res),
-        'ms',
+        'ms'
       ].join(' '),
     {
       skip: (req: ApiRequest, res: ApiResponse) => {
@@ -70,7 +70,7 @@ export const RequestLoggingMiddleware = (): express.RequestHandler =>
         return res.statusCode < Number(API_REQUEST_LOG_LEVEL)
       },
       // Use logger, but remove extra line feed added by morgan stream option
-      stream: { write: (msg) => logger.info(msg.slice(0, -1)) },
+      stream: { write: (msg) => logger.info(msg.slice(0, -1)) }
     }
   )
 
@@ -94,7 +94,7 @@ export const MaintenanceModeMiddleware = () => (req: ApiRequest, res: ApiRespons
 
 type AuthorizerMiddlewareOptions = { authorizer: ApiAuthorizer }
 export const AuthorizerMiddleware = ({
-  authorizer = AuthorizationHeaderApiAuthorizer,
+  authorizer = AuthorizationHeaderApiAuthorizer
 }: Partial<AuthorizerMiddlewareOptions> = {}) => (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
   const claims = authorizer(req)
   res.locals.claims = claims
@@ -128,18 +128,18 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
                 return {
                   ...info,
                   version: key === 'version' ? val : info.version,
-                  q: key === 'q' ? Number(val) : info.q,
+                  q: key === 'q' ? Number(val) : info.q
                 }
               },
               { version: preferred, q: 1.0 }
-            ),
+            )
           })
         : accept
     }, null) ?? [
       {
         version: preferred,
-        q: 1.0,
-      },
+        q: 1.0
+      }
     ]
 
     // Determine if any of the requested versions are supported
@@ -154,7 +154,7 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
             return version
           }
           return latest
-        }, undefined),
+        }, undefined)
       }))
       .filter((info) => info.latest !== undefined)
 
@@ -170,7 +170,7 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
 
     // 406 - Not Acceptable
     return res.sendStatus(406)
-  },
+  }
 })
 
 export const AboutRequestHandler = async (req: ApiRequest, res: ApiResponse) => {
@@ -182,7 +182,7 @@ export const HealthRequestHandler = async (req: ApiRequest, res: ApiResponse) =>
     ...about(),
     process: process.pid,
     uptime: process.uptime(),
-    memory: process.memoryUsage(),
+    memory: process.memoryUsage()
   })
 }
 
@@ -192,7 +192,7 @@ export const HttpServer = (port: string | number, api: express.Express) => {
     npm_package_version,
     npm_package_git_commit,
     HTTP_KEEP_ALIVE_TIMEOUT = 15000,
-    HTTP_HEADERS_TIMEOUT = 20000,
+    HTTP_HEADERS_TIMEOUT = 20000
   } = process.env
 
   const server = api.listen(Number(port), () => {

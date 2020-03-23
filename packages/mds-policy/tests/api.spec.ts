@@ -40,7 +40,7 @@ import {
   START_ONE_MONTH_AGO,
   START_ONE_WEEK_AGO,
   PROVIDER_SCOPES,
-  GEOGRAPHY2_UUID,
+  GEOGRAPHY2_UUID
 } from '@mds-core/mds-test-data'
 import { la_city_boundary } from './la-city-boundary'
 import { api } from '../api'
@@ -104,7 +104,7 @@ describe('Tests app', () => {
     await db.writeGeography({
       name: 'Los Angeles',
       geography_id: GEOGRAPHY2_UUID,
-      geography_json: veniceSpecialOpsZone,
+      geography_json: veniceSpecialOpsZone
     })
     await db.writePolicy(POLICY2_JSON)
     await db.publishPolicy(POLICY2_JSON.policy_id)

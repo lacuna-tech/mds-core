@@ -9,7 +9,7 @@ import {
   ValidationError,
   AlreadyPublishedError,
   InsufficientPermissionsError,
-  BadParamsError,
+  BadParamsError
 } from '@mds-core/mds-utils'
 import { geographyValidationDetails } from '@mds-core/mds-schema-validators'
 import log from '@mds-core/mds-logger'

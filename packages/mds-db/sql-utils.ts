@@ -56,7 +56,7 @@ export function configureClient(pg_info: PGInfo) {
     host: pg_info.host || 'localhost',
     password: pg_info.password,
     port: pg_info.port || 5432,
-    client_type: pg_info.client_type,
+    client_type: pg_info.client_type
   })
 
   client.on('end', () => {

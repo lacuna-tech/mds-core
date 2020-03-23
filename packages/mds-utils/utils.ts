@@ -29,7 +29,7 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_STATUS,
   BBox,
-  VEHICLE_EVENT,
+  VEHICLE_EVENT
 } from '@mds-core/mds-types'
 import { TelemetryRecord } from '@mds-core/mds-db/types'
 import log from '@mds-core/mds-logger'
@@ -200,7 +200,7 @@ function calcBBox(geometry: Geometry): BBox {
     latMin,
     latMax,
     lngMin,
-    lngMax,
+    lngMax
   }
 }
 
@@ -302,7 +302,7 @@ function makePointInShape(shape: Geometry): { lat: number; lng: number } {
     if (pointInShape(pt, shapeToCreate)) {
       return {
         lng: pt[0],
-        lat: pt[1],
+        lat: pt[1]
       }
     }
     tries += 1
@@ -397,7 +397,7 @@ function parseBBox(bbox_str: string): { lngMin: number; lngMax: number; latMin: 
     lngMin: Math.min(lng1, lng2),
     lngMax: Math.max(lng1, lng2),
     latMin: Math.min(lat1, lat2),
-    latMax: Math.max(lat1, lat2),
+    latMax: Math.max(lat1, lat2)
   }
 }
 
@@ -471,7 +471,7 @@ function convertTelemetryToTelemetryRecord(telemetry: Telemetry): TelemetryRecor
     heading,
     speed,
     accuracy,
-    recorded,
+    recorded
   }
 }
 
@@ -479,7 +479,7 @@ function convertTelemetryRecordToTelemetry(telemetryRecord: TelemetryRecord): Te
   const { lat, lng, altitude, heading, speed, accuracy, ...props } = telemetryRecord
   return {
     ...props,
-    gps: { lat, lng, altitude, heading, speed, accuracy },
+    gps: { lat, lng, altitude, heading, speed, accuracy }
   }
 }
 
@@ -640,5 +640,5 @@ export {
   moved,
   normalizeToArray,
   parseRelative,
-  getCurrentDate,
+  getCurrentDate
 }

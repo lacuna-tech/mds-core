@@ -10,7 +10,7 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_EVENT,
   TripsStats,
-  Device,
+  Device
 } from '@mds-core/mds-types'
 import areas from 'ladot-service-areas'
 import { DailyApiRequest, DailyApiResponse, ProviderInfo } from './types'
@@ -21,7 +21,7 @@ import {
   getEventCountsPerProviderSince,
   getNumEventsLast24Hours,
   getTelemetryCountsPerProviderSince,
-  getConformanceLast24Hours,
+  getConformanceLast24Hours
 } from './db-helpers'
 import { startAndEnd, categorizeTrips, getMaps } from './utils'
 
@@ -35,7 +35,7 @@ export async function dbHelperFail(err: Error | string): Promise<void> {
 
 const SERVER_ERROR = {
   error: 'server_error',
-  error_description: 'an internal server error has occurred and been logged',
+  error_description: 'an internal server error has occurred and been logged'
 }
 
 type Item = Pick<Device, 'provider_id' | 'device_id'>
@@ -69,7 +69,7 @@ export async function getVehicleCounts(req: DailyApiRequest, res: DailyApiRespon
   async function fail(err: Error | string): Promise<void> {
     await log.error('/admin/vehicle_counts fail', err)
     res.status(500).send({
-      error: err,
+      error: err
     })
   }
 
@@ -100,7 +100,7 @@ export async function getVehicleCounts(req: DailyApiRequest, res: DailyApiRespon
         areas: {},
         areas_12h: {},
         areas_24h: {},
-        areas_48h: {},
+        areas_48h: {}
       }
     })
     await log.info('/admin/vehicle_counts', JSON.stringify(stats))
@@ -177,7 +177,7 @@ export async function getLastDayTripsByProvider(req: DailyApiRequest, res: Daily
           acc[tid] = acc[tid] || {
             provider_id: row.provider_id,
             trip_id: tid,
-            eventTypes: {},
+            eventTypes: {}
           }
           acc[tid].eventTypes[row.timestamp] = row.event_type
           return acc
@@ -213,7 +213,7 @@ export async function getLastDayStatsByProvider(req: DailyApiRequest, res: Daily
       getTripCountsSince(dbHelperArgs),
       getEventCountsPerProviderSince(dbHelperArgs),
       getTelemetryCountsPerProviderSince(dbHelperArgs),
-      getConformanceLast24Hours(dbHelperArgs),
+      getConformanceLast24Hours(dbHelperArgs)
     ])
     const finish = now()
     const timeElapsed = finish - start

@@ -17,7 +17,7 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_EVENT,
   VEHICLE_REASON,
-  UUID,
+  UUID
 } from '@mds-core/mds-types'
 import urls from 'url'
 import {
@@ -30,7 +30,7 @@ import {
   getServiceArea,
   writeRegisterEvent,
   readPayload,
-  computeCompositeVehicleData,
+  computeCompositeVehicleData
 } from './utils'
 
 export const getAllServiceAreas = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
@@ -38,13 +38,13 @@ export const getAllServiceAreas = async (req: AgencyApiRequest, res: AgencyApiRe
     const serviceAreas = await areas.readServiceAreas()
     await log.info('readServiceAreas (all)', serviceAreas.length)
     return res.status(200).send({
-      service_areas: serviceAreas,
+      service_areas: serviceAreas
     })
   } catch (err) {
     /* istanbul ignore next */
     await log.error('failed to read service areas', err)
     return res.status(404).send({
-      result: 'not found',
+      result: 'not found'
     })
   }
 }
@@ -54,7 +54,7 @@ export const getServiceAreaById = async (req: AgencyApiRequest, res: AgencyApiRe
 
   if (!isUUID(service_area_id)) {
     return res.status(400).send({
-      result: `invalid service_area_id ${service_area_id} is not a UUID`,
+      result: `invalid service_area_id ${service_area_id} is not a UUID`
     })
   }
 
@@ -64,17 +64,17 @@ export const getServiceAreaById = async (req: AgencyApiRequest, res: AgencyApiRe
     if (serviceAreas && serviceAreas.length > 0) {
       await log.info('readServiceAreas (one)')
       return res.status(200).send({
-        service_areas: serviceAreas,
+        service_areas: serviceAreas
       })
     }
   } catch {
     return res.status(404).send({
-      result: `${service_area_id} not found`,
+      result: `${service_area_id} not found`
     })
   }
 
   return res.status(404).send({
-    result: `${service_area_id} not found`,
+    result: `${service_area_id} not found`
   })
 }
 
@@ -97,7 +97,7 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiRespo
     mfgr,
     model,
     recorded,
-    status,
+    status
   }
 
   try {
@@ -131,7 +131,7 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiRespo
     if (String(err).includes('duplicate')) {
       res.status(409).send({
         error: 'already_registered',
-        error_description: 'A vehicle with this device_id is already registered',
+        error_description: 'A vehicle with this device_id is already registered'
       })
     } else if (String(err).includes('db')) {
       await log.error(providerName(res.locals.provider_id), 'register vehicle failed:', err)
@@ -155,7 +155,7 @@ export const getVehicleById = async (req: AgencyApiRequest, res: AgencyApiRespon
   const payload = await readPayload(store, device_id)
   if (!payload.device || (provider_id && payload.device.provider_id !== provider_id)) {
     res.status(404).send({
-      error: 'not_found',
+      error: 'not_found'
     })
     return
   }
@@ -173,7 +173,7 @@ export const getVehiclesByProvider = async (req: AgencyApiRequest, res: AgencyAp
   const url = urls.format({
     protocol: req.get('x-forwarded-proto') || req.protocol,
     host: req.get('host'),
-    pathname: req.path,
+    pathname: req.path
   })
 
   // TODO: Replace with express middleware
@@ -197,15 +197,15 @@ export async function updateVehicleFail(
 ) {
   if (String(err).includes('not found')) {
     res.status(404).send({
-      error: 'not_found',
+      error: 'not_found'
     })
   } else if (String(err).includes('invalid')) {
     res.status(400).send({
-      error: 'invalid_data',
+      error: 'invalid_data'
     })
   } else if (!provider_id) {
     res.status(404).send({
-      error: 'not_found',
+      error: 'not_found'
     })
   } else {
     await log.error(providerName(provider_id), `fail PUT /vehicles/${device_id}`, req.body, err)
@@ -219,7 +219,7 @@ export const updateVehicle = async (req: AgencyApiRequest, res: AgencyApiRespons
   const { vehicle_id } = req.body
 
   const update = {
-    vehicle_id,
+    vehicle_id
   }
 
   const { provider_id } = res.locals
@@ -234,7 +234,7 @@ export const updateVehicle = async (req: AgencyApiRequest, res: AgencyApiRespons
       await Promise.all([cache.writeDevice(device), stream.writeDevice(device)])
       return res.status(201).send({
         result: 'success',
-        vehicle: device,
+        vehicle: device
       })
     }
   } catch (err) {
@@ -260,7 +260,7 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
     trip_id: req.body.trip_id,
     recorded,
     telemetry_timestamp: undefined, // added for diagnostic purposes
-    service_area_id: null, // added for diagnostic purposes
+    service_area_id: null // added for diagnostic purposes
   }
 
   try {
@@ -279,7 +279,7 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
         result: 'success',
         recorded,
         device_id,
-        status: EVENT_STATUS_MAP[event.event_type],
+        status: EVENT_STATUS_MAP[event.event_type]
       })
     }
     const delta = now() - recorded
@@ -299,13 +299,13 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
       await log.info(name, 'duplicate event', event.event_type)
       res.status(409).send({
         error: 'duplicate_event',
-        error_description: 'an event with this device_id and timestamp has already been received',
+        error_description: 'an event with this device_id and timestamp has already been received'
       })
     } else if (message.includes('not found') || message.includes('unregistered')) {
       await log.info(name, 'event for unregistered', event.device_id, event.event_type)
       res.status(400).send({
         error: 'unregistered',
-        error_description: 'the specified device_id has not been registered',
+        error_description: 'the specified device_id has not been registered'
       })
     } else {
       await log.error('post event fail:', event, message)
@@ -369,7 +369,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
   if (!provider_id) {
     res.status(400).send({
       error: 'bad_param',
-      error_description: 'bad or missing provider_id',
+      error_description: 'bad or missing provider_id'
     })
     return
   }
@@ -400,9 +400,9 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
           heading: gps.heading,
           speed: gps.speed,
           accuracy: gps.hdop,
-          satellites: gps.satellites,
+          satellites: gps.satellites
         },
-        recorded,
+        recorded
       }
 
       try {
@@ -444,7 +444,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
           result: `telemetry success for ${valid.length} of ${data.length}`,
           recorded: now(),
           unique: recorded_telemetry.length,
-          failures,
+          failures
         })
       } else {
         await log.info(name, 'no unique telemetry in', data.length, 'items')
@@ -452,7 +452,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
           error: 'invalid_data',
           error_description: 'none of the provided data was unique',
           result: 'no new valid telemetry submitted',
-          unique: 0,
+          unique: 0
         })
       }
     } else {
@@ -463,7 +463,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
         error: 'invalid_data',
         error_description: 'none of the provided data was valid',
         result: 'no valid telemetry submitted',
-        failures,
+        failures
       })
     }
   } catch (err) {
@@ -471,7 +471,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
       error: 'invalid_data',
       error_description: 'none of the provided data was valid',
       result: 'no valid telemetry submitted',
-      failures: [`device_id ${data[0].device_id}: not found`],
+      failures: [`device_id ${data[0].device_id}: not found`]
     })
   }
 }

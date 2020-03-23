@@ -82,7 +82,7 @@ export const client = {
             {} as TSettings
           )
         )
-  },
+  }
 }
 
 const loadSettings = async <TSettings extends {}>(
@@ -107,6 +107,6 @@ export const ConfigurationManager = <TSettings>(properties: string[], options: P
         return settings
       }
       throw error
-    },
+    }
   }
 }

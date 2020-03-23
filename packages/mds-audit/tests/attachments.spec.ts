@@ -49,16 +49,16 @@ describe('Testing Attachments Service', () => {
     mimetype,
     thumbnail_filename: `${attachmentId}.thumbnail${extension}`,
     attachment_mimetype: mimetype,
-    recorded: now,
+    recorded: now
   } as Attachment
   const auditAttachment = {
     attachment_id: attachmentId,
     audit_trip_id: auditTripId,
-    recorded: now,
+    recorded: now
   } as AuditAttachment
   const recordedAttachment = {
     ...{ id: 1 },
-    ...attachment,
+    ...attachment
   } as Recorded<Attachment>
   const attachmentFile = {
     fieldname: 'file',
@@ -66,7 +66,7 @@ describe('Testing Attachments Service', () => {
     encoding: '7bit',
     mimetype,
     size: 68,
-    buffer: fs.readFileSync('./tests/sample.png'),
+    buffer: fs.readFileSync('./tests/sample.png')
   } as Express.Multer.File
 
   before('Initializing database', async () => {
@@ -99,7 +99,7 @@ describe('Testing Attachments Service', () => {
     uploadStub.returns({
       promise: () => {
         // Intentionally empty
-      },
+      }
     })
     const res: Attachment | null = await writeAttachment(attachmentFile, auditTripId)
     assert.equal(res && res.attachment_filename.includes('.png'), true)

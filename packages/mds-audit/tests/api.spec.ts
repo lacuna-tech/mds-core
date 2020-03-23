@@ -33,7 +33,7 @@ import {
   PROPULSION_TYPES,
   VEHICLE_EVENTS,
   VEHICLE_REASONS,
-  VEHICLE_TYPES,
+  VEHICLE_TYPES
 } from '@mds-core/mds-types'
 import { makeEventsWithTelemetry, makeDevices, makeTelemetryInArea, SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { NotFoundError, now, rangeRandomInt } from '@mds-core/mds-utils'
@@ -65,7 +65,7 @@ const telemetry = (): {} => ({
   provider_id,
   device_id: audit_device_id,
   timestamp: Date.now(),
-  gps: { lat: 37.4230723, lng: -122.13742939999999 },
+  gps: { lat: 37.4230723, lng: -122.13742939999999 }
 })
 
 const AUDIT_START = Date.now()
@@ -87,7 +87,7 @@ describe('Testing API', () => {
       telemetry_timestamp: AUDIT_START,
       trip_id: uuid(),
       timestamp: AUDIT_START,
-      recorded: AUDIT_START,
+      recorded: AUDIT_START
     }
     const baseTelemetry = {
       provider_id,
@@ -100,8 +100,8 @@ describe('Testing API', () => {
         lng: -122.137429,
         speed: 0,
         hdop: 1,
-        heading: 180,
-      },
+        heading: 180
+      }
     }
     db.writeDevice({
       device_id: provider_device_id,
@@ -109,22 +109,22 @@ describe('Testing API', () => {
       vehicle_id: provider_vehicle_id,
       propulsion: [PROPULSION_TYPES.electric],
       type: VEHICLE_TYPES.scooter,
-      recorded: AUDIT_START,
+      recorded: AUDIT_START
     }).then(() => {
       db.writeEvent({
         ...baseEvent,
-        ...{ telemetry_timestamp: OLD_EVENT, timestamp: OLD_EVENT },
+        ...{ telemetry_timestamp: OLD_EVENT, timestamp: OLD_EVENT }
       })
       db.writeEvent(baseEvent)
       db.writeTelemetry([
         {
           ...baseTelemetry,
-          ...{ timestamp: OLD_EVENT, recorded: OLD_EVENT },
+          ...{ timestamp: OLD_EVENT, recorded: OLD_EVENT }
         },
         {
           ...baseTelemetry,
-          ...{ timestamp: AUDIT_START, recorded: AUDIT_START },
-        },
+          ...{ timestamp: AUDIT_START, recorded: AUDIT_START }
+        }
       ]).then(() => done())
     })
   })
@@ -139,7 +139,7 @@ describe('Testing API', () => {
         provider_id,
         provider_vehicle_id,
         audit_device_id,
-        telemetry: telemetry(),
+        telemetry: telemetry()
       })
       .expect(200)
       .end((err, result) => {
@@ -184,7 +184,7 @@ describe('Testing API', () => {
         audit_issue_code: 'vehicle_not_found',
         note: '',
         timestamp: Date.now(),
-        telemetry: telemetry(),
+        telemetry: telemetry()
       })
       .expect(200)
       .end((err, result) => {
@@ -204,7 +204,7 @@ describe('Testing API', () => {
         audit_issue_code: 'vehicle_not_found',
         note: '',
         timestamp: Date.now(),
-        telemetry: telemetry(),
+        telemetry: telemetry()
       })
       .expect(403)
       .end((err, result) => {
@@ -221,7 +221,7 @@ describe('Testing API', () => {
         event_type: VEHICLE_EVENTS.trip_start,
         timestamp: Date.now(),
         trip_id: audit_trip_id,
-        telemetry: telemetry(),
+        telemetry: telemetry()
       })
       .expect(200)
       .end((err, result) => {
@@ -237,7 +237,7 @@ describe('Testing API', () => {
       .set('Authorization', SCOPED_AUTH(['audits:write'], audit_subject_id))
       .send({
         telemetry: telemetry(),
-        timestamp: Date.now(),
+        timestamp: Date.now()
       })
       .expect(200)
       .end((err, result) => {
@@ -253,7 +253,7 @@ describe('Testing API', () => {
       .set('Authorization', SCOPED_AUTH([], ''))
       .send({
         telemetry: telemetry(),
-        timestamp: Date.now(),
+        timestamp: Date.now()
       })
       .expect(403)
       .end((err, result) => {
@@ -270,7 +270,7 @@ describe('Testing API', () => {
         event_type: VEHICLE_EVENTS.trip_end,
         timestamp: Date.now(),
         trip_id: audit_trip_id,
-        telemetry: telemetry(),
+        telemetry: telemetry()
       })
       .expect(200)
       .end((err, result) => {
@@ -289,7 +289,7 @@ describe('Testing API', () => {
         audit_event_type: AUDIT_EVENT_TYPES.summary,
         note: 'This audit test passed!!',
         timestamp: Date.now(),
-        telemetry: telemetry(),
+        telemetry: telemetry()
       })
       .expect(200)
       .end((err, result) => {
@@ -306,7 +306,7 @@ describe('Testing API', () => {
       .send({
         audit_event_id: uuid(),
         timestamp: Date.now(),
-        telemetry: telemetry(),
+        telemetry: telemetry()
       })
       .expect(200)
       .end((err, result) => {
@@ -323,7 +323,7 @@ describe('Testing API', () => {
       .send({
         audit_event_id: uuid(),
         timestamp: Date.now(),
-        telemetry: telemetry(),
+        telemetry: telemetry()
       })
       .expect(403)
       .end((err, result) => {
@@ -408,7 +408,7 @@ describe('Testing API', () => {
     { filter: 'start_time', query: `?start_time=${AUDIT_START}`, count: 1 },
     { filter: 'start_time', query: `?start_time=${Date.now()}`, count: 0 },
     { filter: 'end_time', query: `?end_time=${Date.now()}`, count: 1 },
-    { filter: 'end_time', query: `?end_time=${AUDIT_START - 1}`, count: 0 },
+    { filter: 'end_time', query: `?end_time=${AUDIT_START - 1}`, count: 0 }
   ]
 
   queries.forEach(({ filter, query, count }) =>
@@ -470,7 +470,7 @@ describe('Testing API', () => {
         provider_id,
         provider_vehicle_id: uuid(),
         audit_device_id,
-        telemetry: telemetry(),
+        telemetry: telemetry()
       })
       .expect(200)
       .end((err, result) => {
@@ -501,7 +501,7 @@ describe('Testing API', () => {
     provider_vehicle_id
       .split('')
       .map((char, index) => (index % 2 ? char.toLowerCase() : char.toUpperCase()))
-      .join(''), // TeSt-vEhIcLe
+      .join('') // TeSt-vEhIcLe
   ]
   vehicles.forEach((vehicle_id) =>
     it(`verify vehicle matching ${vehicle_id}`, (done) => {
@@ -514,7 +514,7 @@ describe('Testing API', () => {
           provider_id,
           provider_vehicle_id: vehicle_id,
           audit_device_id,
-          telemetry: telemetry(),
+          telemetry: telemetry()
         })
         .expect(200)
         .end((err, result) => {
@@ -546,7 +546,7 @@ describe('Testing API', () => {
         // Include a duplicate device (same vin + provider but different device_id)
         devices: [...devices_a, ...devices_b, ...devices_c, { ...devices_c[0], ...{ device_id: uuid() } }],
         events: [...events_a, ...events_b],
-        telemetry: [...telemetry_a, ...telemetry_b],
+        telemetry: [...telemetry_a, ...telemetry_b]
       }
       Promise.all([db.initialize(), cache.initialize()]).then(() => {
         Promise.all([cache.seed(seedData), db.seed(seedData)]).then(() => {
@@ -558,7 +558,7 @@ describe('Testing API', () => {
     it('Verify getting vehicles inside of a bounding box', (done) => {
       const bbox = [
         [-118.484776, 33.996855],
-        [-118.452283, 33.96299],
+        [-118.452283, 33.96299]
       ] // BBOX encompasses the entirity of CANALS
       request
         .get(`/vehicles?bbox=${JSON.stringify(bbox)}`)
@@ -647,7 +647,7 @@ describe('Testing API', () => {
         provider_vehicle_id,
         provider_device_id,
         timestamp: AUDIT_START,
-        recorded: AUDIT_START,
+        recorded: AUDIT_START
       } as Audit
       const attachment = {
         attachment_id,
@@ -656,12 +656,12 @@ describe('Testing API', () => {
         mimetype: 'image/jpeg',
         thumbnail_filename: `${attachment_id}.thumbnail.jpg`,
         attachment_mimetype: 'image/jpeg',
-        recorded: AUDIT_START,
+        recorded: AUDIT_START
       } as Attachment
       const auditAttachment = {
         attachment_id,
         audit_trip_id,
-        recorded: AUDIT_START,
+        recorded: AUDIT_START
       } as AuditAttachment
       Promise.all([db.initialize(), cache.initialize()]).then(async () => {
         await db.writeDevice({
@@ -670,7 +670,7 @@ describe('Testing API', () => {
           vehicle_id: provider_vehicle_id,
           propulsion: [PROPULSION_TYPES.electric],
           type: VEHICLE_TYPES.scooter,
-          recorded: AUDIT_START,
+          recorded: AUDIT_START
         })
         await db.writeAudit(audit)
         await db.writeAttachment(attachment)
@@ -730,22 +730,22 @@ describe('Testing API', () => {
         file: 'empty.png',
         status: 400,
         errName: 'ValidationError',
-        errReason: 'No attachment found',
+        errReason: 'No attachment found'
       },
       {
         name: 'missing extension',
         file: 'samplepng',
         status: 400,
         errName: 'ValidationError',
-        errReason: `Missing file extension in filename samplepng`,
+        errReason: `Missing file extension in filename samplepng`
       },
       {
         name: 'unsupported mimetype',
         file: 'sample.gif',
         status: 415,
         errName: 'UnsupportedTypeError',
-        errReason: `Unsupported mime type image/gif`,
-      },
+        errReason: `Unsupported mime type image/gif`
+      }
     ]
 
     attachmentTests.forEach((testCase) =>
@@ -770,7 +770,7 @@ describe('Testing API', () => {
         recorded: AUDIT_START,
         attachment_filename: `${attachment_id}.jpg`,
         base_url: baseUrl,
-        mimetype: 'image/jpeg',
+        mimetype: 'image/jpeg'
       } as Attachment)
       Sinon.replace(attachments, 'writeAttachment', fake)
       request

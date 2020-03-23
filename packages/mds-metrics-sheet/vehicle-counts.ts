@@ -29,7 +29,7 @@ import {
   WHEELS_PROVIDER_ID,
   SPIN_PROVIDER_ID,
   SHERPA_LA_PROVIDER_ID,
-  BOLT_PROVIDER_ID,
+  BOLT_PROVIDER_ID
 } from '@mds-core/mds-providers'
 
 import { VehicleCountResponse, VehicleCountRow } from './types'
@@ -44,12 +44,12 @@ const reportProviders = [
   WHEELS_PROVIDER_ID,
   SPIN_PROVIDER_ID,
   SHERPA_LA_PROVIDER_ID,
-  BOLT_PROVIDER_ID,
+  BOLT_PROVIDER_ID
 ]
 
 const creds = {
   client_email: process.env.GOOGLE_CLIENT_EMAIL,
-  private_key: process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.split('\\n').join('\n') : null,
+  private_key: process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.split('\\n').join('\n') : null
 }
 
 async function appendSheet(sheetName: string, rows: ({ date: string; name: string } & unknown)[]) {
@@ -79,12 +79,12 @@ export function mapRow(row: VehicleCountRow) {
   const veniceAreaSum = sumColumns(veniceAreaKeys, row)
   const augmentedRow = {
     'Venice Area': veniceAreaSum,
-    ...row.areas_48h,
+    ...row.areas_48h
   }
   return {
     date: `${d.toLocaleDateString('en-US', dateOptions)} ${d.toLocaleTimeString('en-US', timeOptions)}`,
     name: row.provider,
-    ...augmentedRow,
+    ...augmentedRow
   }
 }
 
@@ -102,10 +102,10 @@ async function getProviderMetrics(iter: number): Promise<({ date: string; name: 
       grant_type: 'client_credentials',
       client_id: process.env.CLIENT_ID,
       client_secret: process.env.CLIENT_SECRET,
-      audience: process.env.AUDIENCE,
+      audience: process.env.AUDIENCE
     },
     json: true,
-    timeout: MAX_TIMEOUT_MS,
+    timeout: MAX_TIMEOUT_MS
   }
 
   try {
@@ -114,7 +114,7 @@ async function getProviderMetrics(iter: number): Promise<({ date: string; name: 
       uri: 'https://api.ladot.io/daily/admin/vehicle_counts',
       headers: { authorization: `Bearer ${token.access_token}` },
       json: true,
-      timeout: MAX_TIMEOUT_MS,
+      timeout: MAX_TIMEOUT_MS
     }
 
     const counts: VehicleCountResponse = await requestPromise(counts_options)

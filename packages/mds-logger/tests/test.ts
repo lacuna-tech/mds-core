@@ -15,11 +15,11 @@ describe('MDS Logger', () => {
         lng: 1231.21,
         speed: 0,
         hdop: 1,
-        heading: 180,
+        heading: 180
       },
       charge: 0.5,
       timestamp: 1555384091559,
-      recorded: 1555384091836,
+      recorded: 1555384091836
     }
     const [result] = logger.info(toCensor)
     const res = JSON.parse(result)
@@ -36,11 +36,11 @@ describe('MDS Logger', () => {
         lng: 1231.21,
         speed: 0,
         hdop: 1,
-        heading: 180,
+        heading: 180
       },
       charge: 0.5,
       timestamp: 1555384091559,
-      recorded: 1555384091836,
+      recorded: 1555384091836
     }
     logger
       .warn(toCensor)
@@ -65,11 +65,11 @@ describe('MDS Logger', () => {
           lng: 1231.21,
           speed: 0,
           hdop: 1,
-          heading: 180,
+          heading: 180
         },
         charge: 0.5,
         timestamp: 1555384091559,
-        recorded: 1555384091836,
+        recorded: 1555384091836
       },
       {
         device_id: 'ec551174-f324-4251-bfed-28d9f3f473fc',
@@ -78,12 +78,12 @@ describe('MDS Logger', () => {
           lng: 341231.21,
           speed: 100,
           hdop: 10,
-          heading: 20,
+          heading: 20
         },
         charge: 0.75,
         timestamp: 1555384090000,
-        recorded: 1555384090000,
-      },
+        recorded: 1555384090000
+      }
     ]
     logger
       .error(toCensor)

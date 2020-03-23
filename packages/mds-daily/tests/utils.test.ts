@@ -33,21 +33,21 @@ describe('MDS Daily utils', () => {
           trip_id: 'fake-trip-id',
           eventTypes: {
             1: 'fake-event-data',
-            10: 'fake-other-event-data',
-          },
-        },
+            10: 'fake-other-event-data'
+          }
+        }
       }
       const result = categorizeTrips(tripsData)
       const expected = {
         'fake-provider-id': {
           mysteries: {
-            'fake-event-data-fake-other-event-data': 1,
+            'fake-event-data-fake-other-event-data': 1
           },
           mystery: 1,
           mystery_examples: {
-            'fake-event-data-fake-other-event-data': ['fake-trip-index'],
-          },
-        },
+            'fake-event-data-fake-other-event-data': ['fake-trip-index']
+          }
+        }
       }
       assert.deepStrictEqual(result, expected)
     })

@@ -25,7 +25,7 @@ const returnRsaPublicKey = async () => RSA_PUBLIC_KEY
 const goodToken = jwt.sign({ provider_id: MOCHA_PROVIDER_ID, scope: PROVIDER_SCOPES }, RSA_PRIVATE_KEY, {
   algorithm: 'RS256',
   audience: 'https://example.com',
-  issuer: 'https://example.com',
+  issuer: 'https://example.com'
 })
 
 const ADMIN_AUTH = `Bearer ${goodToken}`
@@ -57,7 +57,7 @@ describe('Tests MDS-Web-Sockets', () => {
       const badToken = jwt.sign({ provider_id: MOCHA_PROVIDER_ID, scope: PROVIDER_SCOPES }, RSA_PRIVATE_KEY, {
         algorithm: 'RS256',
         audience: 'https://foo.com',
-        issuer: 'https://foo.com',
+        issuer: 'https://foo.com'
       })
 
       const BAD_AUTH = `Bearer ${badToken}`

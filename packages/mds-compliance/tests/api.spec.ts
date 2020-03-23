@@ -23,7 +23,7 @@ import {
   UUID,
   RULE_TYPES,
   VEHICLE_TYPES,
-  PROPULSION_TYPES,
+  PROPULSION_TYPES
 } from '@mds-core/mds-types'
 import MockDate from 'mockdate'
 import { Feature, Polygon } from 'geojson'
@@ -58,10 +58,10 @@ const TEST_TELEMETRY = {
     lng: -121.8863,
     speed: 0,
     hdop: 1,
-    heading: 180,
+    heading: 180
   },
   charge: 0.5,
-  timestamp: now(),
+  timestamp: now()
 }
 
 process.env.TIMEZONE = 'America/Los_Angeles'
@@ -74,7 +74,7 @@ const TEST_VEHICLE = {
   propulsion: [PROPULSION_TYPES.human],
   year: 2018,
   mfgr: 'Schwinn',
-  model: 'Mantaray',
+  model: 'Mantaray'
 }
 // const start_yesterday = now() - (now() % days(1))
 const VENICE_POLICY_UUID = 'dd9ace3e-14c8-461b-b5e7-1326505ff176'
@@ -101,9 +101,9 @@ const COUNT_POLICY_JSON: Policy = {
       statuses: { available: [], unavailable: [], reserved: [], trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 10,
-      minimum: 5,
-    },
-  ],
+      minimum: 5
+    }
+  ]
 }
 
 const SCOPED_COUNT_POLICY_JSON = {
@@ -123,9 +123,9 @@ const SCOPED_COUNT_POLICY_JSON = {
       statuses: { available: [], unavailable: [], reserved: [], trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 10,
-      minimum: 5,
-    },
-  ],
+      minimum: 5
+    }
+  ]
 }
 const COUNT_POLICY_JSON_2: Policy = {
   name: 'Something Mobility Caps',
@@ -144,9 +144,9 @@ const COUNT_POLICY_JSON_2: Policy = {
       statuses: { available: [], unavailable: [], reserved: [], trip: [] },
       days: ['sat', 'sun'],
       maximum: 0,
-      minimum: 0,
-    },
-  ],
+      minimum: 0
+    }
+  ]
 }
 
 const COUNT_POLICY_JSON_3: Policy = {
@@ -165,9 +165,9 @@ const COUNT_POLICY_JSON_3: Policy = {
       geographies: [GEOGRAPHY_UUID],
       statuses: { available: ['service_start'], unavailable: [], reserved: [], trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
-      maximum: 10,
-    },
-  ],
+      maximum: 10
+    }
+  ]
 }
 
 const COUNT_POLICY_JSON_4: Policy = {
@@ -186,9 +186,9 @@ const COUNT_POLICY_JSON_4: Policy = {
       geographies: [GEOGRAPHY_UUID],
       statuses: { trip: [] },
       vehicle_types: ['bicycle', 'scooter'],
-      maximum: 10,
-    },
-  ],
+      maximum: 10
+    }
+  ]
 }
 
 const COUNT_POLICY_JSON_5: Policy = {
@@ -201,19 +201,19 @@ const COUNT_POLICY_JSON_5: Policy = {
       statuses: {
         trip: [],
         reserved: [],
-        available: [],
+        available: []
       },
       rule_type: 'count',
       geographies: ['c0591267-bb6a-4f28-a612-ff7f4a8f8b2a'],
-      vehicle_types: ['bicycle', 'scooter'],
-    },
+      vehicle_types: ['bicycle', 'scooter']
+    }
   ],
   end_date: null,
   policy_id: '25851571-b53f-4426-a033-f375be0e7957',
   start_date: Date.now(),
   description:
     'Prohibited areas for dockless vehicles within the City of Los Angeles for the LADOT Dockless On-Demand Personal Mobility Program',
-  prev_policies: null,
+  prev_policies: null
 }
 
 const TIME_POLICY_UUID = 'a2c9a65f-fd85-463e-9564-fc95ea473f7d'
@@ -235,9 +235,9 @@ const TIME_POLICY_JSON: Policy = {
       geographies: [GEOGRAPHY_UUID],
       statuses: { available: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
-      maximum: 7200,
-    },
-  ],
+      maximum: 7200
+    }
+  ]
 }
 
 const APP_JSON = 'application/json; charset=utf-8'
@@ -262,7 +262,7 @@ describe('Tests Compliance API:', () => {
                 event_type: 'trip_start',
                 trip_id: TRIP_UUID,
                 telemetry: TEST_TELEMETRY,
-                timestamp: testTimestamp++,
+                timestamp: testTimestamp++
               })
               .expect(201)
               .end(async () => {
@@ -678,12 +678,12 @@ describe('Tests Compliance API:', () => {
           veniceSpecOpsPointIds.push(geography_id)
           return {
             geography_id,
-            geography_json: feature.geometry,
+            geography_json: feature.geometry
           }
         }
         return {
           geography_id: 'e0e4a085-7a50-43e0-afa4-6792ca897c5a',
-          geography_json: feature.geometry,
+          geography_json: feature.geometry
         }
       })
 
@@ -702,7 +702,7 @@ describe('Tests Compliance API:', () => {
             rule_type: RULE_TYPES.count,
             geographies: veniceSpecOpsPointIds,
             statuses: { available: ['provider_drop_off'] },
-            vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
+            vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter]
           },
           {
             name: 'Drop-off No-Fly Zones',
@@ -711,9 +711,9 @@ describe('Tests Compliance API:', () => {
             geographies: ['e0e4a085-7a50-43e0-afa4-6792ca897c5a'],
             statuses: { available: ['provider_drop_off'] },
             vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
-            maximum: 0,
-          },
-        ],
+            maximum: 0
+          }
+        ]
       }
 
       const TEST_ZONE_NO_VALID_DROP_OFF_POINTS: Polygon = {
@@ -724,9 +724,9 @@ describe('Tests Compliance API:', () => {
             [-118.46564054489136, 33.9807517760146],
             [-118.46564054489136, 33.98356306245639],
             [-118.46941709518433, 33.98356306245639],
-            [-118.46941709518433, 33.9807517760146],
-          ],
-        ],
+            [-118.46941709518433, 33.9807517760146]
+          ]
+        ]
       }
 
       const devices_a: Device[] = makeDevices(22, now())
@@ -749,7 +749,7 @@ describe('Tests Compliance API:', () => {
         const seedData: { devices: Device[]; events: VehicleEvent[]; telemetry: Telemetry[] } = {
           devices: [...devices_a, ...devices_b],
           events: [...events_a, ...events_b],
-          telemetry: [],
+          telemetry: []
         }
         await Promise.all([db.initialize(), cache.initialize()])
         await Promise.all([cache.seed(seedData), db.seed(seedData)])
@@ -796,7 +796,7 @@ describe('Tests Compliance API:', () => {
       const seedData = {
         devices: [...devices],
         events: [...events_a, ...events_b],
-        telemetry: [...telemetry_a, ...telemetry_b],
+        telemetry: [...telemetry_a, ...telemetry_b]
       }
       Promise.all([db.initialize(), cache.initialize()]).then(() => {
         Promise.all([cache.seed(seedData), db.seed(seedData)]).then(() => {
@@ -854,7 +854,7 @@ describe('Tests Compliance API:', () => {
       const seedData = {
         devices: [...devices_a, ...devices_b],
         events: [...events_a, ...events_b],
-        telemetry: [...telemetry_a, ...telemetry_b],
+        telemetry: [...telemetry_a, ...telemetry_b]
       }
       Promise.all([db.initialize(), cache.initialize()]).then(() => {
         Promise.all([cache.seed(seedData), db.seed(seedData)]).then(() => {
@@ -944,7 +944,7 @@ describe('Tests Compliance API:', () => {
       const geography = {
         name: 'la',
         geography_id: 'c0591267-bb6a-4f28-a612-ff7f4a8f8b2a',
-        geography_json: restrictedAreas,
+        geography_json: restrictedAreas
       }
 
       const devices: Device[] = makeDevices(15, now())

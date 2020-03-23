@@ -88,7 +88,7 @@ function api(app: express.Express): express.Express {
       res.status(200).send({ policies: active })
     } catch (err) {
       res.status(404).send({
-        result: 'not found',
+        result: 'not found'
       })
     }
   })

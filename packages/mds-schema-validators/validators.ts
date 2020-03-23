@@ -33,14 +33,14 @@ import {
   Jurisdiction,
   PROPULSION_TYPES,
   VEHICLE_STATUSES,
-  Device,
+  Device
 } from '@mds-core/mds-types'
 import * as Joi from '@hapi/joi'
 import joiToJsonSchema from 'joi-to-json-schema'
 import {
   StringifiedTelemetry,
   StringifiedEventWithTelemetry,
-  StringifiedCacheReadDeviceResult,
+  StringifiedCacheReadDeviceResult
 } from '@mds-core/mds-cache/types'
 import { ValidationError } from '@mds-core/mds-utils'
 
@@ -77,14 +77,14 @@ const telemetrySchema = Joi.object().keys({
       accuracy: numberSchema.optional(),
       hdop: numberSchema.optional(),
       altitude: numberSchema.optional(),
-      satellites: numberSchema.optional(),
+      satellites: numberSchema.optional()
     })
     .required(),
   charge: numberSchema.optional(),
   provider_id: providerIdSchema.optional(),
   device_id: uuidSchema.optional(),
   timestamp: timestampSchema.required(),
-  recorded: timestampSchema.optional(),
+  recorded: timestampSchema.optional()
 })
 
 const ruleSchema = Joi.object().keys({
@@ -101,7 +101,7 @@ const ruleSchema = Joi.object().keys({
       removed: Joi.array(),
       inactive: Joi.array(),
       trip: Joi.array(),
-      elsewhere: Joi.array(),
+      elsewhere: Joi.array()
     })
     .allow(null),
   vehicle_types: Joi.array().items(Joi.string().valid(Object.values(VEHICLE_TYPES))),
@@ -111,7 +111,7 @@ const ruleSchema = Joi.object().keys({
   end_time: Joi.string(),
   days: Joi.array().items(Joi.string().valid(Object.values(DAYS_OF_WEEK))),
   messages: Joi.object(),
-  value_url: Joi.string().uri(),
+  value_url: Joi.string().uri()
 })
 
 export const policySchema = Joi.object().keys({
@@ -122,7 +122,7 @@ export const policySchema = Joi.object().keys({
   end_date: Joi.date().timestamp('javascript').allow(null),
   prev_policies: Joi.array().items(Joi.string().guid()).allow(null),
   provider_ids: Joi.array().items(Joi.string().guid()).allow(null),
-  rules: Joi.array().min(1).items(ruleSchema).required(),
+  rules: Joi.array().min(1).items(ruleSchema).required()
 })
 
 const policiesSchema = Joi.array().items(policySchema)
@@ -131,14 +131,14 @@ const featureSchema = Joi.object()
   .keys({
     type: Joi.string().valid(['Feature']).required(),
     properties: Joi.object().required(),
-    geometry: Joi.object().required(),
+    geometry: Joi.object().required()
   })
   .unknown(true) // TODO
 
 const featureCollectionSchema = Joi.object()
   .keys({
     type: Joi.string().valid(['FeatureCollection']).required(),
-    features: Joi.array().min(1).items(featureSchema).required(),
+    features: Joi.array().min(1).items(featureSchema).required()
   })
   .unknown(true) // TODO
 
@@ -148,7 +148,7 @@ export const geographySchema = Joi.object()
     geography_json: featureCollectionSchema,
     read_only: Joi.boolean().allow(null),
     previous_geography_ids: Joi.array().items(Joi.string().guid()).allow(null),
-    name: Joi.string().required(),
+    name: Joi.string().required()
   })
   .unknown(true)
 
@@ -172,23 +172,23 @@ const eventSchema = Joi.object().keys({
   telemetry_timestamp: timestampSchema.optional(),
   telemetry: telemetrySchema.required(),
   service_area_id: uuidSchema.allow(null).optional(),
-  recorded: timestampSchema.optional(),
+  recorded: timestampSchema.optional()
 })
 
 const tripEventSchema = eventSchema.keys({
-  trip_id: uuidSchema.required(),
+  trip_id: uuidSchema.required()
 })
 
 const serviceEndEventSchema = eventSchema.keys({
-  event_type_reason: stringSchema.valid(['low_battery', 'maintenance', 'compliance', 'off_hours']).required(),
+  event_type_reason: stringSchema.valid(['low_battery', 'maintenance', 'compliance', 'off_hours']).required()
 })
 
 const providerPickUpEventSchema = eventSchema.keys({
-  event_type_reason: stringSchema.valid(['rebalance', 'maintenance', 'charge', 'compliance']).required(),
+  event_type_reason: stringSchema.valid(['rebalance', 'maintenance', 'charge', 'compliance']).required()
 })
 
 const deregisterEventSchema = eventSchema.keys({
-  event_type_reason: stringSchema.valid(['missing', 'decomissioned']).required(),
+  event_type_reason: stringSchema.valid(['missing', 'decomissioned']).required()
 })
 
 const auditEventTypeSchema = (accept?: AUDIT_EVENT_TYPE[]): Joi.StringSchema =>
@@ -202,7 +202,7 @@ const vehicleTypesCountMapSchema = Joi.object().keys({
   scooter: Joi.number(),
   bicycle: Joi.number(),
   car: Joi.number(),
-  moped: Joi.number(),
+  moped: Joi.number()
 })
 
 const stopSchema = Joi.object().keys({
@@ -226,7 +226,7 @@ const stopSchema = Joi.object().keys({
   num_spots_available: vehicleTypesCountMapSchema.required(),
   num_spots_disabled: vehicleTypesCountMapSchema.optional(),
   wheelchair_boarding: Joi.bool(),
-  reservation_cost: vehicleTypesCountMapSchema.optional(),
+  reservation_cost: vehicleTypesCountMapSchema.optional()
 })
 
 const jurisdictionSchema = (max: Timestamp = Date.now()) =>
@@ -235,7 +235,7 @@ const jurisdictionSchema = (max: Timestamp = Date.now()) =>
     agency_key: stringSchema,
     agency_name: stringSchema,
     geography_id: uuidSchema,
-    timestamp: timestampSchema.max(max),
+    timestamp: timestampSchema.max(max)
   })
 
 const deviceSchema = Joi.object().keys({
@@ -248,7 +248,7 @@ const deviceSchema = Joi.object().keys({
   mfgr: stringSchema.optional(),
   model: stringSchema.optional(),
   recorded: timestampSchema.optional(),
-  status: vehicleStatusSchema,
+  status: vehicleStatusSchema
 })
 
 const Format = (property: string, error: Joi.ValidationError): string => {
@@ -263,7 +263,7 @@ const Validate = <T = unknown>(value: unknown, schema: Joi.Schema, options: Part
   if (error && assert) {
     throw new ValidationError(`invalid_${property}`.toLowerCase(), {
       [property]: value,
-      details: Format(property, error),
+      details: Format(property, error)
     })
   }
   return !error
@@ -297,7 +297,7 @@ export const isValidStop = (value: unknown): value is Stop => {
   if (error) {
     throw new ValidationError('invalid_stop', {
       value,
-      details: Format('stop', error),
+      details: Format('stop', error)
     })
   }
   return true
@@ -371,7 +371,7 @@ export function validatePolicies(policies: unknown): policies is Policy[] {
   if (error) {
     throw new ValidationError('invalid_policies', {
       policies,
-      details: Format('policies', error),
+      details: Format('policies', error)
     })
   }
   return true
@@ -382,7 +382,7 @@ export function validateGeographies(geographies: unknown): geographies is Geogra
   if (error) {
     throw new ValidationError('invalid_geographies', {
       geographies,
-      details: Format('geographies', error),
+      details: Format('geographies', error)
     })
   }
   return true
@@ -393,7 +393,7 @@ export function validateEvents(events: unknown): events is VehicleEvent[] {
   if (error) {
     throw new ValidationError('invalid events', {
       events,
-      details: Format('events', error),
+      details: Format('events', error)
     })
   }
   return true
@@ -435,7 +435,7 @@ export const validateEvent = (event: unknown) => {
       VEHICLE_EVENTS.trip_start,
       VEHICLE_EVENTS.trip_end,
       VEHICLE_EVENTS.trip_enter,
-      VEHICLE_EVENTS.trip_leave,
+      VEHICLE_EVENTS.trip_leave
     ]
 
     if (TRIP_EVENTS.includes(event_type)) {

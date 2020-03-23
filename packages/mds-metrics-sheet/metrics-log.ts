@@ -25,7 +25,7 @@ import {
   WHEELS_PROVIDER_ID,
   SPIN_PROVIDER_ID,
   SHERPA_LA_PROVIDER_ID,
-  BOLT_PROVIDER_ID,
+  BOLT_PROVIDER_ID
 } from '@mds-core/mds-providers'
 import { VEHICLE_EVENT, EVENT_STATUS_MAP, VEHICLE_STATUS } from '@mds-core/mds-types'
 import { requestPromiseExceptionHelper, MAX_TIMEOUT_MS } from './utils'
@@ -40,12 +40,12 @@ const reportProviders = [
   WHEELS_PROVIDER_ID,
   SPIN_PROVIDER_ID,
   SHERPA_LA_PROVIDER_ID,
-  BOLT_PROVIDER_ID,
+  BOLT_PROVIDER_ID
 ]
 
 const creds = {
   client_email: process.env.GOOGLE_CLIENT_EMAIL,
-  private_key: process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.split('\\n').join('\n') : null,
+  private_key: process.env.GOOGLE_PRIVATE_KEY ? process.env.GOOGLE_PRIVATE_KEY.split('\\n').join('\n') : null
 }
 
 export function sum(arr: number[]) {
@@ -62,7 +62,7 @@ export function eventCountsToStatusCounts(events: { [s in VEHICLE_EVENT]: number
     (acc: { [s in VEHICLE_STATUS]: number }, event) => {
       const status = EVENT_STATUS_MAP[event]
       return Object.assign(acc, {
-        [status]: acc[status] + events[event],
+        [status]: acc[status] + events[event]
       })
     },
     {
@@ -72,7 +72,7 @@ export function eventCountsToStatusCounts(events: { [s in VEHICLE_EVENT]: number
       trip: 0,
       removed: 0,
       inactive: 0,
-      elsewhere: 0,
+      elsewhere: 0
     }
   )
 }
@@ -90,7 +90,7 @@ export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDaySta
     trip: 0,
     removed: 0,
     inactive: 0,
-    elsewhere: 0,
+    elsewhere: 0
   }
   const { event_counts_last_24h, late_event_counts_last_24h, late_telemetry_counts_last_24h } = last[
     provider.provider_id
@@ -136,7 +136,7 @@ export const mapProviderToPayload = (provider: VehicleCountRow, last: LastDaySta
     trip: status_counts.trip,
     removed: status_counts.removed,
     inactive: status_counts.inactive,
-    elsewhere: status_counts.elsewhere,
+    elsewhere: status_counts.elsewhere
   }
 }
 
@@ -168,10 +168,10 @@ export async function getProviderMetrics(iter: number): Promise<MetricsSheetRow[
       grant_type: 'client_credentials',
       client_id: process.env.CLIENT_ID,
       client_secret: process.env.CLIENT_SECRET,
-      audience: process.env.AUDIENCE,
+      audience: process.env.AUDIENCE
     },
     json: true,
-    timeout: MAX_TIMEOUT_MS,
+    timeout: MAX_TIMEOUT_MS
   }
   try {
     const token = await requestPromiseExceptionHelper(token_options)
@@ -179,13 +179,13 @@ export async function getProviderMetrics(iter: number): Promise<MetricsSheetRow[
       url: 'https://api.ladot.io/daily/admin/vehicle_counts',
       headers: { authorization: `Bearer ${token.access_token}` },
       json: true,
-      timeout: MAX_TIMEOUT_MS,
+      timeout: MAX_TIMEOUT_MS
     }
     const last_options = {
       url: 'https://api.ladot.io/daily/admin/last_day_stats_by_provider',
       headers: { authorization: `Bearer ${token.access_token}` },
       json: true,
-      timeout: MAX_TIMEOUT_MS,
+      timeout: MAX_TIMEOUT_MS
     }
 
     const counts: VehicleCountResponse = await requestPromiseExceptionHelper(counts_options)

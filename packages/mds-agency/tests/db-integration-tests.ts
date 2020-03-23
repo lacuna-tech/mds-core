@@ -38,7 +38,7 @@ import {
   Device,
   VehicleEvent,
   Geography,
-  Stop,
+  Stop
 } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
@@ -73,10 +73,10 @@ const TEST_TELEMETRY = {
     lng: -121.8863,
     speed: 0,
     hdop: 1,
-    heading: 180,
+    heading: 180
   },
   charge: 0.5,
-  timestamp: now(),
+  timestamp: now()
 }
 const TEST_TELEMETRY2 = {
   device_id: DEVICE_UUID,
@@ -86,10 +86,10 @@ const TEST_TELEMETRY2 = {
     speed: 0,
     hdop: 1,
     heading: 180,
-    satellites: 10,
+    satellites: 10
   },
   charge: 0.5,
-  timestamp: now() + 1000,
+  timestamp: now() + 1000
 }
 
 const TEST_VEHICLE = {
@@ -100,7 +100,7 @@ const TEST_VEHICLE = {
   propulsion: [PROPULSION_TYPES.human],
   year: 2018,
   mfgr: 'Schwinn',
-  model: 'Mantaray',
+  model: 'Mantaray'
 }
 
 let testTimestamp = now()
@@ -108,7 +108,7 @@ let testTimestamp = now()
 const test_event = {
   device_id: DEVICE_UUID,
   event_type: VEHICLE_EVENTS.deregister,
-  timestamp: testTimestamp,
+  timestamp: testTimestamp
 }
 
 testTimestamp += 1
@@ -116,7 +116,7 @@ testTimestamp += 1
 const LAGeography: Geography = {
   name: 'Los Angeles',
   geography_id: GEOGRAPHY_UUID,
-  geography_json: LA_CITY_BOUNDARY,
+  geography_json: LA_CITY_BOUNDARY
 }
 
 function deepCopy<T>(obj: T): T {
@@ -452,7 +452,7 @@ describe('Tests API', () => {
       .put(`/vehicles/${TEST_VEHICLE.device_id}`)
       .set('Authorization', AUTH)
       .send({
-        vehicle_id: NEW_VEHICLE_ID,
+        vehicle_id: NEW_VEHICLE_ID
       })
       .expect(201)
       .end((err, result) => {
@@ -467,7 +467,7 @@ describe('Tests API', () => {
       .put(`/vehicles/${TEST_VEHICLE.device_id}`)
       .set('Authorization', AUTH2)
       .send({
-        vehicle_id: NEW_VEHICLE_ID,
+        vehicle_id: NEW_VEHICLE_ID
       })
       .expect(404)
       .end((err, result) => {
@@ -504,7 +504,7 @@ describe('Tests API', () => {
       .put('/vehicles/' + 'hamster')
       .set('Authorization', AUTH)
       .send({
-        vehicle_id: 'new-vehicle-id',
+        vehicle_id: 'new-vehicle-id'
       })
       .expect(400)
       .end((err, result) => {
@@ -519,7 +519,7 @@ describe('Tests API', () => {
       .put(`/vehicles/${TRIP_UUID}`)
       .set('Authorization', AUTH)
       .send({
-        vehicle_id: 'new-vehicle-id',
+        vehicle_id: 'new-vehicle-id'
       })
       .expect(404)
       .end((err, result) => {
@@ -576,7 +576,7 @@ describe('Tests API', () => {
       .send({
         event_type: 'service_start',
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp + 10000,
+        timestamp: testTimestamp + 10000
       })
       .expect(201)
       .end((err, result) => {
@@ -609,7 +609,7 @@ describe('Tests API', () => {
       .send({
         event_type: VEHICLE_EVENTS.service_end,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp,
+        timestamp: testTimestamp
       })
       .expect(201)
       .end((err, result) => {
@@ -645,7 +645,7 @@ describe('Tests API', () => {
       .send({
         event_type: 'BOGUS',
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(400)
       .end((err, result) => {
@@ -660,7 +660,7 @@ describe('Tests API', () => {
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(400)
       .end((err, result) => {
@@ -676,7 +676,7 @@ describe('Tests API', () => {
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(400)
       .end((err, result) => {
@@ -691,7 +691,7 @@ describe('Tests API', () => {
       .set('Authorization', AUTH)
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
-        telemetry: TEST_TELEMETRY,
+        telemetry: TEST_TELEMETRY
       })
       .expect(400)
       .end((err, result) => {
@@ -708,7 +708,7 @@ describe('Tests API', () => {
       .send({
         event_type: 'provider_drop_off',
         telemetry: TEST_TELEMETRY,
-        timestamp: 'hamster',
+        timestamp: 'hamster'
       })
       .expect(400)
       .end((err, result) => {
@@ -725,7 +725,7 @@ describe('Tests API', () => {
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(201)
       .end((err, result) => {
@@ -741,7 +741,7 @@ describe('Tests API', () => {
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp - 1,
+        timestamp: testTimestamp - 1
       })
       .expect(409)
       .end((err, result) => {
@@ -757,7 +757,7 @@ describe('Tests API', () => {
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp,
+        timestamp: testTimestamp
       })
       .expect(400)
       .end((err, result) => {
@@ -774,7 +774,7 @@ describe('Tests API', () => {
         event_type: VEHICLE_EVENTS.provider_pick_up,
         event_type_reason: 'not_an_event_type',
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp,
+        timestamp: testTimestamp
       })
       .expect(400)
       .end((err, result) => {
@@ -793,7 +793,7 @@ describe('Tests API', () => {
         event_type: 'trip_start',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(201)
       .end((err, result) => {
@@ -809,7 +809,7 @@ describe('Tests API', () => {
         event_type: 'trip_start',
         // trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(400)
       .end((err, result) => {
@@ -825,7 +825,7 @@ describe('Tests API', () => {
         event_type: 'trip_leave',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(201)
       .end((err, result) => {
@@ -841,7 +841,7 @@ describe('Tests API', () => {
         event_type: 'trip_enter',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(201)
       .end((err, result) => {
@@ -857,7 +857,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(201)
       .end((err, result) => {
@@ -880,7 +880,7 @@ describe('Tests API', () => {
         event_type: VEHICLE_EVENTS.reserve,
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(201)
       .end((err, result) => {
@@ -896,7 +896,7 @@ describe('Tests API', () => {
         event_type: VEHICLE_EVENTS.cancel_reservation,
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(201)
       .end((err, result) => {
@@ -916,7 +916,7 @@ describe('Tests API', () => {
         // event_type: 'trip_start',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(400)
       .end((err, result) => {
@@ -937,7 +937,7 @@ describe('Tests API', () => {
       .send({
         event_type: 'trip_start',
         trip_id: TRIP_UUID,
-        timestamp: testTimestamp++,
+        timestamp: testTimestamp++
       })
       .expect(400)
       .end((err, result) => {
@@ -956,7 +956,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: 'BOGUS',
         timestamp: testTimestamp++,
-        telemetry: TEST_TELEMETRY,
+        telemetry: TEST_TELEMETRY
       })
       .expect(400)
       .end((err, result) => {
@@ -978,7 +978,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        telemetry: telemetry_with_bad_lat,
+        telemetry: telemetry_with_bad_lat
       })
       .expect(400)
       .end((err, result) => {
@@ -1000,7 +1000,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        telemetry: telemetry_with_bad_alt,
+        telemetry: telemetry_with_bad_alt
       })
       .expect(400)
       .end((err, result) => {
@@ -1022,7 +1022,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        telemetry: telemetry_with_bad_accuracy,
+        telemetry: telemetry_with_bad_accuracy
       })
       .expect(400)
       .end((err, result) => {
@@ -1043,7 +1043,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        telemetry: telemetry_with_bad_speed,
+        telemetry: telemetry_with_bad_speed
       })
       .expect(400)
       .end((err, result) => {
@@ -1064,7 +1064,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        telemetry: telemetry_with_bad_satellites,
+        telemetry: telemetry_with_bad_satellites
       })
       .expect(400)
       .end((err, result) => {
@@ -1081,7 +1081,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        TEST_TELEMETRY: telemetry_without_location,
+        TEST_TELEMETRY: telemetry_without_location
       })
       .expect(400)
       .end((err, result) => {
@@ -1104,7 +1104,7 @@ describe('Tests API', () => {
         event_type: VEHICLE_EVENTS.service_end,
         event_type_reason: 'rebalance',
         telemetry: TEST_TELEMETRY,
-        timestamp: lateTimestamp,
+        timestamp: lateTimestamp
       })
       .expect(201)
       .end((err, result) => {
@@ -1137,7 +1137,7 @@ describe('Tests API', () => {
         event_type: VEHICLE_EVENTS.service_end,
         event_type_reason: 'rebalance',
         telemetry: TEST_TELEMETRY,
-        timestamp: lateTimestamp,
+        timestamp: lateTimestamp
       })
       // .expect(201)
       .end((err, result) => {
@@ -1151,7 +1151,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [TEST_TELEMETRY, TEST_TELEMETRY2],
+        data: [TEST_TELEMETRY, TEST_TELEMETRY2]
       })
       .expect(201)
       .end((err, result) => {
@@ -1169,7 +1169,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [TEST_TELEMETRY, TEST_TELEMETRY2],
+        data: [TEST_TELEMETRY, TEST_TELEMETRY2]
       })
       .expect(400)
       .end((err, result) => {
@@ -1201,7 +1201,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [badTelemetry],
+        data: [badTelemetry]
       })
       .expect(400)
       .end((err, result) => {
@@ -1223,7 +1223,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [badTelemetry],
+        data: [badTelemetry]
       })
       .expect(400)
       .end((err, result) => {
@@ -1245,7 +1245,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [badTelemetry],
+        data: [badTelemetry]
       })
       .expect(400)
       .end((err, result) => {
@@ -1267,7 +1267,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [badTelemetry],
+        data: [badTelemetry]
       })
       .expect(400)
       .end((err, result) => {
@@ -1289,7 +1289,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [badTelemetry],
+        data: [badTelemetry]
       })
       .expect(400)
       .end((err, result) => {
@@ -1307,7 +1307,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH2)
       .send({
-        data: [TEST_TELEMETRY],
+        data: [TEST_TELEMETRY]
       })
       .expect(400)
       .end((err, result) => {
@@ -1553,20 +1553,20 @@ describe('Tests Stops', async () => {
       bicycle: 10,
       scooter: 10,
       car: 5,
-      moped: 3,
+      moped: 3
     },
     num_vehicles_available: {
       bicycle: 3,
       scooter: 7,
       car: 0,
-      moped: 1,
+      moped: 1
     },
     num_spots_available: {
       bicycle: 7,
       scooter: 3,
       car: 5,
-      moped: 2,
-    },
+      moped: 2
+    }
   }
 
   before(async () => {

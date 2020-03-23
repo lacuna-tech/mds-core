@@ -47,7 +47,7 @@ export function startAndEnd(
   }
   return {
     start_time: start_time_out,
-    end_time: end_time_out,
+    end_time: end_time_out
   }
 }
 
@@ -121,7 +121,7 @@ export async function getMaps(): Promise<{
     // }, telemetrySeed)
     return Promise.resolve({
       // telemetryMap,
-      eventMap,
+      eventMap
     })
   } catch (err) {
     return Promise.reject(err)

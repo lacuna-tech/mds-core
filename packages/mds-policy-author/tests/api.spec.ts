@@ -43,7 +43,7 @@ import {
   GEOGRAPHY2_UUID,
   LA_CITY_BOUNDARY,
   DISTRICT_SEVEN,
-  SCOPED_AUTH,
+  SCOPED_AUTH
 } from '@mds-core/mds-test-data'
 import { api } from '../api'
 

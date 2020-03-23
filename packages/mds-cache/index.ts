@@ -26,7 +26,7 @@ import {
   Telemetry,
   BoundingBox,
   EVENT_STATUS_MAP,
-  VEHICLE_STATUSES,
+  VEHICLE_STATUSES
 } from '@mds-core/mds-types'
 import redis from 'redis'
 import bluebird from 'bluebird'
@@ -38,7 +38,7 @@ import {
   StringifiedCacheReadDeviceResult,
   StringifiedEventWithTelemetry,
   StringifiedTelemetry,
-  StringifiedEvent,
+  StringifiedEvent
 } from './types'
 
 const { env } = process
@@ -251,7 +251,7 @@ async function wipeDevice(device_id: UUID) {
   const keys = [
     decorateKey(`device:${device_id}:event`),
     decorateKey(`device:${device_id}:telemetry`),
-    decorateKey(`device:${device_id}:device`),
+    decorateKey(`device:${device_id}:device`)
   ]
   if (keys.length > 0) {
     log.info('del', ...keys)
@@ -524,7 +524,7 @@ async function seed(dataParam: { devices: Device[]; events: VehicleEvent[]; tele
   const data = dataParam || {
     devices: [],
     events: [],
-    telemetry: [],
+    telemetry: []
   }
   //  log.info('cache seed redis', Object.keys(data).map(key => `${key} (${data[key].length})`))
   //  log.info('cache seed redis', Object.keys(data).forEach(key => `${key} (${data[key].length})`))
@@ -573,7 +573,7 @@ async function cleanup() {
     const report: { telemetry: number; device: number; event: number; [suffix: string]: number } = {
       telemetry: 0,
       device: 0,
-      event: 0,
+      event: 0
     }
     try {
       // look for bogus keys
@@ -626,5 +626,5 @@ export = {
   wipeDevice,
   updateVehicleList,
   cleanup,
-  getMostRecentEventByProvider,
+  getMostRecentEventByProvider
 }
