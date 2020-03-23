@@ -58,7 +58,7 @@ import {
   TEST1_PROVIDER_ID,
   providerName
 } from '@mds-core/mds-providers'
-import { serviceAreaMap } from './test-areas/test-areas'
+import { serviceAreaMap, restrictedAreas, veniceSpecOps } from './test-areas/test-areas'
 
 import { LA_CITY_BOUNDARY } from './la-city-boundary'
 import { DISTRICT_SEVEN } from './district-seven'
@@ -588,5 +588,7 @@ export {
   makeStatusChange,
   makeTrip,
   SCOPED_AUTH,
-  serviceAreaMap
+  serviceAreaMap,
+  restrictedAreas,
+  veniceSpecOps
 }

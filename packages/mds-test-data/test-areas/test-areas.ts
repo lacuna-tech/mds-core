@@ -109,4 +109,4 @@ const serviceAreaMap: {
   }
 }
 
-export { serviceAreaMap }
+export { serviceAreaMap, restrictedAreas, veniceSpecOps }
