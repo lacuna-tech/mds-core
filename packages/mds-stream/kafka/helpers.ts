@@ -17,10 +17,6 @@ export const defaultKafkaErrorHandler = async (err: object) => {
   await log.error(`Kafka Error ${JSON.stringify(err)}`)
 }
 
-export const defaultKafkaMessageConsumer = async (data: Kafka.ConsumerStreamMessage) => {
-  log.info(data)
-}
-
 export const createWriteStreamWrapper = (
   producerOptions: Partial<ProducerOptions>,
   streamOptions: Partial<ProducerStreamOptions>,
@@ -49,7 +45,7 @@ export const createReadStreamWrapper = (
   )
 
   stream.on('error', errorHandler ?? defaultKafkaErrorHandler)
-  stream.on('data', readCb ?? defaultKafkaMessageConsumer)
+  stream.on('data', readCb)
   return stream
 }
 
