@@ -1,4 +1,4 @@
-import { ProducerStream } from 'node-rdkafka'
+import { ProducerStream, ConsumerStream } from 'node-rdkafka'
 
 /*
   FIXME:
@@ -9,11 +9,24 @@ export interface Producer {
   createWriteStream(conf: any, topicConf: any, streamOptions: any): ProducerStream
 }
 
+export interface Consumer {
+  createReadStream(conf: any, topicConfig: any, streamOptions: any): ConsumerStream
+}
+
 export interface ProducerOptions {
   'metadata.broker.list': string
   'queue.buffering.max.messages': number
 }
 
-export interface StreamOptions {
+export interface ConsumerOptions {
+  'metadata.broker.list': string
+  'group.id': string
+}
+
+export interface ProducerStreamOptions {
   topic: string
+}
+
+export interface ConsumerStreamOptions {
+  topics: string[]
 }

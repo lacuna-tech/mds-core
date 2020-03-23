@@ -30,8 +30,10 @@ import {
   ReadStreamOptions,
   StreamItemID
 } from './types'
-import { KafkaStream } from './kafka/stream-kafka'
+import { AgencyKafkaStream } from './kafka/agency-stream-kafka'
 
+export { KafkaStreamReader } from './kafka/read-stream'
+export { KafkaStreamWriter } from './kafka/write-stream'
 const { env } = process
 
 let nats: stan.Stan
@@ -162,7 +164,7 @@ async function getClient() {
 }
 
 async function initialize() {
-  KafkaStream.initialize()
+  AgencyKafkaStream.initialize()
   if (env.SINK) {
     getBinding()
   } else {
@@ -184,7 +186,7 @@ async function shutdown() {
     await cachedClient.quit()
     cachedClient = null
   }
-  KafkaStream.shutdown()
+  AgencyKafkaStream.shutdown()
 }
 
 async function writeStream(stream: Stream, field: string, value: unknown) {
@@ -205,7 +207,7 @@ async function writeDevice(device: Device) {
     await writeNatsEvent('device', JSON.stringify(device))
   }
   if (env.KAFKA_HOST) {
-    await KafkaStream.writeDevice(device)
+    await AgencyKafkaStream.writeDevice(device)
   }
   return writeStream(DEVICE_INDEX_STREAM, 'data', device)
 }
@@ -215,7 +217,7 @@ async function writeEvent(event: VehicleEvent) {
     return writeNatsEvent('event', JSON.stringify(event))
   }
   if (env.KAFKA_HOST) {
-    await KafkaStream.writeEvent(event)
+    await AgencyKafkaStream.writeEvent(event)
   }
   return writeStream(DEVICE_RAW_STREAM, 'event', event)
 }
@@ -226,7 +228,7 @@ async function writeTelemetry(telemetry: Telemetry[]) {
     await Promise.all(telemetry.map(item => writeNatsEvent('telemetry', JSON.stringify(item))))
   }
   if (env.KAFKA_HOST) {
-    await KafkaStream.writeTelemetry(telemetry)
+    await AgencyKafkaStream.writeTelemetry(telemetry)
   }
   const start = now()
   await writeStreamBatch(DEVICE_RAW_STREAM, 'telemetry', telemetry)
