@@ -14,7 +14,7 @@ import {
   getVehicleById,
   getVehiclesByProvider,
   updateVehicleFail,
-  updateVehicle
+  updateVehicle,
 } from '../request-handlers'
 import * as utils from '../utils'
 
@@ -35,14 +35,14 @@ describe('Agency API request handlers', () => {
           replacement_area: null,
           type: 'unrestricted',
           description: 'Los Angeles',
-          area: {} as any
-        }
+          area: {} as any,
+        },
       ]
       Sinon.replace(areas, 'readServiceAreas', Sinon.fake.resolves(serviceAreas))
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       await getAllServiceAreas({} as AgencyApiRequest, res)
@@ -56,7 +56,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       await getAllServiceAreas({} as AgencyApiRequest, res)
@@ -76,15 +76,15 @@ describe('Agency API request handlers', () => {
           replacement_area: null,
           type: 'unrestricted',
           description: 'Los Angeles',
-          area: {} as any
-        }
+          area: {} as any,
+        },
       ]
       Sinon.replace(areas, 'readServiceAreas', Sinon.fake.resolves(serviceAreas))
       const service_area_id = uuid()
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       await getServiceAreaById({ params: { service_area_id } } as AgencyApiRequest<{ service_area_id: string }>, res)
@@ -99,7 +99,7 @@ describe('Agency API request handlers', () => {
       const service_area_id = uuid()
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       await getServiceAreaById({ params: { service_area_id } } as AgencyApiRequest<{ service_area_id: string }>, res)
@@ -114,7 +114,7 @@ describe('Agency API request handlers', () => {
       const service_area_id = uuid()
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       await getServiceAreaById({ params: { service_area_id } } as AgencyApiRequest<{ service_area_id: string }>, res)
@@ -129,7 +129,7 @@ describe('Agency API request handlers', () => {
       const service_area_id = 'not-a-uuid'
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       await getServiceAreaById({ params: { service_area_id } } as AgencyApiRequest<{ service_area_id: string }>, res)
@@ -152,7 +152,7 @@ describe('Agency API request handlers', () => {
         propulsion,
         year: 1990,
         mfgr: 'foo inc.',
-        model: 'i date one'
+        model: 'i date one',
       }
       return body
     }
@@ -164,7 +164,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -180,7 +180,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -197,7 +197,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -214,7 +214,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -231,7 +231,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -251,7 +251,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -273,7 +273,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -283,7 +283,7 @@ describe('Agency API request handlers', () => {
       await getVehicleById(
         {
           params: { device_id },
-          query: { cached: false }
+          query: { cached: false },
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )
@@ -298,7 +298,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -306,7 +306,7 @@ describe('Agency API request handlers', () => {
         db,
         'readDevice',
         Sinon.fake.resolves({
-          provider_id
+          provider_id,
         })
       )
       Sinon.replace(db, 'readEvent', Sinon.fake.resolves({}))
@@ -315,7 +315,7 @@ describe('Agency API request handlers', () => {
       await getVehicleById(
         {
           params: { device_id },
-          query: { cached: false }
+          query: { cached: false },
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )
@@ -332,7 +332,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -341,7 +341,7 @@ describe('Agency API request handlers', () => {
         {
           params: { device_id },
           query: { cached: false },
-          get: Sinon.fake.returns('foo') as any
+          get: Sinon.fake.returns('foo') as any,
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )
@@ -356,7 +356,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -365,7 +365,7 @@ describe('Agency API request handlers', () => {
         {
           params: { device_id },
           query: { cached: false },
-          get: Sinon.fake.returns('foo') as any
+          get: Sinon.fake.returns('foo') as any,
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )
@@ -383,7 +383,7 @@ describe('Agency API request handlers', () => {
         const res: AgencyApiResponse = {} as AgencyApiResponse
         const sendHandler = Sinon.fake.returns('asdf')
         const statusHandler = Sinon.fake.returns({
-          send: sendHandler
+          send: sendHandler,
         } as any)
         res.status = statusHandler
         res.locals = getLocals(provider_id) as any
@@ -392,7 +392,7 @@ describe('Agency API request handlers', () => {
           {
             params: { device_id },
             query: { cached: false },
-            get: Sinon.fake.returns('foo') as any
+            get: Sinon.fake.returns('foo') as any,
           } as AgencyApiRequest<{ device_id: string }>,
           res,
           provider_id,
@@ -402,7 +402,7 @@ describe('Agency API request handlers', () => {
         assert.equal(statusHandler.calledWith(404), true)
         assert.equal(
           sendHandler.calledWith({
-            error: 'not_found'
+            error: 'not_found',
           }),
           true
         )
@@ -415,7 +415,7 @@ describe('Agency API request handlers', () => {
         const res: AgencyApiResponse = {} as AgencyApiResponse
         const sendHandler = Sinon.fake.returns('asdf')
         const statusHandler = Sinon.fake.returns({
-          send: sendHandler
+          send: sendHandler,
         } as any)
         res.status = statusHandler
         res.locals = getLocals(provider_id) as any
@@ -424,7 +424,7 @@ describe('Agency API request handlers', () => {
           {
             params: { device_id },
             query: { cached: false },
-            get: Sinon.fake.returns('foo') as any
+            get: Sinon.fake.returns('foo') as any,
           } as AgencyApiRequest<{ device_id: string }>,
           res,
           provider_id,
@@ -434,7 +434,7 @@ describe('Agency API request handlers', () => {
         assert.equal(statusHandler.calledWith(400), true)
         assert.equal(
           sendHandler.calledWith({
-            error: 'invalid_data'
+            error: 'invalid_data',
           }),
           true
         )
@@ -447,7 +447,7 @@ describe('Agency API request handlers', () => {
         const res: AgencyApiResponse = {} as AgencyApiResponse
         const sendHandler = Sinon.fake.returns('asdf')
         const statusHandler = Sinon.fake.returns({
-          send: sendHandler
+          send: sendHandler,
         } as any)
         res.status = statusHandler
         res.locals = getLocals(provider_id) as any
@@ -456,7 +456,7 @@ describe('Agency API request handlers', () => {
           {
             params: { device_id },
             query: { cached: false },
-            get: Sinon.fake.returns('foo') as any
+            get: Sinon.fake.returns('foo') as any,
           } as AgencyApiRequest<{ device_id: string }>,
           res,
           provider_id,
@@ -466,7 +466,7 @@ describe('Agency API request handlers', () => {
         assert.equal(statusHandler.calledWith(404), true)
         assert.equal(
           sendHandler.calledWith({
-            error: 'not_found'
+            error: 'not_found',
           }),
           true
         )
@@ -479,7 +479,7 @@ describe('Agency API request handlers', () => {
         const res: AgencyApiResponse = {} as AgencyApiResponse
         const sendHandler = Sinon.fake.returns('asdf')
         const statusHandler = Sinon.fake.returns({
-          send: sendHandler
+          send: sendHandler,
         } as any)
         res.status = statusHandler
         res.locals = getLocals(provider_id) as any
@@ -488,7 +488,7 @@ describe('Agency API request handlers', () => {
           {
             params: { device_id },
             query: { cached: false },
-            get: Sinon.fake.returns('foo') as any
+            get: Sinon.fake.returns('foo') as any,
           } as AgencyApiRequest<{ device_id: string }>,
           res,
           provider_id,
@@ -507,7 +507,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -516,7 +516,7 @@ describe('Agency API request handlers', () => {
         {
           params: { device_id },
           query: { cached: false },
-          get: Sinon.fake.returns('foo') as any
+          get: Sinon.fake.returns('foo') as any,
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )
@@ -532,7 +532,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -542,7 +542,7 @@ describe('Agency API request handlers', () => {
           params: { device_id },
           query: { cached: false },
           get: Sinon.fake.returns('foo') as any,
-          body: { vehicle_id }
+          body: { vehicle_id },
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )
@@ -558,7 +558,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -568,7 +568,7 @@ describe('Agency API request handlers', () => {
           params: { device_id },
           query: { cached: false },
           get: Sinon.fake.returns('foo') as any,
-          body: { vehicle_id }
+          body: { vehicle_id },
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )
@@ -584,7 +584,7 @@ describe('Agency API request handlers', () => {
       const res: AgencyApiResponse = {} as AgencyApiResponse
       const sendHandler = Sinon.fake.returns('asdf')
       const statusHandler = Sinon.fake.returns({
-        send: sendHandler
+        send: sendHandler,
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
@@ -597,7 +597,7 @@ describe('Agency API request handlers', () => {
           params: { device_id },
           query: { cached: false },
           get: Sinon.fake.returns('foo') as any,
-          body: { vehicle_id }
+          body: { vehicle_id },
         } as AgencyApiRequest<{ device_id: string }>,
         res
       )

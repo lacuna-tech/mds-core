@@ -25,11 +25,11 @@ export const wipeDevice = async (req: AgencyApiRequest, res: AgencyApiResponse) 
     await log.info('db wiped', dbResult)
     if (cacheResult >= 1) {
       res.status(200).send({
-        result: `successfully wiped ${device_id}`
+        result: `successfully wiped ${device_id}`,
       })
     } else {
       res.status(404).send({
-        result: `${device_id} not found (${cacheResult})`
+        result: `${device_id} not found (${cacheResult})`,
       })
     }
   } catch (err) {
@@ -51,10 +51,10 @@ export const refreshCache = async (req: AgencyApiRequest, res: AgencyApiResponse
     const devices = rows.slice(skip, take + skip)
     await log.info('device_ids', devices)
 
-    const promises = devices.map(device => refresh(device.device_id, device.provider_id))
+    const promises = devices.map((device) => refresh(device.device_id, device.provider_id))
     await Promise.all(promises)
     res.status(200).send({
-      result: `success for ${devices.length} devices`
+      result: `success for ${devices.length} devices`,
     })
   } catch (err) {
     await log.error('cache refresh fail', err)

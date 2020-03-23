@@ -20,7 +20,7 @@ import * as migrations from './migrations'
 
 const connections = Connections({
   entities: Object.values(entities),
-  migrations: Object.values(migrations)
+  migrations: Object.values(migrations),
 })
 
 // Make connections array available for TypeScript import

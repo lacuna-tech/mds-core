@@ -25,17 +25,17 @@ const LosAngeles = { lat: 34.052235, lng: -118.243683 }
 const BostonToLA = 4169605.469765776
 
 describe('Tests Utilities', () => {
-  it('routeDistance: Verifies single point', done => {
+  it('routeDistance: Verifies single point', (done) => {
     test.value(routeDistance([Boston])).is(0)
     done()
   })
 
-  it('routeDistance: Verifies 2 points', done => {
+  it('routeDistance: Verifies 2 points', (done) => {
     test.value(routeDistance([Boston, LosAngeles])).is(BostonToLA)
     done()
   })
 
-  it('routeDistance: Verifies 2+ points', done => {
+  it('routeDistance: Verifies 2+ points', (done) => {
     test.value(routeDistance([Boston, LosAngeles, Boston])).is(BostonToLA * 2)
     done()
   })

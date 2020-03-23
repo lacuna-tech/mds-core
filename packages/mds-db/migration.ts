@@ -12,7 +12,7 @@ const MIGRATIONS = [
   'dropDeprecatedProviderTables',
   'dropReadOnlyGeographyColumn',
   'dropAuditEventsColumns',
-  'alterReportsTripsMigration'
+  'alterReportsTripsMigration',
 ] as const
 type MIGRATION = typeof MIGRATIONS[number]
 
@@ -51,14 +51,14 @@ async function addIndex(
   const indexName = `idx_${column}_${table}`
 
   const {
-    rows: { length: hasColumn }
+    rows: { length: hasColumn },
   } = await exec(
     `SELECT column_name FROM information_schema.columns WHERE table_name='${table}' AND column_name='${column}' AND table_catalog=CURRENT_CATALOG AND table_schema=CURRENT_SCHEMA`
   )
 
   if (hasColumn) {
     const {
-      rows: { length: hasIndex }
+      rows: { length: hasIndex },
     } = await exec(`SELECT tablename FROM pg_indexes WHERE tablename='${table}' AND indexname='${indexName}'`)
 
     if (!hasIndex) {
@@ -87,24 +87,24 @@ async function createTables(client: MDSPostgresClient) {
     await log.warn('existing', JSON.stringify(existing.rows), 'missing', JSON.stringify(missing))
     const create = missing
       .map(
-        table =>
+        (table) =>
           `CREATE TABLE ${table} (${schema.TABLE_COLUMNS[table]
-            .map(column => `${column} ${schema.COLUMN_TYPE[column]}`)
+            .map((column) => `${column} ${schema.COLUMN_TYPE[column]}`)
             .join(', ')}, PRIMARY KEY (${csv(schema.TABLE_KEY[table])}));`
       )
       .join('\n')
     await log.warn(create)
     await exec(create)
     await log.info('postgres create table suceeded')
-    await Promise.all(missing.map(table => addIndex(client, table, schema.COLUMN.recorded)))
-    await Promise.all(missing.map(table => addIndex(client, table, schema.COLUMN.id, { unique: true })))
+    await Promise.all(missing.map((table) => addIndex(client, table, schema.COLUMN.recorded)))
+    await Promise.all(missing.map((table) => addIndex(client, table, schema.COLUMN.id, { unique: true })))
     await addForeignKey(client, schema.TABLE.policy_metadata, schema.TABLE.policies, schema.COLUMN.policy_id)
     await addForeignKey(client, schema.TABLE.geography_metadata, schema.TABLE.geographies, schema.COLUMN.geography_id)
     // If the migrations table is being created then this is a new installation and all known migrations can be marked as run
     if (create.includes(schema.TABLE.migrations)) {
       await exec(
         `INSERT INTO ${schema.TABLE.migrations} (${cols_sql(schema.TABLE_COLUMNS.migrations)}) VALUES ${MIGRATIONS.map(
-          migration => `('${migration}', ${now()})`
+          (migration) => `('${migration}', ${now()})`
         ).join(', ')}`
       )
     }

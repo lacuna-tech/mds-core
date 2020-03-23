@@ -20,7 +20,7 @@ export async function writeEvent(event: VehicleEvent) {
   const values = vals_list(schema.TABLE_COLUMNS.events, { ...event, telemetry_timestamp })
   await logSql(sql, values)
   const {
-    rows: [recorded_event]
+    rows: [recorded_event],
   }: { rows: Recorded<VehicleEvent>[] } = await client.query(sql, values)
   return { ...event, ...recorded_event }
 }
@@ -94,7 +94,7 @@ export async function readEvents(params: ReadEventsQueryParams): Promise<ReadEve
   const events = res2.rows
   return {
     events,
-    count
+    count,
   }
 }
 
@@ -151,12 +151,12 @@ export async function readEventsForStatusChanges(params: ReadEventsQueryParams):
           ? {
               timestamp: telemetry_timestamp,
               gps: { lat, lng, speed, heading, accuracy, altitude },
-              charge
+              charge,
             }
-          : null
+          : null,
       })
     ),
-    count
+    count,
   }
 }
 
@@ -226,7 +226,7 @@ WHERE         timestamp < '${end_date}'`
       speed,
       heading,
       accuracy,
-      altitude
+      altitude,
     } = row
     return [
       ...acc,
@@ -246,10 +246,10 @@ WHERE         timestamp < '${end_date}'`
             speed,
             heading,
             accuracy,
-            altitude
-          }
-        }
-      }
+            altitude,
+          },
+        },
+      },
     ]
   }, [])
   return events
@@ -294,7 +294,7 @@ export async function readEventsWithTelemetry({
   end_time,
   order_by = 'id',
   last_id = 0,
-  limit = 1000
+  limit = 1000,
 }: Partial<{
   device_id: UUID
   provider_id: UUID
@@ -360,9 +360,9 @@ export async function readEventsWithTelemetry({
       ? {
           timestamp: telemetry_timestamp,
           gps: { lat, lng, speed, heading, accuracy, altitude },
-          charge
+          charge,
         }
-      : null
+      : null,
   }))
 }
 

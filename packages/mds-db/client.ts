@@ -26,10 +26,10 @@ async function setupClient(useWriteable: boolean): Promise<MDSPostgresClient> {
     database: PG_NAME,
     user: PG_USER,
     host: PG_HOST || 'localhost',
-    port: Number(PG_PORT) || 5432
+    port: Number(PG_PORT) || 5432,
   }
 
-  await log.info('connecting to postgres:', ...Object.keys(info).map(key => (info as { [x: string]: unknown })[key]))
+  await log.info('connecting to postgres:', ...Object.keys(info).map((key) => (info as { [x: string]: unknown })[key]))
 
   const client = configureClient({ ...info, password: PG_PASS })
 

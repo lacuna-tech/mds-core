@@ -29,7 +29,7 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_STATUS,
   BBox,
-  VEHICLE_EVENT
+  VEHICLE_EVENT,
 } from '@mds-core/mds-types'
 import { TelemetryRecord } from '@mds-core/mds-db/types'
 import log from '@mds-core/mds-logger'
@@ -200,7 +200,7 @@ function calcBBox(geometry: Geometry): BBox {
     latMin,
     latMax,
     lngMin,
-    lngMax
+    lngMax,
   }
 }
 
@@ -302,7 +302,7 @@ function makePointInShape(shape: Geometry): { lat: number; lng: number } {
     if (pointInShape(pt, shapeToCreate)) {
       return {
         lng: pt[0],
-        lat: pt[1]
+        lat: pt[1],
       }
     }
     tries += 1
@@ -397,7 +397,7 @@ function parseBBox(bbox_str: string): { lngMin: number; lngMax: number; latMin: 
     lngMin: Math.min(lng1, lng2),
     lngMax: Math.max(lng1, lng2),
     latMin: Math.min(lat1, lat2),
-    latMax: Math.max(lat1, lat2)
+    latMax: Math.max(lat1, lat2),
   }
 }
 
@@ -406,7 +406,7 @@ function capitalizeFirst(s: string): string {
 }
 
 function nullKeys<T>(obj: { [key: string]: T }): string[] {
-  return Object.keys(obj).filter(key => obj[key] === null || obj[key] === undefined)
+  return Object.keys(obj).filter((key) => obj[key] === null || obj[key] === undefined)
 }
 
 function stripNulls<T extends {}>(obj: { [x: string]: unknown }): Partial<T> {
@@ -471,7 +471,7 @@ function convertTelemetryToTelemetryRecord(telemetry: Telemetry): TelemetryRecor
     heading,
     speed,
     accuracy,
-    recorded
+    recorded,
   }
 }
 
@@ -479,7 +479,7 @@ function convertTelemetryRecordToTelemetry(telemetryRecord: TelemetryRecord): Te
   const { lat, lng, altitude, heading, speed, accuracy, ...props } = telemetryRecord
   return {
     ...props,
-    gps: { lat, lng, altitude, heading, speed, accuracy }
+    gps: { lat, lng, altitude, heading, speed, accuracy },
   }
 }
 
@@ -536,7 +536,7 @@ function isInStatesOrEvents(rule: Rule, event: VehicleEvent): boolean {
 function routeDistance(coordinates: { lat: number; lng: number }[]): number {
   const R = 6371000 // Earth's mean radius in meters
   return (coordinates || [])
-    .map(coordinate => [rad(coordinate.lat), rad(coordinate.lng)])
+    .map((coordinate) => [rad(coordinate.lat), rad(coordinate.lng)])
     .reduce((distance, point, index, points) => {
       if (index > 0) {
         const [lat1, lng1] = points[index - 1]
@@ -572,8 +572,8 @@ function filterEmptyHelper<T>(warnOnEmpty?: boolean) {
 function findServiceAreas(lng: number, lat: number): { id: string; type: string }[] {
   const turfPT = turfPoint([lng, lat])
   return Object.keys(serviceAreaMap)
-    .filter(i => turf(turfPT, serviceAreaMap[i].area))
-    .map(key => {
+    .filter((i) => turf(turfPT, serviceAreaMap[i].area))
+    .map((key) => {
       return { id: key, type: 'district' }
     })
 }
@@ -640,5 +640,5 @@ export {
   moved,
   normalizeToArray,
   parseRelative,
-  getCurrentDate
+  getCurrentDate,
 }

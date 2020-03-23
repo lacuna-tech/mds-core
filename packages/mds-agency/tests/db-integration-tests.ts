@@ -38,7 +38,7 @@ import {
   Device,
   VehicleEvent,
   Geography,
-  Stop
+  Stop,
 } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
@@ -73,10 +73,10 @@ const TEST_TELEMETRY = {
     lng: -121.8863,
     speed: 0,
     hdop: 1,
-    heading: 180
+    heading: 180,
   },
   charge: 0.5,
-  timestamp: now()
+  timestamp: now(),
 }
 const TEST_TELEMETRY2 = {
   device_id: DEVICE_UUID,
@@ -86,10 +86,10 @@ const TEST_TELEMETRY2 = {
     speed: 0,
     hdop: 1,
     heading: 180,
-    satellites: 10
+    satellites: 10,
   },
   charge: 0.5,
-  timestamp: now() + 1000
+  timestamp: now() + 1000,
 }
 
 const TEST_VEHICLE = {
@@ -100,7 +100,7 @@ const TEST_VEHICLE = {
   propulsion: [PROPULSION_TYPES.human],
   year: 2018,
   mfgr: 'Schwinn',
-  model: 'Mantaray'
+  model: 'Mantaray',
 }
 
 let testTimestamp = now()
@@ -108,7 +108,7 @@ let testTimestamp = now()
 const test_event = {
   device_id: DEVICE_UUID,
   event_type: VEHICLE_EVENTS.deregister,
-  timestamp: testTimestamp
+  timestamp: testTimestamp,
 }
 
 testTimestamp += 1
@@ -116,7 +116,7 @@ testTimestamp += 1
 const LAGeography: Geography = {
   name: 'Los Angeles',
   geography_id: GEOGRAPHY_UUID,
-  geography_json: LA_CITY_BOUNDARY
+  geography_json: LA_CITY_BOUNDARY,
 }
 
 function deepCopy<T>(obj: T): T {
@@ -141,7 +141,7 @@ after(async () => {
 })
 
 describe('Tests API', () => {
-  it('verifies non-uuid provider_id is rejected', done => {
+  it('verifies non-uuid provider_id is rejected', (done) => {
     request
       .get('/devices')
       .set('Authorization', AUTH_GARBAGE_PROVIDER)
@@ -153,7 +153,7 @@ describe('Tests API', () => {
       })
   })
 
-  it('verifies unknown provider_id is rejected', done => {
+  it('verifies unknown provider_id is rejected', (done) => {
     request
       .get('/devices')
       .set('Authorization', AUTH_UNKNOWN_UUID_PROVIDER)
@@ -165,7 +165,7 @@ describe('Tests API', () => {
       })
   })
 
-  it('verifies unable to access admin if not scoped', done => {
+  it('verifies unable to access admin if not scoped', (done) => {
     request
       .get('/admin/cache/info')
       .set('Authorization', AUTH_NO_SCOPE)
@@ -177,7 +177,7 @@ describe('Tests API', () => {
       })
   })
 
-  it('verifies post device failure nothing in body', done => {
+  it('verifies post device failure nothing in body', (done) => {
     request
       .post('/vehicles')
       .set('Authorization', AUTH)
@@ -189,7 +189,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies get non-existent device', done => {
+  it('verifies get non-existent device', (done) => {
     request
       .get(`/vehicles/${DEVICE_UUID}`)
       .set('Authorization', AUTH)
@@ -201,7 +201,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies get non-existent device from cache', done => {
+  it('verifies get non-existent device from cache', (done) => {
     request
       .get(`/vehicles/${DEVICE_UUID}?cached=true`)
       .set('Authorization', AUTH)
@@ -213,7 +213,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post device bad device id', done => {
+  it('verifies post device bad device id', (done) => {
     const badVehicle = deepCopy(TEST_VEHICLE)
     badVehicle.device_id = 'bad'
     request
@@ -241,7 +241,7 @@ describe('Tests API', () => {
   //             done(err)
   //         })
   // })
-  it('verifies post device missing propulsion', done => {
+  it('verifies post device missing propulsion', (done) => {
     const badVehicle = deepCopy(TEST_VEHICLE)
     delete badVehicle.propulsion
     request
@@ -257,7 +257,7 @@ describe('Tests API', () => {
       })
   })
 
-  it('verifies post device bad propulsion', done => {
+  it('verifies post device bad propulsion', (done) => {
     const badVehicle = deepCopy(TEST_VEHICLE)
     // @ts-ignore: Spoofing garbage data
     badVehicle.propulsion = ['hamster']
@@ -287,7 +287,7 @@ describe('Tests API', () => {
   //             done(err)
   //         })
   // })
-  it('verifies post device bad year', done => {
+  it('verifies post device bad year', (done) => {
     const badVehicle = deepCopy(TEST_VEHICLE)
     // @ts-ignore: Spoofing garbage data
     badVehicle.year = 'hamster'
@@ -304,7 +304,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post device out-of-range year', done => {
+  it('verifies post device out-of-range year', (done) => {
     const badVehicle = deepCopy(TEST_VEHICLE)
     badVehicle.year = 3000
     request
@@ -320,7 +320,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post device missing type', done => {
+  it('verifies post device missing type', (done) => {
     const badVehicle = deepCopy(TEST_VEHICLE)
     delete badVehicle.type
     request
@@ -335,7 +335,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post device bad type', done => {
+  it('verifies post device bad type', (done) => {
     const badVehicle = deepCopy(TEST_VEHICLE)
     // @ts-ignore: Spoofing garbage data
     badVehicle.type = 'hamster'
@@ -353,7 +353,7 @@ describe('Tests API', () => {
       })
   })
 
-  it('verifies post device success', done => {
+  it('verifies post device success', (done) => {
     request
       .post('/vehicles')
       .set('Authorization', AUTH)
@@ -366,7 +366,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies read back all devices from db', done => {
+  it('verifies read back all devices from db', (done) => {
     request
       .get('/vehicles')
       .set('Authorization', AUTH)
@@ -381,7 +381,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies get device readback success (database)', done => {
+  it('verifies get device readback success (database)', (done) => {
     request
       .get(`/vehicles/${DEVICE_UUID}`)
       .set('Authorization', AUTH)
@@ -395,7 +395,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies get device readback success (cache)', done => {
+  it('verifies get device readback success (cache)', (done) => {
     request
       .get(`/vehicles/${DEVICE_UUID}?cached=true`)
       .set('Authorization', AUTH)
@@ -409,7 +409,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies get device readback failure (provider mismatch database)', done => {
+  it('verifies get device readback failure (provider mismatch database)', (done) => {
     request
       .get(`/vehicles/${DEVICE_UUID}`)
       .set('Authorization', AUTH2)
@@ -421,7 +421,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies get device readback failure (provider mismatch cache)', done => {
+  it('verifies get device readback failure (provider mismatch cache)', (done) => {
     request
       .get(`/vehicles/${DEVICE_UUID}?cached=true`)
       .set('Authorization', AUTH2)
@@ -433,7 +433,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post same device fails as expected', done => {
+  it('verifies post same device fails as expected', (done) => {
     request
       .post('/vehicles')
       .set('Authorization', AUTH)
@@ -447,12 +447,12 @@ describe('Tests API', () => {
       })
   })
   const NEW_VEHICLE_ID = 'new-vehicle-id'
-  it('verifies put update success', done => {
+  it('verifies put update success', (done) => {
     request
       .put(`/vehicles/${TEST_VEHICLE.device_id}`)
       .set('Authorization', AUTH)
       .send({
-        vehicle_id: NEW_VEHICLE_ID
+        vehicle_id: NEW_VEHICLE_ID,
       })
       .expect(201)
       .end((err, result) => {
@@ -462,12 +462,12 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies put update failure (provider mismatch)', done => {
+  it('verifies put update failure (provider mismatch)', (done) => {
     request
       .put(`/vehicles/${TEST_VEHICLE.device_id}`)
       .set('Authorization', AUTH2)
       .send({
-        vehicle_id: NEW_VEHICLE_ID
+        vehicle_id: NEW_VEHICLE_ID,
       })
       .expect(404)
       .end((err, result) => {
@@ -477,7 +477,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies get device readback success after update (database)', done => {
+  it('verifies get device readback success after update (database)', (done) => {
     request
       .get(`/vehicles/${DEVICE_UUID}`)
       .set('Authorization', AUTH)
@@ -488,7 +488,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies get device readback success after update (cache)', done => {
+  it('verifies get device readback success after update (cache)', (done) => {
     request
       .get(`/vehicles/${DEVICE_UUID}?cached=true`)
       .set('Authorization', AUTH)
@@ -499,12 +499,12 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies put bogus device_id fail', done => {
+  it('verifies put bogus device_id fail', (done) => {
     request
       .put('/vehicles/' + 'hamster')
       .set('Authorization', AUTH)
       .send({
-        vehicle_id: 'new-vehicle-id'
+        vehicle_id: 'new-vehicle-id',
       })
       .expect(400)
       .end((err, result) => {
@@ -514,12 +514,12 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies put non-existent device_id fail', done => {
+  it('verifies put non-existent device_id fail', (done) => {
     request
       .put(`/vehicles/${TRIP_UUID}`)
       .set('Authorization', AUTH)
       .send({
-        vehicle_id: 'new-vehicle-id'
+        vehicle_id: 'new-vehicle-id',
       })
       .expect(404)
       .end((err, result) => {
@@ -528,7 +528,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies read back all device_ids from db', done => {
+  it('verifies read back all device_ids from db', (done) => {
     request
       .get('/admin/vehicle_ids')
       .set('Authorization', AUTH)
@@ -538,7 +538,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies read back for non-existent provider fails', done => {
+  it('verifies read back for non-existent provider fails', (done) => {
     request
       .get('/admin/vehicle_ids?provider_id=123potato')
       .set('Authorization', AUTH)
@@ -554,7 +554,7 @@ describe('Tests API', () => {
     await cache.reset()
   })
 
-  it('refreshes the cache', done => {
+  it('refreshes the cache', (done) => {
     request
       .get('/admin/cache/refresh')
       .set('Authorization', AUTH)
@@ -569,14 +569,14 @@ describe('Tests API', () => {
     await db.shutdown()
   })
 
-  it('verifies service_start success', done => {
+  it('verifies service_start success', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
       .send({
         event_type: 'service_start',
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp + 10000
+        timestamp: testTimestamp + 10000,
       })
       .expect(201)
       .end((err, result) => {
@@ -587,7 +587,7 @@ describe('Tests API', () => {
       })
   })
 
-  it('verifies read back all devices from db', done => {
+  it('verifies read back all devices from db', (done) => {
     request
       .get('/vehicles')
       .set('Authorization', AUTH)
@@ -602,14 +602,14 @@ describe('Tests API', () => {
       })
   })
 
-  it('verifies service_end success', done => {
+  it('verifies service_end success', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
       .send({
         event_type: VEHICLE_EVENTS.service_end,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp
+        timestamp: testTimestamp,
       })
       .expect(201)
       .end((err, result) => {
@@ -620,7 +620,7 @@ describe('Tests API', () => {
   })
 
   // status
-  it('verifies post device status deregister success', done => {
+  it('verifies post device status deregister success', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -638,14 +638,14 @@ describe('Tests API', () => {
     test.assert(event.device_id === DEVICE_UUID)
   })
 
-  it('verifies post device status bogus event', done => {
+  it('verifies post device status bogus event', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
       .send({
         event_type: 'BOGUS',
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(400)
       .end((err, result) => {
@@ -653,14 +653,14 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post device status bogus DEVICE_UUID', done => {
+  it('verifies post device status bogus DEVICE_UUID', (done) => {
     request
       .post('/vehicles/' + 'bogus' + '/event')
       .set('Authorization', AUTH)
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(400)
       .end((err, result) => {
@@ -669,14 +669,14 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post device status provider mismatch', done => {
+  it('verifies post device status provider mismatch', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH2)
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(400)
       .end((err, result) => {
@@ -685,13 +685,13 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post device status missing timestamp', done => {
+  it('verifies post device status missing timestamp', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
-        telemetry: TEST_TELEMETRY
+        telemetry: TEST_TELEMETRY,
       })
       .expect(400)
       .end((err, result) => {
@@ -701,14 +701,14 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post device status bad timestamp', done => {
+  it('verifies post device status bad timestamp', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
       .send({
         event_type: 'provider_drop_off',
         telemetry: TEST_TELEMETRY,
-        timestamp: 'hamster'
+        timestamp: 'hamster',
       })
       .expect(400)
       .end((err, result) => {
@@ -718,14 +718,14 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post device maintenance event', done => {
+  it('verifies post device maintenance event', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(201)
       .end((err, result) => {
@@ -734,14 +734,14 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post duplicate event fails as expected', done => {
+  it('verifies post duplicate event fails as expected', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp - 1
+        timestamp: testTimestamp - 1,
       })
       .expect(409)
       .end((err, result) => {
@@ -750,14 +750,14 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post event to non-existent vehicle fails as expected', done => {
+  it('verifies post event to non-existent vehicle fails as expected', (done) => {
     request
       .post(`/vehicles/${TRIP_UUID}/event`)
       .set('Authorization', AUTH)
       .send({
         event_type: VEHICLE_EVENTS.provider_pick_up,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp
+        timestamp: testTimestamp,
       })
       .expect(400)
       .end((err, result) => {
@@ -766,7 +766,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post event with bad event_type_reason fails', done => {
+  it('verifies post event with bad event_type_reason fails', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -774,7 +774,7 @@ describe('Tests API', () => {
         event_type: VEHICLE_EVENTS.provider_pick_up,
         event_type_reason: 'not_an_event_type',
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp
+        timestamp: testTimestamp,
       })
       .expect(400)
       .end((err, result) => {
@@ -785,7 +785,7 @@ describe('Tests API', () => {
   })
 
   // start_trip
-  it('verifies post start trip success', done => {
+  it('verifies post start trip success', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -793,7 +793,7 @@ describe('Tests API', () => {
         event_type: 'trip_start',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(201)
       .end((err, result) => {
@@ -801,7 +801,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post start trip without trip-id fails', done => {
+  it('verifies post start trip without trip-id fails', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -809,7 +809,7 @@ describe('Tests API', () => {
         event_type: 'trip_start',
         // trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(400)
       .end((err, result) => {
@@ -817,7 +817,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post trip leave success', done => {
+  it('verifies post trip leave success', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -825,7 +825,7 @@ describe('Tests API', () => {
         event_type: 'trip_leave',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(201)
       .end((err, result) => {
@@ -833,7 +833,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post trip enter success', done => {
+  it('verifies post trip enter success', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -841,7 +841,7 @@ describe('Tests API', () => {
         event_type: 'trip_enter',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(201)
       .end((err, result) => {
@@ -849,7 +849,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post end trip success', done => {
+  it('verifies post end trip success', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -857,7 +857,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(201)
       .end((err, result) => {
@@ -872,7 +872,7 @@ describe('Tests API', () => {
     test.value(telemetry.device_id).is(TEST_TELEMETRY.device_id)
   })
 
-  it('verifies post reserve success', done => {
+  it('verifies post reserve success', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -880,7 +880,7 @@ describe('Tests API', () => {
         event_type: VEHICLE_EVENTS.reserve,
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(201)
       .end((err, result) => {
@@ -888,7 +888,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post reserve cancellation success', done => {
+  it('verifies post reserve cancellation success', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -896,7 +896,7 @@ describe('Tests API', () => {
         event_type: VEHICLE_EVENTS.cancel_reservation,
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(201)
       .end((err, result) => {
@@ -908,7 +908,7 @@ describe('Tests API', () => {
   const telemetry_without_device_id = deepCopy(TEST_TELEMETRY)
   delete telemetry_without_device_id.device_id
 
-  it('verifies post start trip missing event', done => {
+  it('verifies post start trip missing event', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -916,7 +916,7 @@ describe('Tests API', () => {
         // event_type: 'trip_start',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(400)
       .end((err, result) => {
@@ -930,14 +930,14 @@ describe('Tests API', () => {
   delete telemetry_without_location.gps.lat
   delete telemetry_without_location.gps.lng
 
-  it('verifies post trip start missing location', done => {
+  it('verifies post trip start missing location', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
       .send({
         event_type: 'trip_start',
         trip_id: TRIP_UUID,
-        timestamp: testTimestamp++
+        timestamp: testTimestamp++,
       })
       .expect(400)
       .end((err, result) => {
@@ -948,7 +948,7 @@ describe('Tests API', () => {
       })
   })
 
-  it('verifies post trip end fail bad trip_id', done => {
+  it('verifies post trip end fail bad trip_id', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -956,7 +956,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: 'BOGUS',
         timestamp: testTimestamp++,
-        telemetry: TEST_TELEMETRY
+        telemetry: TEST_TELEMETRY,
       })
       .expect(400)
       .end((err, result) => {
@@ -970,7 +970,7 @@ describe('Tests API', () => {
   // @ts-ignore: Spoofing garbage data
   telemetry_with_bad_lat.gps.lat = 'hamster'
 
-  it('verifies post trip end fail bad latitude', done => {
+  it('verifies post trip end fail bad latitude', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -978,7 +978,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        telemetry: telemetry_with_bad_lat
+        telemetry: telemetry_with_bad_lat,
       })
       .expect(400)
       .end((err, result) => {
@@ -992,7 +992,7 @@ describe('Tests API', () => {
   // @ts-ignore: Spoofing garbage data
   telemetry_with_bad_alt.gps.altitude = 'hamster'
 
-  it('verifies post trip end fail bad altitude', done => {
+  it('verifies post trip end fail bad altitude', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -1000,7 +1000,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        telemetry: telemetry_with_bad_alt
+        telemetry: telemetry_with_bad_alt,
       })
       .expect(400)
       .end((err, result) => {
@@ -1014,7 +1014,7 @@ describe('Tests API', () => {
   // @ts-ignore: Spoofing garbage data
   telemetry_with_bad_accuracy.gps.accuracy = 'potato'
 
-  it('verifies post trip end fail bad accuracy', done => {
+  it('verifies post trip end fail bad accuracy', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -1022,7 +1022,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        telemetry: telemetry_with_bad_accuracy
+        telemetry: telemetry_with_bad_accuracy,
       })
       .expect(400)
       .end((err, result) => {
@@ -1035,7 +1035,7 @@ describe('Tests API', () => {
   // @ts-ignore: Spoofing garbage data
   telemetry_with_bad_speed.gps.speed = 'potato'
 
-  it('verifies post trip end fail bad speed', done => {
+  it('verifies post trip end fail bad speed', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -1043,7 +1043,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        telemetry: telemetry_with_bad_speed
+        telemetry: telemetry_with_bad_speed,
       })
       .expect(400)
       .end((err, result) => {
@@ -1056,7 +1056,7 @@ describe('Tests API', () => {
   // @ts-ignore: Spoofing garbage data
   telemetry_with_bad_satellites.gps.satellites = 'potato'
 
-  it('verifies post trip end fail bad satellites', done => {
+  it('verifies post trip end fail bad satellites', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -1064,7 +1064,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        telemetry: telemetry_with_bad_satellites
+        telemetry: telemetry_with_bad_satellites,
       })
       .expect(400)
       .end((err, result) => {
@@ -1073,7 +1073,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post end trip missing location', done => {
+  it('verifies post end trip missing location', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -1081,7 +1081,7 @@ describe('Tests API', () => {
         event_type: 'trip_end',
         trip_id: TRIP_UUID,
         timestamp: testTimestamp++,
-        TEST_TELEMETRY: telemetry_without_location
+        TEST_TELEMETRY: telemetry_without_location,
       })
       .expect(400)
       .end((err, result) => {
@@ -1096,7 +1096,7 @@ describe('Tests API', () => {
   // make sure it's ok to do so
   const lateTimestamp = testTimestamp - 200000 // 2000s before
   log('lateTimestamp', lateTimestamp)
-  it('verifies late-event service-end (rebalance) success', done => {
+  it('verifies late-event service-end (rebalance) success', (done) => {
     request
       .post(`/vehicles/${DEVICE_UUID}/event`)
       .set('Authorization', AUTH)
@@ -1104,7 +1104,7 @@ describe('Tests API', () => {
         event_type: VEHICLE_EVENTS.service_end,
         event_type_reason: 'rebalance',
         telemetry: TEST_TELEMETRY,
-        timestamp: lateTimestamp
+        timestamp: lateTimestamp,
       })
       .expect(201)
       .end((err, result) => {
@@ -1129,7 +1129,7 @@ describe('Tests API', () => {
 
   const WEIRD_UUID = '034e1c90-9f84-4292-a750-e8f395e4869d'
   // tests this particular uuid
-  it('verifies wierd uuid', done => {
+  it('verifies wierd uuid', (done) => {
     request
       .post(`/vehicles/${WEIRD_UUID}/event`)
       .set('Authorization', AUTH)
@@ -1137,7 +1137,7 @@ describe('Tests API', () => {
         event_type: VEHICLE_EVENTS.service_end,
         event_type_reason: 'rebalance',
         telemetry: TEST_TELEMETRY,
-        timestamp: lateTimestamp
+        timestamp: lateTimestamp,
       })
       // .expect(201)
       .end((err, result) => {
@@ -1146,12 +1146,12 @@ describe('Tests API', () => {
       })
   })
 
-  it('verifies post telemetry', done => {
+  it('verifies post telemetry', (done) => {
     request
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [TEST_TELEMETRY, TEST_TELEMETRY2]
+        data: [TEST_TELEMETRY, TEST_TELEMETRY2],
       })
       .expect(201)
       .end((err, result) => {
@@ -1164,12 +1164,12 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies posting the same telemetry does not break things', done => {
+  it('verifies posting the same telemetry does not break things', (done) => {
     request
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [TEST_TELEMETRY, TEST_TELEMETRY2]
+        data: [TEST_TELEMETRY, TEST_TELEMETRY2],
       })
       .expect(400)
       .end((err, result) => {
@@ -1193,7 +1193,7 @@ describe('Tests API', () => {
     test.assert(!telemetry)
   })
 
-  it('verifies post telemetry with bad device_id', done => {
+  it('verifies post telemetry with bad device_id', (done) => {
     const badTelemetry = deepCopy(TEST_TELEMETRY)
     // @ts-ignore: Spoofing garbage data
     badTelemetry.device_id = 'bogus'
@@ -1201,7 +1201,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [badTelemetry]
+        data: [badTelemetry],
       })
       .expect(400)
       .end((err, result) => {
@@ -1214,7 +1214,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post telemetry with bad gps.lat', done => {
+  it('verifies post telemetry with bad gps.lat', (done) => {
     const badTelemetry = deepCopy(TEST_TELEMETRY)
     // @ts-ignore: Spoofing garbage data
     badTelemetry.gps.lat = 'bogus'
@@ -1223,7 +1223,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [badTelemetry]
+        data: [badTelemetry],
       })
       .expect(400)
       .end((err, result) => {
@@ -1236,7 +1236,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post telemetry with bad gps.lng', done => {
+  it('verifies post telemetry with bad gps.lng', (done) => {
     const badTelemetry = deepCopy(TEST_TELEMETRY)
     // @ts-ignore: Spoofing garbage data
     badTelemetry.gps.lng = 'bogus'
@@ -1245,7 +1245,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [badTelemetry]
+        data: [badTelemetry],
       })
       .expect(400)
       .end((err, result) => {
@@ -1258,7 +1258,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post telemetry with bad charge', done => {
+  it('verifies post telemetry with bad charge', (done) => {
     const badTelemetry = deepCopy(TEST_TELEMETRY)
     // @ts-ignore: Spoofing garbage data
     badTelemetry.charge = 'bogus'
@@ -1267,7 +1267,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [badTelemetry]
+        data: [badTelemetry],
       })
       .expect(400)
       .end((err, result) => {
@@ -1280,7 +1280,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post telemetry with bad gps.lng', done => {
+  it('verifies post telemetry with bad gps.lng', (done) => {
     const badTelemetry = deepCopy(TEST_TELEMETRY)
     // @ts-ignore: Spoofing garbage data
     badTelemetry.timestamp = 'bogus'
@@ -1289,7 +1289,7 @@ describe('Tests API', () => {
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH)
       .send({
-        data: [badTelemetry]
+        data: [badTelemetry],
       })
       .expect(400)
       .end((err, result) => {
@@ -1302,12 +1302,12 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post telemetry with mismatched provider', done => {
+  it('verifies post telemetry with mismatched provider', (done) => {
     request
       .post('/vehicles/telemetry')
       .set('Authorization', AUTH2)
       .send({
-        data: [TEST_TELEMETRY]
+        data: [TEST_TELEMETRY],
       })
       .expect(400)
       .end((err, result) => {
@@ -1320,7 +1320,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies get device readback w/telemetry success (database)', done => {
+  it('verifies get device readback w/telemetry success (database)', (done) => {
     request
       .get(`/vehicles/${DEVICE_UUID}`)
       .set('Authorization', AUTH)
@@ -1338,7 +1338,7 @@ describe('Tests API', () => {
       })
   })
 
-  it('verifies get device readback w/telemetry success (cache)', done => {
+  it('verifies get device readback w/telemetry success (cache)', (done) => {
     request
       .get(`/vehicles/${DEVICE_UUID}?cached=true`)
       .set('Authorization', AUTH)
@@ -1357,7 +1357,7 @@ describe('Tests API', () => {
   })
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  it('verifies reading a single service_area', done => {
+  it('verifies reading a single service_area', (done) => {
     request
       .get(`/service_areas/${LA_CITY_BOUNDARY_ID}`)
       .set('Authorization', AUTH)
@@ -1376,7 +1376,7 @@ describe('Tests API', () => {
   })
   /* eslint-enable @typescript-eslint/no-explicit-any */
 
-  it('tries and fails to read a non-existent service_area', done => {
+  it('tries and fails to read a non-existent service_area', (done) => {
     request
       .get('/service_areas/b4bcc213-4888-48ce-a33d-4dd6c3384bda')
       .set('Authorization', AUTH)
@@ -1391,7 +1391,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies you cannot query service_areas that are not UUIDs', done => {
+  it('verifies you cannot query service_areas that are not UUIDs', (done) => {
     request
       .get('/service_areas/definitely-not-a-UUID')
       .set('Authorization', AUTH)
@@ -1404,7 +1404,7 @@ describe('Tests API', () => {
   })
 
   /* eslint-disable @typescript-eslint/no-explicit-any */
-  it('verifies reading all service_areas', done => {
+  it('verifies reading all service_areas', (done) => {
     request
       .get('/service_areas')
       .set('Authorization', AUTH)
@@ -1422,7 +1422,7 @@ describe('Tests API', () => {
   })
   /* eslint-enable @typescript-eslint/no-explicit-any */
 
-  it('gets cache info', done => {
+  it('gets cache info', (done) => {
     request
       .get('/admin/cache/info')
       .set('Authorization', AUTH)
@@ -1433,7 +1433,7 @@ describe('Tests API', () => {
       })
   })
 
-  it('refreshes the cache', done => {
+  it('refreshes the cache', (done) => {
     request
       .get('/admin/cache/refresh')
       .set('Authorization', AUTH)
@@ -1443,7 +1443,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('wipes a vehicle via admin', done => {
+  it('wipes a vehicle via admin', (done) => {
     request
       .get(`/admin/wipe/${TEST_VEHICLE.device_id}`)
       .set('Authorization', AUTH)
@@ -1453,7 +1453,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('wipes a vehicle via admin that has already been wiped', done => {
+  it('wipes a vehicle via admin that has already been wiped', (done) => {
     request
       .get(`/admin/wipe/${TEST_VEHICLE.device_id}`)
       .set('Authorization', AUTH)
@@ -1463,7 +1463,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('fails to wipe a vehicle via admin', done => {
+  it('fails to wipe a vehicle via admin', (done) => {
     request
       .get('/admin/wipe/' + 'bogus')
       .set('Authorization', AUTH)
@@ -1484,7 +1484,7 @@ describe('Tests pagination', async () => {
     await Promise.all([cache.seed(seedData), db.seed(seedData)])
   })
 
-  it('verifies paging links when read back all devices from db', done => {
+  it('verifies paging links when read back all devices from db', (done) => {
     request
       .get('/vehicles?skip=2&take=5&foo=bar')
       .set('Authorization', AUTH)
@@ -1500,7 +1500,7 @@ describe('Tests pagination', async () => {
       })
   })
 
-  it('verifies reading past the end of the vehicles', done => {
+  it('verifies reading past the end of the vehicles', (done) => {
     request
       .get('/vehicles?skip=20000&take=5')
       .set('Authorization', AUTH)
@@ -1513,7 +1513,7 @@ describe('Tests pagination', async () => {
       })
   })
 
-  it('verifies vehicles access for all providers with vehicles:read scope', done => {
+  it('verifies vehicles access for all providers with vehicles:read scope', (done) => {
     const VEHICLES_READ_AUTH = `basic ${Buffer.from(`${TEST2_PROVIDER_ID}|vehicles:read`).toString('base64')}`
     request
       .get(`/vehicles?provider_id=${TEST1_PROVIDER_ID}`)
@@ -1527,7 +1527,7 @@ describe('Tests pagination', async () => {
       })
   })
 
-  it('verifies no vehicles access for all providers without vehicles:read scope', done => {
+  it('verifies no vehicles access for all providers without vehicles:read scope', (done) => {
     const VEHICLES_READ_AUTH = `basic ${Buffer.from(`${TEST2_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
     request
       .get(`/vehicles?provider_id=${TEST1_PROVIDER_ID}`)
@@ -1553,20 +1553,20 @@ describe('Tests Stops', async () => {
       bicycle: 10,
       scooter: 10,
       car: 5,
-      moped: 3
+      moped: 3,
     },
     num_vehicles_available: {
       bicycle: 3,
       scooter: 7,
       car: 0,
-      moped: 1
+      moped: 1,
     },
     num_spots_available: {
       bicycle: 7,
       scooter: 3,
       car: 5,
-      moped: 2
-    }
+      moped: 2,
+    },
   }
 
   before(async () => {
@@ -1574,24 +1574,16 @@ describe('Tests Stops', async () => {
   })
 
   it('verifies failing to POST a stop (garbage data)', async () => {
-    await request
-      .post(`/stops`)
-      .set('Authorization', AUTH)
-      .send({ foo: 'bar' })
-      .expect(400)
+    await request.post(`/stops`).set('Authorization', AUTH).send({ foo: 'bar' }).expect(400)
   })
 
   it('verifies successfully POSTing a stop', async () => {
     await db.writeGeography(LAGeography)
     await db.publishGeography({ geography_id: GEOGRAPHY_UUID, publish_date: now() })
-    await request
-      .post(`/stops`)
-      .set('Authorization', AUTH)
-      .send(TEST_STOP)
-      .expect(201)
+    await request.post(`/stops`).set('Authorization', AUTH).send(TEST_STOP).expect(201)
   })
 
-  it('verifies successfully GETing a stop', done => {
+  it('verifies successfully GETing a stop', (done) => {
     request
       .get(`/stops/${TEST_STOP.stop_id}`)
       .set('Authorization', AUTH)
@@ -1602,7 +1594,7 @@ describe('Tests Stops', async () => {
       })
   })
 
-  it('verifies successfully GETing all stops', done => {
+  it('verifies successfully GETing all stops', (done) => {
     request
       .get(`/stops`)
       .set('Authorization', AUTH)

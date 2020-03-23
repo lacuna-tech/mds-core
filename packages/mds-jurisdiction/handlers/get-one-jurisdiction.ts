@@ -22,7 +22,7 @@ export const GetOneJurisdictionHandler = async (req: GetOneJurisdictionRequest, 
   const { jurisdiction_id } = req.params
 
   const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(jurisdiction_id, {
-    effective: effective ? Number(effective) : undefined
+    effective: effective ? Number(effective) : undefined,
   })
 
   // Handle result
@@ -30,7 +30,7 @@ export const GetOneJurisdictionHandler = async (req: GetOneJurisdictionRequest, 
     return HasJurisdictionClaim(res)(jurisdiction)
       ? res.status(200).send({
           version: res.locals.version,
-          jurisdiction
+          jurisdiction,
         })
       : res.status(403).send({ error: new AuthorizationError('Access Denied', { jurisdiction_id }) })
   }

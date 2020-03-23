@@ -37,7 +37,7 @@ export async function readAudits(query: ReadAuditsQueryParams) {
     ...(provider_vehicle_id ? [`provider_vehicle_id ILIKE ${vals.add(`%${provider_vehicle_id}%`)}`] : []),
     ...(audit_subject_id ? [`audit_subject_id ILIKE ${vals.add(`%${audit_subject_id}%`)}`] : []),
     ...(start_time ? [`timestamp >= ${vals.add(start_time)}`] : []),
-    ...(end_time ? [`timestamp <= ${vals.add(end_time)}`] : [])
+    ...(end_time ? [`timestamp <= ${vals.add(end_time)}`] : []),
   ]
 
   try {
@@ -50,7 +50,7 @@ export async function readAudits(query: ReadAuditsQueryParams) {
     if (count === 0) {
       return {
         count,
-        audits: []
+        audits: [],
       }
     }
     const selectSql = `SELECT * FROM ${schema.TABLE.audits} ${filter} ORDER BY "timestamp" DESC${
@@ -61,7 +61,7 @@ export async function readAudits(query: ReadAuditsQueryParams) {
     const selectResult = await client.query(selectSql, selectVals)
     return {
       count,
-      audits: selectResult.rows
+      audits: selectResult.rows,
     }
   } catch (err) {
     await log.error('readAudits error', err.stack || err)
@@ -79,7 +79,7 @@ export async function writeAudit(audit: Audit): Promise<Recorded<Audit>> {
   const values = vals_list(schema.TABLE_COLUMNS.audits, { ...audit, recorded: now() })
   await logSql(sql, values)
   const {
-    rows: [recorded_audit]
+    rows: [recorded_audit],
   }: { rows: Recorded<Audit>[] } = await client.query(sql, values)
   const finish = now()
   log.info(`MDS-DB writeAudit time elapsed: ${finish - start}ms`)
@@ -121,7 +121,7 @@ export async function writeAuditEvent(audit_event: AuditEvent): Promise<Recorded
   const values = vals_list(schema.TABLE_COLUMNS.audit_events, { ...audit_event, recorded: now() })
   await logSql(sql, values)
   const {
-    rows: [recorded_audit_event]
+    rows: [recorded_audit_event],
   }: { rows: Recorded<AuditEvent>[] } = await client.query(sql, values)
   const finish = now()
   log.info(`MDS-DB writeAuditEvent time elapsed: ${finish - start}ms`)

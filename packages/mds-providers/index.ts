@@ -59,7 +59,7 @@ const PROVIDER_IDS = [
   MOCHA_PROVIDER_ID,
   SUPPORT1_PROVIDER_ID,
   SUPPORT2_PROVIDER_ID,
-  SUPPORT3_PROVIDER_ID
+  SUPPORT3_PROVIDER_ID,
 ] as const
 
 type PROVIDER_ID = typeof PROVIDER_IDS[number]
@@ -69,143 +69,143 @@ export const providers: Readonly<{ [P in PROVIDER_ID]: Readonly<Provider> }> = O
     provider_id: JUMP_PROVIDER_ID,
     provider_name: 'JUMP',
     url: 'https://jump.com',
-    mds_api_url: 'https://api.uber.com/v0.2/emobility/mds'
+    mds_api_url: 'https://api.uber.com/v0.2/emobility/mds',
   }),
   [LIME_PROVIDER_ID]: Object.freeze({
     provider_id: LIME_PROVIDER_ID,
     provider_name: 'Lime',
     url: 'https://li.me',
-    mds_api_url: 'https://data.lime.bike/api/partners/v1/mds'
+    mds_api_url: 'https://data.lime.bike/api/partners/v1/mds',
   }),
   [BIRD_PROVIDER_ID]: Object.freeze({
     provider_id: BIRD_PROVIDER_ID,
     provider_name: 'Bird',
     url: 'https://www.bird.co',
     mds_api_url: 'https://mds.bird.co',
-    gbfs_api_url: 'https://mds.bird.co/gbfs'
+    gbfs_api_url: 'https://mds.bird.co/gbfs',
   }),
   [RAZOR_PROVIDER_ID]: Object.freeze({
     provider_id: RAZOR_PROVIDER_ID,
     provider_name: 'Razor',
     url: 'https: //www.razor.com/share',
-    mds_api_url: 'https: //razor-200806.appspot.com/api/v2/mds'
+    mds_api_url: 'https: //razor-200806.appspot.com/api/v2/mds',
   }),
   [LYFT_PROVIDER_ID]: Object.freeze({
     provider_id: LYFT_PROVIDER_ID,
     provider_name: 'Lyft',
     url: 'https://www.lyft.com',
-    mds_api_url: 'https: //api.lyft.com/v1/last-mile/mds'
+    mds_api_url: 'https: //api.lyft.com/v1/last-mile/mds',
   }),
   [SKIP_PROVIDER_ID]: Object.freeze({
     provider_id: SKIP_PROVIDER_ID,
     provider_name: 'Skip',
     url: 'https://www.skipscooters.com',
-    mds_api_url: 'https://api.skipscooters.com/mds'
+    mds_api_url: 'https://api.skipscooters.com/mds',
   }),
   [HOPR_PROVIDER_ID]: Object.freeze({
     provider_id: HOPR_PROVIDER_ID,
     provider_name: 'HOPR',
     url: 'https://gohopr.com',
-    mds_api_url: 'https://gbfs.hopr.city/api/mds'
+    mds_api_url: 'https://gbfs.hopr.city/api/mds',
   }),
   [WHEELS_PROVIDER_ID]: Object.freeze({
     provider_id: WHEELS_PROVIDER_ID,
     provider_name: 'Wheels',
     url: 'https://wheels.co',
-    mds_api_url: 'https://mds.getwheelsapp.com'
+    mds_api_url: 'https://mds.getwheelsapp.com',
   }),
   [SPIN_PROVIDER_ID]: Object.freeze({
     provider_id: SPIN_PROVIDER_ID,
     provider_name: 'Spin',
     url: 'https://www.spin.app',
-    mds_api_url: 'https://api.spin.pm/api/v1/mds'
+    mds_api_url: 'https://api.spin.pm/api/v1/mds',
   }),
   [WIND_PROVIDER_ID]: Object.freeze({
     provider_id: WIND_PROVIDER_ID,
     provider_name: 'WIND',
     url: 'https://www.wind.co',
-    mds_api_url: 'https://partners.wind.co/v1/mds'
+    mds_api_url: 'https://partners.wind.co/v1/mds',
   }),
   [TIER_PROVIDER_ID]: Object.freeze({
     provider_id: TIER_PROVIDER_ID,
     provider_name: 'Tier',
     url: 'https://www.tier.app',
-    mds_api_url: 'https://partner.tier-services.io/mds'
+    mds_api_url: 'https://partner.tier-services.io/mds',
   }),
   [CLOUD_PROVIDER_ID]: Object.freeze({
     provider_id: CLOUD_PROVIDER_ID,
     provider_name: 'Cloud',
     url: 'https://www.cloud.tt',
     mds_api_url: 'https://mds.cloud.tt',
-    gbfs_api_url: 'https://mds.cloud.tt/gbfs'
+    gbfs_api_url: 'https://mds.cloud.tt/gbfs',
   }),
   [BLUE_LA_PROVIDER_ID]: Object.freeze({
     provider_id: BLUE_LA_PROVIDER_ID,
     provider_name: 'BlueLA',
     url: 'https://www.bluela.com',
     mds_api_url: 'https://api.bluela.com/mds/v0',
-    gbfs_api_url: 'https://api.bluela.com/gbfs/v1/meta'
+    gbfs_api_url: 'https://api.bluela.com/gbfs/v1/meta',
   }),
   [BOLT_PROVIDER_ID]: Object.freeze({
     provider_id: BOLT_PROVIDER_ID,
     provider_name: 'Bolt',
     url: 'https://www.micromobility.com/',
-    mds_api_url: 'https://bolt.miami/bolt2/api/mds'
+    mds_api_url: 'https://bolt.miami/bolt2/api/mds',
   }),
   [CLEVR_PROVIDER_ID]: Object.freeze({
     provider_id: CLEVR_PROVIDER_ID,
     provider_name: 'CLEVR',
     url: 'https://clevrmobility.com',
     mds_api_url: 'https://portal.clevrmobility.com/api/la/',
-    gbfs_api_url: 'https://portal.clevrmobility.com/api/gbfs/en/discovery/'
+    gbfs_api_url: 'https://portal.clevrmobility.com/api/gbfs/en/discovery/',
   }),
   [SHERPA_LA_PROVIDER_ID]: Object.freeze({
     provider_id: SHERPA_LA_PROVIDER_ID,
     provider_name: 'SherpaLA',
     mds_api_url: 'https://mds.bird.co',
-    gbfs_api_url: 'https://mds.bird.co/gbfs/platform-partner/sherpa-la'
+    gbfs_api_url: 'https://mds.bird.co/gbfs/platform-partner/sherpa-la',
   }),
   [OJO_ELECTRIC_PROVIDER_ID]: Object.freeze({
     provider_id: OJO_ELECTRIC_PROVIDER_ID,
     provider_name: 'OjO Electric',
     url: 'https://www.ojoelectric.com',
     mds_api_url: 'https://api.ojoelectric.com/api/mds',
-    gbfs_api_url: 'https://api.ojoelectric.com/api/mds/gbfs.json'
+    gbfs_api_url: 'https://api.ojoelectric.com/api/mds/gbfs.json',
   }),
   [LADOT_PROVIDER_ID]: Object.freeze({
     provider_id: LADOT_PROVIDER_ID,
     provider_name: 'LADOT',
-    url: 'https://ladot.io'
+    url: 'https://ladot.io',
   }),
   [BLUE_SYSTEMS_PROVIDER_ID]: Object.freeze({
     provider_id: BLUE_SYSTEMS_PROVIDER_ID,
     provider_name: 'Blue Systems',
-    url: 'https://www.bluesystems.ai'
+    url: 'https://www.bluesystems.ai',
   }),
   [TEST1_PROVIDER_ID]: Object.freeze({
     provider_id: TEST1_PROVIDER_ID,
-    provider_name: 'Test 1'
+    provider_name: 'Test 1',
   }),
   [TEST2_PROVIDER_ID]: Object.freeze({
     provider_id: TEST2_PROVIDER_ID,
-    provider_name: 'Test 2'
+    provider_name: 'Test 2',
   }),
   [MOCHA_PROVIDER_ID]: Object.freeze({
     provider_id: MOCHA_PROVIDER_ID,
-    provider_name: 'Mocha Test Provider'
+    provider_name: 'Mocha Test Provider',
   }),
   [SUPPORT1_PROVIDER_ID]: Object.freeze({
     provider_id: SUPPORT1_PROVIDER_ID,
-    provider_name: 'Support 1'
+    provider_name: 'Support 1',
   }),
   [SUPPORT2_PROVIDER_ID]: Object.freeze({
     provider_id: SUPPORT2_PROVIDER_ID,
-    provider_name: 'Support 2'
+    provider_name: 'Support 2',
   }),
   [SUPPORT3_PROVIDER_ID]: Object.freeze({
     provider_id: SUPPORT3_PROVIDER_ID,
-    provider_name: 'Support 3'
-  })
+    provider_name: 'Support 3',
+  }),
 })
 
 export function isProviderId(provider_id: unknown): provider_id is PROVIDER_ID {

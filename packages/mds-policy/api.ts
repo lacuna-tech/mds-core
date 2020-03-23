@@ -79,7 +79,7 @@ function api(app: express.Express): express.Express {
         }
         return prev_policies_acc
       }, [])
-      const active = policies.filter(p => {
+      const active = policies.filter((p) => {
         // overlapping segment logic
         const p_start_date = p.start_date
         const p_end_date = p.end_date || Number.MAX_SAFE_INTEGER
@@ -88,7 +88,7 @@ function api(app: express.Express): express.Express {
       res.status(200).send({ policies: active })
     } catch (err) {
       res.status(404).send({
-        result: 'not found'
+        result: 'not found',
       })
     }
   })

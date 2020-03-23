@@ -37,7 +37,9 @@ export const ConnectionManager = (options: ConnectionOptions[] = Connections()) 
 
   const shutdown = async () => {
     if (connections) {
-      await Promise.all(connections.filter(connection => connection.isConnected).map(connection => connection.close()))
+      await Promise.all(
+        connections.filter((connection) => connection.isConnected).map((connection) => connection.close())
+      )
     }
     connections = null
   }
@@ -46,6 +48,6 @@ export const ConnectionManager = (options: ConnectionOptions[] = Connections()) 
     initialize,
     getReadOnlyConnection,
     getReadWriteConnection,
-    shutdown
+    shutdown,
   }
 }

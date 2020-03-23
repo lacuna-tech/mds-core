@@ -40,7 +40,7 @@ if (env.PUSHOVER_TOKEN) {
   pushClient = new PushClient({
     user: env.PUSHOVER_USER,
     token: env.PUSHOVER_TOKEN,
-    debug: true
+    debug: true,
   })
 }
 
@@ -55,7 +55,7 @@ async function sendPush(msg: string, priority?: number) {
     // title: 'Test Pushover',
     // sound: 'magic',
     // device: 'devicename',
-    priority: priority || 0
+    priority: priority || 0,
   }
 
   const [err, result] = await pushClient.send(payload)
@@ -142,7 +142,7 @@ async function sendSlack(msg: any, channelParam?: string) {
       // This argument can be a channel ID, a DM ID, a MPDM ID, or a group ID
       token: env.SLACK_TOKEN,
       channel,
-      text: msg
+      text: msg,
     })
 
     // `res` contains information about the posted message
@@ -224,7 +224,7 @@ async function log(logLevel: LogLevel, ...msg: any[]): Promise<any[]> {
   return {
     INFO: info,
     WARN: warn,
-    ERROR: error
+    ERROR: error,
   }[logLevel](...msg)
 }
 

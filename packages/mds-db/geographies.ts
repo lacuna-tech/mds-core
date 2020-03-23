@@ -31,7 +31,7 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
     const { get_published, get_unpublished, geography_ids } = {
       get_published: false,
       get_unpublished: false,
-      ...params
+      ...params,
     }
     if (get_published && get_unpublished) {
       throw new BadParamsError('cannot have get_unpublished and get_published both be true')
@@ -51,7 +51,7 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
     }
 
     if (geography_ids) {
-      const SQLified_geography_ids = geography_ids.map(id => {
+      const SQLified_geography_ids = geography_ids.map((id) => {
         return `'${id}'`
       })
       conditions.push(`geography_id in (${SQLified_geography_ids.join(',')})`)
@@ -66,7 +66,7 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
     // TODO add 'count'
     const { rows } = await client.query(sql, values)
 
-    return rows.map(row => {
+    return rows.map((row) => {
       const { id, ...geography } = row
       return geography
     })
@@ -78,7 +78,7 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
 
 export async function readGeographySummaries(params?: ReadGeographiesParams): Promise<GeographySummary[]> {
   const geographies = await readGeographies(params)
-  return geographies.map(geography => {
+  return geographies.map((geography) => {
     const { geography_json, ...geographySummary } = geography
     return geographySummary
   })
@@ -86,7 +86,7 @@ export async function readGeographySummaries(params?: ReadGeographiesParams): Pr
 
 export async function readBulkGeographyMetadata(params?: ReadGeographiesParams): Promise<GeographyMetadata[]> {
   const geographies = await readGeographies(params)
-  const geography_ids = geographies.map(geography => `'${geography.geography_id}'`)
+  const geography_ids = geographies.map((geography) => `'${geography.geography_id}'`)
 
   if (geography_ids.length === 0) {
     return []
@@ -96,7 +96,7 @@ export async function readBulkGeographyMetadata(params?: ReadGeographiesParams):
 
   const client = await getReadOnlyClient()
   const res = await client.query(sql)
-  return res.rows.map(row => {
+  return res.rows.map((row) => {
     return { geography_id: row.geography_id, geography_metadata: row.geography_metadata }
   })
 }
@@ -108,7 +108,7 @@ export async function writeGeography(geography: Geography): Promise<Recorded<Geo
   )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.geographies)}) RETURNING *`
   const values = vals_list(schema.TABLE_COLUMNS.geographies, { ...geography })
   const {
-    rows: [recorded_geography]
+    rows: [recorded_geography],
   }: { rows: Recorded<Geography>[] } = await client.query(sql, values)
   return { ...geography, ...recorded_geography }
 }
@@ -116,7 +116,7 @@ export async function writeGeography(geography: Geography): Promise<Recorded<Geo
 export async function isGeographyPublished(geography_id: UUID) {
   const client = await getReadOnlyClient()
   const sql = `SELECT * FROM ${schema.TABLE.geographies} WHERE geography_id='${geography_id}'`
-  const result = await client.query(sql).catch(err => {
+  const result = await client.query(sql).catch((err) => {
     throw err
   })
   if (result.rows.length === 0) {
@@ -182,7 +182,7 @@ export async function publishGeography(params: PublishGeographiesParams): Promis
       geography_id
     )} RETURNING *`
     const {
-      rows: [recorded_geography]
+      rows: [recorded_geography],
     }: { rows: Recorded<Geography>[] } = await client.query(sql, vals.values())
     return { ...recorded_geography }
   } catch (err) {
@@ -200,10 +200,10 @@ export async function writeGeographyMetadata(geography_metadata: GeographyMetada
     )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.geography_metadata)}) RETURNING *`
     const values = vals_list(schema.TABLE_COLUMNS.geography_metadata, {
       geography_id: geography_metadata.geography_id,
-      geography_metadata: geography_metadata.geography_metadata
+      geography_metadata: geography_metadata.geography_metadata,
     })
     const {
-      rows: [recorded_metadata]
+      rows: [recorded_metadata],
     }: { rows: Recorded<Geography>[] } = await client.query(sql, values)
     return { ...geography_metadata, ...recorded_metadata }
   } catch (err) {
@@ -232,11 +232,11 @@ export async function updateGeographyMetadata(geography_metadata: GeographyMetad
     SET geography_metadata = ${vals.add(JSON.stringify(geography_metadata.geography_metadata))}
     WHERE geography_id = ${vals.add(geography_metadata.geography_id)}`
   const {
-    rows: [recorded_metadata]
+    rows: [recorded_metadata],
   }: { rows: Recorded<GeographyMetadata>[] } = await client.query(sql, vals.values())
   return {
     ...geography_metadata,
-    ...recorded_metadata
+    ...recorded_metadata,
   }
 }
 

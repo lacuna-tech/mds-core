@@ -68,8 +68,8 @@ async function health(): Promise<{
     using: 'postgres',
     stats: {
       current_running_queries: currentQueriesResult.length,
-      cache_hit_result: cacheHitResult
-    }
+      cache_hit_result: cacheHitResult,
+    },
   }
 }
 
@@ -127,5 +127,5 @@ export = {
   ...trips,
   ...telemetry,
   ...stops,
-  ...attachments
+  ...attachments,
 }

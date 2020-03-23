@@ -27,5 +27,5 @@ export const env = () =>
     npm_package_version: NPM_PACKAGE_VERSION,
     npm_package_git_branch: NPM_PACKAGE_GIT_BRANCH,
     npm_package_git_commit: NPM_PACKAGE_GIT_COMMIT,
-    npm_package_build_date: NPM_PACKAGE_BUILD_DATE
+    npm_package_build_date: NPM_PACKAGE_BUILD_DATE,
   })

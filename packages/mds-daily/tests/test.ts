@@ -60,16 +60,16 @@ const TEST_TELEMETRY: Telemetry = {
     lng: -121.8863,
     speed: 0,
     hdop: 1,
-    heading: 180
+    heading: 180,
   },
   charge: 0.5,
-  timestamp: now()
+  timestamp: now(),
 }
 
 // TODO Inherit all of these from mds-test-data
 const AUTH = `basic ${Buffer.from(`${TEST1_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
 
-before(done => {
+before((done) => {
   const testTimestampNow = now() // Hacky fix
   const devices: Device[] = makeDevices(3, now() - 1000)
   const events: VehicleEvent[] = [
@@ -80,7 +80,7 @@ before(done => {
       event_type: VEHICLE_EVENTS.provider_pick_up,
       recorded: testTimestampNow - 90,
       timestamp: testTimestampNow - 90,
-      telemetry: TEST_TELEMETRY
+      telemetry: TEST_TELEMETRY,
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -89,7 +89,7 @@ before(done => {
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 80,
       timestamp: testTimestampNow - 80,
-      telemetry: TEST_TELEMETRY
+      telemetry: TEST_TELEMETRY,
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -98,7 +98,7 @@ before(done => {
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 70,
       timestamp: testTimestampNow - 70,
-      telemetry: TEST_TELEMETRY
+      telemetry: TEST_TELEMETRY,
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -106,7 +106,7 @@ before(done => {
       event_type: VEHICLE_EVENTS.provider_pick_up,
       recorded: testTimestampNow - 60,
       timestamp: testTimestampNow - 60,
-      telemetry: TEST_TELEMETRY
+      telemetry: TEST_TELEMETRY,
     }, // BEGIN BAD TRANSITIONS
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -114,7 +114,7 @@ before(done => {
       event_type: VEHICLE_EVENTS.service_start,
       recorded: testTimestampNow - 50,
       timestamp: testTimestampNow - 50,
-      telemetry: TEST_TELEMETRY
+      telemetry: TEST_TELEMETRY,
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -123,7 +123,7 @@ before(done => {
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 40,
       timestamp: testTimestampNow - 40,
-      telemetry: TEST_TELEMETRY
+      telemetry: TEST_TELEMETRY,
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -132,7 +132,7 @@ before(done => {
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 30,
       timestamp: testTimestampNow - 30,
-      telemetry: TEST_TELEMETRY
+      telemetry: TEST_TELEMETRY,
     },
     {
       provider_id: TEST1_PROVIDER_ID,
@@ -140,8 +140,8 @@ before(done => {
       event_type: VEHICLE_EVENTS.provider_pick_up,
       recorded: testTimestampNow - 20,
       timestamp: testTimestampNow - 20,
-      telemetry: TEST_TELEMETRY
-    }
+      telemetry: TEST_TELEMETRY,
+    },
   ]
   const telemetry: Telemetry[] = []
   const seedData = { devices, events, telemetry }
@@ -157,7 +157,7 @@ after(async () => {
 })
 
 describe('Tests API', () => {
-  it('gets vehicle counts per provider', done => {
+  it('gets vehicle counts per provider', (done) => {
     request
       .get('/admin/vehicle_counts')
       .set('Authorization', AUTH)
@@ -176,7 +176,7 @@ describe('Tests API', () => {
       await agencyMiddleware(
         {
           // skip most of the middleware body with /health path
-          path: '/health'
+          path: '/health',
         } as any,
         {} as any,
         nextSpy
@@ -186,22 +186,22 @@ describe('Tests API', () => {
     })
 
     it('rejects an unauthorized user', async () => {
-      const statusSpy = Sinon.spy(statusCode => {
+      const statusSpy = Sinon.spy((statusCode) => {
         return {
           send: () => {
             return statusCode
-          }
+          },
         }
       })
       /* eslint-disable @typescript-eslint/no-explicit-any */
       await agencyMiddleware(
         {
           // follow main code path & do auth logic
-          path: '/foobar'
+          path: '/foobar',
         } as any,
         {
           locals: {} /* leave claims undefined */,
-          status: statusSpy
+          status: statusSpy,
         } as any,
         () => {
           return null
@@ -212,7 +212,7 @@ describe('Tests API', () => {
     })
   })
 
-  it('verifies 8 total events, and 4 are non-conformant', done => {
+  it('verifies 8 total events, and 4 are non-conformant', (done) => {
     request
       .get('/admin/last_day_stats_by_provider')
       .set('Authorization', AUTH)
@@ -229,7 +229,7 @@ describe('Tests API', () => {
   // that old recorded items don't show up. This will probably require
   // writing functions that allow you to update the recorded column but
   // I've spent enough time on this right now.
-  it('gets recent stats by provider', done => {
+  it('gets recent stats by provider', (done) => {
     // These outer two promises are here to help check that old telemetry/event data
     // added by the call to .seed later don't show up in the final results
     request

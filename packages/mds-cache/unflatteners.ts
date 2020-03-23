@@ -2,7 +2,7 @@ import { VEHICLE_TYPE, VEHICLE_EVENT, VEHICLE_STATUS, Device, Telemetry, Vehicle
 import {
   isStringifiedTelemetry,
   isStringifiedEventWithTelemetry,
-  isStringifiedCacheReadDeviceResult
+  isStringifiedCacheReadDeviceResult,
 } from '@mds-core/mds-schema-validators'
 
 import { ParseError } from '@mds-core/mds-utils'
@@ -21,10 +21,10 @@ function parseTelemetry(telemetry: StringifiedTelemetry): Telemetry {
         satellites: telemetry.gps.satellites ? Number(telemetry.gps.satellites) : null,
         heading: telemetry.gps.heading ? Number(telemetry.gps.heading) : null,
         hdop: telemetry.gps.hdop ? Number(telemetry.gps.hdop) : null,
-        altitude: telemetry.gps.altitude ? Number(telemetry.gps.altitude) : null
+        altitude: telemetry.gps.altitude ? Number(telemetry.gps.altitude) : null,
       },
       recorded: Number(telemetry.recorded),
-      timestamp: Number(telemetry.timestamp)
+      timestamp: Number(telemetry.timestamp),
     }
   } catch (err) {
     throw new ParseError(`unable to parse telemetry: ${telemetry}`)
@@ -48,7 +48,7 @@ function parseEvent(
       telemetry: event.telemetry ? parseTelemetry(event.telemetry) : null,
       trip_id: event.trip_id ? event.trip_id : null,
       service_area_id: event.service_area_id ? event.service_area_id : null,
-      recorded: Number(event.recorded)
+      recorded: Number(event.recorded),
     }
   }
   return event
@@ -66,7 +66,7 @@ function parseDevice(device: StringifiedCacheReadDeviceResult): Device {
       mfgr: device.mfgr ? device.mfgr : null,
       model: device.model ? device.model : null,
       recorded: Number(device.recorded),
-      status: device.status ? (device.status as VEHICLE_STATUS) : null
+      status: device.status ? (device.status as VEHICLE_STATUS) : null,
     }
   }
   return device

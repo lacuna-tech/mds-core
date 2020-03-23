@@ -38,7 +38,7 @@ describe('Write/Read Jurisdictions', () => {
         agency_key: `agency-key-${index}`,
         agency_name: `Agency Name ${index}`,
         timestamp: YESTERDAY,
-        geography_id: uuid()
+        geography_id: uuid(),
       }))
     )
     test.value(jurisdictions).isNot(null)
@@ -58,7 +58,7 @@ describe('Write/Read Jurisdictions', () => {
     const [error, jurisdiction] = await JurisdictionService.createJurisdiction({
       agency_key: 'agency-key-one',
       agency_name: 'Agency Name One',
-      geography_id: uuid()
+      geography_id: uuid(),
     })
     test.value(jurisdiction).isNot(null)
     test.value(jurisdiction?.jurisdiction_id).isNot(null)
@@ -71,12 +71,9 @@ describe('Write/Read Jurisdictions', () => {
       jurisdiction_id: JURISDICTION_ID,
       agency_key: 'agency-key-two',
       agency_name: 'Agency Name One',
-      geography_id: uuid()
+      geography_id: uuid(),
     })
-    test
-      .value(error)
-      .isNot(null)
-      .isInstanceOf(ConflictError)
+    test.value(error).isNot(null).isInstanceOf(ConflictError)
     test.value(jurisdiction).is(null)
   })
 
@@ -84,12 +81,9 @@ describe('Write/Read Jurisdictions', () => {
     const [error, jurisdiction] = await JurisdictionService.createJurisdiction({
       agency_key: 'agency-key-one',
       agency_name: 'Agency Name One',
-      geography_id: uuid()
+      geography_id: uuid(),
     })
-    test
-      .value(error)
-      .isNot(null)
-      .isInstanceOf(ConflictError)
+    test.value(error).isNot(null).isInstanceOf(ConflictError)
     test.value(jurisdiction).is(null)
   })
 
@@ -97,12 +91,9 @@ describe('Write/Read Jurisdictions', () => {
     const [error, jurisdiction] = await JurisdictionService.createJurisdiction({
       agency_key: '',
       agency_name: 'Agency Name One',
-      geography_id: uuid()
+      geography_id: uuid(),
     })
-    test
-      .value(error)
-      .isNot(null)
-      .isInstanceOf(ValidationError)
+    test.value(error).isNot(null).isInstanceOf(ValidationError)
     test.value(jurisdiction).is(null)
   })
 
@@ -110,43 +101,34 @@ describe('Write/Read Jurisdictions', () => {
     const [error, jurisdiction] = await JurisdictionService.updateJurisdiction(JURISDICTION_ID, {
       jurisdiction_id: uuid(),
       agency_name: 'Some New Name',
-      timestamp: TODAY
+      timestamp: TODAY,
     })
-    test
-      .value(error)
-      .isNot(null)
-      .isInstanceOf(ValidationError)
+    test.value(error).isNot(null).isInstanceOf(ValidationError)
     test.value(jurisdiction).is(null)
   })
 
   it('Update One Jurisdiction (invalid timestamp)', async () => {
     const [error, jurisdiction] = await JurisdictionService.updateJurisdiction(JURISDICTION_ID, {
       agency_name: 'Some New Name',
-      timestamp: LAST_WEEK
+      timestamp: LAST_WEEK,
     })
-    test
-      .value(error)
-      .isNot(null)
-      .isInstanceOf(ValidationError)
+    test.value(error).isNot(null).isInstanceOf(ValidationError)
     test.value(jurisdiction).is(null)
   })
 
   it('Update One Jurisdiction (not found)', async () => {
     const [error, jurisdiction] = await JurisdictionService.updateJurisdiction(uuid(), {
       agency_name: 'Some New Name',
-      timestamp: TODAY
+      timestamp: TODAY,
     })
-    test
-      .value(error)
-      .isNot(null)
-      .isInstanceOf(NotFoundError)
+    test.value(error).isNot(null).isInstanceOf(NotFoundError)
     test.value(jurisdiction).is(null)
   })
 
   it('Update One Jurisdiction', async () => {
     const [error, jurisdiction] = await JurisdictionService.updateJurisdiction(JURISDICTION_ID, {
       agency_name: 'Some New Name',
-      timestamp: TODAY
+      timestamp: TODAY,
     })
     test.value(jurisdiction).isNot(null)
     test.value(jurisdiction?.jurisdiction_id).is(JURISDICTION_ID)
@@ -164,7 +146,7 @@ describe('Write/Read Jurisdictions', () => {
 
   it('Read Specific Jurisdiction (prior version)', async () => {
     const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(JURISDICTION_ID, {
-      effective: YESTERDAY
+      effective: YESTERDAY,
     })
     test.value(jurisdiction).isNot(null)
     test.value(jurisdiction?.jurisdiction_id).is(JURISDICTION_ID)
@@ -174,21 +156,15 @@ describe('Write/Read Jurisdictions', () => {
 
   it('Read Specific Jurisdiction (no version)', async () => {
     const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(JURISDICTION_ID, {
-      effective: LAST_WEEK
+      effective: LAST_WEEK,
     })
-    test
-      .value(error)
-      .isNot(null)
-      .isInstanceOf(NotFoundError)
+    test.value(error).isNot(null).isInstanceOf(NotFoundError)
     test.value(jurisdiction).is(null)
   })
 
   it('Read Missing Jurisdiction', async () => {
     const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(uuid())
-    test
-      .value(error)
-      .isNot(null)
-      .isInstanceOf(NotFoundError)
+    test.value(error).isNot(null).isInstanceOf(NotFoundError)
     test.value(jurisdiction).is(null)
   })
 
@@ -201,10 +177,7 @@ describe('Write/Read Jurisdictions', () => {
 
   it('Delete One Jurisdiction (not found)', async () => {
     const [error, result] = await JurisdictionService.deleteJurisdiction(JURISDICTION_ID)
-    test
-      .value(error)
-      .isNot(null)
-      .isInstanceOf(NotFoundError)
+    test.value(error).isNot(null).isInstanceOf(NotFoundError)
     test.value(result).is(null)
   })
 

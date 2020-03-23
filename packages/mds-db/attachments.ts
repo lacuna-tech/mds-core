@@ -12,7 +12,7 @@ export async function writeAttachment(attachment: Attachment): Promise<Recorded<
   const values = vals_list(schema.TABLE_COLUMNS.attachments, { ...attachment, recorded: now() })
   await logSql(sql, values)
   const {
-    rows: [recordedAttachment]
+    rows: [recordedAttachment],
   }: { rows: Recorded<Attachment>[] } = await client.query(sql, values)
   return { ...attachment, ...recordedAttachment }
 }
@@ -40,7 +40,7 @@ export async function writeAuditAttachment(auditAttachment: AuditAttachment): Pr
   const values = vals_list(schema.TABLE_COLUMNS.audit_attachments, { ...auditAttachment, recorded: now() })
   await logSql(sql, values)
   const {
-    rows: [recordedAuditAttachment]
+    rows: [recordedAuditAttachment],
   }: { rows: Recorded<AuditAttachment>[] } = await client.query(sql, values)
   return { ...auditAttachment, ...recordedAuditAttachment }
 }

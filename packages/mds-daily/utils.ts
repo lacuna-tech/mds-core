@@ -47,7 +47,7 @@ export function startAndEnd(
   }
   return {
     start_time: start_time_out,
-    end_time: end_time_out
+    end_time: end_time_out,
   }
 }
 
@@ -88,7 +88,7 @@ export function categorizeTrips(perTripId: TripsData): { [s: string]: TripsStats
     } else {
       inc(counts, 'mystery') // mystery: weird non-conforming trip
       perProvider[pid].mysteries = perProvider[pid].mysteries || {}
-      const key = events.map(event => event.replace('trip_', '')).join('-')
+      const key = events.map((event) => event.replace('trip_', '')).join('-')
       inc(perProvider[pid].mysteries, key)
 
       perProvider[pid].mystery_examples = perProvider[pid].mystery_examples || {}
@@ -121,7 +121,7 @@ export async function getMaps(): Promise<{
     // }, telemetrySeed)
     return Promise.resolve({
       // telemetryMap,
-      eventMap
+      eventMap,
     })
   } catch (err) {
     return Promise.reject(err)

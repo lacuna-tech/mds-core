@@ -33,7 +33,7 @@ import {
   getTripCountsSinceHandler,
   getEventCountsPerProviderSinceHandler,
   getTelemetryCountsPerProviderSinceHandler,
-  getConformanceLast24HoursHandler
+  getConformanceLast24HoursHandler,
 } from './request-handlers'
 
 async function agencyMiddleware(req: DailyApiRequest, res: DailyApiResponse, next: Function) {
@@ -47,7 +47,7 @@ async function agencyMiddleware(req: DailyApiRequest, res: DailyApiResponse, nex
         if (req.path.includes('/admin/')) {
           if (!scope || !scope.includes('admin:all')) {
             return res.status(403).send({
-              result: `no admin access without admin:all scope (${scope})`
+              result: `no admin access without admin:all scope (${scope})`,
             })
           }
         }
@@ -56,13 +56,13 @@ async function agencyMiddleware(req: DailyApiRequest, res: DailyApiResponse, nex
           if (!isUUID(provider_id)) {
             await log.warn(req.originalUrl, 'bogus provider_id', provider_id)
             return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a UUID`
+              result: `invalid provider_id ${provider_id} is not a UUID`,
             })
           }
 
           if (!isProviderId(provider_id)) {
             return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a known provider`
+              result: `invalid provider_id ${provider_id} is not a known provider`,
             })
           }
 
@@ -91,14 +91,14 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/admin/vehicle_counts'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getVehicleCounts
   )
 
   // read all the latest events out of the cache
   app.get(
     pathsFor('/admin/events'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     async (req: DailyApiRequest, res: DailyApiResponse) => {
       const start = now()
       const events = await cache.readAllEvents()
@@ -106,21 +106,21 @@ function api(app: express.Express): express.Express {
       const timeElapsed = finish - start
       await log.info(`MDS-DAILY /admin/events -> cache.readAllEvents() time elapsed: ${timeElapsed}`)
       res.status(200).send({
-        events
+        events,
       })
     }
   )
 
   app.get(
     pathsFor('/admin/last_day_trips_by_provider'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getLastDayTripsByProvider
   )
 
   // get raw trip data for analysis
   app.get(
     pathsFor('/admin/raw_trip_data/:trip_id'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getRawTripData
   )
 
@@ -132,49 +132,49 @@ function api(app: express.Express): express.Express {
   // This function is ludicrously long as it is.
   app.get(
     pathsFor('/admin/last_day_stats_by_provider'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getLastDayStatsByProvider
   )
 
   app.get(
     pathsFor('/admin/time_since_last_event'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getTimeSinceLastEventHandler
   )
 
   app.get(
     pathsFor('/admin/num_vehicles_registered_last_24_hours'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getNumVehiclesRegisteredLast24HoursHandler
   )
 
   app.get(
     pathsFor('/admin/num_event_last_24_hours'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getNumEventsLast24HoursHandler
   )
 
   app.get(
     pathsFor('/admin/trip_counts_since'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getTripCountsSinceHandler
   )
 
   app.get(
     pathsFor('/admin/event_counts_per_provider_since'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getEventCountsPerProviderSinceHandler
   )
 
   app.get(
     pathsFor('/admin/telemetry_counts_per_provider_since'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getTelemetryCountsPerProviderSinceHandler
   )
 
   app.get(
     pathsFor('/admin/conformance_last_24_hours'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAccess((scopes) => scopes.includes('admin:all')),
     getConformanceLast24HoursHandler
   )
 

@@ -22,11 +22,11 @@ const {
   PG_PASS,
   PG_NAME,
   PG_DEBUG = 'false',
-  PG_MIGRATIONS = 'true' // Enable migrations by default
+  PG_MIGRATIONS = 'true', // Enable migrations by default
 } = process.env
 
 export const Connections = (options: Partial<PostgresConnectionOptions> = {}): ConnectionOptions[] =>
-  ConnectionNames.map(name => ({
+  ConnectionNames.map((name) => ({
     name,
     type: 'postgres',
     host: (name === 'rw' ? PG_HOST : PG_HOST_READER) || PG_HOST || 'localhost',
@@ -43,7 +43,7 @@ export const Connections = (options: Partial<PostgresConnectionOptions> = {}): C
     namingStrategy: new MdsNamingStrategy(),
     cli: {
       entitiesDir: './entities',
-      migrationsDir: './migrations'
+      migrationsDir: './migrations',
     },
-    ...options
+    ...options,
   }))

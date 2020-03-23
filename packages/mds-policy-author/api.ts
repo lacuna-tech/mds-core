@@ -23,7 +23,7 @@ import {
   UUID_REGEX,
   NotFoundError,
   BadParamsError,
-  AlreadyPublishedError
+  AlreadyPublishedError,
 } from '@mds-core/mds-utils'
 import { policyValidationDetails } from '@mds-core/mds-schema-validators'
 import log from '@mds-core/mds-logger'
@@ -34,13 +34,13 @@ import { getPolicies } from './request-handlers'
 function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/policies'),
-    checkAccess(scopes => scopes.includes('policies:read')),
+    checkAccess((scopes) => scopes.includes('policies:read')),
     getPolicies
   )
 
   app.post(
     pathsFor('/policies'),
-    checkAccess(scopes => scopes.includes('policies:write')),
+    checkAccess((scopes) => scopes.includes('policies:write')),
     async (req, res) => {
       const policy = { policy_id: uuid(), ...req.body }
 
@@ -68,7 +68,7 @@ function api(app: express.Express): express.Express {
 
   app.post(
     pathsFor('/policies/:policy_id/publish'),
-    checkAccess(scopes => scopes.includes('policies:publish')),
+    checkAccess((scopes) => scopes.includes('policies:publish')),
     async (req, res) => {
       const { policy_id } = req.params
       try {
@@ -97,7 +97,7 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/policies/:policy_id'),
-    checkAccess(scopes => scopes.includes('policies:write')),
+    checkAccess((scopes) => scopes.includes('policies:write')),
     async (req, res) => {
       const policy = req.body
 
@@ -132,7 +132,7 @@ function api(app: express.Express): express.Express {
 
   app.delete(
     pathsFor('/policies/:policy_id'),
-    checkAccess(scopes => scopes.includes('policies:delete')),
+    checkAccess((scopes) => scopes.includes('policies:delete')),
     async (req, res) => {
       const { policy_id } = req.params
       try {
@@ -149,7 +149,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/policies/meta/'),
-    checkAccess(scopes => scopes.includes('policies:read')),
+    checkAccess((scopes) => scopes.includes('policies:read')),
     async (req, res) => {
       const { get_published = null, get_unpublished = null } = req.query
       const params = { get_published, get_unpublished }
@@ -170,11 +170,11 @@ function api(app: express.Express): express.Express {
         if (err instanceof BadParamsError) {
           res.status(400).send({
             result:
-              'Cannot set both get_unpublished and get_published to be true. If you want all policy metadata, set both params to false or do not send them.'
+              'Cannot set both get_unpublished and get_published to be true. If you want all policy metadata, set both params to false or do not send them.',
           })
         }
         res.status(404).send({
-          result: 'not found'
+          result: 'not found',
         })
       }
     }
@@ -182,7 +182,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/policies/:policy_id'),
-    checkAccess(scopes => scopes.includes('policies:read')),
+    checkAccess((scopes) => scopes.includes('policies:read')),
     async (req, res) => {
       const { policy_id } = req.params
       try {
@@ -201,7 +201,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/policies/:policy_id/meta'),
-    checkAccess(scopes => scopes.includes('policies:read')),
+    checkAccess((scopes) => scopes.includes('policies:read')),
     async (req, res) => {
       const { policy_id } = req.params
       try {
@@ -216,7 +216,7 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/policies/:policy_id/meta'),
-    checkAccess(scopes => scopes.includes('policies:write')),
+    checkAccess((scopes) => scopes.includes('policies:write')),
     async (req, res) => {
       const policy_metadata = req.body
       try {

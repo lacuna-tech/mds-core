@@ -44,7 +44,7 @@ if (env.ATTACHMENTS_BUCKET) {
       aws.config.update({
         secretAccessKey: aws.config.credentials.secretAccessKey,
         accessKeyId: aws.config.credentials.accessKeyId,
-        region: s3Region
+        region: s3Region,
       })
     }
   })
@@ -57,7 +57,7 @@ export function attachmentSummary(attachment: Attachment): AttachmentSummary {
   return {
     attachment_id: attachment.attachment_id,
     attachment_url: attachment.base_url + attachment.attachment_filename,
-    thumbnail_url: thumbnailUrl
+    thumbnail_url: thumbnailUrl,
   }
 }
 
@@ -81,9 +81,9 @@ async function writeAttachmentS3(file: Express.Multer.File) {
       .rotate()
       .resize(thumbnailSize, thumbnailSize, {
         fit: sharp.fit.inside,
-        withoutEnlargement: true
+        withoutEnlargement: true,
       })
-      .toBuffer()
+      .toBuffer(),
   ])
 
   // Upload attachment and thumbnail to S3
@@ -97,7 +97,7 @@ async function writeAttachmentS3(file: Express.Multer.File) {
         Bucket: s3Bucket,
         Key: [s3BucketSubdir, attachmentFilename].join('/'),
         Body: attachmentBuf,
-        ACL: s3ACL
+        ACL: s3ACL,
       })
       .promise(),
     s3
@@ -105,9 +105,9 @@ async function writeAttachmentS3(file: Express.Multer.File) {
         Bucket: s3Bucket,
         Key: [s3BucketSubdir, thumbnailFilename].join('/'),
         Body: thumbnailBuf,
-        ACL: s3ACL
+        ACL: s3ACL,
       })
-      .promise()
+      .promise(),
   ])
   return {
     attachment_filename: attachmentFilename,
@@ -115,7 +115,7 @@ async function writeAttachmentS3(file: Express.Multer.File) {
     base_url: `https://${s3Bucket}.s3-${s3Region}.amazonaws.com/${s3BucketSubdir}/`,
     mimetype: file.mimetype,
     thumbnail_filename: thumbnailFilename,
-    thumbnail_mimetype: file.mimetype
+    thumbnail_mimetype: file.mimetype,
   }
 }
 
@@ -124,7 +124,7 @@ export async function writeAttachment(file: Express.Multer.File, auditTripId: UU
   await db.writeAttachment(attachment)
   await db.writeAuditAttachment({
     attachment_id: attachment.attachment_id,
-    audit_trip_id: auditTripId
+    audit_trip_id: auditTripId,
   } as AuditAttachment)
   return attachment
 }
@@ -139,16 +139,16 @@ export async function deleteAttachmentS3(attachment: Attachment) {
     s3
       .deleteObject({
         Bucket: s3Bucket,
-        Key: s3Bucket.concat('/', attachment.attachment_filename)
+        Key: s3Bucket.concat('/', attachment.attachment_filename),
       })
-      .promise()
+      .promise(),
   ]
   if (attachment.thumbnail_filename) {
     deletePromises.push(
       s3
         .deleteObject({
           Bucket: s3Bucket,
-          Key: s3Bucket.concat('/', attachment.thumbnail_filename)
+          Key: s3Bucket.concat('/', attachment.thumbnail_filename),
         })
         .promise()
     )

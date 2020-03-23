@@ -35,7 +35,7 @@ import {
   VEHICLE_STATUS,
   TIME_FORMAT,
   DAYS_OF_WEEK,
-  UUID
+  UUID,
 } from '@mds-core/mds-types'
 import { pointInShape, getPolygon, isInStatesOrEvents, now, RuntimeError } from '@mds-core/mds-utils'
 import moment from 'moment-timezone'
@@ -86,13 +86,13 @@ function getMatchedVehicleFromDeviceAndEvent(device: Device, event: VehicleEvent
     vehicle_status: EVENT_STATUS_MAP[event.event_type] as VEHICLE_STATUS,
     gps: {
       lat: event.telemetry.gps.lat,
-      lng: event.telemetry.gps.lng
-    }
+      lng: event.telemetry.gps.lng,
+    },
   }
 }
 
 function getViolationsArray(map: { [key: string]: MatchedVehiclePlusRule }) {
-  return Object.keys(map).map(device_id => {
+  return Object.keys(map).map((device_id) => {
     const { rule_id } = map[device_id]
     return { device_id, rule_id }
   })
@@ -129,7 +129,7 @@ function processCountRule(
         matches_acc.push({
           geography_id: geography,
           measured: maximum && matched_vehicles.length > maximum ? maximum : matched_vehicles.length,
-          matched_vehicles
+          matched_vehicles,
         })
         return matches_acc
       },
@@ -161,7 +161,7 @@ function processTimeRule(
               matches_acc.push({
                 measured: now() - event.timestamp,
                 geography_id: geography,
-                matched_vehicle: getMatchedVehicleFromDeviceAndEvent(device, event as VehicleEventWithTelemetry)
+                matched_vehicle: getMatchedVehicleFromDeviceAndEvent(device, event as VehicleEventWithTelemetry),
               })
             }
           }
@@ -197,7 +197,7 @@ function processSpeedRule(
             matches.push({
               measured: event.telemetry.gps.speed,
               geography_id: geography,
-              matched_vehicle: getMatchedVehicleFromDeviceAndEvent(device, event as VehicleEventWithTelemetry)
+              matched_vehicle: getMatchedVehicleFromDeviceAndEvent(device, event as VehicleEventWithTelemetry),
             })
           }
         }
@@ -250,7 +250,7 @@ function processPolicy(
                   const { measured, geography_id } = inst
                   return [...acc, { measured, geography_id }]
                 }, [])
-              : []
+              : [],
           }
 
           const bucketMap = comp.matches.reduce(
@@ -279,7 +279,7 @@ function processPolicy(
                     return acc
                   },
                   { matched: [], overflowed: [] }
-                )
+                ),
               ]
             },
             [{ matched: [], overflowed: [] }]
@@ -303,7 +303,7 @@ function processPolicy(
                 return acc
               },
               {}
-            )
+            ),
           }
 
           // only vehicles in count maximum violation are in overflow
@@ -360,7 +360,7 @@ function processPolicy(
               : []
             vehiclesToFilter.push(...speedingVehicles)
 
-            speedingVehicles.forEach(vehicle => {
+            speedingVehicles.forEach((vehicle) => {
               speedingVehiclesMap[vehicle.device_id] = { ...vehicle, ...{ rule_id: rule.rule_id } }
             })
           }
@@ -379,7 +379,7 @@ function processPolicy(
       policy,
       compliance,
       total_violations: countViolations + timeVehicles.length + speedingVehicles.length,
-      vehicles_in_violation: { ...countVehicles, ...timeVehiclesMap, ...speedingVehiclesMap }
+      vehicles_in_violation: { ...countVehicles, ...timeVehiclesMap, ...speedingVehiclesMap },
     }
   }
 }

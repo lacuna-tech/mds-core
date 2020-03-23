@@ -24,11 +24,11 @@ const getPolicies = async (req: PolicyApiRequest, res: PolicyApiResponse) => {
     if (err instanceof BadParamsError) {
       res.status(400).send({
         result:
-          'Cannot set both get_unpublished and get_published to be true. If you want all policies, set both params to false or do not send them.'
+          'Cannot set both get_unpublished and get_published to be true. If you want all policies, set both params to false or do not send them.',
       })
     } else {
       res.status(404).send({
-        result: 'not found'
+        result: 'not found',
       })
     }
   }

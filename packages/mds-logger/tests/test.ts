@@ -7,7 +7,7 @@ import * as test from 'unit.js'
 import logger from '../index'
 
 describe('MDS Logger', () => {
-  it('censors logs of lat and lng info for mds-logger.info', done => {
+  it('censors logs of lat and lng info for mds-logger.info', (done) => {
     const toCensor = {
       device_id: 'ec551174-f324-4251-bfed-28d9f3f473fc',
       gps: {
@@ -15,11 +15,11 @@ describe('MDS Logger', () => {
         lng: 1231.21,
         speed: 0,
         hdop: 1,
-        heading: 180
+        heading: 180,
       },
       charge: 0.5,
       timestamp: 1555384091559,
-      recorded: 1555384091836
+      recorded: 1555384091836,
     }
     const [result] = logger.info(toCensor)
     const res = JSON.parse(result)
@@ -28,7 +28,7 @@ describe('MDS Logger', () => {
     done()
   })
 
-  it('censors logs of lat and lng info for mds-logger.warn', done => {
+  it('censors logs of lat and lng info for mds-logger.warn', (done) => {
     const toCensor = {
       device_id: 'ec551174-f324-4251-bfed-28d9f3f473fc',
       gps: {
@@ -36,11 +36,11 @@ describe('MDS Logger', () => {
         lng: 1231.21,
         speed: 0,
         hdop: 1,
-        heading: 180
+        heading: 180,
       },
       charge: 0.5,
       timestamp: 1555384091559,
-      recorded: 1555384091836
+      recorded: 1555384091836,
     }
     logger
       .warn(toCensor)
@@ -56,7 +56,7 @@ describe('MDS Logger', () => {
       })
   })
 
-  it('censors logs of lat and lng info for mds-logger.error', done => {
+  it('censors logs of lat and lng info for mds-logger.error', (done) => {
     const toCensor = [
       {
         device_id: 'ec551174-f324-4251-bfed-28d9f3f473fc',
@@ -65,11 +65,11 @@ describe('MDS Logger', () => {
           lng: 1231.21,
           speed: 0,
           hdop: 1,
-          heading: 180
+          heading: 180,
         },
         charge: 0.5,
         timestamp: 1555384091559,
-        recorded: 1555384091836
+        recorded: 1555384091836,
       },
       {
         device_id: 'ec551174-f324-4251-bfed-28d9f3f473fc',
@@ -78,12 +78,12 @@ describe('MDS Logger', () => {
           lng: 341231.21,
           speed: 100,
           hdop: 10,
-          heading: 20
+          heading: 20,
         },
         charge: 0.75,
         timestamp: 1555384090000,
-        recorded: 1555384090000
-      }
+        recorded: 1555384090000,
+      },
     ]
     logger
       .error(toCensor)
@@ -98,14 +98,14 @@ describe('MDS Logger', () => {
       .catch(done)
   })
 
-  it('verifies conversion of [object Object] to stringified version', done => {
+  it('verifies conversion of [object Object] to stringified version', (done) => {
     const [result] = logger.info({ key1: 'key1', key2: 'key2' })
     const res = JSON.parse(result)
     test.string(res.key1).contains('key1')
     done()
   })
 
-  it('verifies conversion of an error', done => {
+  it('verifies conversion of an error', (done) => {
     const err = new Error('puzzling evidence')
     const [, result] = logger.info('ohai2', err)
     test.string(result).contains('evidence')

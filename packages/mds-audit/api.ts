@@ -26,7 +26,7 @@ import {
   ConflictError,
   NotFoundError,
   ServerError,
-  UnsupportedTypeError
+  UnsupportedTypeError,
 } from '@mds-core/mds-utils'
 
 import {
@@ -41,7 +41,7 @@ import {
   isValidVehicleEventType,
   isValidAuditIssueCode,
   isValidAuditNote,
-  ValidationError
+  ValidationError,
 } from '@mds-core/mds-schema-validators'
 
 import { providerName } from '@mds-core/mds-providers' // map of uuids -> obj
@@ -53,7 +53,7 @@ import {
   Timestamp,
   Telemetry,
   TelemetryData,
-  VEHICLE_EVENT
+  VEHICLE_EVENT,
 } from '@mds-core/mds-types'
 import { asPagingParams, asJsonApiLinks } from '@mds-core/mds-api-helpers'
 import { checkAccess } from '@mds-core/mds-api-server'
@@ -68,7 +68,7 @@ import {
   AuditApiResponse,
   AuditApiTripRequest,
   AuditApiVehicleEventRequest,
-  AuditApiVehicleTelemetryRequest
+  AuditApiVehicleTelemetryRequest,
 } from './types'
 import {
   deleteAudit,
@@ -82,7 +82,7 @@ import {
   readTelemetry,
   withGpsProperty,
   writeAudit,
-  writeAuditEvent
+  writeAuditEvent,
 } from './service'
 import {
   attachmentSummary,
@@ -90,7 +90,7 @@ import {
   multipartFormUpload,
   readAttachments,
   validateFile,
-  writeAttachment
+  writeAttachment,
 } from './attachments'
 
 // TODO lib
@@ -98,7 +98,7 @@ function flattenTelemetry(telemetry?: Telemetry): TelemetryData {
   return telemetry
     ? {
         ...telemetry.gps,
-        charge: telemetry.charge
+        charge: telemetry.charge,
       }
     : {
         lat: 0,
@@ -107,7 +107,7 @@ function flattenTelemetry(telemetry?: Telemetry): TelemetryData {
         heading: null,
         accuracy: null,
         altitude: null,
-        charge: null
+        charge: null,
       }
 }
 
@@ -168,7 +168,7 @@ function api(app: express.Express): express.Express {
    */
   app.post(
     pathsFor('/trips/:audit_trip_id/start'),
-    checkAccess(scopes => scopes.includes('audits:write')),
+    checkAccess((scopes) => scopes.includes('audits:write')),
     async (req: AuditApiAuditStartRequest, res: AuditApiResponse) => {
       try {
         const { audit_trip_id, audit, audit_subject_id, recorded } = res.locals
@@ -180,7 +180,7 @@ function api(app: express.Express): express.Express {
             provider_vehicle_id,
             audit_event_id = uuid(),
             audit_device_id,
-            telemetry
+            telemetry,
           } = req.body
 
           // Validate input params
@@ -207,7 +207,7 @@ function api(app: express.Express): express.Express {
               provider_vehicle_id,
               provider_device_id,
               timestamp,
-              recorded
+              recorded,
             })
 
             // Create the audit start event
@@ -218,7 +218,7 @@ function api(app: express.Express): express.Express {
               audit_event_type: AUDIT_EVENT_TYPES.start,
               ...flattenTelemetry(telemetry),
               timestamp,
-              recorded
+              recorded,
             })
 
             // 200 OK
@@ -226,7 +226,7 @@ function api(app: express.Express): express.Express {
               provider_id,
               provider_name,
               provider_vehicle_id,
-              provider_device
+              provider_device,
             })
           }
         } else {
@@ -252,7 +252,7 @@ function api(app: express.Express): express.Express {
    */
   app.post(
     pathsFor('/trips/:audit_trip_id/vehicle/event'),
-    checkAccess(scopes => scopes.includes('audits:write')),
+    checkAccess((scopes) => scopes.includes('audits:write')),
     async (req: AuditApiVehicleEventRequest, res: AuditApiResponse) => {
       try {
         const { audit_trip_id, audit_subject_id, audit, recorded } = res.locals
@@ -274,7 +274,7 @@ function api(app: express.Express): express.Express {
               audit_event_type: event_type,
               ...flattenTelemetry(telemetry),
               timestamp,
-              recorded
+              recorded,
             })
 
             // 200 OK
@@ -302,7 +302,7 @@ function api(app: express.Express): express.Express {
    */
   app.post(
     pathsFor('/trips/:audit_trip_id/vehicle/telemetry'),
-    checkAccess(scopes => scopes.includes('audits:write')),
+    checkAccess((scopes) => scopes.includes('audits:write')),
     async (req: AuditApiVehicleTelemetryRequest, res: AuditApiResponse) => {
       try {
         const { audit_trip_id, audit_subject_id, audit, recorded } = res.locals
@@ -320,7 +320,7 @@ function api(app: express.Express): express.Express {
               audit_event_type: AUDIT_EVENT_TYPES.telemetry,
               ...flattenTelemetry(telemetry),
               timestamp,
-              recorded
+              recorded,
             })
 
             // 200 OK
@@ -348,7 +348,7 @@ function api(app: express.Express): express.Express {
    */
   app.post(
     [...pathsFor('/trips/:audit_trip_id/note'), ...pathsFor('/trips/:audit_trip_id/event')],
-    checkAccess(scopes => scopes.includes('audits:write')),
+    checkAccess((scopes) => scopes.includes('audits:write')),
     async (req: AuditApiAuditNoteRequest, res: AuditApiResponse) => {
       try {
         const { audit_trip_id, audit, audit_subject_id, recorded } = res.locals
@@ -360,20 +360,20 @@ function api(app: express.Express): express.Express {
             audit_issue_code,
             note,
             timestamp,
-            telemetry
+            telemetry,
           } = req.body
 
           // Validate input params
           if (
             isValidAuditEventId(audit_event_id) &&
             isValidAuditEventType(audit_event_type, {
-              accept: [AUDIT_EVENT_TYPES.issue, AUDIT_EVENT_TYPES.note, AUDIT_EVENT_TYPES.summary]
+              accept: [AUDIT_EVENT_TYPES.issue, AUDIT_EVENT_TYPES.note, AUDIT_EVENT_TYPES.summary],
             }) &&
             isValidTimestamp(timestamp) &&
             isValidTelemetry(telemetry, { required: false }) &&
             isValidAuditIssueCode(audit_issue_code, { required: false }) &&
             isValidAuditNote(note, {
-              required: audit_event_type === AUDIT_EVENT_TYPES.note || audit_event_type === AUDIT_EVENT_TYPES.summary
+              required: audit_event_type === AUDIT_EVENT_TYPES.note || audit_event_type === AUDIT_EVENT_TYPES.summary,
             })
           ) {
             // Create the audit event
@@ -386,7 +386,7 @@ function api(app: express.Express): express.Express {
               note,
               ...flattenTelemetry(telemetry),
               timestamp,
-              recorded
+              recorded,
             })
 
             // 200 OK
@@ -414,7 +414,7 @@ function api(app: express.Express): express.Express {
    */
   app.post(
     pathsFor('/trips/:audit_trip_id/end'),
-    checkAccess(scopes => scopes.includes('audits:write')),
+    checkAccess((scopes) => scopes.includes('audits:write')),
     async (req: AuditApiAuditEndRequest, res: AuditApiResponse) => {
       try {
         const { audit_trip_id, audit, audit_subject_id, recorded } = res.locals
@@ -436,7 +436,7 @@ function api(app: express.Express): express.Express {
               audit_event_type: AUDIT_EVENT_TYPES.end,
               ...flattenTelemetry(telemetry),
               timestamp,
-              recorded
+              recorded,
             })
 
             // 200 OK
@@ -464,7 +464,7 @@ function api(app: express.Express): express.Express {
    */
   app.get(
     pathsFor('/trips/:audit_trip_id'),
-    checkAccess(scopes => scopes.includes('audits:read')),
+    checkAccess((scopes) => scopes.includes('audits:read')),
     async (req: AuditApiGetTripRequest, res: AuditApiResponse<AuditDetails>) => {
       try {
         const { audit_trip_id, audit } = res.locals
@@ -496,24 +496,24 @@ function api(app: express.Express): express.Express {
                 if (event.audit_event_type === AUDIT_EVENT_TYPES.start) {
                   return {
                     ...trip,
-                    audit_start: trip.audit_start ? Math.min(trip.audit_start, event.timestamp) : event.timestamp
+                    audit_start: trip.audit_start ? Math.min(trip.audit_start, event.timestamp) : event.timestamp,
                   }
                 }
                 if (event.audit_event_type === AUDIT_EVENT_TYPES.end) {
                   return {
                     ...trip,
-                    audit_end: trip.audit_end ? Math.max(trip.audit_end, event.timestamp) : event.timestamp
+                    audit_end: trip.audit_end ? Math.max(trip.audit_end, event.timestamp) : event.timestamp,
                   }
                 }
                 return {
                   ...trip,
-                  last_event: trip.last_event ? Math.max(trip.last_event, event.timestamp) : event.timestamp
+                  last_event: trip.last_event ? Math.max(trip.last_event, event.timestamp) : event.timestamp,
                 }
               }, {})
 
             const event_viewport_adjustment = seconds(Number(req.query.event_viewport_adjustment) || 30)
             const start_time = audit_start && audit_start - event_viewport_adjustment
-            const end_time = (end => end && end + event_viewport_adjustment)(audit_end || last_event)
+            const end_time = ((end) => end && end + event_viewport_adjustment)(audit_end || last_event)
 
             if (start_time && end_time) {
               const deviceEvents = await readEvents(device.device_id, start_time, end_time)
@@ -523,7 +523,7 @@ function api(app: express.Express): express.Express {
                 provider_id: device.provider_id,
                 end_time: audit_start, // Last provider event before the audit started
                 order_by: 'timestamp DESC',
-                limit: 1
+                limit: 1,
               })
               return res.status(200).send({
                 ...audit,
@@ -538,22 +538,22 @@ function api(app: express.Express): express.Express {
                 provider: {
                   device,
                   events: deviceEvents,
-                  telemetry: deviceTelemetry
-                }
+                  telemetry: deviceTelemetry,
+                },
               })
             }
             return res.status(200).send({
               ...audit,
               events: auditEvents.map(withGpsProperty),
               attachments: attachments.map(attachmentSummary),
-              provider: { device, events: [], telemetry: [] }
+              provider: { device, events: [], telemetry: [] },
             })
           }
           return res.status(200).send({
             ...audit,
             events: auditEvents.map(withGpsProperty),
             attachments: attachments.map(attachmentSummary),
-            provider: null
+            provider: null,
           })
         }
         // 404 Not Found
@@ -572,7 +572,7 @@ function api(app: express.Express): express.Express {
 
   app.delete(
     pathsFor('/trips/:audit_trip_id'),
-    checkAccess(scopes => scopes.includes('audits:delete')),
+    checkAccess((scopes) => scopes.includes('audits:delete')),
     async (req: AuditApiTripRequest, res: AuditApiResponse) => {
       try {
         const { audit_trip_id, audit } = res.locals
@@ -601,7 +601,7 @@ function api(app: express.Express): express.Express {
    */
   app.get(
     pathsFor('/trips'),
-    checkAccess(scopes => scopes.includes('audits:read')),
+    checkAccess((scopes) => scopes.includes('audits:read')),
     async (req: AuditApiGetTripsRequest, res: AuditApiResponse) => {
       try {
         const { start_time, end_time } = req.query
@@ -613,17 +613,17 @@ function api(app: express.Express): express.Express {
           skip,
           take,
           start_time: start_time ? Number(start_time) : undefined,
-          end_time: end_time ? Number(end_time) : undefined
+          end_time: end_time ? Number(end_time) : undefined,
         }
 
         // Query the audits
         const { count, audits } = await readAudits(query)
         const auditsWithAttachments = await Promise.all(
-          audits.map(async audit => {
+          audits.map(async (audit) => {
             const attachments = await readAttachments(audit.audit_trip_id)
             return {
               ...audit,
-              attachments: attachments.map(attachmentSummary)
+              attachments: attachments.map(attachmentSummary),
             }
           })
         )
@@ -645,7 +645,7 @@ function api(app: express.Express): express.Express {
    */
   app.get(
     pathsFor('/vehicles'),
-    checkAccess(scopes => scopes.includes('audits:vehicles:read')),
+    checkAccess((scopes) => scopes.includes('audits:vehicles:read')),
     async (req, res) => {
       const { skip, take } = { skip: 0, take: 10000 }
       const bbox = JSON.parse(req.query.bbox)
@@ -654,7 +654,7 @@ function api(app: express.Express): express.Express {
       const url = urls.format({
         protocol: req.get('x-forwarded-proto') || req.protocol,
         host: req.get('host'),
-        pathname: req.path
+        pathname: req.path,
       })
 
       const { provider_id } = req.query
@@ -666,7 +666,7 @@ function api(app: express.Express): express.Express {
         await log.error('getVehicles fail', err)
         return res.status(500).send({
           error: 'server_error',
-          error_description: 'an internal server error has occurred and been logged'
+          error_description: 'an internal server error has occurred and been logged',
         })
       }
     }
@@ -688,7 +688,7 @@ function api(app: express.Express): express.Express {
       await log.error('getVehicle fail', err)
       res.status(500).send({
         error: 'server_error',
-        error_description: 'an internal server error has occurred and been logged'
+        error_description: 'an internal server error has occurred and been logged',
       })
     }
   })
@@ -715,7 +715,7 @@ function api(app: express.Express): express.Express {
       const attachment = await writeAttachment(req.file, audit_trip_id)
       res.status(200).send({
         ...attachmentSummary(attachment),
-        audit_trip_id
+        audit_trip_id,
       })
     } catch (err) {
       await log.error('post attachment fail', err)

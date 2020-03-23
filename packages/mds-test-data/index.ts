@@ -30,7 +30,7 @@ import {
   PROVIDER_REASON,
   PROVIDER_EVENTS,
   PROVIDER_REASONS,
-  AccessTokenScope
+  AccessTokenScope,
 } from '@mds-core/mds-types'
 import { Geometry } from 'geojson'
 import { StatusChange, Trip } from '@mds-core/mds-db/types'
@@ -44,7 +44,7 @@ import {
   randomElement,
   range,
   rangeRandom,
-  rangeRandomInt
+  rangeRandomInt,
 } from '@mds-core/mds-utils'
 
 import { serviceAreaMap } from 'ladot-service-areas'
@@ -58,7 +58,7 @@ import {
   LIME_PROVIDER_ID,
   BIRD_PROVIDER_ID,
   TEST1_PROVIDER_ID,
-  providerName
+  providerName,
 } from '@mds-core/mds-providers'
 
 import { LA_CITY_BOUNDARY } from './la-city-boundary'
@@ -94,7 +94,7 @@ const JUMP_TEST_DEVICE_1: Device = {
   year: 2018,
   mfgr: 'Schwinn',
   model: 'whoknows',
-  recorded: now()
+  recorded: now(),
 }
 
 const START_YESTERDAY = now() - (now() % days(1))
@@ -117,9 +117,9 @@ const POLICY_JSON: Policy = {
       statuses: { available: [], unavailable: [], reserved: [], trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 3000,
-      minimum: 500
-    }
-  ]
+      minimum: 500,
+    },
+  ],
 }
 
 const SUPERSEDING_POLICY_JSON: Policy = {
@@ -140,9 +140,9 @@ const SUPERSEDING_POLICY_JSON: Policy = {
       statuses: { available: [], unavailable: [], reserved: [], trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 1000,
-      minimum: 500
-    }
-  ]
+      minimum: 500,
+    },
+  ],
 }
 
 const START_ONE_MONTH_AGO = now() - (now() % days(1)) - days(30)
@@ -167,7 +167,7 @@ const POLICY2_JSON: Policy = {
       geographies: [GEOGRAPHY_UUID],
       statuses: { available: [], reserved: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
-      maximum: 7200
+      maximum: 7200,
     },
     {
       name: 'Greater LA (non-rentable)',
@@ -177,9 +177,9 @@ const POLICY2_JSON: Policy = {
       geographies: [GEOGRAPHY_UUID],
       statuses: { unavailable: [], trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
-      maximum: 720
-    }
-  ]
+      maximum: 720,
+    },
+  ],
 }
 
 const START_ONE_MONTH_FROM_NOW = now() - (now() % days(1)) + days(30)
@@ -203,7 +203,7 @@ const POLICY3_JSON: Policy = {
       geographies: [GEOGRAPHY_UUID],
       statuses: { trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
-      maximum: 15
+      maximum: 15,
     },
     {
       name: 'Venice Beach on weekend afternoons',
@@ -219,10 +219,10 @@ const POLICY3_JSON: Policy = {
       maximum: 10,
       messages: {
         'en-US': 'Remember to stay under 10 MPH on Venice Beach on weekends!',
-        'es-US': '¡Recuerda permanecer menos de 10 millas por hora en Venice Beach los fines de semana!'
-      }
-    }
-  ]
+        'es-US': '¡Recuerda permanecer menos de 10 millas por hora en Venice Beach los fines de semana!',
+      },
+    },
+  ],
 }
 
 const POLICY4_JSON: Policy = {
@@ -243,9 +243,9 @@ const POLICY4_JSON: Policy = {
       geographies: [GEOGRAPHY_UUID],
       statuses: { trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
-      maximum: 25
-    }
-  ]
+      maximum: 25,
+    },
+  ],
 }
 
 const POLICY_JSON_MISSING_POLICY_ID = {
@@ -264,9 +264,9 @@ const POLICY_JSON_MISSING_POLICY_ID = {
       geographies: [NONEXISTENT_GEOGRAPHY_UUID],
       statuses: { trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
-      maximum: 25
-    }
-  ]
+      maximum: 25,
+    },
+  ],
 }
 
 function makeTelemetry(devices: Device[], timestamp: Timestamp): Telemetry[] {
@@ -279,13 +279,13 @@ function makeTelemetry(devices: Device[], timestamp: Timestamp): Telemetry[] {
   } = {}
 
   log.info('clustering')
-  serviceAreaKeys.slice(0, 1).map(key => {
+  serviceAreaKeys.slice(0, 1).map((key) => {
     const serviceArea = serviceAreaMap[key]
     const serviceAreaMultipoly = serviceArea.area
     cluster_info[key] = {
       num_clusters: rangeRandomInt(5, 15), // number of clusters
       cluster_radii: [], // meters
-      cluster_centers: [] // to be filled in
+      cluster_centers: [], // to be filled in
     }
     for (let j = 0; j < cluster_info[key].num_clusters; j++) {
       // make centers-of-gravity
@@ -298,7 +298,7 @@ function makeTelemetry(devices: Device[], timestamp: Timestamp): Telemetry[] {
     }
   })
 
-  const telemetries = devices.map(device => {
+  const telemetries = devices.map((device) => {
     // make a rando telemetry for that vehicle, in one of the areas
     const key = serviceAreaKeys[i++ % num_areas]
     const serviceArea = serviceAreaMap[key]
@@ -333,11 +333,11 @@ function makeTelemetry(devices: Device[], timestamp: Timestamp): Telemetry[] {
         lng: point.lng,
         speed: rangeRandomInt(0, 10),
         hdop: rangeRandomInt(0, 5),
-        heading: rangeRandomInt(0, 360)
+        heading: rangeRandomInt(0, 360),
       },
       charge: rangeRandom(0.1, 0.9),
       timestamp,
-      recorded: now()
+      recorded: now(),
     }
   })
 
@@ -354,11 +354,11 @@ function makeTelemetryInShape(device: Device, timestamp: number, shape: Geometry
       lng: point.lng,
       speed,
       hdop: rangeRandomInt(0, 5),
-      heading: rangeRandomInt(0, 360)
+      heading: rangeRandomInt(0, 360),
     },
     charge: rangeRandom(0.1, 0.9),
     timestamp,
-    recorded: timestamp
+    recorded: timestamp,
   }
 }
 
@@ -401,13 +401,13 @@ function makeEvents(devices: Device[], timestamp: Timestamp, event_type = VEHICL
     throw new Error('empty event_type')
   }
 
-  return devices.map(device => {
+  return devices.map((device) => {
     return {
       device_id: device.device_id,
       provider_id: device.provider_id,
       event_type: event_type as VEHICLE_EVENT,
       timestamp,
-      recorded: now()
+      recorded: now(),
     }
   })
 }
@@ -419,7 +419,7 @@ function makeEventsWithTelemetry(
   event_type: null | string = null,
   speed = rangeRandomInt(10)
 ): VehicleEvent[] {
-  return devices.map(device => {
+  return devices.map((device) => {
     const vehicleEventsKeys = Object.keys(VEHICLE_EVENTS)
     return {
       device_id: device.device_id,
@@ -429,7 +429,7 @@ function makeEventsWithTelemetry(
         : (vehicleEventsKeys[rangeRandomInt(vehicleEventsKeys.length)] as VEHICLE_EVENT),
       telemetry: makeTelemetryInArea(device, timestamp, area, speed),
       timestamp,
-      recorded: timestamp
+      recorded: timestamp,
     }
   })
 }
@@ -489,7 +489,7 @@ function makeDevices(count: number, timestamp: Timestamp, provider_id = TEST1_PR
       mfgr,
       model,
       timestamp,
-      recorded: now()
+      recorded: now(),
     }
     devices.push(device)
   }
@@ -513,7 +513,7 @@ function makeStatusChange(device: Device, timestamp: Timestamp): StatusChange {
     event_time: timestamp,
     vehicle_type: device.type,
     propulsion_type: device.propulsion,
-    recorded: now()
+    recorded: now(),
   }
 }
 
@@ -534,14 +534,14 @@ function makeTrip(device: Device): Trip {
         {
           type: 'Feature',
           properties: {
-            timestamp: now()
+            timestamp: now(),
           },
           geometry: {
             type: 'Point',
-            coordinates: [Math.random() * 10, Math.random() * 10]
-          }
-        }
-      ]
+            coordinates: [Math.random() * 10, Math.random() * 10],
+          },
+        },
+      ],
     },
     accuracy: Math.random() * 3,
     trip_start: now() - 1000 * Math.random(),
@@ -549,7 +549,7 @@ function makeTrip(device: Device): Trip {
     parking_verification_url: 'http://iamverified.com',
     standard_cost: rangeRandomInt(5),
     actual_cost: rangeRandomInt(5),
-    recorded: now()
+    recorded: now(),
   }
 }
 
@@ -588,5 +588,5 @@ export {
   makeTelemetryStream,
   makeStatusChange,
   makeTrip,
-  SCOPED_AUTH
+  SCOPED_AUTH,
 }

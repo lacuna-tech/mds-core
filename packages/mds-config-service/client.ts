@@ -66,7 +66,7 @@ export const client = {
     properties: string[],
     { partial = false }: Partial<GetSettingsOptions> = {}
   ): Promise<GetSettingsResult<TSettings>> => {
-    const settings = await Promise.all(properties.map(property => readJsonFile<TSettings>(property)))
+    const settings = await Promise.all(properties.map((property) => readJsonFile<TSettings>(property)))
     const result = settings.reduce<{ found: string[]; missing: string[] }>(
       (info, [error], index) =>
         error
@@ -82,7 +82,7 @@ export const client = {
             {} as TSettings
           )
         )
-  }
+  },
 }
 
 const loadSettings = async <TSettings extends {}>(
@@ -107,6 +107,6 @@ export const ConfigurationManager = <TSettings>(properties: string[], options: P
         return settings
       }
       throw error
-    }
+    },
   }
 }

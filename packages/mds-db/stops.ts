@@ -15,7 +15,7 @@ export async function writeStop(stop: Stop): Promise<Recorded<Stop>> {
   const values = vals_list(schema.TABLE_COLUMNS.stops, { ...stop, recorded: now() })
   await logSql(sql, values)
   const {
-    rows: [recorded_stop]
+    rows: [recorded_stop],
   }: { rows: Recorded<Stop>[] } = await client.query(sql, values)
   return { ...stop, ...recorded_stop }
 }
@@ -27,7 +27,7 @@ export async function readStop(stop_id: UUID): Promise<Recorded<Stop>> {
   const values = vals.values()
   await logSql(sql, values)
   const {
-    rows: [recorded_stop]
+    rows: [recorded_stop],
   }: { rows: Recorded<Stop>[] } = await client.query(sql, values)
   return recorded_stop
 }

@@ -13,8 +13,8 @@ describe('Policy Author Request Handlers', () => {
     it('Gets all published policies', async () => {
       const req = mockReq({
         query: {
-          get_published: 'true'
-        }
+          get_published: 'true',
+        },
       })
       const res = mockRes()
       const fakeReadPolicies = Sinon.fake.resolves('fake')
@@ -27,8 +27,8 @@ describe('Policy Author Request Handlers', () => {
     it('Gets all unpublished policies', async () => {
       const req = mockReq({
         query: {
-          get_unpublished: 'true'
-        }
+          get_unpublished: 'true',
+        },
       })
       const res = mockRes()
       const fakeReadPolicies = Sinon.fake.resolves('fake')

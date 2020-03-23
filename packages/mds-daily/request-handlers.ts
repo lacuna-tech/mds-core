@@ -10,7 +10,7 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_EVENT,
   TripsStats,
-  Device
+  Device,
 } from '@mds-core/mds-types'
 import areas from 'ladot-service-areas'
 import { DailyApiRequest, DailyApiResponse, ProviderInfo } from './types'
@@ -21,7 +21,7 @@ import {
   getEventCountsPerProviderSince,
   getNumEventsLast24Hours,
   getTelemetryCountsPerProviderSince,
-  getConformanceLast24Hours
+  getConformanceLast24Hours,
 } from './db-helpers'
 import { startAndEnd, categorizeTrips, getMaps } from './utils'
 
@@ -35,7 +35,7 @@ export async function dbHelperFail(err: Error | string): Promise<void> {
 
 const SERVER_ERROR = {
   error: 'server_error',
-  error_description: 'an internal server error has occurred and been logged'
+  error_description: 'an internal server error has occurred and been logged',
 }
 
 type Item = Pick<Device, 'provider_id' | 'device_id'>
@@ -69,7 +69,7 @@ export async function getVehicleCounts(req: DailyApiRequest, res: DailyApiRespon
   async function fail(err: Error | string): Promise<void> {
     await log.error('/admin/vehicle_counts fail', err)
     res.status(500).send({
-      error: err
+      error: err,
     })
   }
 
@@ -89,7 +89,7 @@ export async function getVehicleCounts(req: DailyApiRequest, res: DailyApiRespon
       areas_12h: { [s: string]: number }
       areas_24h: { [s: string]: number }
       areas_48h: { [s: string]: number }
-    }[] = rows.map(row => {
+    }[] = rows.map((row) => {
       const { provider_id, count } = row
       return {
         provider_id,
@@ -100,7 +100,7 @@ export async function getVehicleCounts(req: DailyApiRequest, res: DailyApiRespon
         areas: {},
         areas_12h: {},
         areas_24h: {},
-        areas_48h: {}
+        areas_48h: {},
       }
     })
     await log.info('/admin/vehicle_counts', JSON.stringify(stats))
@@ -112,7 +112,7 @@ export async function getVehicleCounts(req: DailyApiRequest, res: DailyApiRespon
     // TODO reimplement to be more efficient
     const { eventMap } = maps
     await Promise.all(
-      stats.map(async stat => {
+      stats.map(async (stat) => {
         const start2 = now()
         const items: (Item | undefined)[] = await db.readDeviceIds(stat.provider_id)
         const finish2 = now()
@@ -120,7 +120,7 @@ export async function getVehicleCounts(req: DailyApiRequest, res: DailyApiRespon
         await log.info(
           `MDS-DAILY /admin/vehicle_counts -> db.readDeviceIds(${stat.provider_id}) time elapsed: ${timeElapsed2}`
         )
-        items.filter(filterEmptyHelper<Item>(true)).map(async item => {
+        items.filter(filterEmptyHelper<Item>(true)).map(async (item) => {
           const event = eventMap[item.device_id]
           inc(stat.event_type, event ? event.event_type : 'default')
           const status = event ? EVENT_STATUS_MAP[event.event_type] : VEHICLE_STATUSES.removed
@@ -177,7 +177,7 @@ export async function getLastDayTripsByProvider(req: DailyApiRequest, res: Daily
           acc[tid] = acc[tid] || {
             provider_id: row.provider_id,
             trip_id: tid,
-            eventTypes: {}
+            eventTypes: {},
           }
           acc[tid].eventTypes[row.timestamp] = row.event_type
           return acc
@@ -213,7 +213,7 @@ export async function getLastDayStatsByProvider(req: DailyApiRequest, res: Daily
       getTripCountsSince(dbHelperArgs),
       getEventCountsPerProviderSince(dbHelperArgs),
       getTelemetryCountsPerProviderSince(dbHelperArgs),
-      getConformanceLast24Hours(dbHelperArgs)
+      getConformanceLast24Hours(dbHelperArgs),
     ])
     const finish = now()
     const timeElapsed = finish - start
@@ -221,7 +221,7 @@ export async function getLastDayStatsByProvider(req: DailyApiRequest, res: Daily
       `MDS-DAILY /admin/last_day_stats_by_provider -> Promise.all(dbHelpers...) time elapsed: ${timeElapsed}`
     )
 
-    Object.keys(provider_info).map(provider_id => {
+    Object.keys(provider_info).map((provider_id) => {
       provider_info[provider_id].name = providerName(provider_id)
     })
     res.status(200).send(provider_info)
@@ -246,7 +246,7 @@ export async function getTimeSinceLastEventHandler(req: DailyApiRequest, res: Da
       `MDS-DAILY /admin/time_since_last_event -> getTimeSinceLastEvent(dbHelperArgs) time elapsed: ${timeElapsed}`
     )
 
-    Object.keys(provider_info).map(provider_id => {
+    Object.keys(provider_info).map((provider_id) => {
       provider_info[provider_id].name = providerName(provider_id)
     })
     res.status(200).send(provider_info)
@@ -271,7 +271,7 @@ export async function getNumVehiclesRegisteredLast24HoursHandler(req: DailyApiRe
       `MDS-DAILY /admin/num_vehicles_registered_last_24_hours -> db.getNumVehiclesRegisteredLast24Hours() time elapsed: ${timeElapsed}`
     )
 
-    Object.keys(provider_info).map(provider_id => {
+    Object.keys(provider_info).map((provider_id) => {
       provider_info[provider_id].name = providerName(provider_id)
     })
     res.status(200).send(provider_info)
@@ -296,7 +296,7 @@ export async function getNumEventsLast24HoursHandler(req: DailyApiRequest, res: 
       `MDS-DAILY /admin/num_event_last_24_hours -> db.getNumEventsLast24Hours() time elapsed: ${timeElapsed}`
     )
 
-    Object.keys(provider_info).map(provider_id => {
+    Object.keys(provider_info).map((provider_id) => {
       provider_info[provider_id].name = providerName(provider_id)
     })
     res.status(200).send(provider_info)
@@ -319,7 +319,7 @@ export async function getTripCountsSinceHandler(req: DailyApiRequest, res: Daily
     const timeElapsed = finish - start
     await log.info(`MDS-DAILY /admin/trip_counts_since -> getTripCountsSince() time elapsed: ${timeElapsed}`)
 
-    Object.keys(provider_info).map(provider_id => {
+    Object.keys(provider_info).map((provider_id) => {
       provider_info[provider_id].name = providerName(provider_id)
     })
     res.status(200).send(provider_info)
@@ -344,7 +344,7 @@ export async function getEventCountsPerProviderSinceHandler(req: DailyApiRequest
       `MDS-DAILY /admin/event_counts_per_provider_since -> getEventCountsPerProviderSince() time elapsed: ${timeElapsed}`
     )
 
-    Object.keys(provider_info).map(provider_id => {
+    Object.keys(provider_info).map((provider_id) => {
       provider_info[provider_id].name = providerName(provider_id)
     })
     res.status(200).send(provider_info)
@@ -369,7 +369,7 @@ export async function getTelemetryCountsPerProviderSinceHandler(req: DailyApiReq
       `MDS-DAILY /admin/telemetry_counts_per_provider_since -> getTelemetryCountsPerProviderSince() time elapsed: ${timeElapsed}`
     )
 
-    Object.keys(provider_info).map(provider_id => {
+    Object.keys(provider_info).map((provider_id) => {
       provider_info[provider_id].name = providerName(provider_id)
     })
     res.status(200).send(provider_info)
@@ -394,7 +394,7 @@ export async function getConformanceLast24HoursHandler(req: DailyApiRequest, res
       `MDS-DAILY /admin/conformance_last_24_hours -> getConformanceLast24Hours() time elapsed: ${timeElapsed}`
     )
 
-    Object.keys(provider_info).map(provider_id => {
+    Object.keys(provider_info).map((provider_id) => {
       provider_info[provider_id].name = providerName(provider_id)
     })
     res.status(200).send(provider_info)

@@ -33,11 +33,11 @@ import {
   isValidAuditNote,
   isValidNumber,
   ValidationError,
-  validateEvent
+  validateEvent,
 } from '../validators'
 
 describe('Tests validators', () => {
-  it('verified Number validator', done => {
+  it('verified Number validator', (done) => {
     test.assert.throws(() => isValidNumber(undefined), ValidationError)
     test.assert.throws(() => isValidNumber(null), ValidationError)
     test.assert.throws(() => isValidNumber('invalid'), ValidationError)
@@ -51,7 +51,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Audit Trip ID validator', done => {
+  it('verifies Audit Trip ID validator', (done) => {
     test.assert.throws(() => isValidAuditTripId(undefined), ValidationError)
     test.assert.throws(() => isValidAuditTripId(null), ValidationError)
     test.value(isValidAuditTripId('invalid', { assert: false })).is(false)
@@ -59,7 +59,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Audit Event Type validator', done => {
+  it('verifies Audit Event Type validator', (done) => {
     test.assert.throws(() => isValidAuditEventType(undefined), ValidationError)
     test.assert.throws(() => isValidAuditEventType(null), ValidationError)
     test.assert.throws(() => isValidAuditEventType('invalid'), ValidationError)
@@ -70,7 +70,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Timestamp validator', done => {
+  it('verifies Timestamp validator', (done) => {
     test.assert.throws(() => isValidTimestamp(undefined), ValidationError)
     test.assert.throws(() => isValidTimestamp(null), ValidationError)
     test.assert.throws(() => isValidTimestamp(1), ValidationError)
@@ -80,7 +80,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Provider ID validator', done => {
+  it('verifies Provider ID validator', (done) => {
     test.assert.throws(() => isValidProviderId(undefined), ValidationError)
     test.assert.throws(() => isValidProviderId(null), ValidationError)
     test.assert.throws(() => isValidProviderId(uuid()), ValidationError)
@@ -90,7 +90,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Device ID validator', done => {
+  it('verifies Device ID validator', (done) => {
     test.assert.throws(() => isValidDeviceId(undefined), ValidationError)
     test.assert.throws(() => isValidDeviceId(null), ValidationError)
     test.value(isValidDeviceId('invalid', { assert: false })).is(false)
@@ -98,7 +98,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Vehicle ID validator', done => {
+  it('verifies Vehicle ID validator', (done) => {
     test.assert.throws(() => isValidProviderVehicleId(undefined), ValidationError)
     test.assert.throws(() => isValidProviderVehicleId(null), ValidationError)
     test.assert.throws(() => isValidProviderVehicleId(3), ValidationError)
@@ -107,7 +107,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Audit Event ID validator', done => {
+  it('verifies Audit Event ID validator', (done) => {
     test.assert.throws(() => isValidAuditEventId(undefined), ValidationError)
     test.assert.throws(() => isValidAuditEventId(null), ValidationError)
     test.value(isValidAuditEventId('invalid', { assert: false })).is(false)
@@ -115,7 +115,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Audit Device ID validator', done => {
+  it('verifies Audit Device ID validator', (done) => {
     test.assert.throws(() => isValidAuditDeviceId(undefined), ValidationError)
     test.assert.throws(() => isValidAuditDeviceId(null), ValidationError)
     test.value(isValidAuditDeviceId('invalid', { assert: false })).is(false)
@@ -123,7 +123,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Telemetry validator', done => {
+  it('verifies Telemetry validator', (done) => {
     test.assert.throws(() => isValidTelemetry(undefined), ValidationError)
     test.assert.throws(() => isValidTelemetry(null), ValidationError)
     test.assert.throws(() => isValidTelemetry(''), ValidationError)
@@ -167,7 +167,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Vehicle Event Type validator', done => {
+  it('verifies Vehicle Event Type validator', (done) => {
     test.assert.throws(() => isValidVehicleEventType(undefined), ValidationError)
     test.assert.throws(() => isValidVehicleEventType(null), ValidationError)
     test.assert.throws(() => isValidVehicleEventType('invalid'), ValidationError)
@@ -176,7 +176,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Vehicle Event validator', done => {
+  it('verifies Vehicle Event validator', (done) => {
     const DEREGISTER_EVENT_TYPE_REASONS = ['missing', 'decomissioned']
     const PROVIDER_PICK_UP_EVENT_TYPE_REASONS = ['rebalance', 'maintenance', 'charge', 'compliance']
     const SERVICE_END_EVENT_TYPE_REASONS = ['low_battery', 'maintenance', 'compliance', 'off_hours']
@@ -191,7 +191,7 @@ describe('Tests validators', () => {
           provider_id: 'b54c08c7-884a-4c5f-b9ed-2c7dc24638cb',
           event_type: 'deregister',
           telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-          timestamp: Date.now()
+          timestamp: Date.now(),
         }),
       ValidationError
     )
@@ -202,7 +202,7 @@ describe('Tests validators', () => {
           provider_id: 'b54c08c7-884a-4c5f-b9ed-2c7dc24638cb',
           event_type: 'provider_pick_up',
           telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-          timestamp: Date.now()
+          timestamp: Date.now(),
         }),
       ValidationError
     )
@@ -213,12 +213,12 @@ describe('Tests validators', () => {
           provider_id: 'b54c08c7-884a-4c5f-b9ed-2c7dc24638cb',
           event_type: 'service_end',
           telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-          timestamp: Date.now()
+          timestamp: Date.now(),
         }),
       ValidationError
     )
 
-    DEREGISTER_EVENT_TYPE_REASONS.forEach(event_type_reason => {
+    DEREGISTER_EVENT_TYPE_REASONS.forEach((event_type_reason) => {
       test
         .value(
           validateEvent({
@@ -227,13 +227,13 @@ describe('Tests validators', () => {
             event_type: 'deregister',
             event_type_reason,
             telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-            timestamp: Date.now()
+            timestamp: Date.now(),
           })
         )
         .is(true)
     })
 
-    PROVIDER_PICK_UP_EVENT_TYPE_REASONS.forEach(event_type_reason => {
+    PROVIDER_PICK_UP_EVENT_TYPE_REASONS.forEach((event_type_reason) => {
       test
         .value(
           validateEvent({
@@ -242,13 +242,13 @@ describe('Tests validators', () => {
             event_type: 'provider_pick_up',
             event_type_reason,
             telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-            timestamp: Date.now()
+            timestamp: Date.now(),
           })
         )
         .is(true)
     })
 
-    SERVICE_END_EVENT_TYPE_REASONS.forEach(event_type_reason => {
+    SERVICE_END_EVENT_TYPE_REASONS.forEach((event_type_reason) => {
       test
         .value(
           validateEvent({
@@ -257,7 +257,7 @@ describe('Tests validators', () => {
             event_type: 'service_end',
             event_type_reason,
             telemetry: { timestamp: Date.now(), gps: { lat: 0, lng: 0 } },
-            timestamp: Date.now()
+            timestamp: Date.now(),
           })
         )
         .is(true)
@@ -266,7 +266,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Audit Issue Code validator', done => {
+  it('verifies Audit Issue Code validator', (done) => {
     test.assert.throws(() => isValidAuditIssueCode(undefined), ValidationError)
     test.assert.throws(() => isValidAuditIssueCode(''), ValidationError)
     test.assert.throws(() => isValidAuditIssueCode(null), ValidationError)
@@ -277,7 +277,7 @@ describe('Tests validators', () => {
     done()
   })
 
-  it('verifies Audit Note validator', done => {
+  it('verifies Audit Note validator', (done) => {
     test.assert.throws(() => isValidAuditNote(undefined), ValidationError)
     test.assert.throws(() => isValidAuditNote(''), ValidationError)
     test.assert.throws(() => isValidAuditNote(null), ValidationError)

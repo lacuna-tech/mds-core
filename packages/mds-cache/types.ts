@@ -20,7 +20,7 @@ import {
   Telemetry,
   Stringify,
   TelemetryData,
-  PROPULSION_TYPE
+  PROPULSION_TYPE,
 } from '@mds-core/mds-types'
 
 export type StringifiedEvent = Stringify<Omit<VehicleEvent, 'telemetry'>>

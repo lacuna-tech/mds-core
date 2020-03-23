@@ -13,7 +13,7 @@ export interface AuthorizerClaims {
 const {
   TOKEN_PROVIDER_ID_CLAIM = 'https://ladot.io/provider_id',
   TOKEN_USER_EMAIL_CLAIM = 'https://ladot.io/user_email',
-  TOKEN_JURISDICTIONS_CLAIM = 'https://ladot.io/jurisdictions'
+  TOKEN_JURISDICTIONS_CLAIM = 'https://ladot.io/jurisdictions',
 } = process.env
 
 export type Authorizer = (authorization: string) => AuthorizerClaims | null
@@ -35,24 +35,22 @@ const decoders: { [scheme: string]: (token: string) => AuthorizerClaims } = {
       provider_id,
       user_email,
       jurisdictions,
-      ...claims
+      ...claims,
     }
   },
   basic: (token: string) => {
-    const [principalId, scope] = Buffer.from(token, 'base64')
-      .toString()
-      .split('|')
+    const [principalId, scope] = Buffer.from(token, 'base64').toString().split('|')
     return { principalId, scope, provider_id: principalId, user_email: principalId, jurisdictions: principalId }
-  }
+  },
 }
 
-const BaseAuthorizer: Authorizer = authorization => {
+const BaseAuthorizer: Authorizer = (authorization) => {
   const [scheme, token] = authorization.split(' ')
   const decoder = decoders[scheme.toLowerCase()]
   return decoder ? decoder(token) : null
 }
 
-export const AuthorizationHeaderApiAuthorizer: ApiAuthorizer = req => {
+export const AuthorizationHeaderApiAuthorizer: ApiAuthorizer = (req) => {
   return req.headers?.authorization ? BaseAuthorizer(req.headers.authorization) : null
 }
 

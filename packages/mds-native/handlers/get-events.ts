@@ -33,7 +33,7 @@ const numericQueryStringParam = (param: string | undefined): number | undefined 
 const getRequestParameters = (req: GetEventsRequest): { cursor: NativeApiGetEventsCursor; limit: number } => {
   const {
     params: { cursor },
-    query: { limit: query_limit, ...filters }
+    query: { limit: query_limit, ...filters },
   } = req
   const limit = numericQueryStringParam(query_limit) || 1000
   isValidNumber(limit, { required: false, min: 1, max: 1000, property: 'limit' })
@@ -67,13 +67,13 @@ export const GetEventsHandler = async (req: GetEventsRequest, res: GetEventsResp
       cursor: Buffer.from(
         JSON.stringify({
           ...cursor,
-          last_id: events.length === 0 ? cursor.last_id : events[events.length - 1].id
+          last_id: events.length === 0 ? cursor.last_id : events[events.length - 1].id,
         })
       ).toString('base64'),
       events: events.map(({ id, service_area_id, event_type_reason, ...event }) => ({
         ...event,
-        event_type_reason: event_type_reason || null
-      }))
+        event_type_reason: event_type_reason || null,
+      })),
     })
   } catch (err) {
     if (err instanceof ValidationError) {

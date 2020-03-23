@@ -26,7 +26,7 @@ import {
   getPolygon,
   pointInShape,
   isInStatesOrEvents,
-  ServerError
+  ServerError,
 } from '@mds-core/mds-utils'
 import { Geography, Device, UUID, VehicleEvent } from '@mds-core/mds-types'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, BLUE_SYSTEMS_PROVIDER_ID, providerName } from '@mds-core/mds-providers'
@@ -48,7 +48,7 @@ function api(app: express.Express): express.Express {
           if (!provider_id) {
             await log.warn('Missing provider_id in', req.originalUrl)
             return res.status(400).send({
-              result: 'missing provider_id'
+              result: 'missing provider_id',
             })
           }
 
@@ -56,7 +56,7 @@ function api(app: express.Express): express.Express {
           if (!isUUID(provider_id)) {
             await log.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
             return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a UUID`
+              result: `invalid provider_id ${provider_id} is not a UUID`,
             })
           }
 
@@ -96,7 +96,7 @@ function api(app: express.Express): express.Express {
       : { end_date: now() + days(365), start_date: now() - days(365) }
     try {
       const all_policies = await db.readPolicies({ start_date })
-      const policy = compliance_engine.filterPolicies(all_policies).find(p => {
+      const policy = compliance_engine.filterPolicies(all_policies).find((p) => {
         return p.policy_id === policy_uuid
       })
       if (!policy) {
@@ -118,12 +118,12 @@ function api(app: express.Express): express.Express {
         if (
           compliance_engine
             .filterPolicies(all_policies)
-            .map(p => p.policy_id)
+            .map((p) => p.policy_id)
             .includes(policy.policy_id)
         ) {
           const [geographies, deviceRecords] = await Promise.all([
             db.readGeographies() as Promise<Geography[]>,
-            db.readDeviceIds(target_provider_id)
+            db.readDeviceIds(target_provider_id),
           ])
           const deviceIdSubset = deviceRecords.map((record: { device_id: UUID; provider_id: UUID }) => record.device_id)
           const devices = await cache.readDevices(deviceIdSubset)

@@ -5,7 +5,7 @@ import {
   now,
   csv,
   days,
-  yesterday
+  yesterday,
 } from '@mds-core/mds-utils'
 import log from '@mds-core/mds-logger'
 import { TelemetryRecord } from './types'
@@ -26,8 +26,8 @@ export async function writeTelemetry(telemetries: Telemetry[]): Promise<Recorded
     const values = csv(
       telemetries
         .map(convertTelemetryToTelemetryRecord)
-        .map(telemetry => csv(vals_list(schema.TABLE_COLUMNS.telemetry, { ...telemetry }).map(to_sql)))
-        .map(row => `(${row})`)
+        .map((telemetry) => csv(vals_list(schema.TABLE_COLUMNS.telemetry, { ...telemetry }).map(to_sql)))
+        .map((row) => `(${row})`)
     )
 
     const sql = `INSERT INTO ${schema.TABLE.telemetry} (${cols_sql(
@@ -45,14 +45,14 @@ export async function writeTelemetry(telemetries: Telemetry[]): Promise<Recorded
       )
     }
     return recorded_telemetries.map(
-      recorded_telemetry =>
+      (recorded_telemetry) =>
         convertTelemetryRecordToTelemetry({
           ...telemetries.find(
-            telemetry =>
+            (telemetry) =>
               telemetry.device_id === recorded_telemetry.device_id &&
               telemetry.timestamp === recorded_telemetry.timestamp
           ),
-          ...recorded_telemetry
+          ...recorded_telemetry,
         }) as Recorded<Telemetry>
     )
   } catch (err) {

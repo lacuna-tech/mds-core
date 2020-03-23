@@ -26,11 +26,11 @@ import { JURISDICTION_API_DEFAULT_VERSION } from '../types'
 
 const request = supertest(ApiServer(api))
 
-const [JURISDICTION0, JURISDICTION1, JURISDICTION2] = [uuid(), uuid(), uuid()].map(jurisdiction_id => ({
+const [JURISDICTION0, JURISDICTION1, JURISDICTION2] = [uuid(), uuid(), uuid()].map((jurisdiction_id) => ({
   jurisdiction_id,
   agency_key: `agency-key-${jurisdiction_id}`,
   agency_name: `Agency Name ${jurisdiction_id}`,
-  geography_id: uuid()
+  geography_id: uuid(),
 }))
 
 describe('', () => {
@@ -48,10 +48,7 @@ describe('', () => {
   })
 
   it('Create Single Jurisdiction (forbidden)', async () => {
-    await request
-      .post('/jurisdictions')
-      .send(JURISDICTION0)
-      .expect(403)
+    await request.post('/jurisdictions').send(JURISDICTION0).expect(403)
   })
 
   it('Create Single Jurisdiction (conflict)', async () => {
@@ -149,10 +146,10 @@ describe('', () => {
     test
       .value(
         (result.body.jurisdictions as Jurisdiction[])
-          .map(jurisdiction => jurisdiction.jurisdiction_id)
-          .filter(jurisdiction_id =>
+          .map((jurisdiction) => jurisdiction.jurisdiction_id)
+          .filter((jurisdiction_id) =>
             [JURISDICTION0, JURISDICTION1, JURISDICTION2]
-              .map(jurisdiction => jurisdiction.jurisdiction_id)
+              .map((jurisdiction) => jurisdiction.jurisdiction_id)
               .includes(jurisdiction_id)
           ).length
       )

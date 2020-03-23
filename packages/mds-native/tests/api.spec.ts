@@ -31,7 +31,7 @@ before('Initializing Database', async () => {
 })
 
 describe('Verify API', () => {
-  before(done => {
+  before((done) => {
     const timestamp = Date.now()
     const oldTimestamp = timestamp - 60000
     const olderTimestamp = timestamp - 120000
@@ -43,12 +43,12 @@ describe('Verify API', () => {
         provider_id,
         device_id,
         timestamp,
-        gps: { lat: 37.4230723, lng: -122.13742939999999 }
+        gps: { lat: 37.4230723, lng: -122.13742939999999 },
       },
       telemetry_timestamp: timestamp,
       trip_id: uuid(),
       timestamp,
-      recorded: timestamp
+      recorded: timestamp,
     }
     db.writeDevice({
       device_id,
@@ -56,21 +56,21 @@ describe('Verify API', () => {
       vehicle_id: 'test-vehicle',
       propulsion: [PROPULSION_TYPES.electric],
       type: VEHICLE_TYPES.scooter,
-      recorded: timestamp
+      recorded: timestamp,
     }).then(() => {
       db.writeEvent({
         ...baseEvent,
-        ...{ timestamp: olderTimestamp, telemetry_timestamp: olderTimestamp }
+        ...{ timestamp: olderTimestamp, telemetry_timestamp: olderTimestamp },
       })
       db.writeEvent({
         ...baseEvent,
-        ...{ timestamp: oldTimestamp, telemetry_timestamp: oldTimestamp }
+        ...{ timestamp: oldTimestamp, telemetry_timestamp: oldTimestamp },
       })
       db.writeEvent(baseEvent).then(() => done())
     })
   })
 
-  it('Get Events (no authorization)', done => {
+  it('Get Events (no authorization)', (done) => {
     request
       .get('/native/events')
       .expect(401)
@@ -80,7 +80,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Events (no scope)', done => {
+  it('Get Events (no scope)', (done) => {
     request
       .get('/native/events')
       .set('Authorization', EMPTY_SCOPE)
@@ -91,7 +91,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Events', done => {
+  it('Get Events', (done) => {
     request
       .get('/native/events')
       .set('Authorization', EVENTS_READ_SCOPE)
@@ -124,7 +124,7 @@ describe('Verify API', () => {
                   .get(`/native/events/${result1.body.cursor}?provider_id=invalid-filter-with-cursor`)
                   .set('Authorization', EVENTS_READ_SCOPE)
                   .expect(400)
-                  .end(err3 => {
+                  .end((err3) => {
                     test.value(result2).hasHeader('content-type', CONTENT_TYPE)
                     done(err3)
                   })
@@ -134,7 +134,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Events (Bad Request)', done => {
+  it('Get Events (Bad Request)', (done) => {
     request
       .get('/native/events?provider_id=invalid-provider-id')
       .set('Authorization', EVENTS_READ_SCOPE)
@@ -145,7 +145,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Events (Bad Cursor)', done => {
+  it('Get Events (Bad Cursor)', (done) => {
     request
       .get('/native/events/invalid-cursor')
       .set('Authorization', EVENTS_READ_SCOPE)
@@ -156,7 +156,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Vehicle (no authorization)', done => {
+  it('Get Vehicle (no authorization)', (done) => {
     request
       .get(`/native/vehicles/${device_id}`)
       .expect(401)
@@ -166,7 +166,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Vehicle (no scope)', done => {
+  it('Get Vehicle (no scope)', (done) => {
     request
       .get(`/native/vehicles/${device_id}`)
       .set('Authorization', EMPTY_SCOPE)
@@ -177,7 +177,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Vehicle', done => {
+  it('Get Vehicle', (done) => {
     request
       .get(`/native/vehicles/${device_id}`)
       .set('Authorization', VEHICLES_READ_SCOPE)
@@ -191,7 +191,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Vehicle (not found)', done => {
+  it('Get Vehicle (not found)', (done) => {
     request
       .get(`/native/vehicles/${uuid()}`)
       .set('Authorization', VEHICLES_READ_SCOPE)
@@ -202,7 +202,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Vehicle (bad request)', done => {
+  it('Get Vehicle (bad request)', (done) => {
     request
       .get(`/native/vehicles/invalid-device-id`)
       .set('Authorization', VEHICLES_READ_SCOPE)
@@ -213,7 +213,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Providers (no authorization)', done => {
+  it('Get Providers (no authorization)', (done) => {
     request
       .get(`/native/providers`)
       .expect(401)
@@ -223,7 +223,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Providers (no scope)', done => {
+  it('Get Providers (no scope)', (done) => {
     request
       .get(`/native/providers`)
       .set('Authorization', EMPTY_SCOPE)
@@ -234,7 +234,7 @@ describe('Verify API', () => {
       })
   })
 
-  it('Get Providers', done => {
+  it('Get Providers', (done) => {
     request
       .get(`/native/providers`)
       .set('Authorization', PROVIDERS_READ_SCOPE)

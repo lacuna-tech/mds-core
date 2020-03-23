@@ -11,7 +11,7 @@ import { ENTITY_TYPE } from './types'
 export const WebSocketServer = () => {
   const server = HttpServer(
     process.env.PORT ?? 4009,
-    ApiServer(app => app)
+    ApiServer((app) => app)
   )
 
   log.info('Creating WS server')
@@ -33,7 +33,7 @@ export const WebSocketServer = () => {
   function pushToClients(entity: ENTITY_TYPE, message: string) {
     const staleClients: WebSocket[] = []
     if (clients.subList[entity]) {
-      clients.subList[entity].forEach(client => {
+      clients.subList[entity].forEach((client) => {
         if (client.readyState !== 1) staleClients.push(client)
         else {
           client.send(`${entity}%${message}`)
@@ -42,11 +42,11 @@ export const WebSocketServer = () => {
       })
     }
 
-    Object.keys(clients.subList).map(entityKey => {
-      clients.subList[entityKey] = clients.subList[entityKey].filter(client => !staleClients.includes(client))
+    Object.keys(clients.subList).map((entityKey) => {
+      clients.subList[entityKey] = clients.subList[entityKey].filter((client) => !staleClients.includes(client))
     })
 
-    staleClients.forEach(client => client.close())
+    staleClients.forEach((client) => client.close())
   }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -60,10 +60,7 @@ export const WebSocketServer = () => {
 
   wss.on('connection', (ws: WebSocket) => {
     ws.on('message', async (data: WebSocket.Data) => {
-      const message = data
-        .toString()
-        .trim()
-        .split('%')
+      const message = data.toString().trim().split('%')
       const [header, ...args] = message
 
       /* Testing message, also useful in a NATS-less environment */
@@ -108,7 +105,7 @@ export const WebSocketServer = () => {
   })
 
   const {
-    env: { NATS = 'localhost', STAN_CLUSTER = 'nats-streaming', STAN_CREDS, TENANT_ID = 'mds' }
+    env: { NATS = 'localhost', STAN_CLUSTER = 'nats-streaming', STAN_CREDS, TENANT_ID = 'mds' },
   } = process
 
   const processor = async (type: string, data: VehicleEvent | Telemetry) => {

@@ -28,7 +28,7 @@ type JurisdictionServiceResult<TResult, TError extends Error> = [null, TResult] 
 const Success = <TResult>(result: TResult): JurisdictionServiceResult<TResult, never> => [null, result]
 const Failure = <TError extends Error>(error: TError | ServerError): JurisdictionServiceResult<never, TError> => [
   error,
-  null
+  null,
 ]
 
 interface GetJurisdictionOptions {
@@ -40,7 +40,7 @@ const AsJurisdiction = (effective: Timestamp = Date.now()) => (
 ): Jurisdiction | null => {
   if (entity) {
     const { jurisdiction_id, agency_key, versions } = entity
-    const version = versions.find(properties => effective >= properties.timestamp)
+    const version = versions.find((properties) => effective >= properties.timestamp)
     if (version) {
       const { agency_name, geography_id, timestamp } = version
       if (geography_id !== null) {
@@ -49,7 +49,7 @@ const AsJurisdiction = (effective: Timestamp = Date.now()) => (
           agency_key,
           agency_name,
           geography_id,
-          timestamp
+          timestamp,
         }
       }
     }
@@ -68,7 +68,7 @@ const AsJurisdictionEntity = (jurisdiction: CreateJurisdictionType): DeepPartial
     jurisdiction_id,
     agency_key,
     versions: [{ timestamp, agency_name, geography_id }],
-    recorded
+    recorded,
   }
   return entity
 }
@@ -128,11 +128,11 @@ const updateJurisdiction = async (
                     {
                       agency_name: update.agency_name ?? current.agency_name,
                       geography_id: update.geography_id ?? current.geography_id,
-                      timestamp
+                      timestamp,
                     },
-                    ...entity.versions
+                    ...entity.versions,
                   ].sort((a, b) => b.timestamp - a.timestamp)
-                : entity.versions
+                : entity.versions,
           })
           const jurisdiction = AsJurisdiction(timestamp)(updated)
           return jurisdiction ? Success(jurisdiction) : Failure(new ServerError('Unexpected error during update'))
@@ -165,10 +165,10 @@ const deleteJurisdiction = async (
               {
                 agency_name: current.agency_name,
                 geography_id: null,
-                timestamp: Date.now()
+                timestamp: Date.now(),
               },
-              ...entity.versions
-            ].sort((a, b) => b.timestamp - a.timestamp)
+              ...entity.versions,
+            ].sort((a, b) => b.timestamp - a.timestamp),
           })
           return Success({ jurisdiction_id })
         }
@@ -184,9 +184,9 @@ const deleteJurisdiction = async (
   }
 }
 
-const getAllJurisdictions = async ({
-  effective = Date.now()
-}: Partial<GetJurisdictionOptions> = {}): Promise<JurisdictionServiceResult<Jurisdiction[], ServerError>> => {
+const getAllJurisdictions = async ({ effective = Date.now() }: Partial<GetJurisdictionOptions> = {}): Promise<
+  JurisdictionServiceResult<Jurisdiction[], ServerError>
+> => {
   try {
     try {
       const entities = await orm.readJurisdictions()
@@ -233,5 +233,5 @@ export const JurisdictionService = {
   deleteJurisdiction,
   getAllJurisdictions,
   getOneJurisdiction,
-  shutdown: orm.shutdown
+  shutdown: orm.shutdown,
 }
