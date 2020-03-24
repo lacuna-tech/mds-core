@@ -1,22 +1,23 @@
-import { ProducerStream } from 'node-rdkafka'
+import { Producer } from 'kafkajs'
 import { StreamWriter } from '../stream-interface'
 import { createWriteStreamWrapper, isWriteStreamReady, killWriteStream } from './helpers'
 
-export const KafkaStreamWriter: (name: string) => StreamWriter = name => {
-  let stream: ProducerStream | undefined
+export const KafkaStreamWriter = (topic: string): StreamWriter => {
+  let producer: Producer | undefined
   return {
     initialize: async () => {
-      if (!stream) stream = await createWriteStreamWrapper({}, { topic: name })
+      if (!producer) producer = await createWriteStreamWrapper()
     },
     write: async (message: object) => {
-      if (isWriteStreamReady(stream)) {
-        const result = stream.write(JSON.stringify(message))
-        if (!result) return Promise.reject(result)
-        return Promise.resolve()
+      if (isWriteStreamReady(producer)) {
+        return producer.send({
+          topic,
+          messages: [{ value: JSON.stringify(message) }]
+        })
       }
     },
     shutdown: async () => {
-      killWriteStream(stream)
+      killWriteStream(producer)
     }
   }
 }

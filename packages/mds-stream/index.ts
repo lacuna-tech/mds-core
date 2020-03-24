@@ -21,6 +21,7 @@ import stan from 'node-nats-streaming'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import { v4 as uuid } from 'uuid'
+import { EachMessagePayload } from 'kafkajs'
 import {
   Stream,
   StreamItem,
@@ -331,6 +332,11 @@ async function health() {
   const status = await client.pingAsync('connected')
   return { using: 'redis', status }
 }
+
+KafkaStreamReader('mds.event', (data: EachMessagePayload) => {
+  console.log(data)
+  return Promise.resolve()
+}).initialize()
 
 export = {
   createStreamGroup,
