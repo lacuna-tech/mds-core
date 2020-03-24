@@ -28,7 +28,7 @@ const request = supertest(EventServer(handler))
 const APP_JSON = 'application/json; charset=utf-8'
 
 describe('Testing Event Server', () => {
-  it('verifies get root', (done) => {
+  it('verifies get root', done => {
     request
       .get('/')
       .expect(200)
@@ -43,7 +43,7 @@ describe('Testing Event Server', () => {
       })
   })
 
-  it('verifies health', (done) => {
+  it('verifies health', done => {
     request
       .get('/health')
       .expect(200)
@@ -61,7 +61,7 @@ describe('Testing Event Server', () => {
       })
   })
 
-  it('verifies post event', (done) => {
+  it('verifies post event', done => {
     const event = cloudevent().source('index.spec.ts').type('test-event').data({ value: 'value' })
     request
       .post('/')

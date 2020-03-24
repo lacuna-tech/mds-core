@@ -60,7 +60,7 @@ async function appendSheet(sheetName: string, rows: ({ date: string; name: strin
   const sheet = info.worksheets.filter((s: { title: string; rowCount: number } & unknown) => s.title === sheetName)[0]
   log.info(`${sheetName} sheet: ${sheet.title} ${sheet.rowCount}x${sheet.colCount}`)
   if (sheet.title === sheetName) {
-    const inserted = rows.map((insert_row) => promisify(sheet.addRow)(insert_row))
+    const inserted = rows.map(insert_row => promisify(sheet.addRow)(insert_row))
     log.info(`Wrote ${inserted.length} rows.`)
     return Promise.all(inserted)
   }
@@ -119,7 +119,7 @@ async function getProviderMetrics(iter: number): Promise<({ date: string; name: 
 
     const counts: VehicleCountResponse = await requestPromise(counts_options)
     const rows: ({ date: string; name: string } & unknown)[] = counts
-      .filter((p) => reportProviders.includes(p.provider_id))
+      .filter(p => reportProviders.includes(p.provider_id))
       .map(mapRow)
     return rows
   } catch (err) {

@@ -348,7 +348,7 @@ export const isValidAuditNote = (value: unknown, options: Partial<ValidatorOptio
   Validate(value, auditNoteSchema, { property: 'note', ...options })
 
 const HasPropertyAssertion = <T>(obj: unknown, ...props: (keyof T)[]): obj is T =>
-  typeof obj === 'object' && obj !== null && props.every((prop) => prop in obj)
+  typeof obj === 'object' && obj !== null && props.every(prop => prop in obj)
 
 export const isStringifiedTelemetry = (telemetry: unknown): telemetry is StringifiedTelemetry =>
   HasPropertyAssertion<StringifiedTelemetry>(telemetry, 'gps')

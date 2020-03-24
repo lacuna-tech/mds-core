@@ -64,11 +64,11 @@ export function configureClient(pg_info: PGInfo) {
     log.info('disconnected', client.client_type, 'client from postgres')
   })
 
-  client.on('error', async (err) => {
+  client.on('error', async err => {
     await log.error('pg client error event', err.stack)
   })
 
-  client.on('notice', async (msg) => {
+  client.on('notice', async msg => {
     await log.warn('notice:', msg)
   })
 
@@ -80,12 +80,12 @@ export function configureClient(pg_info: PGInfo) {
 
 // convert a list of column names to an SQL string of the form (e.g.) "VALUES($1, $2, $3)"
 export function vals_sql(cols: Readonly<string[]>) {
-  return csv(cols.filter((col) => col !== schema.COLUMN.id).map((col, i) => `$${i + 1}`))
+  return csv(cols.filter(col => col !== schema.COLUMN.id).map((col, i) => `$${i + 1}`))
 }
 
 // convert a table and its column names into an SQL string of the form (e.g.) "table_name(col1_name, col2_name, col3_name)"
 export function cols_sql(cols: Readonly<string[]>) {
-  return csv(cols.filter((col) => col !== schema.COLUMN.id))
+  return csv(cols.filter(col => col !== schema.COLUMN.id))
 }
 
 // These are the types representing data that can be stored in db
@@ -95,8 +95,8 @@ type DBValueType = null | string | number | boolean | string[]
 // undefined is coerced to null and objects are treated as JSON and stringified
 export function vals_list(cols: Readonly<string[]>, obj: { [s: string]: DBValueType | undefined | object }) {
   return cols
-    .filter((col) => col !== schema.COLUMN.id)
-    .map((col) => {
+    .filter(col => col !== schema.COLUMN.id)
+    .map(col => {
       const value = obj[col]
       if (value === undefined || value === null) {
         return null
@@ -128,7 +128,7 @@ export function to_sql(value: DBValueType | undefined | object) {
     return `'${value}'`
   }
   if (Array.isArray(value)) {
-    return `'{${csv(value.map((o) => `"${o}"`))}}'`
+    return `'{${csv(value.map(o => `"${o}"`))}}'`
   }
   if (value === null) {
     return 'null'
@@ -149,7 +149,7 @@ export async function logSql(sql: string, ...values: unknown[]): Promise<void> {
   if (typeof values === 'undefined') {
     out = []
   } else if (typeof values !== 'string') {
-    out = values.map((val) => {
+    out = values.map(val => {
       return String(val)
     })
   } else {
@@ -189,5 +189,5 @@ export const SqlExecuter = (client: MDSPostgresClient) => async (command: string
 export type SqlExecuterFunction = ReturnType<typeof SqlExecuter>
 
 export function arrayToInQueryFormat(arr: unknown[]) {
-  return `(${arr.map((currElem) => `"${currElem}"`)})`
+  return `(${arr.map(currElem => `"${currElem}"`)})`
 }

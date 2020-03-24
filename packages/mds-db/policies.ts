@@ -53,7 +53,7 @@ export async function readPolicies(params?: {
   }
   const values = vals.values()
   const res = await client.query(sql, values)
-  return res.rows.map((row) => row.policy_json)
+  return res.rows.map(row => row.policy_json)
 }
 
 export async function readBulkPolicyMetadata(params?: {
@@ -65,7 +65,7 @@ export async function readBulkPolicyMetadata(params?: {
   get_published?: boolean
 }): Promise<PolicyMetadata[]> {
   const policies = await readPolicies(params)
-  const policy_ids = policies.map((policy) => {
+  const policy_ids = policies.map(policy => {
     return `'${policy.policy_id}'`
   })
 
@@ -76,7 +76,7 @@ export async function readBulkPolicyMetadata(params?: {
 
   const client = await getReadOnlyClient()
   const res = await client.query(sql)
-  return res.rows.map((row) => {
+  return res.rows.map(row => {
     return { policy_id: row.policy_id, policy_metadata: row.policy_metadata }
   })
 }
@@ -174,19 +174,19 @@ export async function publishPolicy(policy_id: UUID) {
     const publish_date = now()
 
     const geographies: UUID[] = []
-    policy.rules.forEach((rule) => {
-      rule.geographies.forEach((geography_id) => {
+    policy.rules.forEach(rule => {
+      rule.geographies.forEach(geography_id => {
         geographies.push(geography_id)
       })
     })
     await Promise.all(
-      geographies.map((geography_id) => {
+      geographies.map(geography_id => {
         log.info('publishing geography', geography_id)
         return publishGeography({ geography_id, publish_date })
       })
     )
     await Promise.all(
-      geographies.map((geography_id) => {
+      geographies.map(geography_id => {
         const ispublished = isGeographyPublished(geography_id)
         log.info('published geography', geography_id, ispublished)
       })
@@ -194,7 +194,7 @@ export async function publishPolicy(policy_id: UUID) {
 
     // Only publish the policy if the geographies are successfully published first
     const publishPolicySQL = `UPDATE ${schema.TABLE.policies} SET policy_json = policy_json::jsonb || '{"publish_date": ${publish_date}}' where policy_id='${policy_id}'`
-    await client.query(publishPolicySQL).catch((err) => {
+    await client.query(publishPolicySQL).catch(err => {
       throw err
     })
     return policy_id
@@ -245,14 +245,14 @@ export async function updatePolicyMetadata(policy_metadata: PolicyMetadata) {
 export async function readRule(rule_id: UUID): Promise<Rule> {
   const client = await getReadOnlyClient()
   const sql = `SELECT * from ${schema.TABLE.policies} where EXISTS(SELECT FROM json_array_elements(policy_json->'rules') elem WHERE (elem->'rule_id')::jsonb ? '${rule_id}');`
-  const res = await client.query(sql).catch((err) => {
+  const res = await client.query(sql).catch(err => {
     throw err
   })
   if (res.rowCount !== 1) {
     throw new Error(`invalid rule_id ${rule_id}`)
   } else {
     const [{ policy_json }]: { policy_json: Policy }[] = res.rows
-    const [rule] = policy_json.rules.filter((r) => {
+    const [rule] = policy_json.rules.filter(r => {
       return r.rule_id === rule_id
     })
     return rule
@@ -265,5 +265,5 @@ export async function findPoliciesByGeographyID(geography_id: UUID): Promise<Pol
     where ${schema.COLUMN.policy_json}::jsonb
     @> '{"rules":[{"geographies":["${geography_id}"]}]}'`
   const res = await client.query(sql)
-  return res.rows.map((row) => row.policy_json)
+  return res.rows.map(row => row.policy_json)
 }

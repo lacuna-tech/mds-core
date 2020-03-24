@@ -25,7 +25,7 @@ const TEST_API_VERSIONS = ['0.1.0', '0.2.0'] as const
 type TEST_API_VERSION = typeof TEST_API_VERSIONS[number]
 const [DEFAULT_TEST_API_VERSION, ALTERNATE_TEST_API_VERSION] = TEST_API_VERSIONS
 
-const api = ApiServer((app) => {
+const api = ApiServer(app => {
   app.use(ApiVersionMiddleware(TEST_API_MIME_TYPE, TEST_API_VERSIONS).withDefaultVersion(DEFAULT_TEST_API_VERSION))
   app.get('/api-version-middleware-test', (req, res: ApiVersionedResponse<TEST_API_VERSION>) =>
     res.status(200).send({ version: res.locals.version })
@@ -38,12 +38,12 @@ const request = supertest(api)
 const APP_JSON = 'application/json; charset=utf-8'
 
 describe('Testing API Server', () => {
-  afterEach((done) => {
+  afterEach(done => {
     delete process.env.MAINTENANCE
     done()
   })
 
-  it('verifies get root', (done) => {
+  it('verifies get root', done => {
     request
       .get('/')
       .expect(200)
@@ -58,7 +58,7 @@ describe('Testing API Server', () => {
       })
   })
 
-  it('verifies get root (MAINTENANCE)', (done) => {
+  it('verifies get root (MAINTENANCE)', done => {
     process.env.MAINTENANCE = 'Testing'
     request
       .get('/')
@@ -74,7 +74,7 @@ describe('Testing API Server', () => {
       })
   })
 
-  it('verifies health', (done) => {
+  it('verifies health', done => {
     request
       .get('/health')
       .expect(200)
@@ -92,7 +92,7 @@ describe('Testing API Server', () => {
       })
   })
 
-  it('verifies health (MAINTENANCE)', (done) => {
+  it('verifies health (MAINTENANCE)', done => {
     process.env.MAINTENANCE = 'Testing'
     request
       .get('/health')
@@ -111,7 +111,7 @@ describe('Testing API Server', () => {
       })
   })
 
-  it('verifies MAINTENANCE repsonse', (done) => {
+  it('verifies MAINTENANCE repsonse', done => {
     process.env.MAINTENANCE = 'Testing'
     request
       .get('/this-is-an-bad-route-but-it-should-return-503-in-maintenance-mode')
@@ -123,16 +123,16 @@ describe('Testing API Server', () => {
       })
   })
 
-  it('verifies MAINTENANCE passthrough', (done) => {
+  it('verifies MAINTENANCE passthrough', done => {
     request
       .get('/this-is-an-bad-route-so-it-should-normally-return-404')
       .expect(404)
-      .end((err) => {
+      .end(err => {
         done(err)
       })
   })
 
-  it('verifies keepAliveTimeout setting', (done) => {
+  it('verifies keepAliveTimeout setting', done => {
     let error
     process.env.HTTP_KEEP_ALIVE_TIMEOUT = '3000'
     const server = HttpServer(4000, api)
@@ -145,7 +145,7 @@ describe('Testing API Server', () => {
     done(error)
   })
 
-  it('verifies version middleware (default version)', (done) => {
+  it('verifies version middleware (default version)', done => {
     request
       .get('/api-version-middleware-test')
       .expect(200)
@@ -156,7 +156,7 @@ describe('Testing API Server', () => {
       })
   })
 
-  it('verifies version middleware (with versions)', (done) => {
+  it('verifies version middleware (with versions)', done => {
     request
       .get('/api-version-middleware-test')
       .set('accept', `${TEST_API_MIME_TYPE};version=0.2`)
@@ -168,7 +168,7 @@ describe('Testing API Server', () => {
       })
   })
 
-  it('verifies version middleware (versions with q)', (done) => {
+  it('verifies version middleware (versions with q)', done => {
     request
       .get('/api-version-middleware-test')
       .set('accept', `${TEST_API_MIME_TYPE};version=0.2;q=.9,${TEST_API_MIME_TYPE};version=0.1;`)
@@ -180,7 +180,7 @@ describe('Testing API Server', () => {
       })
   })
 
-  it('verifies version middleware (version not acceptable)', (done) => {
+  it('verifies version middleware (version not acceptable)', done => {
     request
       .get('/api-version-middleware-test')
       .set('accept', `${TEST_API_MIME_TYPE};version=0.4;q=.9,${TEST_API_MIME_TYPE};version=0.5;`)

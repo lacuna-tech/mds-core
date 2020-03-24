@@ -55,7 +55,7 @@ const getNats = () => {
       reconnect: true
     })
 
-    nats.on('error', async (message) => {
+    nats.on('error', async message => {
       await logger.error(message)
     })
   }
@@ -152,10 +152,10 @@ async function getClient() {
 
     logger.info(`connecting to redis on ${host}:${port}`)
     cachedClient = redis.createClient(Number(port), host)
-    cachedClient.on('error', async (err) => {
+    cachedClient.on('error', async err => {
       await logger.error(`redis error ${err}`)
     })
-    await cachedClient.dbsizeAsync().then((size) => logger.info(`redis has ${size} keys`))
+    await cachedClient.dbsizeAsync().then(size => logger.info(`redis has ${size} keys`))
   }
   return cachedClient
 }
@@ -192,7 +192,7 @@ async function writeStream(stream: Stream, field: string, value: unknown) {
 async function writeStreamBatch(stream: Stream, field: string, values: unknown[]) {
   const client = await getClient()
   const batch = client.batch()
-  values.forEach((value) => batch.xadd(stream, 'MAXLEN', '~', STREAM_MAXLEN[stream], '*', field, JSON.stringify(value)))
+  values.forEach(value => batch.xadd(stream, 'MAXLEN', '~', STREAM_MAXLEN[stream], '*', field, JSON.stringify(value)))
   await batch.execAsync()
 }
 
@@ -214,7 +214,7 @@ async function writeEvent(event: VehicleEvent) {
 // put latest locations in the cache
 async function writeTelemetry(telemetry: Telemetry[]) {
   if (env.NATS) {
-    await Promise.all(telemetry.map((item) => writeNatsEvent('telemetry', JSON.stringify(item))))
+    await Promise.all(telemetry.map(item => writeNatsEvent('telemetry', JSON.stringify(item))))
     return
   }
   const start = now()

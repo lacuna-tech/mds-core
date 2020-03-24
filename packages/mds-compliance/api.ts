@@ -96,7 +96,7 @@ function api(app: express.Express): express.Express {
       : { end_date: now() + days(365), start_date: now() - days(365) }
     try {
       const all_policies = await db.readPolicies({ start_date })
-      const policy = compliance_engine.filterPolicies(all_policies).find((p) => {
+      const policy = compliance_engine.filterPolicies(all_policies).find(p => {
         return p.policy_id === policy_uuid
       })
       if (!policy) {
@@ -118,7 +118,7 @@ function api(app: express.Express): express.Express {
         if (
           compliance_engine
             .filterPolicies(all_policies)
-            .map((p) => p.policy_id)
+            .map(p => p.policy_id)
             .includes(policy.policy_id)
         ) {
           const [geographies, deviceRecords] = await Promise.all([

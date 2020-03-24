@@ -88,7 +88,7 @@ async function getClient() {
     cachedClient.on('connect', () => {
       log.info('redis cache connected')
     })
-    cachedClient.on('error', async (err) => {
+    cachedClient.on('error', async err => {
       await log.error(`redis cache error ${err}`)
     })
     try {
@@ -105,7 +105,7 @@ async function info() {
   const results = await (await getClient()).infoAsync()
   const lines = results.split('\r\n')
   const data: { [propName: string]: string | number } = {}
-  lines.map((line) => {
+  lines.map(line => {
     const [key, val] = line.split(':')
     if (val !== undefined) {
       if (Number.isNaN(Number(val))) {
@@ -149,7 +149,7 @@ async function getEventsInBBox(bbox: BoundingBox) {
   const start = now()
   const client = await getClient()
   const [pt1, pt2] = bbox
-  const points = bbox.map((pt) => {
+  const points = bbox.map(pt => {
     return { lat: pt[0], lng: pt[1] }
   })
   const [lng, lat] = [(pt1[0] + pt2[0]) / 2, (pt1[1] + pt2[1]) / 2]
@@ -176,8 +176,8 @@ async function hreads(
   const multi = (await getClient()).multi()
 
   await Promise.all(
-    suffixes.map((suffix) =>
-      ids.map((id) => {
+    suffixes.map(suffix =>
+      ids.map(id => {
         return multi.hgetallAsync(decorateKey(`${prefix}:${id}:${suffix}`))
       })
     )
@@ -215,7 +215,7 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
   const client = await getClient()
 
   await Promise.all(
-    (suffix === 'event' ? [`provider:${item.provider_id}:latest_event`, key] : [key]).map((k) =>
+    (suffix === 'event' ? [`provider:${item.provider_id}:latest_event`, key] : [key]).map(k =>
       client.hmsetAsync(k, hmap)
     )
   )
@@ -236,12 +236,12 @@ async function readKeys(pattern: string) {
 }
 
 async function getMostRecentEventByProvider(): Promise<{ provider_id: string; max: number }[]> {
-  const provider_ids = (await readKeys('provider:*:latest_event')).map((key) => {
+  const provider_ids = (await readKeys('provider:*:latest_event')).map(key => {
     const [, provider_id] = key.split(':')
     return provider_id
   })
   const result = await hreads(['latest_event'], provider_ids, 'provider')
-  return result.map((elem) => {
+  return result.map(elem => {
     const max = parseInt(elem.timestamp || '0')
     return { provider_id: elem.provider_id, max }
   })
@@ -311,10 +311,10 @@ async function readEvent(device_id: UUID): Promise<VehicleEvent> {
 async function readEvents(device_ids: UUID[]): Promise<VehicleEvent[]> {
   const events = await hreads(['event'], device_ids)
   return events
-    .map((e) => {
+    .map(e => {
       return parseEvent(e as StringifiedEventWithTelemetry)
     })
-    .filter((e) => !!e)
+    .filter(e => !!e)
 }
 
 async function readAllEvents(): Promise<Array<VehicleEvent | null>> {
@@ -324,13 +324,13 @@ async function readAllEvents(): Promise<Array<VehicleEvent | null>> {
   let finish = now()
   let timeElapsed = finish - start
   await log.info(`MDS-DAILY /admin/events -> cache.readAllEvents() readKeys() time elapsed: ${timeElapsed}ms`)
-  const device_ids = keys.map((key) => {
+  const device_ids = keys.map(key => {
     const [, device_id] = key.split(':')
     return device_id
   })
 
   start = now()
-  const result = (await hreads(['event'], device_ids)).map((event) => {
+  const result = (await hreads(['event'], device_ids)).map(event => {
     return parseEvent(event as StringifiedEventWithTelemetry)
   })
   finish = now()
@@ -356,7 +356,7 @@ async function readDevice(device_id: UUID) {
 
 async function readDevices(device_ids: UUID[]) {
   // log.info('redis read device', device_id)
-  return ((await hreads(['device'], device_ids)) as StringifiedCacheReadDeviceResult[]).map((device) => {
+  return ((await hreads(['device'], device_ids)) as StringifiedCacheReadDeviceResult[]).map(device => {
     return parseDevice(device)
   })
 }
@@ -371,7 +371,7 @@ async function readDeviceStatus(device_id: UUID) {
       }
     })
   )
-  const results = await Promise.all(promises).catch((err) => log.error('Error reading device status', err))
+  const results = await Promise.all(promises).catch(err => log.error('Error reading device status', err))
   const deviceStatusMap: { [device_id: string]: CachedItem | {} } = {}
   results
     .filter((item: CachedItem) => item !== undefined)
@@ -431,13 +431,13 @@ async function readDevicesStatus(query: {
         return acc
       }
     }, [])
-    .filter((item) => Boolean(item))
+    .filter(item => Boolean(item))
   const eventsFinish = now()
   const eventsTimeElapsed = eventsFinish - eventsStart
   log.info(`MDS-CACHE readDevicesStatus bbox check ${JSON.stringify(bbox)} time elapsed: ${eventsTimeElapsed}ms`)
 
   const devicesStart = now()
-  const eventDeviceIds = events.map((event) => event.device_id)
+  const eventDeviceIds = events.map(event => event.device_id)
   const devices = (await hreads(['device'], eventDeviceIds))
     .reduce((acc: (Device | Telemetry | VehicleEvent)[], item: CachedItem) => {
       try {
@@ -447,10 +447,10 @@ async function readDevicesStatus(query: {
         return acc
       }
     }, [])
-    .filter((item) => Boolean(item))
+    .filter(item => Boolean(item))
   const all = [...devices, ...events]
   const deviceStatusMap: { [device_id: string]: CachedItem | {} } = {}
-  all.map((item) => {
+  all.map(item => {
     deviceStatusMap[item.device_id] = deviceStatusMap[item.device_id] || {}
     Object.assign(deviceStatusMap[item.device_id], item)
   })
@@ -499,13 +499,13 @@ async function writeOneTelemetry(telemetry: Telemetry) {
 }
 
 async function writeTelemetry(telemetries: Telemetry[]) {
-  await Promise.all(telemetries.map((telemetry) => writeOneTelemetry(telemetry)))
+  await Promise.all(telemetries.map(telemetry => writeOneTelemetry(telemetry)))
 }
 
 async function readAllTelemetry() {
   // FIXME wildcard searching is slow
   const keys = await readKeys('device:*:telemetry')
-  const device_ids = keys.map((key) => {
+  const device_ids = keys.map(key => {
     const [, device_id] = key.split(':')
     return device_id
   })
@@ -578,7 +578,7 @@ async function cleanup() {
     try {
       // look for bogus keys
       let badKeys: string[] = []
-      keys.map((key) => {
+      keys.map(key => {
         const [, , suffix] = key.split(':')
         if (suffix) {
           badKeys.push(key)

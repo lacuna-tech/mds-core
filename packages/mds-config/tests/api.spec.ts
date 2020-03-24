@@ -29,7 +29,7 @@ describe('Testing API', () => {
     process.env.MDS_CONFIG_PATH = './'
   })
 
-  it(`Default Settings File (missing)`, (done) => {
+  it(`Default Settings File (missing)`, done => {
     request
       .get(`/config/settings`)
       .expect(404)
@@ -39,7 +39,7 @@ describe('Testing API', () => {
       })
   })
 
-  it(`Default Settings File (partial)`, (done) => {
+  it(`Default Settings File (partial)`, done => {
     request
       .get(`/config/settings?partial=true`)
       .expect(200)
@@ -49,7 +49,7 @@ describe('Testing API', () => {
       })
   })
 
-  it(`Single Settings File (missing)`, (done) => {
+  it(`Single Settings File (missing)`, done => {
     request
       .get(`/config/settings?p=missing`)
       .expect(404)
@@ -59,7 +59,7 @@ describe('Testing API', () => {
       })
   })
 
-  it(`Single Settings File (partial)`, (done) => {
+  it(`Single Settings File (partial)`, done => {
     request
       .get(`/config/settings/missing?partial=true`)
       .expect(200)
@@ -69,7 +69,7 @@ describe('Testing API', () => {
       })
   })
 
-  it(`Single Settings File`, (done) => {
+  it(`Single Settings File`, done => {
     request
       .get(`/config/settings/package`)
       .expect(200)
@@ -79,7 +79,7 @@ describe('Testing API', () => {
       })
   })
 
-  it(`Multiple Settings File (missing)`, (done) => {
+  it(`Multiple Settings File (missing)`, done => {
     request
       .get(`/config/settings?p=package&p=missing`)
       .expect(404)
@@ -89,7 +89,7 @@ describe('Testing API', () => {
       })
   })
 
-  it(`Multiple Settings File (partial)`, (done) => {
+  it(`Multiple Settings File (partial)`, done => {
     request
       .get(`/config/settings?p=package&p=missing&partial=true`)
       .expect(200)
@@ -100,7 +100,7 @@ describe('Testing API', () => {
       })
   })
 
-  it(`Multiple Settings Files`, (done) => {
+  it(`Multiple Settings Files`, done => {
     request
       .get(`/config/settings?p=package&p=tsconfig.build`)
       .expect(200)

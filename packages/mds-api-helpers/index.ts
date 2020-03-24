@@ -24,7 +24,7 @@ interface PagingParams {
 
 export const asPagingParams: <T extends Partial<{ [P in keyof PagingParams]: unknown }>>(
   params: T
-) => T & PagingParams = (params) => {
+) => T & PagingParams = params => {
   const [DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE] = [100, 1000]
   const [skip, take] = [params.skip, params.take].map(Number)
   return {

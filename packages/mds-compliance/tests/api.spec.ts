@@ -247,7 +247,7 @@ describe('Tests Compliance API:', () => {
   })
 
   describe('Singular Policy API Sanity Checks: ', () => {
-    beforeEach((done) => {
+    beforeEach(done => {
       Promise.all([db.initialize(), cache.initialize(), stream.initialize()]).then(() => {
         agency_request
           .post('/vehicles')
@@ -280,7 +280,7 @@ describe('Tests Compliance API:', () => {
       await Promise.all([db.shutdown(), cache.shutdown(), stream.shutdown()])
     })
 
-    it('Verifies initial policy hit OK', (done) => {
+    it('Verifies initial policy hit OK', done => {
       request
         .get(`/snapshot/${COUNT_POLICY_UUID}`)
         .set('Authorization', ADMIN_AUTH)
@@ -291,7 +291,7 @@ describe('Tests Compliance API:', () => {
         })
     })
 
-    it('Verifies cannot query invalid policy_id', (done) => {
+    it('Verifies cannot query invalid policy_id', done => {
       request
         .get(`/snapshot/potato`)
         .set('Authorization', ADMIN_AUTH)
@@ -302,7 +302,7 @@ describe('Tests Compliance API:', () => {
         })
     })
 
-    it('Verifies cannot query valid UUID, but invalid policy_id', (done) => {
+    it('Verifies cannot query valid UUID, but invalid policy_id', done => {
       request
         .get(`/snapshot/f4a07b35-98dd-4234-93c7-199ea54083c3`)
         .set('Authorization', ADMIN_AUTH)
@@ -315,11 +315,11 @@ describe('Tests Compliance API:', () => {
   })
 
   describe('Count Compliant Test: ', () => {
-    before((done) => {
+    before(done => {
       const devices: Device[] = makeDevices(7, now())
       const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, 'trip_end')
       const telemetry: Telemetry[] = []
-      devices.forEach((device) => {
+      devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
       })
       const seedData = { devices, events, telemetry }
@@ -334,7 +334,7 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Verifies count in compliance', (done) => {
+    it('Verifies count in compliance', done => {
       request
         .get(`/snapshot/${COUNT_POLICY_UUID}`)
         .set('Authorization', ADMIN_AUTH)
@@ -417,11 +417,11 @@ describe('Tests Compliance API:', () => {
   //   })
   // })
   describe('Count Violation Over Test: ', () => {
-    before((done) => {
+    before(done => {
       const devices: Device[] = makeDevices(15, now())
       const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, 'trip_end')
       const telemetry: Telemetry[] = []
-      devices.forEach((device) => {
+      devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
       })
       const seedData = { devices, events, telemetry }
@@ -436,7 +436,7 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Verifies violation of count compliance (over)', (done) => {
+    it('Verifies violation of count compliance (over)', done => {
       request
         .get(`/snapshot/${COUNT_POLICY_UUID}`)
         .set('Authorization', ADMIN_AUTH)
@@ -455,11 +455,11 @@ describe('Tests Compliance API:', () => {
   })
 
   describe('Time Compliant Test: ', () => {
-    before((done) => {
+    before(done => {
       const devices: Device[] = makeDevices(15, now())
       const events = makeEventsWithTelemetry(devices, now() - 10, CITY_OF_LA, 'trip_end')
       const telemetry: Telemetry[] = []
-      devices.forEach((device) => {
+      devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
       })
       const seedData = { devices, events, telemetry }
@@ -474,7 +474,7 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Verifies OK time compliance', (done) => {
+    it('Verifies OK time compliance', done => {
       request
         .get(`/snapshot/${TIME_POLICY_UUID}`)
         .set('Authorization', ADMIN_AUTH)
@@ -492,11 +492,11 @@ describe('Tests Compliance API:', () => {
   })
 
   describe('Time Violation Test: ', () => {
-    before((done) => {
+    before(done => {
       const devices: Device[] = makeDevices(15, now())
       const events = makeEventsWithTelemetry(devices, now() - 1000000, CITY_OF_LA, 'trip_end')
       const telemetry: Telemetry[] = []
-      devices.forEach((device) => {
+      devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
       })
       const seedData = { devices, events, telemetry }
@@ -511,7 +511,7 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Verifies violation of time compliance', (done) => {
+    it('Verifies violation of time compliance', done => {
       request
         .get(`/snapshot/${TIME_POLICY_UUID}`)
         .set('Authorization', ADMIN_AUTH)
@@ -529,13 +529,13 @@ describe('Tests Compliance API:', () => {
   })
 
   describe('Attempts to check compliance for non-existent policy', () => {
-    it('Checks for a valid UUID, but not present in db', (done) => {
+    it('Checks for a valid UUID, but not present in db', done => {
       Promise.all([db.initialize(), cache.initialize(), stream.initialize()]).then(async () => {
         request
           .get(`/snapshot/${TIME_POLICY_UUID}`)
           .set('Authorization', ADMIN_AUTH)
           .expect(404)
-          .end((err) => {
+          .end(err => {
             done(err)
           })
       })
@@ -543,11 +543,11 @@ describe('Tests Compliance API:', () => {
   })
 
   describe('Verifies day-based bans work properly', () => {
-    before((done) => {
+    before(done => {
       const devices: Device[] = makeDevices(15, now())
       const events = makeEventsWithTelemetry(devices, now() - 10, LA_BEACH, 'trip_end')
       const telemetry: Telemetry[] = []
-      devices.forEach((device) => {
+      devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), LA_BEACH, 10))
       })
       const seedData = { devices, events, telemetry }
@@ -562,7 +562,7 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Verifies on a tuesday that vehicles are allowed', (done) => {
+    it('Verifies on a tuesday that vehicles are allowed', done => {
       MockDate.set('2019-05-21T20:00:00.000Z')
       request
         .get(`/snapshot/${COUNT_POLICY_UUID_2}`)
@@ -575,7 +575,7 @@ describe('Tests Compliance API:', () => {
         })
     })
 
-    it('Verifies on a saturday that vehicles are not allowed', (done) => {
+    it('Verifies on a saturday that vehicles are not allowed', done => {
       MockDate.set('2019-05-25T20:00:00.000Z')
       request
         .get(`/snapshot/${COUNT_POLICY_UUID_2}`)
@@ -588,18 +588,18 @@ describe('Tests Compliance API:', () => {
         })
     })
 
-    after('Reset system time', (done) => {
+    after('Reset system time', done => {
       MockDate.reset()
       done()
     })
   })
 
   describe('Particular Event Violation: ', () => {
-    before((done) => {
+    before(done => {
       const devices: Device[] = makeDevices(15, now())
       const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, 'service_start')
       const telemetry: Telemetry[] = []
-      devices.forEach((device) => {
+      devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
       })
       const seedData = { devices, events, telemetry }
@@ -614,7 +614,7 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Verifies violation for particular event', (done) => {
+    it('Verifies violation for particular event', done => {
       request
         .get(`/snapshot/${COUNT_POLICY_UUID_3}`)
         .set('Authorization', ADMIN_AUTH)
@@ -633,11 +633,11 @@ describe('Tests Compliance API:', () => {
   })
 
   describe('Particular Event Compliance: ', () => {
-    before((done) => {
+    before(done => {
       const devices: Device[] = makeDevices(15, now())
       const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, 'trip_end')
       const telemetry: Telemetry[] = []
-      devices.forEach((device) => {
+      devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
       })
       const seedData = { devices, events, telemetry }
@@ -652,7 +652,7 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Verifies compliance for particular event', (done) => {
+    it('Verifies compliance for particular event', done => {
       request
         .get(`/snapshot/${COUNT_POLICY_UUID_3}`)
         .set('Authorization', ADMIN_AUTH)
@@ -670,7 +670,7 @@ describe('Tests Compliance API:', () => {
   })
 
   describe('Verifies venice beach spec ops', () => {
-    before((done) => {
+    before(done => {
       const veniceSpecOpsPointIds: UUID[] = []
       const geographies: Geography[] = veniceSpecialOpsZone.features.map((feature: Feature) => {
         if (feature.geometry.type === 'Point') {
@@ -760,7 +760,7 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Verify 22 vehicles are matched within the first rule (inside of allowed zones), and 10 in the second (because they have not been previously matched).', (done) => {
+    it('Verify 22 vehicles are matched within the first rule (inside of allowed zones), and 10 in the second (because they have not been previously matched).', done => {
       request
         .get(`/snapshot/${VENICE_POLICY_UUID}`)
         .set('Authorization', ADMIN_AUTH)
@@ -776,19 +776,19 @@ describe('Tests Compliance API:', () => {
 
   describe('Tests reading historical compliance', () => {
     const yesterday = now() - 86400000
-    before((done) => {
+    before(done => {
       // Generate old events
       const devices: Device[] = makeDevices(15, yesterday)
       const events_a = makeEventsWithTelemetry(devices, yesterday, CITY_OF_LA, 'trip_start')
       const telemetry_a: Telemetry[] = []
-      devices.forEach((device) => {
+      devices.forEach(device => {
         telemetry_a.push(makeTelemetryInArea(device, yesterday, CITY_OF_LA, 10))
       })
 
       // Generate new events
       const events_b = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'provider_drop_off')
       const telemetry_b: Telemetry[] = []
-      devices.forEach((device) => {
+      devices.forEach(device => {
         telemetry_a.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
       })
 
@@ -811,7 +811,7 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Historical check reports 5 violations', (done) => {
+    it('Historical check reports 5 violations', done => {
       request
         .get(`/snapshot/${COUNT_POLICY_UUID_4}?end_date=${yesterday + 200}`)
         .set('Authorization', ADMIN_AUTH)
@@ -823,7 +823,7 @@ describe('Tests Compliance API:', () => {
         })
     })
 
-    it('Current check reports 0 violations', (done) => {
+    it('Current check reports 0 violations', done => {
       request
         .get(`/snapshot/${COUNT_POLICY_UUID_4}`)
         .set('Authorization', ADMIN_AUTH)
@@ -837,7 +837,7 @@ describe('Tests Compliance API:', () => {
   })
 
   describe('Tests count endpoint', () => {
-    before((done) => {
+    before(done => {
       const devices_a: Device[] = makeDevices(15, now())
       const events_a = makeEventsWithTelemetry(devices_a, now(), CITY_OF_LA, 'trip_start')
       const telemetry_a: Telemetry[] = devices_a.reduce((acc: Telemetry[], device) => {
@@ -869,7 +869,7 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Test count endpoint success', (done) => {
+    it('Test count endpoint success', done => {
       request
         .get(`/count/47c8c7d4-14b5-43a3-b9a5-a32ecc2fb2c6`)
         .set('Authorization', ADMIN_AUTH)
@@ -881,12 +881,12 @@ describe('Tests Compliance API:', () => {
         })
     })
 
-    it('Test count endpoint failure with bad rule_id', (done) => {
+    it('Test count endpoint failure with bad rule_id', done => {
       request
         .get(`/count/33ca0ee8-e74b-419d-88d3-aaaf05ac0509`)
         .set('Authorization', ADMIN_AUTH)
         .expect(404)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
@@ -897,7 +897,7 @@ describe('Tests Compliance API:', () => {
       const devices: Device[] = makeDevices(7, now(), MOCHA_PROVIDER_ID)
       const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, 'trip_end')
       const telemetry: Telemetry[] = []
-      devices.forEach((device) => {
+      devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
       })
 
@@ -911,7 +911,7 @@ describe('Tests Compliance API:', () => {
       await db.publishPolicy(SCOPED_COUNT_POLICY_JSON.policy_id)
     })
 
-    it("Verifies scoped provider can access policy's compliance", (done) => {
+    it("Verifies scoped provider can access policy's compliance", done => {
       request
         .get(`/snapshot/${COUNT_POLICY_UUID}`)
         .set('Authorization', TEST2_PROVIDER_AUTH)
@@ -923,7 +923,7 @@ describe('Tests Compliance API:', () => {
         })
     })
 
-    it("Verifies non-scoped provider cannot access policy's compliance", (done) => {
+    it("Verifies non-scoped provider cannot access policy's compliance", done => {
       request
         .get(`/snapshot/${COUNT_POLICY_UUID}`)
         .set('Authorization', MOCHA_PROVIDER_AUTH)
@@ -959,7 +959,7 @@ describe('Tests Compliance API:', () => {
       await db.publishPolicy(COUNT_POLICY_JSON_5.policy_id)
     })
 
-    it('Verifies max 0 single rule policy operates as expected', (done) => {
+    it('Verifies max 0 single rule policy operates as expected', done => {
       request
         .get(`/snapshot/${COUNT_POLICY_JSON_5.policy_id}`)
         .set('Authorization', TEST2_PROVIDER_AUTH)

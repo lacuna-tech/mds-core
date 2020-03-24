@@ -44,13 +44,13 @@ const decoders: { [scheme: string]: (token: string) => AuthorizerClaims } = {
   }
 }
 
-const BaseAuthorizer: Authorizer = (authorization) => {
+const BaseAuthorizer: Authorizer = authorization => {
   const [scheme, token] = authorization.split(' ')
   const decoder = decoders[scheme.toLowerCase()]
   return decoder ? decoder(token) : null
 }
 
-export const AuthorizationHeaderApiAuthorizer: ApiAuthorizer = (req) => {
+export const AuthorizationHeaderApiAuthorizer: ApiAuthorizer = req => {
   return req.headers?.authorization ? BaseAuthorizer(req.headers.authorization) : null
 }
 

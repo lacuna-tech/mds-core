@@ -69,7 +69,7 @@ const TEST_TELEMETRY: Telemetry = {
 // TODO Inherit all of these from mds-test-data
 const AUTH = `basic ${Buffer.from(`${TEST1_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
 
-before((done) => {
+before(done => {
   const testTimestampNow = now() // Hacky fix
   const devices: Device[] = makeDevices(3, now() - 1000)
   const events: VehicleEvent[] = [
@@ -157,7 +157,7 @@ after(async () => {
 })
 
 describe('Tests API', () => {
-  it('gets vehicle counts per provider', (done) => {
+  it('gets vehicle counts per provider', done => {
     request
       .get('/admin/vehicle_counts')
       .set('Authorization', AUTH)
@@ -186,7 +186,7 @@ describe('Tests API', () => {
     })
 
     it('rejects an unauthorized user', async () => {
-      const statusSpy = Sinon.spy((statusCode) => {
+      const statusSpy = Sinon.spy(statusCode => {
         return {
           send: () => {
             return statusCode
@@ -212,7 +212,7 @@ describe('Tests API', () => {
     })
   })
 
-  it('verifies 8 total events, and 4 are non-conformant', (done) => {
+  it('verifies 8 total events, and 4 are non-conformant', done => {
     request
       .get('/admin/last_day_stats_by_provider')
       .set('Authorization', AUTH)
@@ -229,7 +229,7 @@ describe('Tests API', () => {
   // that old recorded items don't show up. This will probably require
   // writing functions that allow you to update the recorded column but
   // I've spent enough time on this right now.
-  it('gets recent stats by provider', (done) => {
+  it('gets recent stats by provider', done => {
     // These outer two promises are here to help check that old telemetry/event data
     // added by the call to .seed later don't show up in the final results
     request

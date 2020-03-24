@@ -40,7 +40,7 @@ const AsJurisdiction = (effective: Timestamp = Date.now()) => (
 ): Jurisdiction | null => {
   if (entity) {
     const { jurisdiction_id, agency_key, versions } = entity
-    const version = versions.find((properties) => effective >= properties.timestamp)
+    const version = versions.find(properties => effective >= properties.timestamp)
     if (version) {
       const { agency_name, geography_id, timestamp } = version
       if (geography_id !== null) {

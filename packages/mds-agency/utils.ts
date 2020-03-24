@@ -120,7 +120,7 @@ export async function getVehicles(
     const flat: { [key: string]: number } = { ...reqQuery, ...query }
     let s = `${url}?`
     s += Object.keys(flat)
-      .map((key) => `${key}=${flat[key]}`)
+      .map(key => `${key}=${flat[key]}`)
       .join('&')
     return s
   }
@@ -129,21 +129,21 @@ export async function getVehicles(
   const total = rows.length
   log.info(`read ${total} deviceIds in /vehicles`)
 
-  const events = await cache.readEvents(rows.map((record) => record.device_id))
+  const events = await cache.readEvents(rows.map(record => record.device_id))
   const eventMap: { [s: string]: VehicleEvent } = {}
-  events.map((event) => {
+  events.map(event => {
     if (event) {
       eventMap[event.device_id] = event
     }
   })
 
   const deviceIdSuperset = bbox
-    ? rows.filter((record) => {
+    ? rows.filter(record => {
         return eventMap[record.device_id] ? isInsideBoundingBox(eventMap[record.device_id].telemetry, bbox) : true
       })
     : rows
 
-  const deviceIdSubset = deviceIdSuperset.slice(skip, skip + take).map((record) => record.device_id)
+  const deviceIdSubset = deviceIdSuperset.slice(skip, skip + take).map(record => record.device_id)
   const devices = (await db.readDeviceList(deviceIdSubset)).reduce((acc: Device[], device: Device) => {
     if (!device) {
       throw new Error('device in DB but not in cache')

@@ -26,7 +26,7 @@ const {
 } = process.env
 
 export const Connections = (options: Partial<PostgresConnectionOptions> = {}): ConnectionOptions[] =>
-  ConnectionNames.map((name) => ({
+  ConnectionNames.map(name => ({
     name,
     type: 'postgres',
     host: (name === 'rw' ? PG_HOST : PG_HOST_READER) || PG_HOST || 'localhost',

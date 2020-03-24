@@ -279,7 +279,7 @@ function makeTelemetry(devices: Device[], timestamp: Timestamp): Telemetry[] {
   } = {}
 
   log.info('clustering')
-  serviceAreaKeys.slice(0, 1).map((key) => {
+  serviceAreaKeys.slice(0, 1).map(key => {
     const serviceArea = serviceAreaMap[key]
     const serviceAreaMultipoly = serviceArea.area
     cluster_info[key] = {
@@ -298,7 +298,7 @@ function makeTelemetry(devices: Device[], timestamp: Timestamp): Telemetry[] {
     }
   })
 
-  const telemetries = devices.map((device) => {
+  const telemetries = devices.map(device => {
     // make a rando telemetry for that vehicle, in one of the areas
     const key = serviceAreaKeys[i++ % num_areas]
     const serviceArea = serviceAreaMap[key]
@@ -401,7 +401,7 @@ function makeEvents(devices: Device[], timestamp: Timestamp, event_type = VEHICL
     throw new Error('empty event_type')
   }
 
-  return devices.map((device) => {
+  return devices.map(device => {
     return {
       device_id: device.device_id,
       provider_id: device.provider_id,
@@ -419,7 +419,7 @@ function makeEventsWithTelemetry(
   event_type: null | string = null,
   speed = rangeRandomInt(10)
 ): VehicleEvent[] {
-  return devices.map((device) => {
+  return devices.map(device => {
     const vehicleEventsKeys = Object.keys(VEHICLE_EVENTS)
     return {
       device_id: device.device_id,

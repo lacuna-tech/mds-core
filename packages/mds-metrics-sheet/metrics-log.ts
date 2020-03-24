@@ -148,7 +148,7 @@ async function appendSheet(sheetName: string, rows: MetricsSheetRow[]) {
   const sheet = info.worksheets.filter((s: { title: string; rowCount: number } & unknown) => s.title === sheetName)[0]
   log.info(`${sheetName} sheet: ${sheet.title} ${sheet.rowCount}x${sheet.colCount}`)
   if (sheet.title === sheetName) {
-    const inserted = rows.map((insert_row) => promisify(sheet.addRow)(insert_row))
+    const inserted = rows.map(insert_row => promisify(sheet.addRow)(insert_row))
     log.info(`Wrote ${inserted.length} rows.`)
     return Promise.all(inserted)
   }
@@ -192,8 +192,8 @@ export async function getProviderMetrics(iter: number): Promise<MetricsSheetRow[
     const last: LastDayStatsResponse = await requestPromiseExceptionHelper(last_options)
 
     const rows: MetricsSheetRow[] = counts
-      .filter((p) => reportProviders.includes(p.provider_id))
-      .map((provider) => mapProviderToPayload(provider, last))
+      .filter(p => reportProviders.includes(p.provider_id))
+      .map(provider => mapProviderToPayload(provider, last))
     return rows
   } catch (err) {
     await log.error(`getProviderMetrics() API call error on ${err.url}`, err)

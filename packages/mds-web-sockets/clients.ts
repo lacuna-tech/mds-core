@@ -43,10 +43,10 @@ export class Clients {
       return
     }
 
-    const trimmedEntities = entities.map((entity) => entity.trim())
+    const trimmedEntities = entities.map(entity => entity.trim())
 
     return Promise.all(
-      trimmedEntities.map((entity) => {
+      trimmedEntities.map(entity => {
         try {
           this.subList[entity].push(client)
         } catch {

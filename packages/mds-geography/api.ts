@@ -9,7 +9,7 @@ import { checkAccess } from '@mds-core/mds-api-server'
 function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/geographies/meta/'),
-    checkAccess((scopes) => {
+    checkAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req, res) => {
@@ -68,7 +68,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id'),
-    checkAccess((scopes) => {
+    checkAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req, res) => {
@@ -96,7 +96,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies'),
-    checkAccess((scopes) => {
+    checkAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req, res) => {
@@ -120,7 +120,7 @@ function api(app: express.Express): express.Express {
 
         const geographies = summary ? await db.readGeographySummaries(params) : await db.readGeographies(params)
         if (!res.locals.scopes.includes('geographies:read:unpublished')) {
-          const filteredGeos = geographies.filter((geo) => !!geo.publish_date)
+          const filteredGeos = geographies.filter(geo => !!geo.publish_date)
           return res.status(200).send(filteredGeos)
         }
         return res.status(200).send(geographies)
@@ -139,7 +139,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id/meta'),
-    checkAccess((scopes) => {
+    checkAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req, res) => {

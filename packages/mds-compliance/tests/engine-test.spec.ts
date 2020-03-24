@@ -47,14 +47,14 @@ describe('Tests Compliance Engine', () => {
   //   done()
   // })
 
-  it('Verify Events Schema Compliance', (done) => {
+  it('Verify Events Schema Compliance', done => {
     const devices = makeDevices(5, now())
     const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA)
     test.assert.doesNotThrow(() => validateEvents(events))
     done()
   })
 
-  it('Verifies count compliance', (done) => {
+  it('Verifies count compliance', done => {
     const devices = makeDevices(800, now())
     const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_start')
     test.assert.doesNotThrow(() => validatePolicies(policies))
@@ -69,10 +69,10 @@ describe('Tests Compliance Engine', () => {
       },
       {}
     )
-    const results = filteredPolicies.map((policy) => processPolicy(policy, filteredEvents, geographies, deviceMap))
-    results.forEach((result) => {
+    const results = filteredPolicies.map(policy => processPolicy(policy, filteredEvents, geographies, deviceMap))
+    results.forEach(result => {
       if (result) {
-        result.compliance.forEach((compliance) => {
+        result.compliance.forEach(compliance => {
           if (compliance.matches && compliance.rule.rule_type === RULE_TYPES.count) {
             test.assert.deepEqual(compliance.matches.length, 1)
           }
@@ -82,7 +82,7 @@ describe('Tests Compliance Engine', () => {
     done()
   })
 
-  it('Verifies count compliance maximum violation', (done) => {
+  it('Verifies count compliance maximum violation', done => {
     const devices = makeDevices(3001, now())
     const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_start')
     test.assert.doesNotThrow(() => validatePolicies(policies))
@@ -97,11 +97,11 @@ describe('Tests Compliance Engine', () => {
       },
       {}
     )
-    const results = filteredPolicies.map((policy) => processPolicy(policy, filteredEvents, geographies, deviceMap))
+    const results = filteredPolicies.map(policy => processPolicy(policy, filteredEvents, geographies, deviceMap))
 
-    results.forEach((result) => {
+    results.forEach(result => {
       if (result) {
-        result.compliance.forEach((compliance) => {
+        result.compliance.forEach(compliance => {
           if (
             compliance.matches &&
             compliance.rule.rule_type === RULE_TYPES.count &&
@@ -116,7 +116,7 @@ describe('Tests Compliance Engine', () => {
     done()
   })
 
-  it('Verifies count compliance minimum violation', (done) => {
+  it('Verifies count compliance minimum violation', done => {
     const devices = makeDevices(10, now())
     const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_start')
     test.assert.doesNotThrow(() => validatePolicies(policies))
@@ -131,11 +131,11 @@ describe('Tests Compliance Engine', () => {
       },
       {}
     )
-    const results = filteredPolicies.map((policy) => processPolicy(policy, filteredEvents, geographies, deviceMap))
+    const results = filteredPolicies.map(policy => processPolicy(policy, filteredEvents, geographies, deviceMap))
 
-    results.forEach((result) => {
+    results.forEach(result => {
       if (result) {
-        result.compliance.forEach((compliance) => {
+        result.compliance.forEach(compliance => {
           if (
             compliance.matches &&
             compliance.rule.rule_type === RULE_TYPES.count &&
@@ -150,7 +150,7 @@ describe('Tests Compliance Engine', () => {
     done()
   })
 
-  it('Verifies speed compliance', (done) => {
+  it('Verifies speed compliance', done => {
     const devices = makeDevices(5, now())
     const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_start', 5)
     test.assert.doesNotThrow(() => validatePolicies(policies))
@@ -165,10 +165,10 @@ describe('Tests Compliance Engine', () => {
       },
       {}
     )
-    const results = filteredPolicies.map((policy) => processPolicy(policy, filteredEvents, geographies, deviceMap))
-    results.forEach((result) => {
+    const results = filteredPolicies.map(policy => processPolicy(policy, filteredEvents, geographies, deviceMap))
+    results.forEach(result => {
       if (result) {
-        result.compliance.forEach((compliance) => {
+        result.compliance.forEach(compliance => {
           if (
             compliance.rule.geographies.includes(CITY_OF_LA) &&
             compliance.matches &&
@@ -182,7 +182,7 @@ describe('Tests Compliance Engine', () => {
     done()
   })
 
-  it('Verifies speed compliance violation', (done) => {
+  it('Verifies speed compliance violation', done => {
     const devices = makeDevices(5, now())
     const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_start', 500)
     test.assert.doesNotThrow(() => validatePolicies(policies))
@@ -197,10 +197,10 @@ describe('Tests Compliance Engine', () => {
       },
       {}
     )
-    const results = filteredPolicies.map((policy) => processPolicy(policy, filteredEvents, geographies, deviceMap))
-    results.forEach((result) => {
+    const results = filteredPolicies.map(policy => processPolicy(policy, filteredEvents, geographies, deviceMap))
+    results.forEach(result => {
       if (result) {
-        result.compliance.forEach((compliance) => {
+        result.compliance.forEach(compliance => {
           if (
             compliance.rule.geographies.includes(CITY_OF_LA) &&
             compliance.matches &&
@@ -215,7 +215,7 @@ describe('Tests Compliance Engine', () => {
     done()
   })
 
-  it('Verifies time compliance', (done) => {
+  it('Verifies time compliance', done => {
     const devices = makeDevices(400, now())
     const events = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'trip_end')
     test.assert.doesNotThrow(() => validatePolicies(policies))
@@ -230,10 +230,10 @@ describe('Tests Compliance Engine', () => {
       },
       {}
     )
-    const results = filteredPolicies.map((policy) => processPolicy(policy, filteredEvents, geographies, deviceMap))
-    results.forEach((result) => {
+    const results = filteredPolicies.map(policy => processPolicy(policy, filteredEvents, geographies, deviceMap))
+    results.forEach(result => {
       if (result) {
-        result.compliance.forEach((compliance) => {
+        result.compliance.forEach(compliance => {
           if (
             compliance.rule.geographies.includes(CITY_OF_LA) &&
             compliance.matches &&
@@ -247,7 +247,7 @@ describe('Tests Compliance Engine', () => {
     done()
   })
 
-  it('Verifies time compliance violation', (done) => {
+  it('Verifies time compliance violation', done => {
     const devices = makeDevices(400, now())
     const events = makeEventsWithTelemetry(devices, now() - 10000000, CITY_OF_LA, 'trip_end')
     test.assert.doesNotThrow(() => validatePolicies(policies))
@@ -262,10 +262,10 @@ describe('Tests Compliance Engine', () => {
       },
       {}
     )
-    const results = filteredPolicies.map((policy) => processPolicy(policy, filteredEvents, geographies, deviceMap))
-    results.forEach((result) => {
+    const results = filteredPolicies.map(policy => processPolicy(policy, filteredEvents, geographies, deviceMap))
+    results.forEach(result => {
       if (result) {
-        result.compliance.forEach((compliance) => {
+        result.compliance.forEach(compliance => {
           if (
             compliance.rule.geographies.includes(CITY_OF_LA) &&
             compliance.matches &&
@@ -280,7 +280,7 @@ describe('Tests Compliance Engine', () => {
     done()
   })
 
-  it('Verifies not considering events older than 48 hours', (done) => {
+  it('Verifies not considering events older than 48 hours', done => {
     const TWO_DAYS_IN_MS = 172800000
     const devices = makeDevices(400, now())
     const events = makeEventsWithTelemetry(devices, now() - TWO_DAYS_IN_MS, CITY_OF_LA, 'trip_end')
@@ -299,10 +299,10 @@ describe('Tests Compliance Engine', () => {
       },
       {}
     )
-    const results = filteredPolicies.map((policy) => processPolicy(policy, filteredEvents, geographies, deviceMap))
-    results.forEach((result) => {
+    const results = filteredPolicies.map(policy => processPolicy(policy, filteredEvents, geographies, deviceMap))
+    results.forEach(result => {
       if (result) {
-        result.compliance.forEach((compliance) => {
+        result.compliance.forEach(compliance => {
           if (
             compliance.rule.geographies.includes(CITY_OF_LA) &&
             compliance.matches &&
@@ -318,13 +318,13 @@ describe('Tests Compliance Engine', () => {
 })
 
 describe('Verifies errors are being properly thrown', () => {
-  it('Verify garbage does not pass schema compliance', (done) => {
+  it('Verify garbage does not pass schema compliance', done => {
     const devices = { foo: { potato: 'POTATO!' } }
     test.assert.throws(() => validateEvents(devices), ValidationError)
     done()
   })
 
-  it('Verifies RuntimeErrors are being thrown with an invalid TIMEZONE env_var', (done) => {
+  it('Verifies RuntimeErrors are being thrown with an invalid TIMEZONE env_var', done => {
     const oldTimezone = process.env.TIMEZONE
     process.env.TIMEZONE = 'Pluto/Potato_Land'
     const devices = makeDevices(1, now())
@@ -342,7 +342,7 @@ describe('Verifies errors are being properly thrown', () => {
       {}
     )
     test.assert.throws(
-      () => filteredPolicies.map((policy) => processPolicy(policy, filteredEvents, geographies, deviceMap)),
+      () => filteredPolicies.map(policy => processPolicy(policy, filteredEvents, geographies, deviceMap)),
       RuntimeError
     )
     process.env.TIMEZONE = oldTimezone
@@ -356,7 +356,7 @@ describe('Verifies compliance engine processes by vehicle most recent event', as
     // geographies = await readJson('test_data/geographies.json')
   })
 
-  it('should process count violation vehicles with the most recent event last', (done) => {
+  it('should process count violation vehicles with the most recent event last', done => {
     test.assert.doesNotThrow(() => validatePolicies(low_count_policies))
     const devices = makeDevices(6, now())
     const start_time = now() - 10000000
@@ -367,10 +367,10 @@ describe('Verifies compliance engine processes by vehicle most recent event', as
       return events_acc
     }, [])
     const deviceMap = getDeviceMap(devices)
-    const results = low_count_policies.map((policy) => processPolicy(policy, events, geographies, deviceMap))
-    results.forEach((result) => {
+    const results = low_count_policies.map(policy => processPolicy(policy, events, geographies, deviceMap))
+    results.forEach(result => {
       if (result) {
-        result.compliance.forEach((compliance) => {
+        result.compliance.forEach(compliance => {
           // It's not necessary to verify it works for the other rule types since the sorting happens before
           // any policy processing happens.
           if (

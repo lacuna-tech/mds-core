@@ -416,7 +416,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
         const msg = `bad telemetry for device_id ${telemetry.device_id}: ${bad_telemetry.error_description}`
         // append to failure
         failures.push(msg)
-      } else if (!deviceIds.some((item2) => item2.device_id === telemetry.device_id)) {
+      } else if (!deviceIds.some(item2 => item2.device_id === telemetry.device_id)) {
         const msg = `device_id ${telemetry.device_id}: not found`
         failures.push(msg)
       } else {

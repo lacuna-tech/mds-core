@@ -70,31 +70,31 @@ describe('Tests app', () => {
       await db.shutdown()
     })
 
-    it('cannot create one current policy (no authorization)', (done) => {
+    it('cannot create one current policy (no authorization)', done => {
       const policy = POLICY_JSON
       request
         .post(`/policies`)
         .set('Authorization', EMPTY_SCOPE)
         .send(policy)
         .expect(403)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
 
-    it('cannot create one current policy (wrong authorization)', (done) => {
+    it('cannot create one current policy (wrong authorization)', done => {
       const policy = POLICY_JSON
       request
         .post(`/policies`)
         .set('Authorization', EVENTS_READ_SCOPE)
         .send(policy)
         .expect(403)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
 
-    it('tries to post invalid policy', (done) => {
+    it('tries to post invalid policy', done => {
       const bad_policy_json: Policy = clone(POLICY_JSON)
       delete bad_policy_json.rules[0].rule_type
       const bad_policy = bad_policy_json
@@ -111,7 +111,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('verifies cannot PUT policy (no auth)', (done) => {
+    it('verifies cannot PUT policy (no auth)', done => {
       const policy = clone(POLICY_JSON)
       request
         .put(`/policies/d2e31798-f22f-4034-ad36-1f88621b276a`)
@@ -124,7 +124,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('verifies cannot PUT policy (wrong auth)', (done) => {
+    it('verifies cannot PUT policy (wrong auth)', done => {
       const policy = clone(POLICY_JSON)
       request
         .put(`/policies/d2e31798-f22f-4034-ad36-1f88621b276a`)
@@ -137,7 +137,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('verifies cannot PUT non-existent policy', (done) => {
+    it('verifies cannot PUT non-existent policy', done => {
       const policy = clone(POLICY_JSON)
       request
         .put(`/policies/d2e31798-f22f-4034-ad36-1f88621b276a`)
@@ -150,7 +150,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('creates one current policy', (done) => {
+    it('creates one current policy', done => {
       const policy = POLICY_JSON
       request
         .post(`/policies`)
@@ -163,7 +163,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('verifies cannot POST duplicate policy', (done) => {
+    it('verifies cannot POST duplicate policy', done => {
       const policy = POLICY_JSON
       request
         .post(`/policies`)
@@ -196,7 +196,7 @@ describe('Tests app', () => {
       test.value(result.name).is('a shiny new name')
     })
 
-    it('creates one past policy', (done) => {
+    it('creates one past policy', done => {
       const policy2 = POLICY2_JSON
       request
         .post(`/policies`)
@@ -209,7 +209,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('creates one future new policy', (done) => {
+    it('creates one future new policy', done => {
       // TODO guts
       const policy3 = POLICY3_JSON
       request
@@ -223,27 +223,27 @@ describe('Tests app', () => {
         })
     })
 
-    it('verifies cannot publish a policy (no auth)', (done) => {
+    it('verifies cannot publish a policy (no auth)', done => {
       request
         .post(`/policies/${POLICY_JSON.policy_id}/publish`)
         .set('Authorization', EMPTY_SCOPE)
         .expect(403)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
 
-    it('verifies cannot publish a policy (wrong auth)', (done) => {
+    it('verifies cannot publish a policy (wrong auth)', done => {
       request
         .post(`/policies/${POLICY_JSON.policy_id}/publish`)
         .set('Authorization', EVENTS_READ_SCOPE)
         .expect(403)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
 
-    it('verifies cannot publish a policy with missing geographies', (done) => {
+    it('verifies cannot publish a policy with missing geographies', done => {
       request
         .post(`/policies/${POLICY_JSON.policy_id}/publish`)
         .set('Authorization', POLICIES_PUBLISH_SCOPE)
@@ -254,7 +254,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('verifies cannot publish a policy that was never POSTed', (done) => {
+    it('verifies cannot publish a policy that was never POSTed', done => {
       request
         .post(`/policies/${GEOGRAPHY_UUID}/publish`)
         .set('Authorization', POLICIES_PUBLISH_SCOPE)
@@ -274,7 +274,7 @@ describe('Tests app', () => {
       test.value(result).hasHeader('content-type', APP_JSON)
     })
 
-    it('cannot double-publish a policy', (done) => {
+    it('cannot double-publish a policy', done => {
       request
         .post(`/policies/${POLICY_JSON.policy_id}/publish`)
         .set('Authorization', POLICIES_PUBLISH_SCOPE)
@@ -285,7 +285,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('cannot edit a published policy (no auth)', (done) => {
+    it('cannot edit a published policy (no auth)', done => {
       const policy = clone(POLICY_JSON)
       policy.name = 'an even shinier new name'
       request
@@ -293,12 +293,12 @@ describe('Tests app', () => {
         .set('Authorization', EMPTY_SCOPE)
         .send(policy)
         .expect(403)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
 
-    it('cannot edit a published policy (wrong auth)', (done) => {
+    it('cannot edit a published policy (wrong auth)', done => {
       const policy = clone(POLICY_JSON)
       policy.name = 'an even shinier new name'
       request
@@ -306,12 +306,12 @@ describe('Tests app', () => {
         .set('Authorization', EVENTS_READ_SCOPE)
         .send(policy)
         .expect(403)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
 
-    it('cannot edit a published policy', (done) => {
+    it('cannot edit a published policy', done => {
       const policy = clone(POLICY_JSON)
       policy.name = 'an even shinier new name'
       request
@@ -325,27 +325,27 @@ describe('Tests app', () => {
         })
     })
 
-    it('cannot delete an unpublished policy (no auth)', (done) => {
+    it('cannot delete an unpublished policy (no auth)', done => {
       request
         .delete(`/policies/${POLICY2_UUID}`)
         .set('Authorization', EMPTY_SCOPE)
         .expect(403)
-        .end(async (err) => {
+        .end(async err => {
           done(err)
         })
     })
 
-    it('cannot delete an unpublished policy (wrong auth)', (done) => {
+    it('cannot delete an unpublished policy (wrong auth)', done => {
       request
         .delete(`/policies/${POLICY2_UUID}`)
         .set('Authorization', EVENTS_READ_SCOPE)
         .expect(403)
-        .end(async (err) => {
+        .end(async err => {
           done(err)
         })
     })
 
-    it('can delete an unpublished policy', (done) => {
+    it('can delete an unpublished policy', done => {
       request
         .delete(`/policies/${POLICY2_UUID}`)
         .set('Authorization', POLICIES_DELETE_SCOPE)
@@ -359,12 +359,12 @@ describe('Tests app', () => {
         })
     })
 
-    it('cannot delete a published policy', (done) => {
+    it('cannot delete a published policy', done => {
       request
         .delete(`/policies/${POLICY_UUID}`)
         .set('Authorization', POLICIES_DELETE_SCOPE)
         .expect(404)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
@@ -409,27 +409,27 @@ describe('Tests app', () => {
       test.assert(result.policy_metadata.some_arbitrary_thing === 'beep')
     })
 
-    it('cannot GET policy metadata (no auth)', (done) => {
+    it('cannot GET policy metadata (no auth)', done => {
       request
         .get(`/policies/${POLICY_UUID}/meta`)
         .set('Authorization', EMPTY_SCOPE)
         .expect(403)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
 
-    it('cannot GET policy metadata (wrong auth)', (done) => {
+    it('cannot GET policy metadata (wrong auth)', done => {
       request
         .get(`/policies/${POLICY_UUID}/meta`)
         .set('Authorization', EVENTS_READ_SCOPE)
         .expect(403)
-        .end((err) => {
+        .end(err => {
           done(err)
         })
     })
 
-    it('verifies GETing policy metadata when given a policy_id', (done) => {
+    it('verifies GETing policy metadata when given a policy_id', done => {
       request
         .get(`/policies/${POLICY_UUID}/meta`)
         .set('Authorization', POLICIES_READ_SCOPE)
@@ -441,7 +441,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('verifies cannot GET non-existent policy metadata', (done) => {
+    it('verifies cannot GET non-existent policy metadata', done => {
       request
         .get(`/policies/beepbapboop/meta`)
         .set('Authorization', POLICIES_READ_SCOPE)
@@ -467,27 +467,27 @@ describe('Tests app', () => {
       test.value(result).hasHeader('content-type', APP_JSON)
     })
 
-    it('cannot GET a single policy (no auth)', (done) => {
+    it('cannot GET a single policy (no auth)', done => {
       request
         .get(`/policies/${POLICY_UUID}`)
         .set('Authorization', EMPTY_SCOPE)
         .expect(403)
-        .end(async (err) => {
+        .end(async err => {
           done(err)
         })
     })
 
-    it('cannot GET a single policy (wrong auth)', (done) => {
+    it('cannot GET a single policy (wrong auth)', done => {
       request
         .get(`/policies/${POLICY_UUID}`)
         .set('Authorization', EVENTS_READ_SCOPE)
         .expect(403)
-        .end(async (err) => {
+        .end(async err => {
           done(err)
         })
     })
 
-    it('can GET a single policy', (done) => {
+    it('can GET a single policy', done => {
       request
         .get(`/policies/${POLICY_UUID}`)
         .set('Authorization', POLICIES_READ_SCOPE)
@@ -499,12 +499,12 @@ describe('Tests app', () => {
         })
     })
 
-    it('cannot GET a single nonexistent policy', (done) => {
+    it('cannot GET a single nonexistent policy', done => {
       request
         .get(`/policies/544d36c4-29f5-4088-a52f-7c9a64d5874c`)
         .set('Authorization', POLICIES_READ_SCOPE)
         .expect(404)
-        .end(async (err) => {
+        .end(async err => {
           done(err)
         })
     })
@@ -545,17 +545,17 @@ describe('Tests app', () => {
     //     })
     // })
 
-    it('throws an exception if both get_unpublished and get_published are submitted', (done) => {
+    it('throws an exception if both get_unpublished and get_published are submitted', done => {
       request
         .get(`/policies?get_unpublished=true&get_published=true`)
         .set('Authorization', POLICIES_READ_SCOPE)
         .expect(400)
-        .end(async (policies_err) => {
+        .end(async policies_err => {
           done(policies_err)
         })
     })
 
-    it('can GET all unpublished policies', (done) => {
+    it('can GET all unpublished policies', done => {
       request
         .get(`/policies?get_unpublished=true`)
         .set('Authorization', POLICIES_READ_SCOPE)
@@ -566,7 +566,7 @@ describe('Tests app', () => {
         })
     })
 
-    it('generates a UUID for a policy that has no UUID', (done) => {
+    it('generates a UUID for a policy that has no UUID', done => {
       request
         .post(`/policies`)
         .set('Authorization', POLICIES_WRITE_SCOPE)

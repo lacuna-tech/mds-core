@@ -406,7 +406,7 @@ function capitalizeFirst(s: string): string {
 }
 
 function nullKeys<T>(obj: { [key: string]: T }): string[] {
-  return Object.keys(obj).filter((key) => obj[key] === null || obj[key] === undefined)
+  return Object.keys(obj).filter(key => obj[key] === null || obj[key] === undefined)
 }
 
 function stripNulls<T extends {}>(obj: { [x: string]: unknown }): Partial<T> {
@@ -536,7 +536,7 @@ function isInStatesOrEvents(rule: Rule, event: VehicleEvent): boolean {
 function routeDistance(coordinates: { lat: number; lng: number }[]): number {
   const R = 6371000 // Earth's mean radius in meters
   return (coordinates || [])
-    .map((coordinate) => [rad(coordinate.lat), rad(coordinate.lng)])
+    .map(coordinate => [rad(coordinate.lat), rad(coordinate.lng)])
     .reduce((distance, point, index, points) => {
       if (index > 0) {
         const [lat1, lng1] = points[index - 1]
@@ -572,8 +572,8 @@ function filterEmptyHelper<T>(warnOnEmpty?: boolean) {
 function findServiceAreas(lng: number, lat: number): { id: string; type: string }[] {
   const turfPT = turfPoint([lng, lat])
   return Object.keys(serviceAreaMap)
-    .filter((i) => turf(turfPT, serviceAreaMap[i].area))
-    .map((key) => {
+    .filter(i => turf(turfPT, serviceAreaMap[i].area))
+    .map(key => {
       return { id: key, type: 'district' }
     })
 }

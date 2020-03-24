@@ -70,7 +70,7 @@ export const RequestLoggingMiddleware = (): express.RequestHandler =>
         return res.statusCode < Number(API_REQUEST_LOG_LEVEL)
       },
       // Use logger, but remove extra line feed added by morgan stream option
-      stream: { write: (msg) => logger.info(msg.slice(0, -1)) }
+      stream: { write: msg => logger.info(msg.slice(0, -1)) }
     }
   )
 
@@ -115,16 +115,16 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
   ) => {
     // Parse the Accept header into a list of values separated by commas
     const { accept: header } = req.headers
-    const values = header ? header.split(',').map((value) => value.trim()) : []
+    const values = header ? header.split(',').map(value => value.trim()) : []
 
     // Parse the version and q properties from all values matching the specified mime type
     const accepted = values.reduce<{ version: string; q: number }[] | null>((accept, value) => {
-      const [mime, ...properties] = value.split(';').map((property) => property.trim())
+      const [mime, ...properties] = value.split(';').map(property => property.trim())
       return mime === mimeType
         ? (accept ?? []).concat({
             ...properties.reduce<{ version: string; q: number }>(
               (info, property) => {
-                const [key, val] = property.split('=').map((keyvalue) => keyvalue.trim())
+                const [key, val] = property.split('=').map(keyvalue => keyvalue.trim())
                 return {
                   ...info,
                   version: key === 'version' ? val : info.version,
@@ -144,7 +144,7 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
 
     // Determine if any of the requested versions are supported
     const supported = accepted
-      .map((info) => ({
+      .map(info => ({
         ...info,
         latest: versions.reduce<TVersion | undefined>((latest, version) => {
           if (MinorVersion(info.version) === MinorVersion(version)) {
@@ -156,7 +156,7 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
           return latest
         }, undefined)
       }))
-      .filter((info) => info.latest !== undefined)
+      .filter(info => info.latest !== undefined)
 
     // Get supported version with highest q value
     if (supported.length > 0) {

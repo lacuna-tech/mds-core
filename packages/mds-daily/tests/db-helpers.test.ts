@@ -15,7 +15,7 @@ import {
 describe('DB helpers for API', () => {
   describe('getTripCountsSince()', () => {
     it('computes correctly', async () => {
-      const fakeRows: ReturnType<typeof db['getTripCountsPerProviderSince']> = new Promise((resolve) => {
+      const fakeRows: ReturnType<typeof db['getTripCountsPerProviderSince']> = new Promise(resolve => {
         resolve([
           {
             provider_id: 'fake-provider-id',
@@ -53,7 +53,7 @@ describe('DB helpers for API', () => {
 
   describe('getEventCountsPerProviderSince()', () => {
     it('computes correctly', async () => {
-      const fakeRows: ReturnType<typeof db['getEventCountsPerProviderSince']> = new Promise((resolve) => {
+      const fakeRows: ReturnType<typeof db['getEventCountsPerProviderSince']> = new Promise(resolve => {
         resolve([
           {
             provider_id: 'fake-provider-id',
@@ -102,7 +102,7 @@ describe('DB helpers for API', () => {
 
   describe('getTelemetryCountsPerProviderSince()', () => {
     it('computes correctly', async () => {
-      const fakeRows: ReturnType<typeof db['getTelemetryCountsPerProviderSince']> = new Promise((resolve) => {
+      const fakeRows: ReturnType<typeof db['getTelemetryCountsPerProviderSince']> = new Promise(resolve => {
         resolve([
           {
             provider_id: 'fake-provider-id',
@@ -146,16 +146,14 @@ describe('DB helpers for API', () => {
 
   describe('getNumVehiclesRegisteredLast24Hours()', () => {
     it('computes correctly', async () => {
-      const fakeRows: ReturnType<typeof db['getNumVehiclesRegisteredLast24HoursByProvider']> = new Promise(
-        (resolve) => {
-          resolve([
-            {
-              provider_id: 'fake-provider-id',
-              count: 10
-            }
-          ])
-        }
-      )
+      const fakeRows: ReturnType<typeof db['getNumVehiclesRegisteredLast24HoursByProvider']> = new Promise(resolve => {
+        resolve([
+          {
+            provider_id: 'fake-provider-id',
+            count: 10
+          }
+        ])
+      })
       Sinon.replace(db, 'getNumVehiclesRegisteredLast24HoursByProvider', Sinon.fake.returns(fakeRows))
       const provider_info = {}
       await getNumVehiclesRegisteredLast24Hours({
@@ -190,7 +188,7 @@ describe('DB helpers for API', () => {
 
   describe('getNumEventsLast24Hours()', () => {
     it('computes correctly', async () => {
-      const fakeRows: ReturnType<typeof db['getNumEventsLast24HoursByProvider']> = new Promise((resolve) => {
+      const fakeRows: ReturnType<typeof db['getNumEventsLast24HoursByProvider']> = new Promise(resolve => {
         resolve([
           {
             provider_id: 'fake-provider-id',
@@ -232,7 +230,7 @@ describe('DB helpers for API', () => {
 
   describe('getConformanceLast24Hours()', () => {
     it('computes correctly', async () => {
-      const fakeRows: ReturnType<typeof db['getEventsLast24HoursPerProvider']> = new Promise((resolve) => {
+      const fakeRows: ReturnType<typeof db['getEventsLast24HoursPerProvider']> = new Promise(resolve => {
         resolve([
           {
             provider_id: 'fake-provider-id',

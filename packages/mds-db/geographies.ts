@@ -51,7 +51,7 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
     }
 
     if (geography_ids) {
-      const SQLified_geography_ids = geography_ids.map((id) => {
+      const SQLified_geography_ids = geography_ids.map(id => {
         return `'${id}'`
       })
       conditions.push(`geography_id in (${SQLified_geography_ids.join(',')})`)
@@ -66,7 +66,7 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
     // TODO add 'count'
     const { rows } = await client.query(sql, values)
 
-    return rows.map((row) => {
+    return rows.map(row => {
       const { id, ...geography } = row
       return geography
     })
@@ -78,7 +78,7 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
 
 export async function readGeographySummaries(params?: ReadGeographiesParams): Promise<GeographySummary[]> {
   const geographies = await readGeographies(params)
-  return geographies.map((geography) => {
+  return geographies.map(geography => {
     const { geography_json, ...geographySummary } = geography
     return geographySummary
   })
@@ -86,7 +86,7 @@ export async function readGeographySummaries(params?: ReadGeographiesParams): Pr
 
 export async function readBulkGeographyMetadata(params?: ReadGeographiesParams): Promise<GeographyMetadata[]> {
   const geographies = await readGeographies(params)
-  const geography_ids = geographies.map((geography) => `'${geography.geography_id}'`)
+  const geography_ids = geographies.map(geography => `'${geography.geography_id}'`)
 
   if (geography_ids.length === 0) {
     return []
@@ -96,7 +96,7 @@ export async function readBulkGeographyMetadata(params?: ReadGeographiesParams):
 
   const client = await getReadOnlyClient()
   const res = await client.query(sql)
-  return res.rows.map((row) => {
+  return res.rows.map(row => {
     return { geography_id: row.geography_id, geography_metadata: row.geography_metadata }
   })
 }
@@ -116,7 +116,7 @@ export async function writeGeography(geography: Geography): Promise<Recorded<Geo
 export async function isGeographyPublished(geography_id: UUID) {
   const client = await getReadOnlyClient()
   const sql = `SELECT * FROM ${schema.TABLE.geographies} WHERE geography_id='${geography_id}'`
-  const result = await client.query(sql).catch((err) => {
+  const result = await client.query(sql).catch(err => {
     throw err
   })
   if (result.rows.length === 0) {

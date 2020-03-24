@@ -129,7 +129,7 @@ function api(app: express.Express): express.Express {
    */
   app.get(
     pathsFor('/admin/vehicle_ids'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     readAllVehicleIds
   )
 
@@ -137,27 +137,27 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/admin/cache/info'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getCacheInfo
   )
 
   // wipe a device -- sandbox or admin use only
   app.get(
     pathsFor('/admin/wipe/:device_id'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     validateDeviceId,
     wipeDevice
   )
 
   app.get(
     pathsFor('/admin/cache/refresh'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     refreshCache
   )
 
   app.post(
     pathsFor('/stops'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     registerStop
   )
 

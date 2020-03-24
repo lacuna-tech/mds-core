@@ -34,13 +34,13 @@ import { getPolicies } from './request-handlers'
 function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/policies'),
-    checkAccess((scopes) => scopes.includes('policies:read')),
+    checkAccess(scopes => scopes.includes('policies:read')),
     getPolicies
   )
 
   app.post(
     pathsFor('/policies'),
-    checkAccess((scopes) => scopes.includes('policies:write')),
+    checkAccess(scopes => scopes.includes('policies:write')),
     async (req, res) => {
       const policy = { policy_id: uuid(), ...req.body }
 
@@ -68,7 +68,7 @@ function api(app: express.Express): express.Express {
 
   app.post(
     pathsFor('/policies/:policy_id/publish'),
-    checkAccess((scopes) => scopes.includes('policies:publish')),
+    checkAccess(scopes => scopes.includes('policies:publish')),
     async (req, res) => {
       const { policy_id } = req.params
       try {
@@ -97,7 +97,7 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/policies/:policy_id'),
-    checkAccess((scopes) => scopes.includes('policies:write')),
+    checkAccess(scopes => scopes.includes('policies:write')),
     async (req, res) => {
       const policy = req.body
 
@@ -132,7 +132,7 @@ function api(app: express.Express): express.Express {
 
   app.delete(
     pathsFor('/policies/:policy_id'),
-    checkAccess((scopes) => scopes.includes('policies:delete')),
+    checkAccess(scopes => scopes.includes('policies:delete')),
     async (req, res) => {
       const { policy_id } = req.params
       try {
@@ -149,7 +149,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/policies/meta/'),
-    checkAccess((scopes) => scopes.includes('policies:read')),
+    checkAccess(scopes => scopes.includes('policies:read')),
     async (req, res) => {
       const { get_published = null, get_unpublished = null } = req.query
       const params = { get_published, get_unpublished }
@@ -182,7 +182,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/policies/:policy_id'),
-    checkAccess((scopes) => scopes.includes('policies:read')),
+    checkAccess(scopes => scopes.includes('policies:read')),
     async (req, res) => {
       const { policy_id } = req.params
       try {
@@ -201,7 +201,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/policies/:policy_id/meta'),
-    checkAccess((scopes) => scopes.includes('policies:read')),
+    checkAccess(scopes => scopes.includes('policies:read')),
     async (req, res) => {
       const { policy_id } = req.params
       try {
@@ -216,7 +216,7 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/policies/:policy_id/meta'),
-    checkAccess((scopes) => scopes.includes('policies:write')),
+    checkAccess(scopes => scopes.includes('policies:write')),
     async (req, res) => {
       const policy_metadata = req.body
       try {

@@ -51,7 +51,7 @@ export const refreshCache = async (req: AgencyApiRequest, res: AgencyApiResponse
     const devices = rows.slice(skip, take + skip)
     await log.info('device_ids', devices)
 
-    const promises = devices.map((device) => refresh(device.device_id, device.provider_id))
+    const promises = devices.map(device => refresh(device.device_id, device.provider_id))
     await Promise.all(promises)
     res.status(200).send({
       result: `success for ${devices.length} devices`

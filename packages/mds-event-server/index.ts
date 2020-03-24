@@ -93,7 +93,7 @@ export const initializeStanSubscriber = async <TData, TResult>({
 
       /* Subscribe to all available types. Down the road, this should probably be a parameter passed in to the parent function. */
       return Promise.all(
-        SUBSCRIPTION_TYPES.map((type) => {
+        SUBSCRIPTION_TYPES.map(type => {
           return natsSubscriber({ nats, processor, TENANT_ID, type })
         })
       )
@@ -104,14 +104,14 @@ export const initializeStanSubscriber = async <TData, TResult>({
 
       /* Subscribe to all available types. Down the road, this should probably be a parameter passed in to the parent function. */
       return Promise.all(
-        SUBSCRIPTION_TYPES.map((type) => {
+        SUBSCRIPTION_TYPES.map(type => {
           return natsSubscriber({ nats, processor, TENANT_ID, type })
         })
       )
     })
 
     /* istanbul ignore next */
-    nats.on('error', async (err) => {
+    nats.on('error', async err => {
       await log.error(err)
     })
   } catch (err) {

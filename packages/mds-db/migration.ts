@@ -87,24 +87,24 @@ async function createTables(client: MDSPostgresClient) {
     await log.warn('existing', JSON.stringify(existing.rows), 'missing', JSON.stringify(missing))
     const create = missing
       .map(
-        (table) =>
+        table =>
           `CREATE TABLE ${table} (${schema.TABLE_COLUMNS[table]
-            .map((column) => `${column} ${schema.COLUMN_TYPE[column]}`)
+            .map(column => `${column} ${schema.COLUMN_TYPE[column]}`)
             .join(', ')}, PRIMARY KEY (${csv(schema.TABLE_KEY[table])}));`
       )
       .join('\n')
     await log.warn(create)
     await exec(create)
     await log.info('postgres create table suceeded')
-    await Promise.all(missing.map((table) => addIndex(client, table, schema.COLUMN.recorded)))
-    await Promise.all(missing.map((table) => addIndex(client, table, schema.COLUMN.id, { unique: true })))
+    await Promise.all(missing.map(table => addIndex(client, table, schema.COLUMN.recorded)))
+    await Promise.all(missing.map(table => addIndex(client, table, schema.COLUMN.id, { unique: true })))
     await addForeignKey(client, schema.TABLE.policy_metadata, schema.TABLE.policies, schema.COLUMN.policy_id)
     await addForeignKey(client, schema.TABLE.geography_metadata, schema.TABLE.geographies, schema.COLUMN.geography_id)
     // If the migrations table is being created then this is a new installation and all known migrations can be marked as run
     if (create.includes(schema.TABLE.migrations)) {
       await exec(
         `INSERT INTO ${schema.TABLE.migrations} (${cols_sql(schema.TABLE_COLUMNS.migrations)}) VALUES ${MIGRATIONS.map(
-          (migration) => `('${migration}', ${now()})`
+          migration => `('${migration}', ${now()})`
         ).join(', ')}`
       )
     }

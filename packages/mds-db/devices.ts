@@ -20,7 +20,7 @@ export async function readDevicesByVehicleId(
   const sql = `SELECT * FROM ${schema.TABLE.devices} WHERE provider_id=${vals.add(
     provider_id
   )} AND translate(vehicle_id, translate(lower(vehicle_id), 'abcdefghijklmnopqrstuvwxyz1234567890', ''), '') ILIKE ANY(ARRAY[${vehicle_ids
-    .map((id) => vals.add(id))
+    .map(id => vals.add(id))
     .join(', ')}]) ORDER BY "id" DESC`
 
   const values = vals.values()
@@ -86,7 +86,7 @@ export async function readDeviceList(device_ids: UUID[]): Promise<Recorded<Devic
   }
   const client = await getReadOnlyClient()
   const vals = new SqlVals()
-  const sql = `SELECT * FROM ${schema.TABLE.devices} WHERE device_id IN (${device_ids.map((device_id) =>
+  const sql = `SELECT * FROM ${schema.TABLE.devices} WHERE device_id IN (${device_ids.map(device_id =>
     vals.add(device_id)
   )})`
   const values = vals.values()

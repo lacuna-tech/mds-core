@@ -37,13 +37,13 @@ before(() => {
 
 describe('Tests MDS-Web-Sockets', () => {
   describe('Tests Authentication', () => {
-    it('Tests admin:all scoped tokens can authenticate successfully', (done) => {
+    it('Tests admin:all scoped tokens can authenticate successfully', done => {
       const client = new WebSocket('ws://localhost:4009')
       client.onopen = () => {
         client.send(`AUTH%${ADMIN_AUTH}`)
       }
 
-      client.on('message', (data) => {
+      client.on('message', data => {
         if (data === 'AUTH%{"status":"Success"}') {
           client.close()
           return done()
@@ -53,7 +53,7 @@ describe('Tests MDS-Web-Sockets', () => {
       })
     })
 
-    it('Tests invalid audience tokens cannot authenticate successfully', (done) => {
+    it('Tests invalid audience tokens cannot authenticate successfully', done => {
       const badToken = jwt.sign({ provider_id: MOCHA_PROVIDER_ID, scope: PROVIDER_SCOPES }, RSA_PRIVATE_KEY, {
         algorithm: 'RS256',
         audience: 'https://foo.com',
@@ -67,7 +67,7 @@ describe('Tests MDS-Web-Sockets', () => {
         client.send(`AUTH%${BAD_AUTH}`)
       }
 
-      client.on('message', (data) => {
+      client.on('message', data => {
         if (data === '{"err":{"name":"AuthorizationError"}}') {
           client.close()
           return done()

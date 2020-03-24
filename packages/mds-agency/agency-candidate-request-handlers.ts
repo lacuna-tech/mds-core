@@ -20,7 +20,7 @@ export const readAllVehicleIds = async (req: AgencyApiRequest, res: AgencyApiRes
   const items = await db.readDeviceIds(query_provider_id)
   const data: { [s: string]: string[] } = {}
   const summary: { [s: string]: number } = {}
-  items.map((item) => {
+  items.map(item => {
     const { device_id, provider_id } = item
     if (data[provider_id]) {
       data[provider_id].push(device_id)

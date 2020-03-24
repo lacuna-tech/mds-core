@@ -91,14 +91,14 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/admin/vehicle_counts'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getVehicleCounts
   )
 
   // read all the latest events out of the cache
   app.get(
     pathsFor('/admin/events'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     async (req: DailyApiRequest, res: DailyApiResponse) => {
       const start = now()
       const events = await cache.readAllEvents()
@@ -113,14 +113,14 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/admin/last_day_trips_by_provider'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getLastDayTripsByProvider
   )
 
   // get raw trip data for analysis
   app.get(
     pathsFor('/admin/raw_trip_data/:trip_id'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getRawTripData
   )
 
@@ -132,49 +132,49 @@ function api(app: express.Express): express.Express {
   // This function is ludicrously long as it is.
   app.get(
     pathsFor('/admin/last_day_stats_by_provider'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getLastDayStatsByProvider
   )
 
   app.get(
     pathsFor('/admin/time_since_last_event'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getTimeSinceLastEventHandler
   )
 
   app.get(
     pathsFor('/admin/num_vehicles_registered_last_24_hours'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getNumVehiclesRegisteredLast24HoursHandler
   )
 
   app.get(
     pathsFor('/admin/num_event_last_24_hours'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getNumEventsLast24HoursHandler
   )
 
   app.get(
     pathsFor('/admin/trip_counts_since'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getTripCountsSinceHandler
   )
 
   app.get(
     pathsFor('/admin/event_counts_per_provider_since'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getEventCountsPerProviderSinceHandler
   )
 
   app.get(
     pathsFor('/admin/telemetry_counts_per_provider_since'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getTelemetryCountsPerProviderSinceHandler
   )
 
   app.get(
     pathsFor('/admin/conformance_last_24_hours'),
-    checkAccess((scopes) => scopes.includes('admin:all')),
+    checkAccess(scopes => scopes.includes('admin:all')),
     getConformanceLast24HoursHandler
   )
 

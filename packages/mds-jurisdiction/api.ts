@@ -31,26 +31,26 @@ export const api = (app: express.Express): express.Express =>
     .use(JurisdictionApiVersionMiddleware)
     .get(
       pathsFor('/jurisdictions'),
-      checkAccess((scopes) => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')),
+      checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')),
       GetAllJurisdictionsHandler
     )
     .get(
       pathsFor('/jurisdictions/:jurisdiction_id'),
-      checkAccess((scopes) => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')),
+      checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')),
       GetOneJurisdictionHandler
     )
     .post(
       pathsFor('/jurisdictions'),
-      checkAccess((scopes) => scopes.includes('jurisdictions:write')),
+      checkAccess(scopes => scopes.includes('jurisdictions:write')),
       CreateJurisdictionHandler
     )
     .put(
       pathsFor('/jurisdictions/:jurisdiction_id'),
-      checkAccess((scopes) => scopes.includes('jurisdictions:write')),
+      checkAccess(scopes => scopes.includes('jurisdictions:write')),
       UpdateJurisdictionHandler
     )
     .delete(
       pathsFor('/jurisdictions/:jurisdiction_id'),
-      checkAccess((scopes) => scopes.includes('jurisdictions:write')),
+      checkAccess(scopes => scopes.includes('jurisdictions:write')),
       DeleteJurisdictionHandler
     )

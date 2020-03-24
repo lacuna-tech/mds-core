@@ -33,7 +33,7 @@ async function getClient() {
       await sendAuth()
     }
 
-    connection.onerror = async (err) => {
+    connection.onerror = async err => {
       return log.error(err)
     }
 
@@ -54,7 +54,7 @@ async function sendPush(entity: ENTITY_TYPE, data: VehicleEvent | Telemetry) {
 }
 
 export function writeTelemetry(telemetries: Telemetry[]) {
-  return telemetries.map((telemetry) => sendPush('TELEMETRIES', telemetry))
+  return telemetries.map(telemetry => sendPush('TELEMETRIES', telemetry))
 }
 
 export function writeEvent(event: VehicleEvent) {

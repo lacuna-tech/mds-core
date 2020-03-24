@@ -91,10 +91,10 @@ async function main(): Promise<(ComplianceResponse | undefined)[]> {
 main()
   .then(
     /* eslint-disable-next-line promise/always-return */
-    (result) => {
+    result => {
       log.info(JSON.stringify(result, undefined, 2))
     },
-    (failure) => {
+    failure => {
       // TODO use payload response type instead of peering into body
       const reason = failure.slice && failure.slice(0, 2) === '{"' ? JSON.parse(failure) : failure
       if (reason.error_description) {
@@ -107,6 +107,6 @@ main()
     }
   )
   /* eslint-disable-next-line promise/prefer-await-to-callbacks */
-  .catch(async (err) => {
+  .catch(async err => {
     await log.error('exception:', err.stack)
   })

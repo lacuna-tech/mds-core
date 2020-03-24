@@ -92,7 +92,7 @@ function getMatchedVehicleFromDeviceAndEvent(device: Device, event: VehicleEvent
 }
 
 function getViolationsArray(map: { [key: string]: MatchedVehiclePlusRule }) {
-  return Object.keys(map).map((device_id) => {
+  return Object.keys(map).map(device_id => {
     const { rule_id } = map[device_id]
     return { device_id, rule_id }
   })
@@ -360,7 +360,7 @@ function processPolicy(
               : []
             vehiclesToFilter.push(...speedingVehicles)
 
-            speedingVehicles.forEach((vehicle) => {
+            speedingVehicles.forEach(vehicle => {
               speedingVehiclesMap[vehicle.device_id] = { ...vehicle, ...{ rule_id: rule.rule_id } }
             })
           }

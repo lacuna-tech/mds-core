@@ -75,7 +75,7 @@ async function seedDB() {
   )
   const telemetry: Telemetry[] = []
   const events: VehicleEvent[] = deregisterEvents.concat(tripEndEvent)
-  events.map((event) => {
+  events.map(event => {
     if (event.telemetry) {
       telemetry.push(event.telemetry)
     }
@@ -439,10 +439,10 @@ if (pg_info.database) {
 
       it('understands the summary parameter', async () => {
         const geographiesWithoutGeoJSON = await MDSDBPostgres.readGeographies()
-        geographiesWithoutGeoJSON.forEach((geography) => assert(geography.geography_json))
+        geographiesWithoutGeoJSON.forEach(geography => assert(geography.geography_json))
         /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
         const geographiesWithGeoJSON = (await MDSDBPostgres.readGeographySummaries()) as any[]
-        geographiesWithGeoJSON.forEach((geography) => assert.deepEqual(!!geography.geography_json, false))
+        geographiesWithGeoJSON.forEach(geography => assert.deepEqual(!!geography.geography_json, false))
       })
     })
 

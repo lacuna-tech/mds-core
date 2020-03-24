@@ -66,7 +66,7 @@ export const client = {
     properties: string[],
     { partial = false }: Partial<GetSettingsOptions> = {}
   ): Promise<GetSettingsResult<TSettings>> => {
-    const settings = await Promise.all(properties.map((property) => readJsonFile<TSettings>(property)))
+    const settings = await Promise.all(properties.map(property => readJsonFile<TSettings>(property)))
     const result = settings.reduce<{ found: string[]; missing: string[] }>(
       (info, [error], index) =>
         error

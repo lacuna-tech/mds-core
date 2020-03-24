@@ -26,16 +26,16 @@ export const api = (app: express.Express): express.Express =>
     .use(NativeApiClaimsMiddleware)
     .get(
       pathsFor('/events/:cursor?'),
-      checkAccess((scopes) => scopes.includes('events:read')), // TODO: events:read:provider with filtering
+      checkAccess(scopes => scopes.includes('events:read')), // TODO: events:read:provider with filtering
       GetEventsHandler
     )
     .get(
       pathsFor('/vehicles/:device_id'),
-      checkAccess((scopes) => scopes.includes('vehicles:read')), // TODO: vehicles:read:provider with filtering
+      checkAccess(scopes => scopes.includes('vehicles:read')), // TODO: vehicles:read:provider with filtering
       GetVehiclesHandler
     )
     .get(
       pathsFor('/providers'),
-      checkAccess((scopes) => scopes.includes('providers:read')),
+      checkAccess(scopes => scopes.includes('providers:read')),
       GetProvidersHandler
     )
