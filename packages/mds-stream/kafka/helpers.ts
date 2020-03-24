@@ -1,5 +1,6 @@
 import { Kafka, Producer, EachMessagePayload, Consumer } from 'kafkajs'
 import log from '@mds-core/mds-logger'
+import { Nullable } from '@mds-core/mds-types'
 
 const {
   env: { KAFKA_HOST = 'localhost:9092' }
@@ -18,6 +19,7 @@ export const createStreamProducer = async ({ clientId = 'writer' }: Partial<Stre
   } catch (err) {
     await log.error(err)
   }
+  return null
 }
 
 export interface StreamConsumerOptions {
@@ -40,19 +42,20 @@ export const createStreamConsumer = async (
   } catch (err) {
     await log.error(err)
   }
+  return null
 }
 
-export const isProducerReady = (stream: Producer | undefined): stream is Producer => stream !== undefined
+export const isProducerReady = (stream: Nullable<Producer>): stream is Producer => stream !== null
 
-export const isConsumerReady = (stream: Consumer | undefined): stream is Consumer => stream !== undefined
+export const isConsumerReady = (stream: Nullable<Consumer>): stream is Consumer => stream !== null
 
-export const disconnectProducer = async (producer: Producer | undefined) => {
+export const disconnectProducer = async (producer: Nullable<Producer>) => {
   if (isProducerReady(producer)) {
     await producer.disconnect()
   }
 }
 
-export const disconnectConsumer = async (consumer: Consumer | undefined) => {
+export const disconnectConsumer = async (consumer: Nullable<Consumer>) => {
   if (isConsumerReady(consumer)) {
     await consumer.disconnect()
   }

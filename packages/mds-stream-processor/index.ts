@@ -1,8 +1,8 @@
 import stream from '@mds-core/mds-stream'
 import logger from '@mds-core/mds-logger'
 import { StreamConsumer } from '@mds-core/mds-stream/stream-interface'
-import { Nullable } from '@mds-core/mds-orm/types'
 import { StreamConsumerOptions } from '@mds-core/mds-stream/kafka/helpers'
+import { Nullable } from '@mds-core/mds-types'
 
 export const StreamProcessor = <T>(
   topic: string,

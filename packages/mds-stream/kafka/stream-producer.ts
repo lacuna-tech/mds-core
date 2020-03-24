@@ -1,10 +1,11 @@
 import { Producer } from 'kafkajs'
 import { isArray } from 'util'
+import { Nullable } from '@mds-core/mds-types'
 import { StreamProducer } from '../stream-interface'
 import { createStreamProducer, isProducerReady, disconnectProducer } from './helpers'
 
 export const KafkaStreamProducer = (): StreamProducer => {
-  let producer: Producer | undefined
+  let producer: Nullable<Producer> = null
   return {
     initialize: async () => {
       if (!producer) {
@@ -23,6 +24,9 @@ export const KafkaStreamProducer = (): StreamProducer => {
         })
       }
     },
-    shutdown: async () => disconnectProducer(producer)
+    shutdown: async () => {
+      await disconnectProducer(producer)
+      producer = null
+    }
   }
 }

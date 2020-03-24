@@ -1,4 +1,5 @@
 import { EachMessagePayload, Consumer } from 'kafkajs'
+import { Nullable } from '@mds-core/mds-types'
 import { StreamConsumer } from '../stream-interface'
 import { disconnectConsumer, createStreamConsumer, StreamConsumerOptions } from './helpers'
 
@@ -7,13 +8,16 @@ export const KafkaStreamConsumer = (
   eachMessage: (payload: EachMessagePayload) => Promise<void>,
   options?: Partial<StreamConsumerOptions>
 ): StreamConsumer => {
-  let consumer: Consumer | undefined
+  let consumer: Nullable<Consumer> = null
   return {
     initialize: async () => {
       if (!consumer) {
         consumer = await createStreamConsumer(topic, eachMessage, options)
       }
     },
-    shutdown: async () => disconnectConsumer(consumer)
+    shutdown: async () => {
+      await disconnectConsumer(consumer)
+      consumer = null
+    }
   }
 }
