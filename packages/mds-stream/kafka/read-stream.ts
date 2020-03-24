@@ -1,6 +1,6 @@
 import { EachMessagePayload, Consumer } from 'kafkajs'
 import { StreamReader } from '../stream-interface'
-import { killReadStream, createReadStreamWrapper } from './helpers'
+import { killConsumer, createReadStreamWrapper } from './helpers'
 
 export const KafkaStreamReader: (name: string, readCb: (data: EachMessagePayload) => Promise<void>) => StreamReader = (
   name,
@@ -11,8 +11,6 @@ export const KafkaStreamReader: (name: string, readCb: (data: EachMessagePayload
     initialize: async () => {
       if (!stream) stream = await createReadStreamWrapper(name, readCb)
     },
-    shutdown: async () => {
-      killReadStream(stream)
-    }
+    shutdown: async () => killConsumer(stream)
   }
 }

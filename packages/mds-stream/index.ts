@@ -21,7 +21,6 @@ import stan from 'node-nats-streaming'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import { v4 as uuid } from 'uuid'
-import { EachMessagePayload } from 'kafkajs'
 import {
   Stream,
   StreamItem,
@@ -166,7 +165,7 @@ async function getClient() {
 }
 
 async function initialize() {
-  AgencyKafkaStream.initialize()
+  await AgencyKafkaStream.initialize()
   if (env.SINK) {
     getBinding()
   } else {
@@ -188,7 +187,7 @@ async function shutdown() {
     await cachedClient.quit()
     cachedClient = null
   }
-  AgencyKafkaStream.shutdown()
+  await AgencyKafkaStream.shutdown()
 }
 
 async function writeStream(stream: Stream, field: string, value: unknown) {
@@ -332,11 +331,6 @@ async function health() {
   const status = await client.pingAsync('connected')
   return { using: 'redis', status }
 }
-
-KafkaStreamReader('mds.event', (data: EachMessagePayload) => {
-  console.log(data)
-  return Promise.resolve()
-}).initialize()
 
 export = {
   createStreamGroup,
