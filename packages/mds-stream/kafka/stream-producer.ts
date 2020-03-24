@@ -1,13 +1,15 @@
 import { Producer } from 'kafkajs'
 import { isArray } from 'util'
-import { StreamWriter } from '../stream-interface'
-import { createWriteStreamWrapper, isProducerReady, killProducer } from './helpers'
+import { StreamProducer } from '../stream-interface'
+import { createStreamProducer, isProducerReady, disconnectProducer } from './helpers'
 
-export const KafkaStreamWriter = (): StreamWriter => {
+export const KafkaStreamProducer = (): StreamProducer => {
   let producer: Producer | undefined
   return {
     initialize: async () => {
-      if (!producer) producer = await createWriteStreamWrapper()
+      if (!producer) {
+        producer = await createStreamProducer()
+      }
     },
     write: async <T extends {}>(topic: string, message: T[] | T) => {
       if (isProducerReady(producer)) {
@@ -21,6 +23,6 @@ export const KafkaStreamWriter = (): StreamWriter => {
         })
       }
     },
-    shutdown: async () => killProducer(producer)
+    shutdown: async () => disconnectProducer(producer)
   }
 }

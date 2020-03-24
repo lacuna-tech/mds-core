@@ -32,8 +32,8 @@ import {
 } from './types'
 import { AgencyKafkaStream } from './kafka/agency-stream-kafka'
 
-import { KafkaStreamReader } from './kafka/read-stream'
-import { KafkaStreamWriter } from './kafka/write-stream'
+import { KafkaStreamConsumer } from './kafka/stream-consumer'
+import { KafkaStreamProducer } from './kafka/stream-producer'
 
 const { env } = process
 
@@ -348,6 +348,6 @@ export = {
   writeStream,
   writeStreamBatch,
   writeTelemetry,
-  KafkaStreamReader,
-  KafkaStreamWriter
+  KafkaStreamConsumer,
+  KafkaStreamProducer
 }

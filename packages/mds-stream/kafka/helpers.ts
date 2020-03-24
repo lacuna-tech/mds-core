@@ -1,20 +1,18 @@
 import { Kafka, Producer, EachMessagePayload, Consumer } from 'kafkajs'
 import log from '@mds-core/mds-logger'
-import { v4 as uuid } from 'uuid'
 
 const {
   env: { KAFKA_HOST = 'localhost:9092' }
 } = process
 
-export const createWriteStreamWrapper = async () => {
+export interface StreamProducerOptions {
+  clientId: string
+}
+
+export const createStreamProducer = async ({ clientId = 'writer' }: Partial<StreamProducerOptions> = {}) => {
   try {
-    const kafka = new Kafka({
-      clientId: `writer-${uuid()}`,
-      brokers: [KAFKA_HOST]
-    })
-
+    const kafka = new Kafka({ clientId, brokers: [KAFKA_HOST] })
     const producer = kafka.producer()
-
     await producer.connect()
     return producer
   } catch (err) {
@@ -22,49 +20,40 @@ export const createWriteStreamWrapper = async () => {
   }
 }
 
-export const createReadStreamWrapper = async (
+export interface StreamConsumerOptions {
+  clientId: string
+  groupId: string
+}
+
+export const createStreamConsumer = async (
   topic: string,
-  readCb: (message: EachMessagePayload) => Promise<void>
+  eachMessage: (payload: EachMessagePayload) => Promise<void>,
+  { clientId = 'client', groupId = 'group' }: Partial<StreamConsumerOptions> = {}
 ) => {
   try {
-    const kafka = new Kafka({
-      clientId: `reader-${uuid()}`,
-      brokers: [KAFKA_HOST]
-    })
-
-    const consumer = kafka.consumer({ groupId: 'test-group' })
-
+    const kafka = new Kafka({ clientId, brokers: [KAFKA_HOST] })
+    const consumer = kafka.consumer({ groupId })
     await consumer.connect()
-    await consumer.subscribe({ topic, fromBeginning: true })
-
-    await consumer.run({
-      eachMessage: async msg => {
-        await readCb(msg)
-      }
-    })
-
+    await consumer.subscribe({ topic })
+    await consumer.run({ eachMessage })
     return consumer
   } catch (err) {
     await log.error(err)
   }
 }
 
-export const isProducerReady = (stream: Producer | undefined): stream is Producer => {
-  return stream !== undefined
-}
+export const isProducerReady = (stream: Producer | undefined): stream is Producer => stream !== undefined
 
-export const isConsumerReady = (stream: Consumer | undefined): stream is Consumer => {
-  return stream !== undefined
-}
+export const isConsumerReady = (stream: Consumer | undefined): stream is Consumer => stream !== undefined
 
-export const killProducer = async (stream: Producer | undefined) => {
-  if (isProducerReady(stream)) {
-    await stream.disconnect()
+export const disconnectProducer = async (producer: Producer | undefined) => {
+  if (isProducerReady(producer)) {
+    await producer.disconnect()
   }
 }
 
-export const killConsumer = async (stream: Consumer | undefined) => {
-  if (isConsumerReady(stream)) {
-    await stream.disconnect()
+export const disconnectConsumer = async (consumer: Consumer | undefined) => {
+  if (isConsumerReady(consumer)) {
+    await consumer.disconnect()
   }
 }

@@ -1,8 +1,8 @@
 import { VehicleEvent, Telemetry, Device } from '@mds-core/mds-types'
-import { AgencyStream, StreamWriter } from '../stream-interface'
-import { KafkaStreamWriter } from './write-stream'
+import { AgencyStream, StreamProducer } from '../stream-interface'
+import { KafkaStreamProducer } from './stream-producer'
 
-const producer: StreamWriter = KafkaStreamWriter()
+const producer: StreamProducer = KafkaStreamProducer()
 
 const { initialize, shutdown } = producer
 
