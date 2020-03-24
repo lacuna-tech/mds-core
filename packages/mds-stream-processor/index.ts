@@ -2,7 +2,7 @@ import stream from '@mds-core/mds-stream'
 import logger from '@mds-core/mds-logger'
 import { StreamConsumer } from '@mds-core/mds-stream/stream-interface'
 import { StreamConsumerOptions } from '@mds-core/mds-stream/kafka/helpers'
-import { Nullable } from '@mds-core/mds-types'
+import { Nullable, VehicleEvent } from '@mds-core/mds-types'
 
 export const StreamProcessor = <T>(
   topic: string,
@@ -31,11 +31,6 @@ export const StreamProcessor = <T>(
       }
     }
   }
-}
-
-interface VehicleEvent {
-  device_id: string
-  year: number
 }
 
 export const processor = StreamProcessor(
