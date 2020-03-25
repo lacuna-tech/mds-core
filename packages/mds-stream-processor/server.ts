@@ -1,4 +1,4 @@
-import { processor } from './index'
+import { processor } from './processors/mds-event-processor'
 
 // eslint-disable-next-line promise/prefer-await-to-callbacks
 processor

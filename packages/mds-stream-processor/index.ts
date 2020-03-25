@@ -1,12 +1,11 @@
 import stream from '@mds-core/mds-stream'
-import logger from '@mds-core/mds-logger'
 import { StreamConsumer } from '@mds-core/mds-stream/stream-interface'
 import { StreamConsumerOptions } from '@mds-core/mds-stream/kafka/helpers'
-import { Nullable, VehicleEvent } from '@mds-core/mds-types'
+import { Nullable } from '@mds-core/mds-types'
 
-export const StreamProcessor = <T>(
+export const StreamProcessor = <TMessage>(
   topic: string,
-  processor: (message: T) => Promise<void>,
+  processor: (message: TMessage) => Promise<void>,
   options?: Partial<StreamConsumerOptions>
 ) => {
   let consumer: Nullable<StreamConsumer> = null
@@ -16,7 +15,7 @@ export const StreamProcessor = <T>(
         consumer = stream.KafkaStreamConsumer(
           topic,
           async ({ message: { value } }) => {
-            const message: T = JSON.parse(value.toString())
+            const message: TMessage = JSON.parse(value.toString())
             await processor(message)
           },
           options
@@ -32,11 +31,3 @@ export const StreamProcessor = <T>(
     }
   }
 }
-
-export const processor = StreamProcessor(
-  'mds.event',
-  async (event: VehicleEvent) => {
-    logger.info('EVENT', event)
-  },
-  { groupId: 'event-labeler' }
-)
