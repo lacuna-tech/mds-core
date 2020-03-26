@@ -1,0 +1,27 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: es-curator
+  namespace: {{ .Release.Namespace }}
+spec:
+  schedule: {{ default "0 0 * * *" .Values.curator.schedule }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+          - name: curator
+            image: agottschalk/elasticsearch-curator:latest
+            args:
+            - --host
+            - {{ .Values.fluentbit.backend.es.host }}
+            {{- if (eq .Values.fluentbit.backend.es.scheme "https") }}
+            - --port
+            - "443"
+            - --use_ssl
+            {{- end }}
+            - delete_indices
+            - --filter_list
+            - {{ printf "{\"filtertype\":\"age\",\"source\":\"name\",\"direction\":\"older\",\"timestring\":\"%%Y.%%m.%%d\",\"unit\":\"days\",\"unit_count\":%s}" .Values.curator.keepDays }}
+            - --ignore_empty_list

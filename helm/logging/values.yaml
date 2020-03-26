@@ -1,3 +1,6 @@
+curator:
+  schedule: "0 0 * * *"
+  keepDays: "30"
 elasticsearch:
   internal: true
   persistence:
