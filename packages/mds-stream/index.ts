@@ -35,6 +35,8 @@ import { AgencyKafkaStream } from './kafka/agency-stream-kafka'
 import { KafkaStreamConsumer } from './kafka/stream-consumer'
 import { KafkaStreamProducer } from './kafka/stream-producer'
 
+import { initializeStanSubscriber } from './nats-streaming/nats'
+
 const { env } = process
 
 let nats: stan.Stan
@@ -349,5 +351,6 @@ export = {
   writeStreamBatch,
   writeTelemetry,
   KafkaStreamConsumer,
-  KafkaStreamProducer
+  KafkaStreamProducer,
+  initializeStanSubscriber
 }
