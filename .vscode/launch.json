@@ -280,7 +280,7 @@
       "env": {
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env"
       }
-    }
+    },
     {
       "type": "node",
       "request": "launch",
