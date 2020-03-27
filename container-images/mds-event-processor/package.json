@@ -1,5 +1,5 @@
 {
-  "name": "@container-images/mds-web-sockets",
+  "name": "@container-images/mds-event-processor",
   "version": "0.0.1",
   "description": "Docker Image for MDS Vehicle Event Processor",
   "main": "dist/index.js",
