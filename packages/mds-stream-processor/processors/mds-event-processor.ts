@@ -70,7 +70,7 @@ const annotateVehicleEvent: StreamTransform<VehicleEvent, AnnotatedVehicleEvent>
   return transformed
 }
 
-export const processor = StreamProcessor(
+export const VehicleEventProcessor = StreamProcessor(
   KafkaStreamSource<VehicleEvent>('mds.event', { groupId: 'mds-event-processor' }),
   annotateVehicleEvent,
   KafkaStreamSink<AnnotatedVehicleEvent>('mds.event.annotated', { clientId: 'mds-event-processor' })
