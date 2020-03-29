@@ -42,18 +42,11 @@ describe('MDS Logger', () => {
       timestamp: 1555384091559,
       recorded: 1555384091836
     }
-    logger
-      .warn(toCensor)
-      .then((val: any[]) => {
-        const [result] = val
-        const res = JSON.parse(result)
-        test.string(res.gps.lat).contains('CENSORED')
-        test.string(res.gps.lng).contains('CENSORED')
-        done()
-      })
-      .catch((err: Error) => {
-        done(err)
-      })
+    const [result] = logger.warn(toCensor)
+    const res = JSON.parse(result)
+    test.string(res.gps.lat).contains('CENSORED')
+    test.string(res.gps.lng).contains('CENSORED')
+    done()
   })
 
   it('censors logs of lat and lng info for mds-logger.error', done => {
@@ -85,17 +78,12 @@ describe('MDS Logger', () => {
         recorded: 1555384090000
       }
     ]
-    logger
-      .error(toCensor)
-      .then((vals: any[]) => {
-        const [[result1, result2]] = vals
-        test.string(result1.gps.lat).contains('CENSORED')
-        test.string(result1.gps.lng).contains('CENSORED')
-        test.string(result2.gps.lat).contains('CENSORED')
-        test.string(result2.gps.lng).contains('CENSORED')
-        done()
-      })
-      .catch(done)
+    const [[result1, result2]] = logger.error(toCensor)
+    test.string(result1.gps.lat).contains('CENSORED')
+    test.string(result1.gps.lng).contains('CENSORED')
+    test.string(result2.gps.lat).contains('CENSORED')
+    test.string(result2.gps.lng).contains('CENSORED')
+    done()
   })
 
   it('verifies conversion of [object Object] to stringified version', done => {
@@ -113,25 +101,25 @@ describe('MDS Logger', () => {
   })
 
   it('verifies parameterized log INFO works', async () => {
-    const results = await logger.log('INFO', { key1: 'key1', key2: 'key2' })
+    const results = logger.log('INFO', { key1: 'key1', key2: 'key2' })
     test.object(results).isArray()
     test.array(results).hasLength(1)
   })
 
   it('verifies parameterized log WARN works', async () => {
-    const results = await logger.log('WARN', { key1: 'key1', key2: 'key2' })
+    const results = logger.log('WARN', { key1: 'key1', key2: 'key2' })
     test.object(results).isArray()
     test.array(results).hasLength(1)
   })
 
   it('verifies parameterized log ERROR works', async () => {
-    const results = await logger.log('ERROR', { key1: 'key1', key2: 'key2' })
+    const results = logger.log('ERROR', { key1: 'key1', key2: 'key2' })
     test.object(results).isArray()
     test.array(results).hasLength(1)
   })
 
   it('verifies parameterized log ERROR with multiple parameters works', async () => {
-    const results = await logger.log('ERROR', { key1: 'key1', key2: 'key2' }, { b: 2 })
+    const results = logger.log('ERROR', { key1: 'key1', key2: 'key2' }, { b: 2 })
     test.object(results).isArray()
     test.array(results).hasLength(2)
   })
