@@ -12,7 +12,7 @@ spec:
           restartPolicy: Never
           containers:
           - name: curator
-            image: agottschalk/elasticsearch-curator:latest
+            image: {{ .Values.curator.image }}
             args:
             - --host
             - {{ .Values.fluentbit.backend.es.host }}

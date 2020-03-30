@@ -1,6 +1,7 @@
 curator:
   schedule: "0 0 * * *"
   keepDays: "30"
+  image: agottschalk/elasticsearch-curator:5.8.1-alpine
 elasticsearch:
   internal: true
   persistence:
