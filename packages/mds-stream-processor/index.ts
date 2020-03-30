@@ -3,7 +3,7 @@ import stream from '@mds-core/mds-stream'
 import { StreamConsumerOptions, StreamProducerOptions } from '@mds-core/mds-stream/kafka/helpers'
 
 export type StreamSource<TMessage> = (processor: (message: TMessage) => Promise<void>) => Promise<void>
-export type StreamTransform<TMessageIn, TMessageOut> = (message: TMessageIn) => Promise<TMessageOut>
+export type StreamTransform<TMessageIn, TMessageOut> = (message: TMessageIn) => Promise<TMessageOut | null>
 export type StreamSink<TMessage> = () => Promise<(message: TMessage) => Promise<void>>
 
 export const StreamProcessor = <TMessageIn, TMessageOut>(
@@ -15,7 +15,9 @@ export const StreamProcessor = <TMessageIn, TMessageOut>(
     const producer = await sink()
     await source(async message => {
       const transformed = await transform(message)
-      await producer(transformed)
+      if (transformed) {
+        await producer(transformed)
+      }
     })
   }
 })

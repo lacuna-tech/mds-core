@@ -9,9 +9,16 @@ import {
   VEHICLE_REASON
 } from '@mds-core/mds-types'
 import { StreamProcessor, KafkaStreamSource, KafkaStreamSink, StreamTransform } from '../index'
-import { deviceLabeler, messageLatencyLabeler, MessageLatencyLabel, DeviceLabel } from '../labelers'
+import {
+  deviceLabeler,
+  geographiesLabeler,
+  GeographiesLabel,
+  messageLatencyLabeler,
+  MessageLatencyLabel,
+  DeviceLabel
+} from '../labelers'
 
-interface AnnotatedVehicleEvent extends MessageLatencyLabel, DeviceLabel {
+interface LabeledVehicleEvent extends MessageLatencyLabel, DeviceLabel, GeographiesLabel {
   device_id: UUID
   provider_id: UUID
   event_type: VEHICLE_EVENT
@@ -28,10 +35,9 @@ interface AnnotatedVehicleEvent extends MessageLatencyLabel, DeviceLabel {
   telemetry_accuracy: Nullable<number>
   telemetry_charge: Nullable<number>
   vehicle_state: VEHICLE_STATUS
-  geographies: UUID[]
 }
 
-const annotateVehicleEvent: StreamTransform<VehicleEvent, AnnotatedVehicleEvent> = async ({
+const processVehicleEvent: StreamTransform<VehicleEvent, LabeledVehicleEvent> = async ({
   device_id,
   provider_id,
   event_type,
@@ -39,14 +45,14 @@ const annotateVehicleEvent: StreamTransform<VehicleEvent, AnnotatedVehicleEvent>
   timestamp,
   recorded,
   trip_id,
-  telemetry,
-  service_area_id
+  telemetry
 }) => {
-  const [deviceLabel, messageLatencyLabel] = await Promise.all([
+  const [deviceLabel, messageLatencyLabel, geographiesLabel] = await Promise.all([
     deviceLabeler({ device_id }),
-    messageLatencyLabeler({ timestamp, recorded })
+    messageLatencyLabeler({ timestamp, recorded }),
+    geographiesLabeler({ telemetry })
   ])
-  const transformed: AnnotatedVehicleEvent = {
+  const transformed: LabeledVehicleEvent = {
     device_id,
     provider_id,
     event_type,
@@ -63,15 +69,15 @@ const annotateVehicleEvent: StreamTransform<VehicleEvent, AnnotatedVehicleEvent>
     telemetry_accuracy: telemetry?.gps.accuracy ?? null,
     telemetry_charge: telemetry?.charge ?? null,
     vehicle_state: EVENT_STATUS_MAP[event_type],
-    geographies: service_area_id ? [service_area_id] : [],
     ...messageLatencyLabel,
-    ...deviceLabel
+    ...deviceLabel,
+    ...geographiesLabel
   }
   return transformed
 }
 
 export const VehicleEventProcessor = StreamProcessor(
   KafkaStreamSource<VehicleEvent>('mds.event', { groupId: 'mds-event-processor' }),
-  annotateVehicleEvent,
-  KafkaStreamSink<AnnotatedVehicleEvent>('mds.event.annotated', { clientId: 'mds-event-processor' })
+  processVehicleEvent,
+  KafkaStreamSink<LabeledVehicleEvent>('mds.event.annotated', { clientId: 'mds-event-processor' })
 )

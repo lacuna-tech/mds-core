@@ -1,5 +1,5 @@
 import db from '@mds-core/mds-db'
-import { UUID, VEHICLE_TYPE, PROPULSION_TYPE } from '@mds-core/mds-types'
+import { UUID, VEHICLE_TYPE, PROPULSION_TYPE, Nullable, Telemetry } from '@mds-core/mds-types'
 
 type MessageLabeler<TMessage, TLabel> = (message: TMessage) => Promise<TLabel>
 
@@ -21,3 +21,13 @@ export const messageLatencyLabeler: MessageLabeler<
   { timestamp: number; recorded: number },
   MessageLatencyLabel
 > = async ({ timestamp, recorded }) => ({ message_latency_ms: recorded - timestamp })
+
+export interface GeographiesLabel {
+  geographies: UUID[]
+}
+
+export const geographiesLabeler: MessageLabeler<{ telemetry?: Nullable<Telemetry> }, GeographiesLabel> = async ({
+  telemetry
+}) => {
+  return { geographies: [] }
+}
