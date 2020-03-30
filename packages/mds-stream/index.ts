@@ -215,7 +215,7 @@ async function writeDevice(device: Device) {
 
 async function writeEvent(event: VehicleEvent) {
   if (env.NATS) {
-    return writeNatsEvent('event', JSON.stringify(event))
+    await writeNatsEvent('event', JSON.stringify(event))
   }
   if (env.KAFKA_HOST) {
     await AgencyKafkaStream.writeEvent(event)
