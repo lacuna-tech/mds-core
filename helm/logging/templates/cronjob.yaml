@@ -23,5 +23,5 @@ spec:
             {{- end }}
             - delete_indices
             - --filter_list
-            - {{ printf "{\"filtertype\":\"age\",\"source\":\"name\",\"direction\":\"older\",\"timestring\":\"%%Y.%%m.%%d\",\"unit\":\"days\",\"unit_count\":%s}" .Values.curator.keepDays }}
+            - {{ printf "{\"filtertype\":\"age\",\"source\":\"name\",\"direction\":\"older\",\"timestring\":\"%%Y.%%m.%%d\",\"unit\":\"days\",\"unit_count\":%s}" .Values.curator.keepDays | quote }}
             - --ignore_empty_list
