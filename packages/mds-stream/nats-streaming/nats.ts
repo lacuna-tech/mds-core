@@ -1,6 +1,6 @@
 import { v4 as uuid } from 'uuid'
 import stan from 'node-nats-streaming'
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 
 export type EventProcessor<TData, TResult> = (type: string, data: TData) => Promise<TResult>
 
@@ -25,7 +25,7 @@ const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, T
     msg.ack()
   } catch (err) {
     msg.ack()
-    await log.error(err)
+    logger.error(err)
   }
 }
 
@@ -84,7 +84,7 @@ export const initializeStanSubscriber = async <TData, TResult>({
 
   try {
     nats.on('connect', () => {
-      log.info('Connected!')
+      logger.info('Connected!')
 
       /* Subscribe to all available types. Down the road, this should probably be a parameter passed in to the parent function. */
       return Promise.all(
@@ -95,7 +95,7 @@ export const initializeStanSubscriber = async <TData, TResult>({
     })
 
     nats.on('reconnect', () => {
-      log.info('Connected!')
+      logger.info('Connected!')
 
       /* Subscribe to all available types. Down the road, this should probably be a parameter passed in to the parent function. */
       return Promise.all(
@@ -107,9 +107,9 @@ export const initializeStanSubscriber = async <TData, TResult>({
 
     /* istanbul ignore next */
     nats.on('error', async err => {
-      await log.error(err)
+      logger.error(err)
     })
   } catch (err) {
-    await log.error(err)
+    logger.error(err)
   }
 }

@@ -1,5 +1,5 @@
 import { Kafka, Producer, EachMessagePayload, Consumer } from 'kafkajs'
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 import { Nullable } from '@mds-core/mds-types'
 
 const {
@@ -17,7 +17,7 @@ export const createStreamProducer = async ({ clientId = 'writer' }: Partial<Stre
     await producer.connect()
     return producer
   } catch (err) {
-    await log.error(err)
+    logger.error(err)
   }
   return null
 }
@@ -40,7 +40,7 @@ export const createStreamConsumer = async (
     await consumer.run({ eachMessage })
     return consumer
   } catch (err) {
-    await log.error(err)
+    logger.error(err)
   }
   return null
 }
