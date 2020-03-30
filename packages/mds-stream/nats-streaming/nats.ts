@@ -1,5 +1,4 @@
-import { v4 as uuid } from 'uuid'
-import stan from 'node-nats-streaming'
+import NATS from 'nats'
 import logger from '@mds-core/mds-logger'
 
 export type EventProcessor<TData, TResult> = (type: string, data: TData) => Promise<TResult>
@@ -7,7 +6,7 @@ export type EventProcessor<TData, TResult> = (type: string, data: TData) => Prom
 const SUBSCRIPTION_TYPES = ['event', 'telemetry'] as const
 type SUBSCRIPTION_TYPE = typeof SUBSCRIPTION_TYPES[number]
 
-const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, TResult>, msg: stan.Message) => {
+const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, TResult>, msg: any) => {
   const { TENANT_ID } = process.env
 
   const TENANT_REGEXP = new RegExp(`^${TENANT_ID || 'mds'}\\.`)
@@ -35,52 +34,31 @@ const natsSubscriber = async <TData, TResult>({
   TENANT_ID,
   type
 }: {
-  nats: stan.Stan
+  nats: NATS.Client
   processor: EventProcessor<TData, TResult>
   TENANT_ID: string
   type: SUBSCRIPTION_TYPE
 }) => {
-  const subscriber = nats.subscribe(`${TENANT_ID || 'mds'}.${type}`, {
-    ...nats.subscriptionOptions(),
-    manualAcks: true,
-    maxInFlight: 1
-  })
-
-  subscriber.on('message', async (msg: stan.Message) => {
+  const subscriber = nats.subscribe(`${TENANT_ID || 'mds'}.${type}`, async (msg: any) => {
     return subscriptionCb(processor, msg)
   })
+  return subscriber
 }
 
-const initializeNatsClient = ({
-  NATS,
-  STAN_CLUSTER,
-  STAN_CREDS
-}: {
-  NATS: string
-  STAN_CLUSTER: string
-  STAN_CREDS?: string
-}) => {
-  return stan.connect(STAN_CLUSTER, `mds-event-consumer-${uuid()}`, {
-    url: `nats://${NATS}:4222`,
-    userCreds: STAN_CREDS,
+const initializeNatsClient = () => {
+  return NATS.connect(`nats://${NATS}:4222`, {
     reconnect: true
   })
 }
 
-export const initializeStanSubscriber = async <TData, TResult>({
-  NATS,
-  STAN_CLUSTER,
-  STAN_CREDS,
+export const initializeNatsSubscriber = async <TData, TResult>({
   TENANT_ID,
   processor
 }: {
-  NATS: string
-  STAN_CLUSTER: string
-  STAN_CREDS?: string
   TENANT_ID: string
   processor: EventProcessor<TData, TResult>
 }) => {
-  const nats = initializeNatsClient({ NATS, STAN_CLUSTER, STAN_CREDS })
+  const nats = initializeNatsClient()
 
   try {
     nats.on('connect', () => {

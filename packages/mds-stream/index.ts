@@ -17,10 +17,9 @@
 import logger from '@mds-core/mds-logger'
 import redis from 'redis'
 import bluebird from 'bluebird'
-import stan from 'node-nats-streaming'
+import NATS from 'nats'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
-import { v4 as uuid } from 'uuid'
 import {
   Stream,
   StreamItem,
@@ -37,7 +36,7 @@ import { KafkaStreamProducer } from './kafka/stream-producer'
 
 const { env } = process
 
-let nats: stan.Stan
+let nats: NATS.Client
 
 let binding: BinaryHTTPEmitter | null = null
 
@@ -53,9 +52,7 @@ const getBinding = () => {
 
 const getNats = () => {
   if (!nats) {
-    nats = stan.connect(env.STAN_CLUSTER || 'stan', `mds-agency-${uuid()}`, {
-      url: `nats://${env.NATS}:4222`,
-      userCreds: env.STAN_CREDS,
+    nats = NATS.connect(`nats://${env.NATS}:4222`, {
       reconnect: true
     })
 
