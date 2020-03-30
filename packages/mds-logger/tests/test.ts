@@ -93,27 +93,40 @@ describe('MDS Logger', () => {
     done()
   })
 
-  it('verifies parameterized log INFO works', async () => {
+  it('verifies parameterized log INFO works', done => {
     const results = logger.log('info', { key1: 'key1', key2: 'key2' }).map(arg => JSON.parse(arg))
     test.object(results).isArray()
     test.array(results).hasLength(1)
+    done()
   })
 
-  it('verifies parameterized log WARN works', async () => {
+  it('verifies parameterized log WARN works', done => {
     const results = logger.log('warn', { key1: 'key1', key2: 'key2' }).map(arg => JSON.parse(arg))
     test.object(results).isArray()
     test.array(results).hasLength(1)
+    done()
   })
 
-  it('verifies parameterized log ERROR works', async () => {
+  it('verifies parameterized log ERROR works', done => {
     const results = logger.log('error', { key1: 'key1', key2: 'key2' }).map(arg => JSON.parse(arg))
     test.object(results).isArray()
     test.array(results).hasLength(1)
+    done()
   })
 
-  it('verifies parameterized log ERROR with multiple parameters works', async () => {
+  it('verifies parameterized log ERROR with multiple parameters works', done => {
     const results = logger.log('error', { key1: 'key1', key2: 'key2' }, { b: 2 }).map(arg => JSON.parse(arg))
     test.object(results).isArray()
     test.array(results).hasLength(2)
+    done()
+  })
+
+  it('verifies QUIET mode', () => {
+    process.env.QUIET = 'false'
+    const result1 = logger.log('error', { key1: 'key1', key2: 'key2' }, { b: 2 })
+    test.value(result1.length).is(2)
+    process.env.QUIET = 'true'
+    const result2 = logger.log('error', { key1: 'key1', key2: 'key2' }, { b: 2 })
+    test.value(result2.length).is(0)
   })
 })

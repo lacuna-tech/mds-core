@@ -25,12 +25,11 @@ const redact = (args: unknown[]): string[] =>
   )
 
 const log = (level: LogLevel, ...args: unknown[]): string[] => {
-  if (!process.env.QUIET) {
-    const redacted = redact(args)
+  const redacted = process.env.QUIET === 'true' ? [] : redact(args)
+  if (redacted.length) {
     logger[level](level.toUpperCase(), ...redacted)
-    return redacted
   }
-  return []
+  return redacted
 }
 
 const info = (...args: unknown[]) => log('info', ...args)
