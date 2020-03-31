@@ -29,12 +29,10 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_STATUS,
   BBox,
-  TripTelemetryField,
-  TripTelemetry,
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
 import { TelemetryRecord } from '@mds-core/mds-db/types'
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
 import { point as turfPoint } from '@turf/helpers'
 import turf from '@turf/boolean-point-in-polygon'
@@ -71,11 +69,11 @@ function isPct(val: unknown): val is number {
 // this is a real-time API, so timestamps should be now +/- some factor, let's start with 24h
 function isTimestamp(val: unknown): val is Timestamp {
   if (typeof val !== 'number') {
-    log.info('timestamp not an number')
+    logger.info('timestamp not an number')
     return false
   }
   if (val < 1420099200000) {
-    log.info('timestamp is prior to 1/1/2015; this is almost certainly seconds, not milliseconds')
+    logger.info('timestamp is prior to 1/1/2015; this is almost certainly seconds, not milliseconds')
     return false
   }
   return true
@@ -565,7 +563,7 @@ function filterEmptyHelper<T>(warnOnEmpty?: boolean) {
       return true
     }
     if (warnOnEmpty) {
-      log.warn(`Encountered empty element at index: ${idx}`) // eslint-disable-line @typescript-eslint/no-floating-promises
+      logger.warn(`Encountered empty element at index: ${idx}`) // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     return false
   }
@@ -585,34 +583,6 @@ function moved(latA: number, lngA: number, latB: number, lngB: number) {
   const latDiff = Math.abs(latA - latB)
   const lngDiff = Math.abs(lngA - lngB)
   return lngDiff > limit || latDiff > limit // very computational efficient basic check (better than sqrts & trig)
-}
-
-const calcDistance = (telemetry: TripTelemetryField): { distance: number; points: number[] } => {
-  const points: number[] = []
-  let distance = 0
-  let telemetryList: TripTelemetry[] = []
-  for (const tripSegment of Object.values(telemetry)) {
-    telemetryList = telemetryList.concat(tripSegment)
-  }
-  telemetryList.reduce((lastPoint, currPoint) => {
-    if (
-      currPoint.latitude !== null &&
-      currPoint.longitude !== null &&
-      lastPoint.latitude !== null &&
-      lastPoint.longitude !== null
-    ) {
-      const pointDist = routeDistance([
-        { lat: lastPoint.latitude, lng: lastPoint.longitude },
-        { lat: currPoint.latitude, lng: currPoint.longitude }
-      ])
-      distance += pointDist
-      points.push(pointDist)
-    } else {
-      throw new Error('TRIP POINT MISSING LAT/LNG')
-    }
-    return currPoint
-  })
-  return { distance, points }
 }
 
 function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[] {
@@ -668,7 +638,6 @@ export {
   filterEmptyHelper,
   findServiceAreas,
   moved,
-  calcDistance,
   normalizeToArray,
   parseRelative,
   getCurrentDate

@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 /*
-    Copyright 2019 City of Los Angeles.
+    Copyright 2019-2020 City of Los Angeles.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,16 +14,22 @@
     limitations under the License.
  */
 
-import processor from '@mds-core/mds-event-processor'
-import { initializeStanSubscriber, EventServer } from '@mds-core/mds-event-server'
+/* eslint-disable no-console */
 
-const {
-  env: { NATS = 'localhost', STAN_CLUSTER = 'nats-streaming', STAN_CREDS, TENANT_ID = 'mds' }
-} = process
+import { VehicleEventProcessor } from '@mds-core/mds-stream-processor/processors'
+import { env } from '@container-images/env-inject'
 
-Promise.all([initializeStanSubscriber({ NATS, STAN_CLUSTER, STAN_CREDS, TENANT_ID, processor }), EventServer()]).catch(
-  // eslint-disable-next-line promise/prefer-await-to-callbacks
-  err => {
-    console.log(err)
-  }
-)
+const { npm_package_name, npm_package_version, npm_package_git_commit, KAFKA_HOST } = env()
+
+VehicleEventProcessor.run()
+  .then(() => {
+    console.log(`${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) running on ${KAFKA_HOST}`)
+    return 0
+  })
+  .catch(error => {
+    console.log(
+      `${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) failed to start on ${KAFKA_HOST}`,
+      error
+    )
+    return 1
+  })

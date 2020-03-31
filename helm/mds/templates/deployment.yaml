@@ -97,13 +97,8 @@ spec:
           - name: NATS
             value: {{ default "nats" $.Values.natsNamespace }}-nats-server.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
 #            value: nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
-          - name: STAN_CLUSTER
-            value: {{ $.Values.tenantId | default "mds" }}
-          {{- if and $.Values.nats.enabled $.Values.nats.credentials }}
-          - name: STAN_CREDS
-            value: /var/run/nats/secrets/sys.creds
-          {{- end }}
-          {{- end }}
+          - name: KAFKA_HOST
+            value: host.docker.internal:9092
           - name: TENANT_ID
           {{- if hasKey $.Values "tenantId" }}
             value: {{ $.Values.tenantId }}

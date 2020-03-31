@@ -1,9 +1,10 @@
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 import { seconds } from '@mds-core/mds-utils'
 import WebSocket from 'ws'
 import { setWsHeartbeat } from 'ws-heartbeat/server'
 import { Telemetry, VehicleEvent } from '@mds-core/mds-types'
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
+import { initializeStanSubscriber } from '@mds-core/mds-stream/nats-streaming/nats'
 import { Clients } from './clients'
 import { ENTITY_TYPE } from './types'
 
@@ -13,9 +14,9 @@ export const WebSocketServer = () => {
     ApiServer(app => app)
   )
 
-  log.info('Creating WS server')
+  logger.info('Creating WS server')
   const wss = new WebSocket.Server({ server })
-  log.info('WS Server created!')
+  logger.info('WS Server created!')
 
   setWsHeartbeat(
     wss,
@@ -59,12 +60,10 @@ export const WebSocketServer = () => {
 
   wss.on('connection', (ws: WebSocket) => {
     ws.on('message', async (data: WebSocket.Data) => {
-      const message = data
-        .toString()
-        .trim()
-        .split('%')
+      const message = data.toString().trim().split('%')
       const [header, ...args] = message
 
+      /* Testing message, also useful in a NATS-less environment */
       if (header === 'PUSH') {
         if (clients.isAuthenticated(ws)) {
           if (args.length === 2) {
@@ -104,4 +103,26 @@ export const WebSocketServer = () => {
       return ws.send('Invalid request!')
     })
   })
+
+  const {
+    env: { NATS = 'localhost', STAN_CLUSTER = 'nats-streaming', STAN_CREDS, TENANT_ID = 'mds' }
+  } = process
+
+  const processor = async (type: string, data: VehicleEvent | Telemetry) => {
+    switch (type) {
+      case 'event': {
+        await writeEvent(data as VehicleEvent)
+        return
+      }
+      case 'telemetry': {
+        await writeTelemetry(data as Telemetry)
+        return
+      }
+      default:
+        logger.error(`Unprocessable entity of type: ${type} and data: ${JSON.stringify(data)}`)
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-floating-promises
+  initializeStanSubscriber({ NATS, STAN_CLUSTER, STAN_CREDS, TENANT_ID, processor })
 }

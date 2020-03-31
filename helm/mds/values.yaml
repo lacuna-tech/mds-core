@@ -25,13 +25,8 @@ apis:
     version: latest
     migration: false
   mds-jurisdiction:
-   enabled: true
-   pathPrefix: /jurisdiction
-   version: latest
-   migration: false
-  mds-metrics:
     enabled: true
-    pathPrefix: /metrics
+    pathPrefix: /jurisdiction
     version: latest
     migration: false
   mds-native:
@@ -54,27 +49,20 @@ apis:
     pathPrefix: /web-sockets
     version: latest
     migration: false
-  mds-event-processor:
+  mds-geography:
     enabled: true
-    pathPrefix: /event-processor
+    pathPrefix: /geography
     version: latest
     migration: false
   mds-geography-author:
-   enabled: true
-   pathPrefix: /geography-author
-   version: latest
-   migration: false
-cronjobs:
-  mds-trip-processor:
+    enabled: true
+    pathPrefix: /geography-author
+    version: latest
+    migration: false
+  mds-event-processor:
     enabled: true
     version: latest
     migration: false
-    schedule: '0 * * * *'
-  mds-provider-processor:
-    enabled: true
-    version: latest
-    migration: false
-    schedule: '0 * * * *'
 nats:
   enabled: true
   credentials: false

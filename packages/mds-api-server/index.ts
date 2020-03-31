@@ -50,7 +50,7 @@ const about = () => {
   }
 }
 
-export const RequestLoggingMiddleware = () =>
+export const RequestLoggingMiddleware = (): express.RequestHandler =>
   morgan(
     (tokens, req: ApiRequest, res: ApiResponse) =>
       [
@@ -197,8 +197,9 @@ export const HttpServer = (port: string | number, api: express.Express) => {
 
   const server = api.listen(Number(port), () => {
     logger.info(
-      `${npm_package_name} v${npm_package_version} (${npm_package_git_commit ??
-        'local'}) running on port ${port}; Timeouts(${HTTP_KEEP_ALIVE_TIMEOUT}/${HTTP_HEADERS_TIMEOUT})`
+      `${npm_package_name} v${npm_package_version} (${
+        npm_package_git_commit ?? 'local'
+      }) running on port ${port}; Timeouts(${HTTP_KEEP_ALIVE_TIMEOUT}/${HTTP_HEADERS_TIMEOUT})`
     )
   })
 
