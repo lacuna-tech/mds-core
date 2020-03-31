@@ -57,7 +57,7 @@ export interface DeviceLabel {
 
 type DeviceLabelerOptions = MemCacheOptions
 
-const readDevice = async (device_id: UUID) => {
+const loadDevice = async (device_id: UUID) => {
   try {
     const device = await cache.readDevice(device_id)
     if (device) {
@@ -72,9 +72,9 @@ const readDevice = async (device_id: UUID) => {
 export const DeviceLabeler: (
   options?: Partial<DeviceLabelerOptions>
 ) => MessageLabeler<{ device_id: UUID }, DeviceLabel> = options => {
-  const getDevice = MemCache<'device_id', Device>(async device_id => {
+  const deviceCache = MemCache<'device_id', Device>(async device_id => {
     try {
-      const device = await readDevice(device_id)
+      const device = await loadDevice(device_id)
       return device
     } catch (error) {
       logger.error(error)
@@ -82,7 +82,7 @@ export const DeviceLabeler: (
     return undefined
   }, options)
   return async ({ device_id }) => {
-    const device = await getDevice(device_id)
+    const device = await deviceCache(device_id)
     if (!device) {
       throw new NotFoundError(`Device not found`, { device_id })
     }
