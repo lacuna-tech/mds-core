@@ -1359,11 +1359,7 @@ describe('Tests API', () => {
   })
 
   it('verifies get device defaults to `deregister` if cache misses reads for associated events', async () => {
-    await request
-      .post('/vehicles')
-      .set('Authorization', AUTH)
-      .send(JUMP_TEST_DEVICE_1)
-      .expect(201)
+    await request.post('/vehicles').set('Authorization', AUTH).send(JUMP_TEST_DEVICE_1).expect(201)
 
     await request
       .post(`/vehicles/${JUMP_TEST_DEVICE_1_ID}/event`)
@@ -1371,19 +1367,13 @@ describe('Tests API', () => {
       .send({ device_id: JUMP_TEST_DEVICE_1, timestamp: now(), event_type: VEHICLE_EVENTS.deregister })
       .expect(201)
 
-    const result = await request
-      .get(`/vehicles/${JUMP_TEST_DEVICE_1_ID}`)
-      .set('Authorization', AUTH)
-      .expect(200)
+    const result = await request.get(`/vehicles/${JUMP_TEST_DEVICE_1_ID}`).set('Authorization', AUTH).expect(200)
     test.assert(result.body.status === VEHICLE_STATUSES.inactive)
     test.assert(result.body.prev_event === VEHICLE_EVENTS.deregister)
   })
 
   it('get multiple devices endpoint has vehicle status default to `inactive` if event is missing for a device', async () => {
-    const result = await request
-      .get(`/vehicles/`)
-      .set('Authorization', AUTH)
-      .expect(200)
+    const result = await request.get(`/vehicles/`).set('Authorization', AUTH).expect(200)
     const ids = result.body.vehicles.map((device: any) => device.device_id)
     test.assert(ids.includes(JUMP_TEST_DEVICE_1_ID))
     result.body.vehicles.map((device: any) => {
