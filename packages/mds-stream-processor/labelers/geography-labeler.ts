@@ -31,7 +31,7 @@ export const GeographyLabeler: () => MessageLabeler<
   if (gps) {
     const { lat, lng } = gps
 
-    const geographies = await db.readGeographies()
+    const geographies = await db.readGeographies({ get_published: true })
 
     const geography_ids = geographies
       .filter(({ geography_json }) => pointInShape({ lat, lng }, geography_json))
