@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { VehicleEventProcessor } from '@mds-core/mds-stream-processor/processors'
+import { VehicleEventProcessor } from '@mds-core/mds-stream-processor'
 import { env } from '@container-images/env-inject'
 import logger from '@mds-core/mds-logger'
 
