@@ -17,33 +17,45 @@
 import logger from '@mds-core/mds-logger'
 import stream from '@mds-core/mds-stream'
 import { StreamConsumerOptions, StreamProducerOptions } from '@mds-core/mds-stream/kafka/helpers'
+import { StreamProducer, StreamConsumer } from 'packages/mds-stream/stream-interface'
 
-export type StreamSource<TMessage> = (processor: (message: TMessage) => Promise<void>) => Promise<void>
+export type StreamSource<TMessage> = (processor: (message: TMessage) => Promise<void>) => StreamConsumer
 export type StreamTransform<TMessageIn, TMessageOut> = (message: TMessageIn) => Promise<TMessageOut | null>
-export type StreamSink<TMessage> = () => Promise<(message: TMessage) => Promise<void>>
+export type StreamSink<TMessage> = () => StreamProducer<TMessage>
+
+export interface StreamProcessorController {
+  start: () => Promise<void>
+  stop: () => Promise<void>
+}
 
 export const StreamProcessor = <TMessageIn, TMessageOut>(
   source: StreamSource<TMessageIn>,
   transform: StreamTransform<TMessageIn, TMessageOut>,
   sink: StreamSink<TMessageOut>
-) => ({
-  run: async () => {
-    const producer = await sink()
-    await source(async message => {
-      const transformed = await transform(message)
-      if (transformed) {
-        await producer(transformed)
-      }
-    })
+): StreamProcessorController => {
+  const producer = sink()
+  const consumer = source(async message => {
+    const transformed = await transform(message)
+    if (transformed) {
+      await producer.write(transformed)
+    }
+  })
+  return {
+    start: async () => {
+      await producer.initialize()
+      await consumer.initialize()
+    },
+    stop: async () => {
+      await Promise.all([consumer.shutdown(), producer.shutdown()])
+    }
   }
-})
+}
 
 export const KafkaStreamSource = <TMessage>(
   topic: string,
   options?: Partial<StreamConsumerOptions>
-): StreamSource<TMessage> => async processor => {
-  logger.info('Starting KafkaStreamSource', topic, options)
-  const consumer = stream.KafkaStreamConsumer(
+): StreamSource<TMessage> => processor =>
+  stream.KafkaStreamConsumer(
     topic,
     payload => {
       const {
@@ -51,21 +63,14 @@ export const KafkaStreamSource = <TMessage>(
         message: { offset, value }
       } = payload
       if (Number(offset) % 1_000 === 0) {
-        logger.info(`Processing ${topic} Partition: ${partition} Offset: ${offset}`)
+        logger.info(`KafkaStreamSource Topic: ${topic} Partition: ${partition} Offset: ${offset}`)
       }
       return processor(JSON.parse(value.toString()))
     },
     options
   )
-  await consumer.initialize()
-}
 
 export const KafkaStreamSink = <TMessage>(
   topic: string,
   options?: Partial<StreamProducerOptions>
-): StreamSink<TMessage> => async () => {
-  logger.info('Starting KafkaStreamSink', topic, options)
-  const producer = stream.KafkaStreamProducer(topic, options)
-  await producer.initialize()
-  return message => producer.write(message)
-}
+): StreamSink<TMessage> => () => stream.KafkaStreamProducer(topic, options)

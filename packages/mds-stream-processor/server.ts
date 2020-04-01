@@ -21,7 +21,7 @@ const {
   env: { npm_package_name, npm_package_version, npm_package_git_commit, KAFKA_HOST }
 } = process
 
-VehicleEventProcessor.run()
+VehicleEventProcessor.start()
   .then(() => {
     logger.info(
       `Running ${npm_package_name} v${npm_package_version} (${
