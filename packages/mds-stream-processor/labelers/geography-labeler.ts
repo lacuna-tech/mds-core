@@ -16,7 +16,7 @@
 
 import db from '@mds-core/mds-db'
 import { UUID, Nullable, Telemetry } from '@mds-core/mds-types'
-import { pointInShape, filterEmptyHelper } from '@mds-core/mds-utils'
+import { pointInShape } from '@mds-core/mds-utils'
 import { MessageLabeler } from './types'
 
 export interface GeographyLabel {
