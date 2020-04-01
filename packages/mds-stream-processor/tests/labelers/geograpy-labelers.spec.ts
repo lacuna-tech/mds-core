@@ -6,7 +6,7 @@ import { Geography } from '@mds-core/mds-types'
 import { v4 as uuid } from 'uuid'
 import assert from 'assert'
 
-const mockGeographies: Geography[] = Array.from({ length: 100 }, (_, index) => ({
+const mockGeographies: Geography[] = Array.from({ length: 100 }, () => ({
   geography_id: uuid(),
   geography_json: {
     type: 'FeatureCollection',
