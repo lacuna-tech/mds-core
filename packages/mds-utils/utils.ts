@@ -32,7 +32,7 @@ import {
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
 import { TelemetryRecord } from '@mds-core/mds-db/types'
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
 
 import { isArray } from 'util'
@@ -66,11 +66,11 @@ function isPct(val: unknown): val is number {
 // this is a real-time API, so timestamps should be now +/- some factor, let's start with 24h
 function isTimestamp(val: unknown): val is Timestamp {
   if (typeof val !== 'number') {
-    log.info('timestamp not an number')
+    logger.info('timestamp not an number')
     return false
   }
   if (val < 1420099200000) {
-    log.info('timestamp is prior to 1/1/2015; this is almost certainly seconds, not milliseconds')
+    logger.info('timestamp is prior to 1/1/2015; this is almost certainly seconds, not milliseconds')
     return false
   }
   return true
@@ -560,7 +560,7 @@ function filterEmptyHelper<T>(warnOnEmpty?: boolean) {
       return true
     }
     if (warnOnEmpty) {
-      log.warn(`Encountered empty element at index: ${idx}`) // eslint-disable-line @typescript-eslint/no-floating-promises
+      logger.warn(`Encountered empty element at index: ${idx}`) // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     return false
   }
