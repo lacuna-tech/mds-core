@@ -34,11 +34,8 @@ export const GeographyLabeler: () => MessageLabeler<
     const geographies = await db.readGeographies()
 
     const geography_ids = geographies
-      .map(geography => {
-        const { geography_id, geography_json } = geography
-        return pointInShape({ lat, lng }, geography_json) ? geography_id : null
-      })
-      .filter(filterEmptyHelper())
+      .filter(({ geography_json }) => pointInShape({ lat, lng }, geography_json))
+      .map(({ geography_id }) => geography_id)
 
     return { geography_ids }
   }
