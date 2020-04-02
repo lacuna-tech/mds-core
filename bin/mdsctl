@@ -137,6 +137,7 @@ declare -A apps=(
   ["mds-audit"]="https://localhost:[port]/audit,mds,app"
   ["mds-compliance"]="https://localhost:[port]/compliance,mds,app"
   ["mds-daily"]="https://localhost:[port]/daily,mds,app"
+  ["mds-event-processor"]="https://localhost:[port]/event-processor,mds,app"
   ["mds-geography"]="https://localhost:[port]/geography,mds,app"
   ["mds-geography-author"]="https://localhost:[port]/geography-author,mds,app"
   ["mds-jurisdiction"]="https://localhost:[port]/jurisdiction,mds,app"]
@@ -265,6 +266,7 @@ where app in:
   mds-audit
   mds-compliance
   mds-daily
+  mds-event-processor
   mds-geography
   mds-geography-author
   mds-policy
@@ -343,14 +345,10 @@ services() {
   echo $(oq -i yaml -r '.apis | keys[]' ${configs[home]}/helm/mds/values.yaml)
 }
 
-cronJobs() {
-  echo $(oq -i yaml -r '.cronjobs | keys[]' ${configs[home]}/helm/mds/values.yaml)
-}
-
 build() {
   check ${FUNCNAME[0]}
 
-  for s in $(services) $(cronJobs); do
+  for s in $(services); do
     for i in $(docker images --filter=reference="${s}" -q); do
       [ ${#i} -ge 1 ] && docker rmi -f ${i}
     done; unset i
@@ -636,10 +634,6 @@ imageTag() {
 imageVersion() {
   for s in $(services); do
     is+="${is:+,}sets-mds+=apis.${s}.version=$(imageTag ${s})"
-  done; unset s
-
-  for s in $(cronJobs); do
-    is+="${is:+,}sets-mds+=cronjobs.${s}.version=$(imageTag ${s})"
   done; unset s
 
   echo ${is}
@@ -1206,10 +1200,7 @@ preset() {
       disable)
         for s in $(services); do
           is+="${is:+,}presets-mds+=apis.${s}.enabled=false"
-        done; unset s
-        for p in $(cronJobs); do
-          is+="${is:+,}presets-mds+=cronjobs.${p}.enabled=false"
-        done; unset p;;
+        done; unset s;;
       local)
         is+="${is:+,}presets-mds+=resourcesLimitsCpu=200m"
         is+="${is:+,}presets-mds+=resourcesLimitsMemory=200Mi"
@@ -1225,12 +1216,6 @@ preset() {
       minimal)
         preset $(normalize "disable,local,no-persistence")
         is+="${is:+,}sets-mds+=apis.mds-agency.enabled=true";;
-      processors)
-        preset $(normalize "minimal")
-        for p in $(processors); do
-          is+="${is:+,}presets-mds+=processors.${p}.enabled=true"
-        done; unset p
-        is+="${is:+,}sets-mds+=apis.mds-web-sockets.enabled=true";;
       data-external)
         is+="${is:+,}sets-mds+=postgresql.internal=false"
         is+="${is:+,}sets-mds+=postgresql.host=host.docker.internal"
@@ -1287,7 +1272,7 @@ for arg in "${@:$OPTIND}"; do
     install:namespace=*) installNamespace "$(normalize ${arg} =)";;
     install) arg="${configs[install]}";&
     install:*) invoke install "$(normalize ${arg})";;
-    cycle) s=$(services); p=$(cronjobs); arg="${s// /,},${p// /,}"; unset s p;&
+    cycle) s=$(services); arg="${s// /,},${p// /,}"; unset s p;&
     cycle:*) cycle "$(normalize ${arg})";;
     test) arg="${configs[test]}";&
     test:*) invoke test "$(normalize ${arg})";;

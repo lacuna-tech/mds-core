@@ -40,12 +40,11 @@ import {
   START_ONE_MONTH_AGO,
   START_ONE_WEEK_AGO,
   PROVIDER_SCOPES,
-  GEOGRAPHY2_UUID
+  GEOGRAPHY2_UUID,
+  veniceSpecOps
 } from '@mds-core/mds-test-data'
 import { la_city_boundary } from './la-city-boundary'
 import { api } from '../api'
-/* eslint-disable-next-line @typescript-eslint/no-var-requires */
-const veniceSpecialOpsZone = require('../../ladot-service-areas/venice-special-ops-zone')
 
 /* eslint-disable-next-line no-console */
 const log = console.log.bind(console)
@@ -76,20 +75,14 @@ describe('Tests app', () => {
   // MAIN TESTS HERE
 
   it('tries to get policy for invalid dates', async () => {
-    const result = await request
-      .get('/policies?start_date=100000&end_date=100')
-      .set('Authorization', AUTH)
-      .expect(400)
+    const result = await request.get('/policies?start_date=100000&end_date=100').set('Authorization', AUTH).expect(400)
     test.value(result.body.result === 'start_date after end_date')
   })
 
   it('read back one policy', async () => {
     await db.writePolicy(POLICY_JSON)
     await db.publishPolicy(POLICY_UUID)
-    const result = await request
-      .get(`/policies/${POLICY_UUID}`)
-      .set('Authorization', AUTH)
-      .expect(200)
+    const result = await request.get(`/policies/${POLICY_UUID}`).set('Authorization', AUTH).expect(200)
     const body = result.body
     log('read back one policy response:', body)
     test.value(result).hasHeader('content-type', APP_JSON)
@@ -97,10 +90,7 @@ describe('Tests app', () => {
   })
 
   it('reads back all active policies', async () => {
-    const result = await request
-      .get(`/policies`)
-      .set('Authorization', AUTH)
-      .expect(200)
+    const result = await request.get(`/policies`).set('Authorization', AUTH).expect(200)
     const body = result.body
     log('read back all policies response:', body)
     test.value(body.policies.length).is(1) // only one should be currently valid
@@ -113,7 +103,7 @@ describe('Tests app', () => {
     await db.writeGeography({
       name: 'Los Angeles',
       geography_id: GEOGRAPHY2_UUID,
-      geography_json: veniceSpecialOpsZone
+      geography_json: veniceSpecOps
     })
     await db.writePolicy(POLICY2_JSON)
     await db.publishPolicy(POLICY2_JSON.policy_id)
@@ -174,12 +164,8 @@ describe('Tests app', () => {
     test.value(result).hasHeader('content-type', APP_JSON)
   })
 
-
   it('tries to read non-UUID policy', async () => {
-    const result = await request
-      .get('/policies/notarealpolicy')
-      .set('Authorization', AUTH)
-      .expect(400)
+    const result = await request.get('/policies/notarealpolicy').set('Authorization', AUTH).expect(400)
     test.value(result.body.result === 'not found')
   })
 })

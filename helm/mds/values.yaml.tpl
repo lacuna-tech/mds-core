@@ -49,24 +49,12 @@ apis:
     pathPrefix: /web-sockets
     version: ${WEB_SOCKETS_VERSION}
     migration: false
-  mds-event-processor:
-    enabled: true
-    pathPrefix: /event-processor
-    version: ${EVENT_PROCESSOR_VERSION}
-    migration: false
   mds-geography-author:
     enabled: true
     pathPrefix: /geography-author
     version: ${GEOGRAPHY_AUTHOR_VERSION}
     migration: false
-cronjobs:
-  mds-trip-processor:
+  mds-event-processor:
     enabled: true
-    version: ${TRIP_PROCESSOR_VERSION}
+    version: ${EVENT_PROCESSOR_VERSION}
     migration: false
-    schedule: '0 * * * *'
-  mds-provider-processor:
-    enabled: true
-    version: ${PROVIDER_PROCESSOR_VERSION}
-    migration: false
-    schedule: '0 * * * *'
