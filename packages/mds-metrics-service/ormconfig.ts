@@ -21,7 +21,7 @@ import * as migrations from './migrations'
 const connections = Connections({
   entities: Object.values(entities),
   migrations: Object.values(migrations),
-  migrationsTableName: 'migrations_jurisdictions'
+  migrationsTableName: 'migrations_metrics'
 })
 
 // Make connections array available for TypeScript import
