@@ -10,7 +10,8 @@ import {
   makeEventsWithTelemetry,
   makeTelemetryInArea,
   restrictedAreas,
-  veniceSpecOps
+  veniceSpecOps,
+  LA_CITY_BOUNDARY
 } from '@mds-core/mds-test-data'
 
 import test from 'unit.js'
@@ -36,7 +37,6 @@ import { Feature, Polygon } from 'geojson'
 import { v4 as uuid } from 'uuid'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, MOCHA_PROVIDER_ID } from '@mds-core/mds-providers'
-import { LA_CITY_BOUNDARY } from '@mds-core/mds-test-data'
 import { api } from '../api'
 
 const request = supertest(ApiServer(api))
