@@ -29,6 +29,10 @@ import { DeviceLabel, DeviceLabeler, GeographyLabel, GeographyLabeler, LatencyLa
 import { StreamTransform, StreamProcessor } from './index'
 import { KafkaSource, KafkaSink } from '../connectors/kafka-connector'
 
+const {
+  env: { TENANT_ID = 'mds' }
+} = process
+
 interface LabeledVehicleEvent extends LatencyLabel, DeviceLabel, GeographyLabel {
   device_id: UUID
   provider_id: UUID
@@ -87,7 +91,7 @@ const processVehicleEvent: StreamTransform<VehicleEvent, LabeledVehicleEvent> = 
 }
 
 export const VehicleEventProcessor = StreamProcessor(
-  KafkaSource<VehicleEvent>('mds.event', { groupId: 'mds-event-processor' }),
+  KafkaSource<VehicleEvent>(`${TENANT_ID}.event`, { groupId: 'mds-event-processor' }),
   processVehicleEvent,
-  KafkaSink<LabeledVehicleEvent>('mds.event.annotated', { clientId: 'mds-event-processor' })
+  KafkaSink<LabeledVehicleEvent>(`${TENANT_ID}.event.annotated`, { clientId: 'mds-event-processor' })
 )
