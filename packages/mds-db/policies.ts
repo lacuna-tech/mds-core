@@ -1,6 +1,6 @@
 import { UUID, Policy, Timestamp, Recorded, Rule, PolicyMetadata } from '@mds-core/mds-types'
 import { now, NotFoundError, BadParamsError, AlreadyPublishedError, DependencyMissingError } from '@mds-core/mds-utils'
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 
 import schema from './schema'
 
@@ -90,7 +90,7 @@ export async function readSinglePolicyMetadata(policy_id: UUID): Promise<PolicyM
     const { policy_metadata } = res.rows[0]
     return { policy_id, policy_metadata }
   }
-  await log.info(`readSinglePolicyMetadata db failed for ${policy_id}: rows=${res.rows.length}`)
+  logger.info(`readSinglePolicyMetadata db failed for ${policy_id}: rows=${res.rows.length}`)
   throw new NotFoundError(`metadata for policy_id ${policy_id} not found`)
 }
 
@@ -102,7 +102,7 @@ export async function readPolicy(policy_id: UUID): Promise<Policy> {
   if (res.rows.length === 1) {
     return res.rows[0].policy_json
   }
-  await log.info(`readPolicy db failed for ${policy_id}: rows=${res.rows.length}`)
+  logger.info(`readPolicy db failed for ${policy_id}: rows=${res.rows.length}`)
   throw new NotFoundError(`policy_id ${policy_id} not found`)
 }
 
@@ -203,7 +203,7 @@ export async function publishPolicy(policy_id: UUID) {
     })
     return policy_id
   } catch (err) {
-    await log.error(err)
+    logger.error(err)
     throw err
   }
 }
@@ -241,7 +241,7 @@ export async function updatePolicyMetadata(policy_metadata: PolicyMetadata) {
       ...recorded_metadata
     }
   } catch (err) {
-    await log.error(err)
+    logger.error(err)
     throw err
   }
 }

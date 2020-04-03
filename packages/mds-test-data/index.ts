@@ -47,11 +47,9 @@ import {
   rangeRandomInt
 } from '@mds-core/mds-utils'
 
-import { serviceAreaMap } from 'ladot-service-areas'
-
 import { v4 as uuid } from 'uuid'
 
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 
 import {
   JUMP_PROVIDER_ID,
@@ -60,6 +58,7 @@ import {
   TEST1_PROVIDER_ID,
   providerName
 } from '@mds-core/mds-providers'
+import { serviceAreaMap, restrictedAreas, veniceSpecOps } from './test-areas/test-areas'
 
 import { LA_CITY_BOUNDARY } from './la-city-boundary'
 import { DISTRICT_SEVEN } from './district-seven'
@@ -278,7 +277,7 @@ function makeTelemetry(devices: Device[], timestamp: Timestamp): Telemetry[] {
     [key: string]: { num_clusters: number; cluster_radii: number[]; cluster_centers: { lat: number; lng: number }[] }
   } = {}
 
-  log.info('clustering')
+  logger.info('clustering')
   serviceAreaKeys.slice(0, 1).map(key => {
     const serviceArea = serviceAreaMap[key]
     const serviceAreaMultipoly = serviceArea.area
@@ -588,5 +587,8 @@ export {
   makeTelemetryStream,
   makeStatusChange,
   makeTrip,
-  SCOPED_AUTH
+  SCOPED_AUTH,
+  serviceAreaMap,
+  restrictedAreas,
+  veniceSpecOps
 }

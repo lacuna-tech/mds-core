@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 /*
-    Copyright 2019 City of Los Angeles.
+    Copyright 2019-2020 City of Los Angeles.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -15,16 +14,25 @@
     limitations under the License.
  */
 
-import processor from '@mds-core/mds-event-processor'
-import { initializeStanSubscriber, EventServer } from '@mds-core/mds-event-server'
+import { VehicleEventProcessor } from '@mds-core/mds-stream-processor'
+import { env } from '@container-images/env-inject'
+import logger from '@mds-core/mds-logger'
 
-const {
-  env: { NATS = 'localhost', STAN_CLUSTER = 'nats-streaming', STAN_CREDS, TENANT_ID = 'mds' }
-} = process
+const { npm_package_name, npm_package_version, npm_package_git_commit, KAFKA_HOST } = env()
 
-Promise.all([initializeStanSubscriber({ NATS, STAN_CLUSTER, STAN_CREDS, TENANT_ID, processor }), EventServer()]).catch(
-  // eslint-disable-next-line promise/prefer-await-to-callbacks
-  err => {
-    console.log(err)
-  }
-)
+VehicleEventProcessor.start()
+  .then(() => {
+    logger.info(
+      `Running ${npm_package_name} v${npm_package_version} (${
+        npm_package_git_commit ?? 'local'
+      }) connected to Kafka on ${KAFKA_HOST}`
+    )
+    return 0
+  })
+  .catch(error => {
+    logger.error(
+      `${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) connected to Kafka on ${KAFKA_HOST} failed to start`,
+      error
+    )
+    return 1
+  })
