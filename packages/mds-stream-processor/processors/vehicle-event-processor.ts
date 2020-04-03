@@ -27,7 +27,7 @@ import {
 import logger from '@mds-core/mds-logger'
 import { DeviceLabel, DeviceLabeler, GeographyLabel, GeographyLabeler, LatencyLabel, LatencyLabeler } from '../labelers'
 import { StreamTransform, StreamProcessor } from './index'
-import { KafkaStreamSource, KafkaStreamSink } from '../connectors/kafka-connector'
+import { KafkaSource, KafkaSink } from '../connectors/kafka-connector'
 
 interface LabeledVehicleEvent extends LatencyLabel, DeviceLabel, GeographyLabel {
   device_id: UUID
@@ -87,7 +87,7 @@ const processVehicleEvent: StreamTransform<VehicleEvent, LabeledVehicleEvent> = 
 }
 
 export const VehicleEventProcessor = StreamProcessor(
-  KafkaStreamSource<VehicleEvent>('mds.event', { groupId: 'mds-event-processor' }),
+  KafkaSource<VehicleEvent>('mds.event', { groupId: 'mds-event-processor' }),
   processVehicleEvent,
-  KafkaStreamSink<LabeledVehicleEvent>('mds.event.annotated', { clientId: 'mds-event-processor' })
+  KafkaSink<LabeledVehicleEvent>('mds.event.annotated', { clientId: 'mds-event-processor' })
 )
