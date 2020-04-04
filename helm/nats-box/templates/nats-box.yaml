@@ -12,7 +12,7 @@ spec:
   volumes:
     - name: creds-volume
       secret:
-        secretName: stan-creds
+        secretName: nats-creds
   {{- end }}
   containers:
     - name: nats-box

@@ -25,7 +25,7 @@ spec:
         {{- if and $.Values.nats.enabled $.Values.nats.credentials }}
         - name: creds-volume
           secret:
-            secretName: stan-creds
+            secretName: nats-creds
         {{- end }}
       containers:
       - name: {{ $name }}
@@ -143,9 +143,9 @@ type: Opaque
 apiVersion: v1
 kind: Secret
 metadata:
-  name: stan-creds
+  name: nats-creds
   namespace: {{ $.Release.Namespace }}
 data:
-  sys.creds: {{ $.Values.stanCreds | b64enc }}
+  sys.creds: {{ $.Values.nats | b64enc }}
 type: Opaque
 {{- end }}

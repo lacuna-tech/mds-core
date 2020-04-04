@@ -48,7 +48,7 @@ spec:
           name: nats-surveyor-observations
       - name: creds-volume
         secret:
-          secretName: stan-creds
+          secretName: nats-creds
       containers:
       - name: nats-surveyor
         image: synadia/nats-surveyor:0.0.1-alpha4
@@ -124,8 +124,8 @@ spec:
 apiVersion: v1
 kind: Secret
 metadata:
-  name: stan-creds
+  name: nats-creds
   namespace: {{ $.Release.Namespace }}
 data:
-  sys.creds: {{ $.Values.stanCreds | b64enc }}
+  sys.creds: {{ $.Values.natsCreds | b64enc }}
 type: Opaque
