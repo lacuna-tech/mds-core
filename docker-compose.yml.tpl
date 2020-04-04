@@ -66,19 +66,6 @@ services:
       PG_MIGRATIONS: "true"
       REDIS_HOST: redis
 
-  native:
-    image: mds-native:$NATIVE_VERSION
-    ports:
-      - "4006"
-    environment:
-      PATH_PREFIX: /native
-      PG_HOST: postgres
-      PG_NAME: mds
-      PG_USER: mdsadmin
-      PG_PASS: "Password123#"
-      PG_MIGRATIONS: "true"
-      REDIS_HOST: redis
-
   jurisdiction:
     image: mds-jurisdiction:$JURISDICTION_VERSION
     ports:

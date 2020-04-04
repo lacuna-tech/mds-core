@@ -1,5 +1,5 @@
 /*
-    Copyright 2019 City of Los Angeles.
+    Copyright 2019-2020 City of Los Angeles.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,4 +14,14 @@
     limitations under the License.
  */
 
-export { api } from './api'
+import { Timestamp } from '@mds-core/mds-types'
+import { MessageLabeler } from './types'
+
+export interface LatencyLabel {
+  latency_ms: Timestamp
+}
+
+export const LatencyLabeler: () => MessageLabeler<
+  { timestamp: Timestamp; recorded: Timestamp },
+  LatencyLabel
+> = () => async ({ timestamp, recorded }) => ({ latency_ms: recorded - timestamp })

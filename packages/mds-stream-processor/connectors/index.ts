@@ -14,6 +14,7 @@
     limitations under the License.
  */
 
-export * from './device-labeler'
-export * from './geography-labeler'
-export * from './latency-labeler'
+import { StreamProducer, StreamConsumer } from '@mds-core/mds-stream/stream-interface'
+
+export type StreamSource<TMessage> = (processor: (message: TMessage) => Promise<void>) => StreamConsumer
+export type StreamSink<TMessage> = () => StreamProducer<TMessage>
