@@ -1,4 +1,4 @@
-import NATS from 'nats'
+import nats from 'nats'
 import logger from '@mds-core/mds-logger'
 
 export type EventProcessor<TData, TResult> = (type: string, data: TData) => Promise<TResult>
@@ -34,7 +34,7 @@ const natsSubscriber = async <TData, TResult>({
   TENANT_ID,
   type
 }: {
-  nats: NATS.Client
+  nats: nats.Client
   processor: EventProcessor<TData, TResult>
   TENANT_ID: string
   type: SUBSCRIPTION_TYPE
@@ -46,7 +46,8 @@ const natsSubscriber = async <TData, TResult>({
 }
 
 const initializeNatsClient = () => {
-  return NATS.connect(`nats://${NATS}:4222`, {
+  const { NATS = 'localhost' } = process.env
+  return nats.connect(`nats://${NATS}:4222`, {
     reconnect: true
   })
 }

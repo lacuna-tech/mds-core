@@ -105,7 +105,7 @@ export const WebSocketServer = () => {
   })
 
   const {
-    env: { NATS = 'localhost', STAN_CLUSTER = 'nats-streaming', STAN_CREDS, TENANT_ID = 'mds' }
+    env: { TENANT_ID = 'mds' }
   } = process
 
   const processor = async (type: string, data: VehicleEvent | Telemetry) => {
