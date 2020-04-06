@@ -25,14 +25,13 @@ import {
   VEHICLE_REASON
 } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
+import { getEnvVar } from '@mds-core/mds-utils'
 import { DeviceLabel, DeviceLabeler, GeographyLabel, GeographyLabeler, LatencyLabel, LatencyLabeler } from '../labelers'
 import { StreamTransform, StreamProcessor } from './index'
 import { KafkaSource, KafkaSink } from '../connectors/kafka-connector'
 import { flattenTelemetry } from '../flatteners/telemetry-flattener'
 
-const {
-  env: { TENANT_ID = 'mds' }
-} = process
+const TENANT_ID = getEnvVar('TENANT_ID', 'mds')
 
 interface LabeledVehicleEvent extends LatencyLabel, DeviceLabel, GeographyLabel {
   device_id: UUID

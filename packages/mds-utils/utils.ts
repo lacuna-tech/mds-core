@@ -583,6 +583,13 @@ function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[] {
   return [elementToNormalize]
 }
 
+const getEnvVar: (name: string, fallback: string) => string = (name, fallback) => {
+  const { env } = process
+  const [, match] = Object.entries(env).find(([key]) => key === name) ?? []
+  const envVar = match || fallback
+  return envVar
+}
+
 export {
   UUID_REGEX,
   isUUID,
@@ -627,5 +634,6 @@ export {
   moved,
   normalizeToArray,
   parseRelative,
-  getCurrentDate
+  getCurrentDate,
+  getEnvVar
 }
