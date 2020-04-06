@@ -1,5 +1,5 @@
 /*
-    Copyright 2019 City of Los Angeles.
+    Copyright 2019-2020 City of Los Angeles.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,7 +14,17 @@
     limitations under the License.
  */
 
-import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
-import { api } from './api'
+import { StreamSource } from './index'
 
-HttpServer(process.env.PORT ?? 4006, ApiServer(api))
+export const GeneratorSource = <TMessage>(messages: () => Generator<TMessage>): StreamSource<TMessage> => processor => {
+  return {
+    initialize: async () => {
+      for (const message of messages()) {
+        await processor(message) // eslint-disable-line no-await-in-loop
+      }
+    },
+    shutdown: async () => {
+      // Do Nothing
+    }
+  }
+}
