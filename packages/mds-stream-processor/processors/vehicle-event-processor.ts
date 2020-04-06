@@ -28,6 +28,7 @@ import logger from '@mds-core/mds-logger'
 import { DeviceLabel, DeviceLabeler, GeographyLabel, GeographyLabeler, LatencyLabel, LatencyLabeler } from '../labelers'
 import { StreamTransform, StreamProcessor } from './index'
 import { KafkaSource, KafkaSink } from '../connectors/kafka-connector'
+import { flattenTelemetry } from '../flatteners/telemetry-flattener'
 
 const {
   env: { TENANT_ID = 'mds' }
@@ -62,6 +63,18 @@ const processVehicleEvent: StreamTransform<VehicleEvent, LabeledVehicleEvent> = 
       geographyLabeler({ telemetry }),
       latencyLabeler({ timestamp, recorded })
     ])
+    const flattenedTelemetry = telemetry
+      ? flattenTelemetry({ ...telemetry, recorded })
+      : {
+          telemetry_timestamp: null,
+          telemetry_accuracy: null,
+          telemetry_altitude: null,
+          telemetry_charge: null,
+          telemetry_heading: null,
+          telemetry_lat: null,
+          telemetry_lng: null,
+          telemetry_speed: null
+        }
     const transformed: LabeledVehicleEvent = {
       device_id,
       provider_id,
@@ -70,15 +83,8 @@ const processVehicleEvent: StreamTransform<VehicleEvent, LabeledVehicleEvent> = 
       event_timestamp: timestamp,
       event_recorded: recorded,
       trip_id: trip_id ?? null,
-      telemetry_timestamp: telemetry?.timestamp ?? null,
-      telemetry_lat: telemetry?.gps.lat ?? null,
-      telemetry_lng: telemetry?.gps.lng ?? null,
-      telemetry_altitude: telemetry?.gps.altitude ?? null,
-      telemetry_heading: telemetry?.gps.heading ?? null,
-      telemetry_speed: telemetry?.gps.speed ?? null,
-      telemetry_accuracy: telemetry?.gps.accuracy ?? null,
-      telemetry_charge: telemetry?.charge ?? null,
       vehicle_state: EVENT_STATUS_MAP[event_type],
+      ...flattenedTelemetry,
       ...deviceLabel,
       ...geographyLabel,
       ...latencyLabel
