@@ -48,7 +48,8 @@ const natsSubscriber = async <TData, TResult>({
 const initializeNatsClient = () => {
   const { NATS = 'localhost' } = process.env
   return nats.connect(`nats://${NATS}:4222`, {
-    reconnect: true
+    reconnect: true,
+    maxReconnectAttempts: -1 // Retry forever
   })
 }
 
