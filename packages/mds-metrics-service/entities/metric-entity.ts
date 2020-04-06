@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { Entity, Column, Index } from 'typeorm'
+import { Entity, Column } from 'typeorm'
 import { UUID, Timestamp, Nullable, VEHICLE_TYPE } from '@mds-core/mds-types'
 import { RecordedPersistenceModel, RecordedEntity } from '@mds-core/mds-orm/entities'
 import { BigintTransformer } from '@mds-core/mds-orm/transformers'
@@ -67,5 +67,4 @@ export class MetricEntity extends RecordedEntity implements MetricPersistenceMod
 
   @Column('double precision')
   avg: number
-
 }

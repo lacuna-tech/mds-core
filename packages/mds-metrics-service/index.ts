@@ -13,3 +13,36 @@
     See the License for the specific language governing permissions and
     limitations under the License.
  */
+import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-service-helpers'
+import logger from '@mds-core/mds-logger'
+import * as orm from './orm'
+import { MetricPersistenceModel } from './entities/metric-entity'
+
+export type MetricDomainModel = Omit<MetricPersistenceModel, 'id' | 'recorded'>
+
+const writeMetrics = async (metrics: MetricDomainModel[]): Promise<ServiceResponse<MetricDomainModel[]>> => {
+  try {
+    const entities = await orm.writeMetrics(metrics.map(metric => ({ ...metric, recorded: Date.now() })))
+    return ServiceResult(entities.map(({ id, recorded, ...entity }) => entity))
+  } catch (error) /* istanbul ignore next */ {
+    logger.error('Error Writing Metrics', error)
+    return ServiceError(error)
+  }
+}
+
+const readMetrics = async (): Promise<ServiceResponse<MetricDomainModel[]>> => {
+  try {
+    const entities = await orm.readMetrics()
+    return ServiceResult(entities.map(({ id, recorded, ...entity }) => entity))
+  } catch (error) /* istanbul ignore next */ {
+    logger.error('Error Reading Metrics', error)
+    return ServiceError(error)
+  }
+}
+
+export const MetricsService = {
+  startup: orm.initialize,
+  writeMetrics,
+  readMetrics,
+  shutdown: orm.shutdown
+}
