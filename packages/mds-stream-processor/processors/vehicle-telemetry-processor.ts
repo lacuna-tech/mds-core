@@ -22,7 +22,9 @@ import { StreamTransform, StreamProcessor } from './index'
 import { KafkaSource, KafkaSink } from '../connectors/kafka-connector'
 import { flattenTelemetry } from '../flatteners/telemetry-flattener'
 
-const TENANT_ID = getEnvVar('TENANT_ID', 'mds')
+const { TENANT_ID } = getEnvVar({
+  TENANT_ID: 'mds'
+})
 
 interface LabeledVehicleTelemetry extends LatencyLabel, DeviceLabel, GeographyLabel {
   device_id: UUID

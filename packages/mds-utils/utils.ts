@@ -583,12 +583,13 @@ function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[] {
   return [elementToNormalize]
 }
 
-const getEnvVar: (name: string, fallback: string) => string = (name, fallback) => {
-  const { env } = process
-  const [, match] = Object.entries(env).find(([key]) => key === name) ?? []
-  const envVar = match || fallback
-  return envVar
-}
+const getEnvVar = <TProps extends { [name: string]: string }>(props: TProps): TProps =>
+  Object.keys(props).reduce((env, key) => {
+    return {
+      ...env,
+      [key]: process.env[key] || props[key]
+    }
+  }, {} as TProps)
 
 export {
   UUID_REGEX,

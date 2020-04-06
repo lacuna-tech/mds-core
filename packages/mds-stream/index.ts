@@ -74,7 +74,9 @@ async function writeCloudEvent(type: string, data: string) {
     return
   }
 
-  const TENANT_ID = getEnvVar('TENANT_ID', 'mds')
+  const { TENANT_ID } = getEnvVar({
+    TENANT_ID: 'mds'
+  })
 
   // fixme: unable to set-and-propgate additional ce headers, eg: ce.addExtension('foo', 'bar')
   const event = cloudevent().type(`${TENANT_ID}.${type}`).source(env.NATS).data(data)
@@ -83,7 +85,9 @@ async function writeCloudEvent(type: string, data: string) {
 }
 
 async function writeNatsEvent(type: string, data: string) {
-  const TENANT_ID = getEnvVar('TENANT_ID', 'mds')
+  const { TENANT_ID } = getEnvVar({
+    TENANT_ID: 'mds'
+  })
 
   if (env.NATS) {
     const event = cloudevent().type(`${TENANT_ID}.${type}`).source(env.NATS).data(data)

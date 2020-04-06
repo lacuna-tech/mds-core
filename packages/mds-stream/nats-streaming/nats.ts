@@ -9,8 +9,9 @@ const SUBSCRIPTION_TYPES = ['event', 'telemetry'] as const
 type SUBSCRIPTION_TYPE = typeof SUBSCRIPTION_TYPES[number]
 
 const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, TResult>, msg: stan.Message) => {
-  const TENANT_ID = getEnvVar('TENANT_ID', 'mds')
-
+  const { TENANT_ID } = getEnvVar({
+    TENANT_ID: 'mds'
+  })
   const TENANT_REGEXP = new RegExp(`^${TENANT_ID}\\.`)
 
   try {
