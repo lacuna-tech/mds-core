@@ -1,13 +1,13 @@
 import { Column, Index } from 'typeorm'
 import { Timestamp } from '@mds-core/mds-types'
 import { BigintTransformer } from '../transformers'
-import { IdentityEntity, IdentityPersistenceModel } from './identity-entity'
+import { IdentityEntity, IdentityEntityModel } from './identity-entity'
 
-export interface RecordedPersistenceModel extends IdentityPersistenceModel {
+export interface RecordedEntityModel extends IdentityEntityModel {
   recorded: Timestamp
 }
 
-export abstract class RecordedEntity extends IdentityEntity implements RecordedPersistenceModel {
+export abstract class RecordedEntity extends IdentityEntity implements RecordedEntityModel {
   @Column('bigint', { transformer: BigintTransformer })
   @Index()
   recorded: Timestamp

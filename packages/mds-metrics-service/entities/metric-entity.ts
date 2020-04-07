@@ -16,10 +16,10 @@
 
 import { Entity, Column } from 'typeorm'
 import { UUID, Timestamp, Nullable, VEHICLE_TYPE } from '@mds-core/mds-types'
-import { RecordedPersistenceModel, RecordedEntity } from '@mds-core/mds-orm/entities'
+import { RecordedEntityModel, RecordedEntity } from '@mds-core/mds-orm/entities'
 import { BigintTransformer } from '@mds-core/mds-orm/transformers'
 
-export interface MetricPersistenceModel extends RecordedPersistenceModel {
+export interface MetricEntityModel extends RecordedEntityModel {
   name: string
   time_bin_size: Timestamp
   time_bin_start: Timestamp
@@ -34,7 +34,7 @@ export interface MetricPersistenceModel extends RecordedPersistenceModel {
 }
 
 @Entity('metrics')
-export class MetricEntity extends RecordedEntity implements MetricPersistenceModel {
+export class MetricEntity extends RecordedEntity implements MetricEntityModel {
   @Column('varchar', { primary: true, length: 255 })
   name: string
 
