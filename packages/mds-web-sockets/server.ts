@@ -1,10 +1,10 @@
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 import { seconds } from '@mds-core/mds-utils'
 import WebSocket from 'ws'
 import { setWsHeartbeat } from 'ws-heartbeat/server'
 import { Telemetry, VehicleEvent } from '@mds-core/mds-types'
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
-import { initializeStanSubscriber } from '@mds-core/mds-event-server'
+import { initializeStanSubscriber } from '@mds-core/mds-stream/nats-streaming/nats'
 import { Clients } from './clients'
 import { ENTITY_TYPE } from './types'
 
@@ -14,9 +14,9 @@ export const WebSocketServer = () => {
     ApiServer(app => app)
   )
 
-  log.info('Creating WS server')
+  logger.info('Creating WS server')
   const wss = new WebSocket.Server({ server })
-  log.info('WS Server created!')
+  logger.info('WS Server created!')
 
   setWsHeartbeat(
     wss,
@@ -119,7 +119,7 @@ export const WebSocketServer = () => {
         return
       }
       default:
-        await log.error(`Unprocessable entity of type: ${type} and data: ${JSON.stringify(data)}`)
+        logger.error(`Unprocessable entity of type: ${type} and data: ${JSON.stringify(data)}`)
     }
   }
 

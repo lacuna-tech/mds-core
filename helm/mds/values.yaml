@@ -29,11 +29,6 @@ apis:
     pathPrefix: /jurisdiction
     version: latest
     migration: false
-  mds-native:
-    enabled: true
-    pathPrefix: /native
-    version: latest
-    migration: false
   mds-policy-author:
     enabled: true
     pathPrefix: /policy-author
@@ -57,6 +52,10 @@ apis:
   mds-geography-author:
     enabled: true
     pathPrefix: /geography-author
+    version: latest
+    migration: false
+  mds-event-processor:
+    enabled: true
     version: latest
     migration: false
 tenantId:

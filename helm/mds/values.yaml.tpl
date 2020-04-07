@@ -29,11 +29,6 @@ apis:
     pathPrefix: /jurisdiction
     version: ${JURISDICTION_VERSION}
     migration: false
-  mds-native:
-    enabled: true
-    pathPrefix: /native
-    version: ${NATIVE_VERSION}
-    migration: false
   mds-policy-author:
     enabled: true
     pathPrefix: /policy-author
@@ -58,4 +53,8 @@ apis:
     enabled: true
     pathPrefix: /geography-author
     version: ${GEOGRAPHY_AUTHOR_VERSION}
+    migration: false
+  mds-event-processor:
+    enabled: true
+    version: ${EVENT_PROCESSOR_VERSION}
     migration: false
