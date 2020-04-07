@@ -29,7 +29,7 @@ import { getEnvVar } from '@mds-core/mds-utils'
 import { DeviceLabel, DeviceLabeler, GeographyLabel, GeographyLabeler, LatencyLabel, LatencyLabeler } from '../labelers'
 import { StreamTransform, StreamProcessor } from './index'
 import { KafkaSource, KafkaSink } from '../connectors/kafka-connector'
-import { flattenTelemetry } from '../flatteners/telemetry-flattener'
+import { OptionalTelemetryLabeler } from '../labelers/telemetry-labeler'
 
 const { TENANT_ID } = getEnvVar({
   TENANT_ID: 'mds'
@@ -53,28 +53,22 @@ interface LabeledVehicleEvent extends LatencyLabel, DeviceLabel, GeographyLabel 
   vehicle_state: VEHICLE_STATUS
 }
 
-const [deviceLabeler, geographyLabeler, latencyLabeler] = [DeviceLabeler(), GeographyLabeler(), LatencyLabeler()]
+const [deviceLabeler, geographyLabeler, latencyLabeler, optionalTelemetryLabeler] = [
+  DeviceLabeler(),
+  GeographyLabeler(),
+  LatencyLabeler(),
+  OptionalTelemetryLabeler()
+]
 
 const processVehicleEvent: StreamTransform<VehicleEvent, LabeledVehicleEvent> = async event => {
   const { device_id, provider_id, event_type, event_type_reason, timestamp, recorded, trip_id, telemetry } = event
   try {
-    const [deviceLabel, latencyLabel, geographyLabel] = await Promise.all([
+    const [deviceLabel, latencyLabel, geographyLabel, telemetryLabel] = await Promise.all([
       deviceLabeler({ device_id }),
       geographyLabeler({ telemetry }),
-      latencyLabeler({ timestamp, recorded })
+      latencyLabeler({ timestamp, recorded }),
+      optionalTelemetryLabeler({ telemetry })
     ])
-    const flattenedTelemetry = telemetry
-      ? flattenTelemetry({ ...telemetry, recorded })
-      : {
-          telemetry_timestamp: null,
-          telemetry_accuracy: null,
-          telemetry_altitude: null,
-          telemetry_charge: null,
-          telemetry_heading: null,
-          telemetry_lat: null,
-          telemetry_lng: null,
-          telemetry_speed: null
-        }
     const transformed: LabeledVehicleEvent = {
       device_id,
       provider_id,
@@ -84,7 +78,7 @@ const processVehicleEvent: StreamTransform<VehicleEvent, LabeledVehicleEvent> = 
       event_recorded: recorded,
       trip_id: trip_id ?? null,
       vehicle_state: EVENT_STATUS_MAP[event_type],
-      ...flattenedTelemetry,
+      ...telemetryLabel,
       ...deviceLabel,
       ...geographyLabel,
       ...latencyLabel

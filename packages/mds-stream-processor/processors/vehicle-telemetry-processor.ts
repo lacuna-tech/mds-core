@@ -20,7 +20,7 @@ import { getEnvVar } from '@mds-core/mds-utils'
 import { DeviceLabel, DeviceLabeler, GeographyLabel, GeographyLabeler, LatencyLabel, LatencyLabeler } from '../labelers'
 import { StreamTransform, StreamProcessor } from './index'
 import { KafkaSource, KafkaSink } from '../connectors/kafka-connector'
-import { flattenTelemetry } from '../flatteners/telemetry-flattener'
+import { TelemetryLabeler } from '../labelers/telemetry-labeler'
 
 const { TENANT_ID } = getEnvVar({
   TENANT_ID: 'mds'
@@ -40,7 +40,12 @@ interface LabeledVehicleTelemetry extends LatencyLabel, DeviceLabel, GeographyLa
   telemetry_charge: Nullable<number>
 }
 
-const [deviceLabeler, geographyLabeler, latencyLabeler] = [DeviceLabeler(), GeographyLabeler(), LatencyLabeler()]
+const [deviceLabeler, geographyLabeler, latencyLabeler, telemetryLabeler] = [
+  DeviceLabeler(),
+  GeographyLabeler(),
+  LatencyLabeler(),
+  TelemetryLabeler()
+]
 
 const processVehicleTelemetry: StreamTransform<
   Telemetry & { recorded: Timestamp },
@@ -48,16 +53,17 @@ const processVehicleTelemetry: StreamTransform<
 > = async telemetry => {
   const { device_id, provider_id, timestamp, recorded } = telemetry
   try {
-    const [deviceLabel, latencyLabel, geographyLabel, flattenedTelemetry] = await Promise.all([
+    const [deviceLabel, latencyLabel, geographyLabel, telemetryLabel] = await Promise.all([
       deviceLabeler({ device_id }),
       geographyLabeler({ telemetry }),
       latencyLabeler({ timestamp, recorded }),
-      flattenTelemetry(telemetry)
+      telemetryLabeler({ telemetry })
     ])
     const transformed: LabeledVehicleTelemetry = {
       device_id,
       provider_id,
-      ...flattenedTelemetry,
+      telemetry_recorded: recorded,
+      ...telemetryLabel,
       ...deviceLabel,
       ...geographyLabel,
       ...latencyLabel
