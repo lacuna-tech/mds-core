@@ -1,7 +1,7 @@
 import { Timestamp, Nullable, Telemetry, NullableProperties } from '@mds-core/mds-types'
 import { MessageLabeler } from './types'
 
-export interface FlattenedTelemetry {
+export interface TelemetryLabel {
   telemetry_timestamp: Timestamp
   telemetry_lat: number
   telemetry_lng: number
@@ -12,7 +12,7 @@ export interface FlattenedTelemetry {
   telemetry_charge: Nullable<number>
 }
 
-export const TelemetryLabeler: () => MessageLabeler<{ telemetry: Telemetry }, FlattenedTelemetry> = () => async ({
+export const TelemetryLabeler: () => MessageLabeler<{ telemetry: Telemetry }, TelemetryLabel> = () => async ({
   telemetry
 }) => {
   const { timestamp, gps } = telemetry
@@ -30,7 +30,7 @@ export const TelemetryLabeler: () => MessageLabeler<{ telemetry: Telemetry }, Fl
 
 export const OptionalTelemetryLabeler: () => MessageLabeler<
   { telemetry?: Nullable<Telemetry> },
-  NullableProperties<FlattenedTelemetry>
+  NullableProperties<TelemetryLabel>
 > = () => async ({ telemetry }) => {
   if (telemetry) return TelemetryLabeler()({ telemetry })
 
