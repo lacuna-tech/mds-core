@@ -29,17 +29,17 @@ const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, T
 }
 
 const natsSubscriber = async <TData, TResult>({
-  nats,
+  natsClient,
   processor,
   TENANT_ID,
   type
 }: {
-  nats: nats.Client
+  natsClient: nats.Client
   processor: EventProcessor<TData, TResult>
   TENANT_ID: string
   type: SUBSCRIPTION_TYPE
 }) => {
-  const subscriber = nats.subscribe(`${TENANT_ID || 'mds'}.${type}`, async (msg: any) => {
+  const subscriber = natsClient.subscribe(`${TENANT_ID || 'mds'}.${type}`, async (msg: any) => {
     return subscriptionCb(processor, msg)
   })
   return subscriber
@@ -61,33 +61,33 @@ export const initializeNatsSubscriber = async <TData, TResult>({
   TENANT_ID: string
   processor: EventProcessor<TData, TResult>
 }) => {
-  const nats = initializeNatsClient()
+  const natsClient = initializeNatsClient()
 
   try {
-    nats.on('connect', () => {
+    natsClient.on('connect', () => {
       logger.info('Connected!')
 
       /* Subscribe to all available types. Down the road, this should probably be a parameter passed in to the parent function. */
       return Promise.all(
         SUBSCRIPTION_TYPES.map(type => {
-          return natsSubscriber({ nats, processor, TENANT_ID, type })
+          return natsSubscriber({ natsClient, processor, TENANT_ID, type })
         })
       )
     })
 
-    nats.on('reconnect', () => {
+    natsClient.on('reconnect', () => {
       logger.info('Connected!')
 
       /* Subscribe to all available types. Down the road, this should probably be a parameter passed in to the parent function. */
       return Promise.all(
         SUBSCRIPTION_TYPES.map(type => {
-          return natsSubscriber({ nats, processor, TENANT_ID, type })
+          return natsSubscriber({ natsClient, processor, TENANT_ID, type })
         })
       )
     })
 
     /* istanbul ignore next */
-    nats.on('error', async err => {
+    natsClient.on('error', async err => {
       logger.error(err)
     })
   } catch (err) {
