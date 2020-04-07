@@ -49,6 +49,7 @@ const initializeNatsClient = () => {
   const { NATS = 'localhost' } = process.env
   return nats.connect(`nats://${NATS}:4222`, {
     reconnect: true,
+    waitOnFirstConnect: true,
     maxReconnectAttempts: -1 // Retry forever
   })
 }
