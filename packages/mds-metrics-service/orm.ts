@@ -30,17 +30,18 @@ export const readMetrics = async (
   { name, time_bin_size, start_time }: ReadMetricsRequiredParameters,
   { end_time, ...filters }: ReadMetricsOptionalParameters = {}
 ): Promise<MetricEntity[]> => {
-  const where = {
-    name,
-    time_bin_size,
-    time_bin_start: Between(
-      timeframe(time_bin_size, start_time).start_time,
-      timeframe(time_bin_size, end_time ?? start_time).end_time
-    ),
-    ...filters
-  }
   const connection = await manager.getReadWriteConnection()
-  const entities = await connection.getRepository(MetricEntity).find({ where })
+  const entities = await connection.getRepository(MetricEntity).find({
+    where: {
+      name,
+      time_bin_size,
+      time_bin_start: Between(
+        timeframe(time_bin_size, start_time).start_time,
+        timeframe(time_bin_size, end_time ?? start_time).end_time
+      ),
+      ...filters
+    }
+  })
   return entities
 }
 
