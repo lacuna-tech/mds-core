@@ -16,17 +16,31 @@
 
 import { ConnectionManager } from '@mds-core/mds-orm'
 import { InsertReturning } from '@mds-core/mds-orm/types'
-import { DeepPartial } from 'typeorm'
+import { DeepPartial, Between } from 'typeorm'
+import { timeframe } from '@mds-core/mds-utils'
 import ormconfig from './ormconfig'
 import { MetricEntity } from './entities'
+import { ReadMetricsRequiredParameters, ReadMetricsOptionalParameters } from './types'
 
 const manager = ConnectionManager(ormconfig)
 
 export const initialize = async () => manager.initialize()
 
-export const readMetrics = async (): Promise<MetricEntity[]> => {
+export const readMetrics = async (
+  { name, time_bin_size, start_time }: ReadMetricsRequiredParameters,
+  { end_time, ...filters }: ReadMetricsOptionalParameters = {}
+): Promise<MetricEntity[]> => {
+  const where = {
+    name,
+    time_bin_size,
+    time_bin_start: Between(
+      timeframe(time_bin_size, start_time).start_time,
+      timeframe(time_bin_size, end_time ?? start_time).end_time
+    ),
+    ...filters
+  }
   const connection = await manager.getReadWriteConnection()
-  const entities = await connection.getRepository(MetricEntity).createQueryBuilder().getMany()
+  const entities = await connection.getRepository(MetricEntity).find({ where })
   return entities
 }
 

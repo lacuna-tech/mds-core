@@ -98,8 +98,8 @@ function days(n: number) {
 // Based on a bin size (in ms), calculate the start/end of
 // the frame containing the timestamp.
 function timeframe(size: Timestamp, timestamp: Timestamp) {
-  const start = timestamp - (timestamp % size)
-  return { start, end: start + size - 1 }
+  const start_time = timestamp - (timestamp % size)
+  return { start_time, end_time: start_time + size - 1 }
 }
 
 /**

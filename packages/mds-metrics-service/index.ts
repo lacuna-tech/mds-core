@@ -17,6 +17,7 @@ import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-serv
 import logger from '@mds-core/mds-logger'
 import * as orm from './orm'
 import { MetricPersistenceModel } from './entities/metric-entity'
+import { ReadMetricsOptionalParameters, ReadMetricsRequiredParameters } from './types'
 
 export type MetricDomainModel = Omit<MetricPersistenceModel, 'id' | 'recorded'>
 
@@ -30,9 +31,12 @@ const writeMetrics = async (metrics: MetricDomainModel[]): Promise<ServiceRespon
   }
 }
 
-const readMetrics = async (): Promise<ServiceResponse<MetricDomainModel[]>> => {
+const readMetrics = async (
+  required: ReadMetricsRequiredParameters,
+  optional?: ReadMetricsOptionalParameters
+): Promise<ServiceResponse<MetricDomainModel[]>> => {
   try {
-    const entities = await orm.readMetrics()
+    const entities = await orm.readMetrics(required, optional)
     return ServiceResult(entities.map(({ id, recorded, ...entity }) => entity))
   } catch (error) /* istanbul ignore next */ {
     logger.error('Error Reading Metrics', error)
