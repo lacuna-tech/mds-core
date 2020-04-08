@@ -16,9 +16,9 @@
 
 import { ConnectionManager } from '@mds-core/mds-orm'
 import { InsertReturning } from '@mds-core/mds-orm/types'
-import { DeepPartial, Between, In } from 'typeorm'
+import { DeepPartial, Between } from 'typeorm'
 import { timeframe } from '@mds-core/mds-utils'
-import { SingleOrArray } from '@mds-core/mds-types'
+import { entityPropertyFilter } from '@mds-core/mds-orm/utils'
 import ormconfig from './ormconfig'
 import { MetricEntity } from './entities'
 import { ReadMetricsRequiredParameters, ReadMetricsOptionalParameters } from './types'
@@ -26,19 +26,6 @@ import { ReadMetricsRequiredParameters, ReadMetricsOptionalParameters } from './
 const manager = ConnectionManager(ormconfig)
 
 export const initialize = async () => manager.initialize()
-
-const singleOrArrayFilter = <T>(filter: string, value: SingleOrArray<T> | undefined) => {
-  if (value) {
-    if (Array.isArray(value)) {
-      if (value.length) {
-        return value.length === 1 ? { [filter]: value } : { [filter]: In(value) }
-      }
-    } else {
-      return { [filter]: value }
-    }
-  }
-  return {}
-}
 
 export const readMetrics = async (
   { name, time_bin_size, start_time }: ReadMetricsRequiredParameters,
@@ -53,9 +40,9 @@ export const readMetrics = async (
         timeframe(time_bin_size, start_time).start_time,
         timeframe(time_bin_size, end_time ?? start_time).end_time
       ),
-      ...singleOrArrayFilter('provider_id', provider_id),
-      ...singleOrArrayFilter('geography_id', geography_id),
-      ...singleOrArrayFilter('vehicle_type', vehicle_type)
+      ...entityPropertyFilter<MetricEntity, 'provider_id'>('provider_id', provider_id),
+      ...entityPropertyFilter<MetricEntity, 'geography_id'>('geography_id', geography_id),
+      ...entityPropertyFilter<MetricEntity, 'vehicle_type'>('vehicle_type', vehicle_type)
     }
   })
   return entities
