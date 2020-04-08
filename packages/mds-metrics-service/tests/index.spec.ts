@@ -19,6 +19,7 @@ import { v4 as uuid } from 'uuid'
 import { minutes, hours, timeframe } from '@mds-core/mds-utils'
 import { VEHICLE_TYPE } from '@mds-core/mds-types'
 import { MetricsService, MetricDomainModel } from '../index'
+import { ReadMetricsRequiredParameters, ReadMetricsOptionalParameters } from '../types'
 
 const TEST_METRIC_NAME = 'test.metric'
 
@@ -84,135 +85,174 @@ function* GenerateMetrics(): Generator<MetricDomainModel> {
 
 const TEST_METRICS = [...GenerateMetrics()]
 
+const testQuery = (
+  query: () => {
+    params: { required: ReadMetricsRequiredParameters; optional?: ReadMetricsOptionalParameters }
+    expected: MetricDomainModel[]
+  }
+) => {
+  const {
+    params: { required, optional },
+    expected
+  } = query()
+  return it(`Query Metrics${
+    optional ? ` Filters: ${JSON.stringify(Object.keys(optional)).replace(/"/g, '')}` : ''
+  } (Expect ${expected.length} Match${expected.length === 1 ? '' : 'es'})`, async () => {
+    const [error, metrics] = await MetricsService.readMetrics(required, optional)
+    test.value(metrics).isNot(null)
+    test.value(metrics?.length).is(expected.length)
+    test.value(error).is(null)
+  })
+}
+
 describe('Metrics Service', () => {
   before(async () => {
     await MetricsService.startup()
   })
 
-  it(`Generate ${TEST_METRICS.length} Metrics`, async () => {
+  it(`Generate ${TEST_METRICS.length} Metric${TEST_METRICS.length === 1 ? '' : 's'}`, async () => {
     const [error, metrics] = await MetricsService.writeMetrics(TEST_METRICS)
     test.value(metrics).isNot(null)
     test.value(metrics?.length).is(TEST_METRICS.length)
     test.value(error).is(null)
   })
 
-  it(`Query Metrics`, async () => {
+  testQuery(() => {
     const [time_bin_size] = TEST_TIME_BIN_SIZES
     const [timestamp] = TEST_TIMESTAMPS
     const { start_time, end_time } = timeframe(time_bin_size, timestamp)
-    const [error, metrics] = await MetricsService.readMetrics({
-      name: TEST_METRIC_NAME,
-      time_bin_size,
-      start_time: timestamp
-    })
-    test.value(metrics).isNot(null)
-    test
-      .value(metrics?.length)
-      .is(
-        TEST_METRICS.filter(
-          metric =>
-            metric.time_bin_size === time_bin_size &&
-            metric.time_bin_start >= start_time &&
-            metric.time_bin_start <= end_time
-        ).length
+    return {
+      params: {
+        required: {
+          name: TEST_METRIC_NAME,
+          time_bin_size,
+          start_time: timestamp
+        }
+      },
+      expected: TEST_METRICS.filter(
+        metric =>
+          metric.time_bin_size === time_bin_size &&
+          metric.time_bin_start >= start_time &&
+          metric.time_bin_start <= end_time
       )
-    test.value(error).is(null)
+    }
   })
 
-  it(`Query Metrics (provider_id)`, async () => {
+  testQuery(() => {
     const [time_bin_size] = TEST_TIME_BIN_SIZES
     const [timestamp] = TEST_TIMESTAMPS
     const { start_time, end_time } = timeframe(time_bin_size, timestamp)
     const [provider_id] = TEST_PROVIDER_IDS
-    const [error, metrics] = await MetricsService.readMetrics(
-      {
-        name: TEST_METRIC_NAME,
-        time_bin_size,
-        start_time: timestamp
+    return {
+      params: {
+        required: {
+          name: TEST_METRIC_NAME,
+          time_bin_size,
+          start_time: timestamp
+        },
+        optional: { provider_id }
       },
-      { provider_id }
-    )
-    test.value(metrics).isNot(null)
-    test
-      .value(metrics?.length)
-      .is(
-        TEST_METRICS.filter(
-          metric =>
-            metric.time_bin_size === time_bin_size &&
-            metric.time_bin_start >= start_time &&
-            metric.time_bin_start <= end_time &&
-            metric.provider_id === provider_id
-        ).length
+      expected: TEST_METRICS.filter(
+        metric =>
+          metric.time_bin_size === time_bin_size &&
+          metric.time_bin_start >= start_time &&
+          metric.time_bin_start <= end_time &&
+          metric.provider_id === provider_id
       )
-    test.value(error).is(null)
+    }
   })
 
-  it(`Query Metrics (provider_id, geography_id)`, async () => {
+  testQuery(() => {
     const [, time_bin_size] = TEST_TIME_BIN_SIZES
     const [timestamp] = TEST_TIMESTAMPS
     const { start_time, end_time } = timeframe(time_bin_size, timestamp)
     const [provider_id] = TEST_PROVIDER_IDS
     const [geography_id] = TEST_GEOGRAPHY_IDS
-    const [error, metrics] = await MetricsService.readMetrics(
-      {
-        name: TEST_METRIC_NAME,
-        time_bin_size,
-        start_time: timestamp
+    return {
+      params: {
+        required: {
+          name: TEST_METRIC_NAME,
+          time_bin_size,
+          start_time: timestamp
+        },
+        optional: { provider_id, geography_id }
       },
-      { provider_id, geography_id }
-    )
-    test.value(metrics).isNot(null)
-    test
-      .value(metrics?.length)
-      .is(
-        TEST_METRICS.filter(
-          metric =>
-            metric.time_bin_size === time_bin_size &&
-            metric.time_bin_start >= start_time &&
-            metric.time_bin_start <= end_time &&
-            metric.provider_id === provider_id &&
-            metric.geography_id &&
-            metric.geography_id === geography_id
-        ).length
+      expected: TEST_METRICS.filter(
+        metric =>
+          metric.time_bin_size === time_bin_size &&
+          metric.time_bin_start >= start_time &&
+          metric.time_bin_start <= end_time &&
+          metric.provider_id === provider_id &&
+          metric.geography_id &&
+          metric.geography_id === geography_id
       )
-    test.value(error).is(null)
+    }
   })
 
-  it(`Query Metrics (provider_id, geography_id, vehicle_type)`, async () => {
+  testQuery(() => {
     const [, , time_bin_size] = TEST_TIME_BIN_SIZES
     const [timestamp] = TEST_TIMESTAMPS
     const { start_time, end_time } = timeframe(time_bin_size, timestamp)
     const [provider_id1, provider_id2] = TEST_PROVIDER_IDS
     const [geography_id1, geography_id2] = TEST_GEOGRAPHY_IDS
     const [vehicle_type1, vehicle_type2] = TEST_VEHICLE_TYPES
-    const [error, metrics] = await MetricsService.readMetrics(
-      {
-        name: TEST_METRIC_NAME,
-        time_bin_size,
-        start_time: timestamp
+    return {
+      params: {
+        required: {
+          name: TEST_METRIC_NAME,
+          time_bin_size,
+          start_time: timestamp
+        },
+        optional: {
+          provider_id: [provider_id1, provider_id2],
+          geography_id: [geography_id1, geography_id2],
+          vehicle_type: [vehicle_type1, vehicle_type2]
+        }
       },
-      {
-        provider_id: [provider_id1, provider_id2],
-        geography_id: [geography_id1, geography_id2],
-        vehicle_type: [vehicle_type1, vehicle_type2]
-      }
-    )
-    test.value(metrics).isNot(null)
-    test
-      .value(metrics?.length)
-      .is(
-        TEST_METRICS.filter(
-          metric =>
-            metric.time_bin_size === time_bin_size &&
-            metric.time_bin_start >= start_time &&
-            metric.time_bin_start <= end_time &&
-            [provider_id1, provider_id2].includes(metric.provider_id) &&
-            metric.geography_id &&
-            [geography_id1, geography_id2].includes(metric.geography_id) &&
-            [vehicle_type1, vehicle_type2].includes(metric.vehicle_type)
-        ).length
+      expected: TEST_METRICS.filter(
+        metric =>
+          metric.time_bin_size === time_bin_size &&
+          metric.time_bin_start >= start_time &&
+          metric.time_bin_start <= end_time &&
+          [provider_id1, provider_id2].includes(metric.provider_id) &&
+          metric.geography_id &&
+          [geography_id1, geography_id2].includes(metric.geography_id) &&
+          [vehicle_type1, vehicle_type2].includes(metric.vehicle_type)
       )
-    test.value(error).is(null)
+    }
+  })
+
+  testQuery(() => {
+    const [, , time_bin_size] = TEST_TIME_BIN_SIZES
+    const [timestamp] = TEST_TIMESTAMPS
+    const { start_time, end_time } = timeframe(time_bin_size, timestamp)
+    const [provider_id] = TEST_PROVIDER_IDS
+    const [geography_id] = TEST_GEOGRAPHY_IDS
+    const [vehicle_type] = TEST_VEHICLE_TYPES
+    return {
+      params: {
+        required: {
+          name: TEST_METRIC_NAME,
+          time_bin_size,
+          start_time: timestamp
+        },
+        optional: {
+          provider_id,
+          geography_id,
+          vehicle_type
+        }
+      },
+      expected: TEST_METRICS.filter(
+        metric =>
+          metric.time_bin_size === time_bin_size &&
+          metric.time_bin_start >= start_time &&
+          metric.time_bin_start <= end_time &&
+          metric.provider_id === provider_id &&
+          metric.geography_id &&
+          metric.geography_id === geography_id &&
+          metric.vehicle_type === vehicle_type
+      )
+    }
   })
 
   after(async () => {
