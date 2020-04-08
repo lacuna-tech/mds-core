@@ -590,6 +590,14 @@ function normalizeToArray<T>(elementToNormalize: T | T[] | undefined): T[] {
   return [elementToNormalize]
 }
 
+const getEnvVar = <TProps extends { [name: string]: string }>(props: TProps): TProps =>
+  Object.keys(props).reduce((env, key) => {
+    return {
+      ...env,
+      [key]: process.env[key] || props[key]
+    }
+  }, {} as TProps)
+
 export {
   UUID_REGEX,
   isUUID,
@@ -635,5 +643,6 @@ export {
   moved,
   normalizeToArray,
   parseRelative,
-  getCurrentDate
+  getCurrentDate,
+  getEnvVar
 }
