@@ -55,7 +55,7 @@ const getBinding = () => {
 
 const getNats = () => {
   if (!natsClient) {
-    natsClient = NATS.connect(`nats://${NATS}:4222`, {
+    natsClient = nats.connect(`nats://${NATS}:4222`, {
       reconnect: true
     })
 
