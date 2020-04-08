@@ -171,6 +171,7 @@ describe('Metrics Service', () => {
             metric.time_bin_start >= start_time &&
             metric.time_bin_start <= end_time &&
             metric.provider_id === provider_id &&
+            metric.geography_id &&
             metric.geography_id === geography_id
         ).length
       )
@@ -181,16 +182,20 @@ describe('Metrics Service', () => {
     const [, , time_bin_size] = TEST_TIME_BIN_SIZES
     const [timestamp] = TEST_TIMESTAMPS
     const { start_time, end_time } = timeframe(time_bin_size, timestamp)
-    const [provider_id] = TEST_PROVIDER_IDS
-    const [geography_id] = TEST_GEOGRAPHY_IDS
-    const [vehicle_type] = TEST_VEHICLE_TYPES
+    const [provider_id1, provider_id2] = TEST_PROVIDER_IDS
+    const [geography_id1, geography_id2] = TEST_GEOGRAPHY_IDS
+    const [vehicle_type1, vehicle_type2] = TEST_VEHICLE_TYPES
     const [error, metrics] = await MetricsService.readMetrics(
       {
         name: TEST_METRIC_NAME,
         time_bin_size,
         start_time: timestamp
       },
-      { provider_id, geography_id, vehicle_type }
+      {
+        provider_id: [provider_id1, provider_id2],
+        geography_id: [geography_id1, geography_id2],
+        vehicle_type: [vehicle_type1, vehicle_type2]
+      }
     )
     test.value(metrics).isNot(null)
     test
@@ -201,9 +206,10 @@ describe('Metrics Service', () => {
             metric.time_bin_size === time_bin_size &&
             metric.time_bin_start >= start_time &&
             metric.time_bin_start <= end_time &&
-            metric.provider_id === provider_id &&
-            metric.geography_id === geography_id &&
-            metric.vehicle_type === vehicle_type
+            [provider_id1, provider_id2].includes(metric.provider_id) &&
+            metric.geography_id &&
+            [geography_id1, geography_id2].includes(metric.geography_id) &&
+            [vehicle_type1, vehicle_type2].includes(metric.vehicle_type)
         ).length
       )
     test.value(error).is(null)

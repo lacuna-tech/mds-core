@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { Timestamp, UUID, VEHICLE_TYPE } from '@mds-core/mds-types'
+import { Timestamp, UUID, VEHICLE_TYPE, SingleOrArray } from '@mds-core/mds-types'
 
 export interface ReadMetricsRequiredParameters {
   name: string
@@ -24,7 +24,7 @@ export interface ReadMetricsRequiredParameters {
 
 export type ReadMetricsOptionalParameters = Partial<{
   end_time: Timestamp
-  provider_id: UUID
-  geography_id: UUID
-  vehicle_type: VEHICLE_TYPE
+  provider_id: SingleOrArray<UUID>
+  geography_id: SingleOrArray<UUID>
+  vehicle_type: SingleOrArray<VEHICLE_TYPE>
 }>
