@@ -17,7 +17,7 @@
 import logger from '@mds-core/mds-logger'
 import redis from 'redis'
 import bluebird from 'bluebird'
-import NATS from 'nats'
+import nats from 'nats'
 import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
 import { getEnvVar } from '@mds-core/mds-utils'
@@ -37,7 +37,9 @@ import { KafkaStreamProducer } from './kafka/stream-producer'
 
 const { env } = process
 
-let nats: NATS.Client
+const { NATS } = getEnvVar({ NATS: 'localhost' })
+
+let natsClient: nats.Client
 
 let binding: BinaryHTTPEmitter | null = null
 
@@ -52,17 +54,17 @@ const getBinding = () => {
 }
 
 const getNats = () => {
-  if (!nats) {
-    nats = NATS.connect(`nats://${env.NATS}:4222`, {
+  if (!natsClient) {
+    natsClient = NATS.connect(`nats://${NATS}:4222`, {
       reconnect: true
     })
 
-    nats.on('error', async message => {
+    natsClient.on('error', async message => {
       logger.error(message)
     })
   }
 
-  return nats
+  return natsClient
 }
 
 /* Currently unused code, keeping it in the case that we decide to switch back to Knative Eventing */
@@ -87,7 +89,7 @@ async function writeNatsEvent(type: string, data: string) {
   })
 
   if (env.NATS) {
-    const event = cloudevent().type(`${TENANT_ID}.${type}`).source(env.NATS).data(data)
+    const event = cloudevent().type(`${TENANT_ID}.${type}`).source(NATS).data(data)
     getNats().publish(`${TENANT_ID}.${type}`, JSON.stringify(event))
   }
 }
