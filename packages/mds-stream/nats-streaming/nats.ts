@@ -7,7 +7,7 @@ export type EventProcessor<TData, TResult> = (type: string, data: TData) => Prom
 const SUBSCRIPTION_TYPES = ['event', 'telemetry'] as const
 type SUBSCRIPTION_TYPE = typeof SUBSCRIPTION_TYPES[number]
 
-const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, TResult>, msg: any) => {
+const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, TResult>, msg: string) => {
   const { TENANT_ID } = getEnvVar({
     TENANT_ID: 'mds'
   })
@@ -18,14 +18,12 @@ const subscriptionCb = async <TData, TResult>(processor: EventProcessor<TData, T
       spec: {
         payload: { data, type }
       }
-    } = JSON.parse(msg.getRawData().toString())
+    } = JSON.parse(msg)
 
     const parsedData = JSON.parse(data)
 
     await processor(type.replace(TENANT_REGEXP, ''), parsedData)
-    msg.ack()
   } catch (err) {
-    msg.ack()
     logger.error(err)
   }
 }
@@ -41,7 +39,7 @@ const natsSubscriber = async <TData, TResult>({
   TENANT_ID: string
   type: SUBSCRIPTION_TYPE
 }) => {
-  const subscriber = natsClient.subscribe(`${TENANT_ID}.${type}`, async (msg: any) => {
+  const subscriber = natsClient.subscribe(`${TENANT_ID}.${type}`, async (msg: string) => {
     return subscriptionCb(processor, msg)
   })
   return subscriber
