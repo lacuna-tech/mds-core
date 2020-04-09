@@ -19,9 +19,9 @@ import { InsertReturning } from '@mds-core/mds-orm/types'
 import { DeepPartial, Between } from 'typeorm'
 import { timeframe } from '@mds-core/mds-utils'
 import { entityPropertyFilter } from '@mds-core/mds-orm/utils'
-import ormconfig from './ormconfig'
+import ormconfig from './config'
 import { MetricEntity } from './entities'
-import { ReadMetricsTimeBinParameter, ReadMetricsFiltersParameter } from './types'
+import { ReadMetricsTimeBinParameter, ReadMetricsFiltersParameter } from '../../types'
 
 const manager = ConnectionManager(ormconfig)
 
