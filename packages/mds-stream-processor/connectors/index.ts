@@ -1,5 +1,5 @@
 /*
-    Copyright 2019 City of Los Angeles.
+    Copyright 2019-2020 City of Los Angeles.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,4 +14,7 @@
     limitations under the License.
  */
 
-export { api } from './api'
+import { StreamProducer, StreamConsumer } from '@mds-core/mds-stream/stream-interface'
+
+export type StreamSource<TMessage> = (processor: (message: TMessage) => Promise<void>) => StreamConsumer
+export type StreamSink<TMessage> = () => StreamProducer<TMessage>

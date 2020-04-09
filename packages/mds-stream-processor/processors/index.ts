@@ -14,4 +14,39 @@
     limitations under the License.
  */
 
-export * from './mds-event-processor'
+import { StreamSource, StreamSink } from '../connectors'
+
+export type StreamTransform<TMessageIn, TMessageOut> = (message: TMessageIn) => Promise<TMessageOut | null>
+
+export interface StreamProcessorController {
+  start: () => Promise<void>
+  stop: () => Promise<void>
+}
+
+// StreamProcessor - Read from source, apply transform to each message, and write to sink
+export const StreamProcessor = <TMessageIn, TMessageOut>(
+  source: StreamSource<TMessageIn>,
+  transform: StreamTransform<TMessageIn, TMessageOut>,
+  sink: StreamSink<TMessageOut>
+): StreamProcessorController => {
+  const producer = sink()
+  const consumer = source(async message => {
+    const transformed = await transform(message)
+    if (transformed) {
+      await producer.write(transformed)
+    }
+  })
+  return {
+    start: async () => {
+      await producer.initialize()
+      await consumer.initialize()
+    },
+    stop: async () => {
+      await Promise.all([consumer.shutdown(), producer.shutdown()])
+    }
+  }
+}
+
+// StreamTap - Read from source and write to sink (no transform)
+export const StreamTap = <TMessage>(source: StreamSource<TMessage>, sink: StreamSink<TMessage>) =>
+  StreamProcessor(source, async message => message, sink)

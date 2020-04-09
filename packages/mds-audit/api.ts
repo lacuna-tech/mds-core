@@ -70,6 +70,7 @@ import {
   AuditApiVehicleEventRequest,
   AuditApiVehicleTelemetryRequest
 } from './types'
+import { AuditApiVersionMiddleware } from './middleware'
 import {
   deleteAudit,
   getVehicle,
@@ -112,6 +113,7 @@ function flattenTelemetry(telemetry?: Telemetry): TelemetryData {
 }
 
 function api(app: express.Express): express.Express {
+  app.use(AuditApiVersionMiddleware)
   /**
    * Audit-specific middleware to extract subject_id into locals, do some logging, etc.
    * NOTE that audit will be city-facing only, not Providers.
@@ -223,6 +225,7 @@ function api(app: express.Express): express.Express {
 
             // 200 OK
             return res.status(200).send({
+              version: res.locals.version,
               provider_id,
               provider_name,
               provider_vehicle_id,
@@ -278,7 +281,9 @@ function api(app: express.Express): express.Express {
             })
 
             // 200 OK
-            return res.status(200).send({})
+            return res.status(200).send({
+              version: res.locals.version
+            })
           }
         } else {
           // 404 Not Found
@@ -324,7 +329,9 @@ function api(app: express.Express): express.Express {
             })
 
             // 200 OK
-            return res.status(200).send({})
+            return res.status(200).send({
+              version: res.locals.version
+            })
           }
         } else {
           // 404 Not Found
@@ -390,7 +397,9 @@ function api(app: express.Express): express.Express {
             })
 
             // 200 OK
-            return res.status(200).send({})
+            return res.status(200).send({
+              version: res.locals.version
+            })
           }
         } else {
           // 404 Not Found
@@ -440,7 +449,9 @@ function api(app: express.Express): express.Express {
             })
 
             // 200 OK
-            return res.status(200).send({})
+            return res.status(200).send({
+              version: res.locals.version
+            })
           }
         } else {
           // 404 Not Found
@@ -465,7 +476,7 @@ function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/trips/:audit_trip_id'),
     checkAccess(scopes => scopes.includes('audits:read')),
-    async (req: AuditApiGetTripRequest, res: AuditApiResponse<AuditDetails>) => {
+    async (req: AuditApiGetTripRequest, res: AuditApiResponse<AuditDetails> & ) => {
       try {
         const { audit_trip_id, audit } = res.locals
 

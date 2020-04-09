@@ -49,7 +49,7 @@ import * as attachments from '../attachments'
 
 const request = supertest(ApiServer(api))
 
-const APP_JSON = 'application/json; charset=utf-8'
+const APP_JSON = 'application/vnd.mds.audit+json; charset=utf-8; version=0.1'
 
 const audit_trip_id = uuid()
 const audit_trip_id_2 = uuid()
@@ -143,6 +143,8 @@ describe('Testing API', () => {
       })
       .expect(200)
       .end((err, result) => {
+        console.log('resssss')
+        console.log(result.header)
         test.value(result).hasHeader('content-type', APP_JSON)
         test.object(result).hasProperty('body')
         test.object(result.body).hasProperty('provider_device')

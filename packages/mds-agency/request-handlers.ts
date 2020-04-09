@@ -1,5 +1,4 @@
 import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
-import areas from 'ladot-service-areas'
 import logger from '@mds-core/mds-logger'
 import { isUUID, now, ServerError, ValidationError, NotFoundError, normalizeToArray } from '@mds-core/mds-utils'
 import { isValidStop, isValidDevice, validateEvent, isValidTelemetry } from '@mds-core/mds-schema-validators'
@@ -27,7 +26,6 @@ import {
   writeTelemetry,
   badEvent,
   badTelemetry,
-  getServiceArea,
   writeRegisterEvent,
   readPayload,
   computeCompositeVehicleData
@@ -35,51 +33,6 @@ import {
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 stream.initialize()
-
-export const getAllServiceAreas = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
-  try {
-    const serviceAreas = await areas.readServiceAreas()
-    logger.info('readServiceAreas (all)', serviceAreas.length)
-    return res.status(200).send({
-      service_areas: serviceAreas
-    })
-  } catch (err) {
-    /* istanbul ignore next */
-    logger.error('failed to read service areas', err)
-    return res.status(404).send({
-      result: 'not found'
-    })
-  }
-}
-
-export const getServiceAreaById = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
-  const { service_area_id } = req.params
-
-  if (!isUUID(service_area_id)) {
-    return res.status(400).send({
-      result: `invalid service_area_id ${service_area_id} is not a UUID`
-    })
-  }
-
-  try {
-    const serviceAreas = await areas.readServiceAreas(undefined, service_area_id)
-
-    if (serviceAreas && serviceAreas.length > 0) {
-      logger.info('readServiceAreas (one)')
-      return res.status(200).send({
-        service_areas: serviceAreas
-      })
-    }
-  } catch {
-    return res.status(404).send({
-      result: `${service_area_id} not found`
-    })
-  }
-
-  return res.status(404).send({
-    result: `${service_area_id} not found`
-  })
-}
 
 export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   const { body } = req
@@ -149,13 +102,10 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiRespo
 export const getVehicleById = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   const { device_id } = req.params
 
-  const { cached } = req.query
-
   const { provider_id } = res.locals.scopes.includes('vehicles:read') ? req.query : res.locals
 
-  logger.info(`/vehicles/${device_id}`, cached)
-  const store = cached ? cache : db
-  const payload = await readPayload(store, device_id)
+  const payload = await readPayload(device_id)
+
   if (!payload.device || (provider_id && payload.device.provider_id !== provider_id)) {
     res.status(404).send({
       error: 'not_found'
@@ -335,9 +285,6 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
       return res.status(400).send(failure)
     }
 
-    // make a note of the service area
-    event.service_area_id = getServiceArea(event)
-
     const { telemetry } = event
     if (telemetry) {
       await db.writeTelemetry(normalizeToArray(telemetry))
@@ -356,7 +303,7 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
 
       await success()
     } catch (err) {
-      logger.warn('/event exception cache/stream/socket', err)
+      logger.warn('/event exception cache/stream', err)
       await success()
     }
   } catch (err) {

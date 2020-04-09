@@ -44,7 +44,7 @@ import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-cache'
 import stream from '@mds-core/mds-stream'
 import { shutdown as socketShutdown } from '@mds-core/mds-web-sockets'
-import { makeDevices, makeEvents, GEOGRAPHY_UUID, LA_CITY_BOUNDARY } from '@mds-core/mds-test-data'
+import { makeDevices, makeEvents, GEOGRAPHY_UUID, LA_CITY_BOUNDARY, JUMP_TEST_DEVICE_1 } from '@mds-core/mds-test-data'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID } from '@mds-core/mds-providers'
 
@@ -61,7 +61,6 @@ function now(): Timestamp {
 
 const APP_JSON = 'application/json; charset=utf-8'
 
-const LA_CITY_BOUNDARY_ID = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 const PROVIDER_SCOPES = 'admin:all'
 const DEVICE_UUID = 'ec551174-f324-4251-bfed-28d9f3f473fc'
 const TRIP_UUID = '1f981864-cc17-40cf-aea3-70fd985e2ea7'
@@ -118,6 +117,8 @@ const LAGeography: Geography = {
   geography_id: GEOGRAPHY_UUID,
   geography_json: LA_CITY_BOUNDARY
 }
+
+const JUMP_TEST_DEVICE_1_ID = JUMP_TEST_DEVICE_1.device_id
 
 function deepCopy<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
@@ -1356,71 +1357,30 @@ describe('Tests API', () => {
       })
   })
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  it('verifies reading a single service_area', done => {
-    request
-      .get(`/service_areas/${LA_CITY_BOUNDARY_ID}`)
-      .set('Authorization', AUTH)
-      .expect(200)
-      .end((err, result) => {
-        if (err) {
-          log('service_area err', err)
-          test.value(err).is(undefined) // fail
-        } else {
-          // log('service_area result', Object.keys(result.body))
-          test.object(result.body).match((obj: any) => Array.isArray(obj.service_areas))
-          test.object(result.body).match((obj: any) => typeof obj.service_areas[0].service_area_id === 'string')
-        }
-        done(err)
-      })
-  })
-  /* eslint-enable @typescript-eslint/no-explicit-any */
+  it('verifies get device defaults to `deregister` if cache misses reads for associated events', async () => {
+    await request.post('/vehicles').set('Authorization', AUTH).send(JUMP_TEST_DEVICE_1).expect(201)
 
-  it('tries and fails to read a non-existent service_area', done => {
-    request
-      .get('/service_areas/b4bcc213-4888-48ce-a33d-4dd6c3384bda')
+    await request
+      .post(`/vehicles/${JUMP_TEST_DEVICE_1_ID}/event`)
       .set('Authorization', AUTH)
-      .expect(404)
-      .end((err, result) => {
-        log(result.body)
-        if (err) {
-          log('service_area err', err)
-        } else {
-          // really only care that we got a 404
-        }
-        done(err)
-      })
-  })
-  it('verifies you cannot query service_areas that are not UUIDs', done => {
-    request
-      .get('/service_areas/definitely-not-a-UUID')
-      .set('Authorization', AUTH)
-      .expect(400)
-      .end((err, result) => {
-        test.value(result).hasHeader('content-type', APP_JSON)
-        test.string(result.body.result).contains('invalid service_area_id')
-        done(err)
-      })
+      .send({ device_id: JUMP_TEST_DEVICE_1, timestamp: now(), event_type: VEHICLE_EVENTS.deregister })
+      .expect(201)
+
+    const result = await request.get(`/vehicles/${JUMP_TEST_DEVICE_1_ID}`).set('Authorization', AUTH).expect(200)
+    test.assert(result.body.status === VEHICLE_STATUSES.inactive)
+    test.assert(result.body.prev_event === VEHICLE_EVENTS.deregister)
   })
 
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  it('verifies reading all service_areas', done => {
-    request
-      .get('/service_areas')
-      .set('Authorization', AUTH)
-      .expect(200)
-      .end((err, result) => {
-        if (err) {
-          log('service_areas err', err)
-        } else {
-          // log('service_areas result', Object.keys(result.body))
-          test.object(result.body).match((obj: any) => Array.isArray(obj.service_areas))
-          test.object(result.body).match((obj: any) => typeof obj.service_areas[0].service_area_id === 'string')
-        }
-        done(err)
-      })
+  it('get multiple devices endpoint has vehicle status default to `inactive` if event is missing for a device', async () => {
+    const result = await request.get(`/vehicles/`).set('Authorization', AUTH).expect(200)
+    const ids = result.body.vehicles.map((device: any) => device.device_id)
+    test.assert(ids.includes(JUMP_TEST_DEVICE_1_ID))
+    result.body.vehicles.map((device: any) => {
+      if (device.device_id === JUMP_TEST_DEVICE_1_ID) {
+        test.assert(device.status === VEHICLE_STATUSES.inactive)
+      }
+    })
   })
-  /* eslint-enable @typescript-eslint/no-explicit-any */
 
   it('gets cache info', done => {
     request

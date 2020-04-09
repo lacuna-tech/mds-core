@@ -40,13 +40,14 @@ import {
   START_ONE_MONTH_AGO,
   START_ONE_WEEK_AGO,
   PROVIDER_SCOPES,
-  GEOGRAPHY2_UUID
+  GEOGRAPHY2_UUID,
+  veniceSpecOps
 } from '@mds-core/mds-test-data'
+
 import { la_city_boundary } from './la-city-boundary'
 import { api } from '../api'
 import { POLICY_API_DEFAULT_VERSION } from '../types'
 /* eslint-disable-next-line @typescript-eslint/no-var-requires */
-const veniceSpecialOpsZone = require('../../ladot-service-areas/venice-special-ops-zone')
 
 /* eslint-disable-next-line no-console */
 const log = console.log.bind(console)
@@ -83,6 +84,7 @@ describe('Tests app', () => {
 
   it('read back one policy', async () => {
     await db.writePolicy(POLICY_JSON)
+    await db.publishGeography({ geography_id: GEOGRAPHY_UUID })
     await db.publishPolicy(POLICY_UUID)
     const result = await request.get(`/policies/${POLICY_UUID}`).set('Authorization', AUTH).expect(200)
     const body = result.body
@@ -107,9 +109,11 @@ describe('Tests app', () => {
     await db.writeGeography({
       name: 'Los Angeles',
       geography_id: GEOGRAPHY2_UUID,
-      geography_json: veniceSpecialOpsZone
+      geography_json: veniceSpecOps
     })
     await db.writePolicy(POLICY2_JSON)
+    await db.publishGeography({ geography_id: GEOGRAPHY_UUID })
+    await db.publishGeography({ geography_id: GEOGRAPHY2_UUID })
     await db.publishPolicy(POLICY2_JSON.policy_id)
     await db.writePolicy(POLICY3_JSON)
     await db.publishPolicy(POLICY3_JSON.policy_id)
@@ -124,6 +128,8 @@ describe('Tests app', () => {
     log('read back all published policies response:', body)
     test.value(body.policies.length).is(3)
     test.value(body.version).is(POLICY_API_DEFAULT_VERSION)
+    console.log('resssss')
+    console.log(result.header)
     test.value(result).hasHeader('content-type', APP_JSON)
     const isSupersededPolicyPresent = body.policies.some((policy: Policy) => {
       return policy.policy_id === POLICY_JSON.policy_id

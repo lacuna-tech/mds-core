@@ -25,6 +25,7 @@ import { PolicyApiRequest, PolicyApiResponse } from './types'
 import { PolicyApiVersionMiddleware } from './middleware'
 
 function api(app: express.Express): express.Express {
+  app.use(PolicyApiVersionMiddleware)
   /**
    * Policy-specific middleware to extract provider_id into locals, do some logging, etc.
    */
@@ -62,8 +63,6 @@ function api(app: express.Express): express.Express {
     }
     next()
   })
-
-  app.use(PolicyApiVersionMiddleware)
 
   app.get(pathsFor('/policies'), async (req, res) => {
     // TODO extract start/end applicability

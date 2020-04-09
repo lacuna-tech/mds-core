@@ -15,8 +15,27 @@
  */
 
 import { Audit, Telemetry, Timestamp, UUID } from '@mds-core/mds-types'
-import { ApiRequest, ApiResponse, ApiResponseLocals } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiVersionedResponse, ApiVersionedResponseLocals } from '@mds-core/mds-api-server'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
+/*
+    Copyright 2019 City of Los Angeles.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ */
+
+export const AUDIT_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
+export type AUDIT_API_SUPPORTED_VERSION = typeof AUDIT_API_SUPPORTED_VERSIONS[number]
+export const [AUDIT_API_DEFAULT_VERSION] = AUDIT_API_SUPPORTED_VERSIONS
 
 // Allow adding type definitions for Express Request objects
 export type AuditApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
@@ -101,7 +120,20 @@ export interface AuditApiGetVehicleRequest extends AuditApiRequest {
 }
 
 // Allow adding type definitions for Express Response objects
-export interface AuditApiResponse<T = {}> extends ApiResponse<T> {
+export type AuditApiResponse<T extends {}> = ApiVersionedResponse<
+  AUDIT_API_SUPPORTED_VERSION,
+  {}
+> /* {
+  locals: ApiVersionedResponseLocals<AUDIT_API_SUPPORTED_VERSION> & {
+    audit_subject_id: string
+    audit_trip_id: UUID
+    audit: Audit | null
+    recorded: Timestamp
+  }
+}
+  */
+
+/* export interface AuditApiResponse<T = {}> extends ApiResponse<T> {
   locals: ApiResponseLocals & {
     audit_subject_id: string
     audit_trip_id: UUID
@@ -109,3 +141,4 @@ export interface AuditApiResponse<T = {}> extends ApiResponse<T> {
     recorded: Timestamp
   }
 }
+*/

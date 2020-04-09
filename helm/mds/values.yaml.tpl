@@ -29,11 +29,6 @@ apis:
     pathPrefix: /jurisdiction
     version: ${JURISDICTION_VERSION}
     migration: false
-  mds-native:
-    enabled: true
-    pathPrefix: /native
-    version: ${NATIVE_VERSION}
-    migration: false
   mds-policy-author:
     enabled: true
     pathPrefix: /policy-author
