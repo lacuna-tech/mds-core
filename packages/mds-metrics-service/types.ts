@@ -20,23 +20,23 @@ import { MetricEntityModel } from './server/orm/entities/metric-entity'
 
 export type MetricDomainModel = Omit<MetricEntityModel, 'id' | 'recorded'>
 
-export interface ReadMetricsTimeBinParameter {
+export interface ReadMetricsTimeOptions {
   time_bin_size: number
   time_bin_start: Timestamp
   time_bin_end?: Timestamp
 }
 
-export type ReadMetricsFiltersParameter = Partial<{
+export interface ReadMetricsFilterOptions {
   provider_id: SingleOrArray<UUID>
   geography_id: SingleOrArray<UUID>
   vehicle_type: SingleOrArray<VEHICLE_TYPE>
-}>
+}
+
+export interface ReadMetricsOptions extends ReadMetricsTimeOptions, Partial<ReadMetricsFilterOptions> {
+  name: string
+}
 
 export interface MetricsServiceInterface {
   writeMetrics: (metrics: MetricDomainModel[]) => Promise<ServiceResponse<MetricDomainModel[]>>
-  readMetrics: (
-    name: string,
-    bin: ReadMetricsTimeBinParameter,
-    filters?: ReadMetricsFiltersParameter
-  ) => Promise<ServiceResponse<MetricDomainModel[]>>
+  readMetrics: (options: ReadMetricsOptions) => Promise<ServiceResponse<MetricDomainModel[]>>
 }

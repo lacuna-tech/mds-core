@@ -16,17 +16,15 @@
 
 import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
-import { MetricDomainModel, ReadMetricsTimeBinParameter, ReadMetricsFiltersParameter } from '../../types'
+import { MetricDomainModel, ReadMetricsOptions } from '../../types'
 import { readMetrics } from '../orm'
 import { asMetricDomainModel } from '../utils'
 
 export const ReadMetricsHandler = async (
-  name: string,
-  bin: ReadMetricsTimeBinParameter,
-  filters?: ReadMetricsFiltersParameter
+  options: ReadMetricsOptions
 ): Promise<ServiceResponse<MetricDomainModel[]>> => {
   try {
-    const entities = await readMetrics(name, bin, filters)
+    const entities = await readMetrics(options)
     return ServiceResult(entities.map(asMetricDomainModel))
   } catch (error) /* istanbul ignore next */ {
     logger.error('Error Reading Metrics', error)
