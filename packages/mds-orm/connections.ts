@@ -55,7 +55,6 @@ export const Connections = (options: Partial<PostgresConnectionOptions> = {}): C
     logger: 'simple-console',
     synchronize: false,
     migrationsRun: PG_MIGRATIONS === 'true' && name === 'rw',
-    migrationsTableName: 'migration_history',
     namingStrategy: new MdsNamingStrategy(),
     cli: {
       entitiesDir: './entities',

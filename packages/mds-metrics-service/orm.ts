@@ -21,15 +21,16 @@ import { timeframe } from '@mds-core/mds-utils'
 import { entityPropertyFilter } from '@mds-core/mds-orm/utils'
 import ormconfig from './ormconfig'
 import { MetricEntity } from './entities'
-import { ReadMetricsRequiredParameters, ReadMetricsOptionalParameters } from './types'
+import { ReadMetricsTimeBinParameter, ReadMetricsFiltersParameter } from './types'
 
 const manager = ConnectionManager(ormconfig)
 
 export const initialize = async () => manager.initialize()
 
 export const readMetrics = async (
-  { name, time_bin_size, start_time }: ReadMetricsRequiredParameters,
-  { end_time, provider_id, geography_id, vehicle_type }: ReadMetricsOptionalParameters = {}
+  name: string,
+  { time_bin_size, time_bin_start, time_bin_end }: ReadMetricsTimeBinParameter,
+  { provider_id, geography_id, vehicle_type }: ReadMetricsFiltersParameter = {}
 ): Promise<MetricEntity[]> => {
   const connection = await manager.getReadWriteConnection()
   const entities = await connection.getRepository(MetricEntity).find({
@@ -37,8 +38,8 @@ export const readMetrics = async (
       name,
       time_bin_size,
       time_bin_start: Between(
-        timeframe(time_bin_size, start_time).start_time,
-        timeframe(time_bin_size, end_time ?? start_time).end_time
+        timeframe(time_bin_size, time_bin_start).start_time,
+        timeframe(time_bin_size, time_bin_end ?? time_bin_start).end_time
       ),
       ...entityPropertyFilter<MetricEntity, 'provider_id'>('provider_id', provider_id),
       ...entityPropertyFilter<MetricEntity, 'geography_id'>('geography_id', geography_id),

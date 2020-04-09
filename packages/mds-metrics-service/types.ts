@@ -16,14 +16,13 @@
 
 import { Timestamp, UUID, VEHICLE_TYPE, SingleOrArray } from '@mds-core/mds-types'
 
-export interface ReadMetricsRequiredParameters {
-  name: string
+export interface ReadMetricsTimeBinParameter {
   time_bin_size: number
-  start_time: Timestamp
+  time_bin_start: Timestamp
+  time_bin_end?: Timestamp
 }
 
-export type ReadMetricsOptionalParameters = Partial<{
-  end_time: Timestamp
+export type ReadMetricsFiltersParameter = Partial<{
   provider_id: SingleOrArray<UUID>
   geography_id: SingleOrArray<UUID>
   vehicle_type: SingleOrArray<VEHICLE_TYPE>

@@ -11,12 +11,7 @@ export const initialize = async () => manager.initialize()
 
 export const readJurisdiction = async (jurisdiction_id: UUID): Promise<JurisdictionEntity | undefined> => {
   const connection = await manager.getReadWriteConnection()
-  const entity = await connection
-    .getRepository(JurisdictionEntity)
-    .createQueryBuilder()
-    .where({ jurisdiction_id })
-    .getOne()
-  return entity
+  return connection.getRepository(JurisdictionEntity).createQueryBuilder().where({ jurisdiction_id }).getOne()
 }
 
 export const readJurisdictions = async (): Promise<JurisdictionEntity[]> => {
