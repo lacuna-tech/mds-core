@@ -18,7 +18,7 @@ import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-serv
 import logger from '@mds-core/mds-logger'
 import { writeMetrics } from '../orm'
 import { MetricDomainModel } from '../../@types'
-import { asMetricDomainModel, asMetricEntityModel } from '../utils'
+import { asMetricDomainModel, asMetricEntityModel } from './utils'
 
 export const WriteMetricsHandler = async (
   metrics: MetricDomainModel[]

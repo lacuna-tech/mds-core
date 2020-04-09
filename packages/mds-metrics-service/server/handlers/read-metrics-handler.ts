@@ -18,7 +18,7 @@ import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-serv
 import logger from '@mds-core/mds-logger'
 import { MetricDomainModel, ReadMetricsOptions } from '../../@types'
 import { readMetrics } from '../orm'
-import { asMetricDomainModel } from '../utils'
+import { asMetricDomainModel } from './utils'
 
 export const ReadMetricsHandler = async (
   options: ReadMetricsOptions
