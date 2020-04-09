@@ -16,7 +16,7 @@
 
 import { MetricsServiceInterface } from '../@types'
 import { WriteMetricsHandler, ReadMetricsHandler } from './handlers'
-import * as orm from './orm'
+import * as repository from './repository'
 
 interface MetricsServerInterface extends MetricsServiceInterface {
   startup: () => Promise<void>
@@ -24,8 +24,8 @@ interface MetricsServerInterface extends MetricsServiceInterface {
 }
 
 export const MetricsServer: MetricsServerInterface = {
-  startup: orm.initialize,
+  startup: repository.initialize,
   readMetrics: ReadMetricsHandler,
   writeMetrics: WriteMetricsHandler,
-  shutdown: orm.shutdown
+  shutdown: repository.shutdown
 }
