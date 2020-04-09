@@ -15,13 +15,13 @@
  */
 
 import {
-  VehicleEvent,
-  Timestamp,
   Nullable,
+  NullableProperties,
+  Timestamp,
   UUID,
   VEHICLE_EVENT,
   VEHICLE_REASON,
-  DeepNullable
+  VehicleEvent
 } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
 import { getEnvVar } from '@mds-core/mds-utils'
@@ -32,10 +32,10 @@ import {
   GeographyLabeler,
   LatencyLabel,
   LatencyLabeler,
-  VehicleStateLabel,
-  VehicleStateLabeler,
+  TelemetryLabel,
   TelemetryLabeler,
-  TelemetryLabel
+  VehicleStateLabel,
+  VehicleStateLabeler
 } from '../labelers'
 import { StreamTransform, StreamProcessor } from './index'
 import { KafkaSource, KafkaSink } from '../connectors/kafka-connector'
@@ -48,7 +48,7 @@ interface LabeledVehicleEvent
   extends DeviceLabel,
     GeographyLabel,
     LatencyLabel,
-    DeepNullable<TelemetryLabel>,
+    NullableProperties<TelemetryLabel>,
     VehicleStateLabel {
   device_id: UUID
   provider_id: UUID

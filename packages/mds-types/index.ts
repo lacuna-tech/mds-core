@@ -149,17 +149,9 @@ export type UUID = string
 export type Timestamp = number
 export type Stringify<T> = { [P in keyof T]: string }
 export type Nullable<T> = T | null
-
-export type DeepNullable<T> = {
-  [P in keyof T]: T[P] extends Array<infer U>
-    ? Nullable<Array<DeepNullable<U>>>
-    : T[P] extends ReadonlyArray<infer U>
-    ? Nullable<ReadonlyArray<DeepNullable<U>>>
-    : T[P] extends object
-    ? Nullable<DeepNullable<T[P]>>
-    : Nullable<T[P]>
+export type NullableProperties<T extends object> = {
+  [P in keyof T]-?: T[P] extends null ? T[P] : Nullable<T[P]>
 }
-
 export type SingleOrArray<T> = T | T[]
 
 // Represents a row in the "devices" table
