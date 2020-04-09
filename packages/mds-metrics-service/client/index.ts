@@ -15,7 +15,7 @@
  */
 
 import { MetricsServer } from '../server'
-import { MetricsServiceInterface } from '../types'
+import { MetricsServiceInterface } from '../@types'
 
 const { readMetrics, writeMetrics } = MetricsServer
 

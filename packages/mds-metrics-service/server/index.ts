@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { MetricsServiceInterface } from '../types'
+import { MetricsServiceInterface } from '../@types'
 import { WriteMetricsHandler, ReadMetricsHandler } from './handlers'
 import * as orm from './orm'
 

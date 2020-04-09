@@ -16,7 +16,7 @@
 
 import { Timestamp } from '@mds-core/mds-types'
 import { MetricEntityModel } from './orm/entities/metric-entity'
-import { MetricDomainModel } from '../types'
+import { MetricDomainModel } from '../@types'
 
 export const asMetricDomainModel = ({ id, recorded, ...entity }: MetricEntityModel): MetricDomainModel => entity
 

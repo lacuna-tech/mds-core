@@ -16,7 +16,7 @@
 
 import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
-import { MetricDomainModel, ReadMetricsOptions } from '../../types'
+import { MetricDomainModel, ReadMetricsOptions } from '../../@types'
 import { readMetrics } from '../orm'
 import { asMetricDomainModel } from '../utils'
 

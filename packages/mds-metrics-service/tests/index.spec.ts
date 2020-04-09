@@ -20,7 +20,7 @@ import { minutes, timeframe, days } from '@mds-core/mds-utils'
 import { VEHICLE_TYPE } from '@mds-core/mds-types'
 import { MetricsServer } from '../server'
 import { MetricsService } from '../client'
-import { MetricDomainModel, ReadMetricsOptions, ReadMetricsFilterOptions } from '../types'
+import { MetricDomainModel, ReadMetricsOptions, ReadMetricsFilterOptions } from '../@types'
 
 // Test Constants
 const TEST_METRIC_NAME = 'test.metric'

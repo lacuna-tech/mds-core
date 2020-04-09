@@ -21,7 +21,7 @@ import { timeframe } from '@mds-core/mds-utils'
 import { entityPropertyFilter } from '@mds-core/mds-orm/utils'
 import ormconfig from './config'
 import { MetricEntity } from './entities'
-import { ReadMetricsOptions } from '../../types'
+import { ReadMetricsOptions } from '../../@types'
 
 const manager = ConnectionManager(ormconfig)
 
