@@ -81,7 +81,7 @@ export const ConnectionManager = (prefix: string, options: Partial<PostgresConne
     }
   }
 
-  const getConnectionForMode = async (mode: ConnectionMode) => {
+  const getConnectionForMode = (mode: ConnectionMode) => async () => {
     await initialize()
     try {
       const connection =
@@ -97,10 +97,6 @@ export const ConnectionManager = (prefix: string, options: Partial<PostgresConne
     }
   }
 
-  const getReadOnlyConnection = async () => getConnectionForMode('ro')
-
-  const getReadWriteConnection = async () => getConnectionForMode('rw')
-
   const shutdown = async () => {
     if (connections) {
       await Promise.all(connections.filter(connection => connection.isConnected).map(connection => connection.close()))
@@ -111,8 +107,8 @@ export const ConnectionManager = (prefix: string, options: Partial<PostgresConne
   return {
     initialize,
     getConnectionConfiguration,
-    getReadOnlyConnection,
-    getReadWriteConnection,
+    getReadOnlyConnection: getConnectionForMode('ro'),
+    getReadWriteConnection: getConnectionForMode('rw'),
     shutdown
   }
 }
