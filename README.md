@@ -221,7 +221,7 @@ Verify:
 (tbd: ?best profile?)
 
 ```sh
-% ./bin/mdsctl -p processors -c namesspace-nats-stan=mds install:mds,stan
+% ./bin/mdsctl -p processors install:mds
 ```
 
 Verify:
