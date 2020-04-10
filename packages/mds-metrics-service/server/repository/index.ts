@@ -22,8 +22,10 @@ import { MetricsRepositoryConnectionManager } from './connection-manager'
 import { MetricEntity } from './entities'
 import { ReadMetricsOptions } from '../../@types'
 
+const manager = MetricsRepositoryConnectionManager()
+
 export const initialize = async () => {
-  await MetricsRepositoryConnectionManager.initialize()
+  await manager.initialize()
 }
 
 export const readMetrics = async ({
@@ -35,7 +37,7 @@ export const readMetrics = async ({
   geography_id,
   vehicle_type
 }: ReadMetricsOptions): Promise<MetricEntity[]> => {
-  const connection = await MetricsRepositoryConnectionManager.getReadWriteConnection()
+  const connection = await manager.getReadWriteConnection()
   const entities = await connection.getRepository(MetricEntity).find({
     where: {
       name,
@@ -53,7 +55,7 @@ export const readMetrics = async ({
 }
 
 export const writeMetrics = async (metrics: DeepPartial<MetricEntity>[]): Promise<MetricEntity[]> => {
-  const connection = await MetricsRepositoryConnectionManager.getReadWriteConnection()
+  const connection = await manager.getReadWriteConnection()
   const { raw: entities }: InsertReturning<MetricEntity> = await connection
     .getRepository(MetricEntity)
     .createQueryBuilder()
@@ -65,5 +67,5 @@ export const writeMetrics = async (metrics: DeepPartial<MetricEntity>[]): Promis
 }
 
 export const shutdown = async () => {
-  await MetricsRepositoryConnectionManager.shutdown()
+  await manager.shutdown()
 }

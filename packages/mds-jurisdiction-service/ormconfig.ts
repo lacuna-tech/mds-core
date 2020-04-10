@@ -17,4 +17,4 @@
 import { JurisdictionRepositoryConnectionManager } from './connection-manager'
 
 // Make connection options available to TypeORM CLI
-module.exports = JurisdictionRepositoryConnectionManager.getConnectionConfiguration()
+module.exports = JurisdictionRepositoryConnectionManager().getConnectionConfigurations()

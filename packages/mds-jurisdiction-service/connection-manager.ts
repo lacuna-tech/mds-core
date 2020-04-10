@@ -14,12 +14,14 @@
     limitations under the License.
  */
 
-import { ConnectionManager } from '@mds-core/mds-orm'
+import { ConnectionManagerOptions, ConnectionManager } from '@mds-core/mds-orm'
 import * as entities from './entities'
 import * as migrations from './migrations'
 
-export const JurisdictionRepositoryConnectionManager = ConnectionManager('jurisdiction-repository', {
-  entities: Object.values(entities),
-  migrations: Object.values(migrations),
-  migrationsTableName: 'migrations_jurisdictions'
-})
+export const JurisdictionRepositoryConnectionManager = (options: ConnectionManagerOptions = {}) =>
+  ConnectionManager('jurisdiction-repository', {
+    ...options,
+    entities: Object.values(entities),
+    migrations: Object.values(migrations),
+    migrationsTableName: 'migrations_jurisdictions'
+  })

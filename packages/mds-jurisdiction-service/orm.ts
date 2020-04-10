@@ -20,17 +20,19 @@ import { DeepPartial } from 'typeorm'
 import { JurisdictionRepositoryConnectionManager } from './connection-manager'
 import { JurisdictionEntity } from './entities'
 
+const manager = JurisdictionRepositoryConnectionManager()
+
 export const initialize = async () => {
-  await JurisdictionRepositoryConnectionManager.initialize()
+  await manager.initialize()
 }
 
 export const readJurisdiction = async (jurisdiction_id: UUID): Promise<JurisdictionEntity | undefined> => {
-  const connection = await JurisdictionRepositoryConnectionManager.getReadWriteConnection()
+  const connection = await manager.getReadWriteConnection()
   return connection.getRepository(JurisdictionEntity).createQueryBuilder().where({ jurisdiction_id }).getOne()
 }
 
 export const readJurisdictions = async (): Promise<JurisdictionEntity[]> => {
-  const connection = await JurisdictionRepositoryConnectionManager.getReadWriteConnection()
+  const connection = await manager.getReadWriteConnection()
   const entities = await connection.getRepository(JurisdictionEntity).createQueryBuilder().getMany()
   return entities
 }
@@ -38,7 +40,7 @@ export const readJurisdictions = async (): Promise<JurisdictionEntity[]> => {
 export const writeJurisdictions = async (
   jurisdictions: DeepPartial<JurisdictionEntity>[]
 ): Promise<JurisdictionEntity[]> => {
-  const connection = await JurisdictionRepositoryConnectionManager.getReadWriteConnection()
+  const connection = await manager.getReadWriteConnection()
   const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
     .getRepository(JurisdictionEntity)
     .createQueryBuilder()
@@ -53,7 +55,7 @@ export const updateJurisdiction = async (
   jurisdiction_id: UUID,
   { id, ...jurisdiction }: JurisdictionEntity
 ): Promise<JurisdictionEntity> => {
-  const connection = await JurisdictionRepositoryConnectionManager.getReadWriteConnection()
+  const connection = await manager.getReadWriteConnection()
   const {
     raw: [entity]
   }: UpdateReturning<JurisdictionEntity> = await connection
@@ -68,5 +70,5 @@ export const updateJurisdiction = async (
 }
 
 export const shutdown = async () => {
-  await JurisdictionRepositoryConnectionManager.shutdown()
+  await manager.shutdown()
 }

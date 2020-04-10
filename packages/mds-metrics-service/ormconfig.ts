@@ -17,4 +17,4 @@
 import { MetricsRepositoryConnectionManager } from './server/repository/connection-manager'
 
 // Make connection options available to TypeORM CLI
-module.exports = MetricsRepositoryConnectionManager.getConnectionConfiguration()
+module.exports = MetricsRepositoryConnectionManager().getConnectionConfigurations()

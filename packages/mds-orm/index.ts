@@ -14,4 +14,4 @@
     limitations under the License.
  */
 
-export { ConnectionManager } from './connection-manager'
+export { ConnectionManager, ConnectionManagerOptions } from './connection-manager'

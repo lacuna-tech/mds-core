@@ -46,9 +46,12 @@ const {
 
 const connectionName = (prefix: string, mode: ConnectionMode) => `${prefix}-${mode}`
 
-export const ConnectionManager = (prefix: string, options: Partial<PostgresConnectionOptions> = {}) => {
+export type ConnectionManagerOptions = Partial<PostgresConnectionOptions>
+
+export const ConnectionManager = (prefix: string, options: ConnectionManagerOptions = {}) => {
   let connections: Connection[] | null = null
-  const getConnectionConfiguration = (): ConnectionOptions[] =>
+
+  const getConnectionConfigurations = (): ConnectionOptions[] =>
     ConnectionModes.map(mode => ({
       name: connectionName(prefix, mode),
       type: 'postgres',
@@ -73,7 +76,7 @@ export const ConnectionManager = (prefix: string, options: Partial<PostgresConne
   const initialize = async () => {
     if (!connections) {
       try {
-        connections = await createConnections(getConnectionConfiguration())
+        connections = await createConnections(getConnectionConfigurations())
       } catch (error) {
         logger.error('Database Initialization Error', error)
         throw new ServerError('Database Initialization Error')
@@ -106,7 +109,7 @@ export const ConnectionManager = (prefix: string, options: Partial<PostgresConne
 
   return {
     initialize,
-    getConnectionConfiguration,
+    getConnectionConfigurations,
     getReadOnlyConnection: getConnectionForMode('ro'),
     getReadWriteConnection: getConnectionForMode('rw'),
     shutdown
