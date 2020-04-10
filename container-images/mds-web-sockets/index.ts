@@ -20,5 +20,8 @@ import { env } from '@container-images/env-inject'
 const { npm_package_name, npm_package_version, npm_package_git_commit, PORT = 4009 } = env()
 
 WebSocketServer()
-
-console.log(`${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) running on port ${PORT}`)
+  .then(() =>
+    console.log(`${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) running on port ${PORT}`)
+  )
+  // eslint-disable-next-line promise/prefer-await-to-callbacks
+  .catch(err => console.log(err))

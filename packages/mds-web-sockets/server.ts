@@ -2,13 +2,14 @@ import logger from '@mds-core/mds-logger'
 import { seconds, getEnvVar } from '@mds-core/mds-utils'
 import WebSocket from 'ws'
 import { setWsHeartbeat } from 'ws-heartbeat/server'
-import { Telemetry, VehicleEvent } from '@mds-core/mds-types'
+import { Telemetry, VehicleEvent, Nullable } from '@mds-core/mds-types'
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
-import { initializeNatsSubscriber } from '@mds-core/mds-stream/nats/nats'
+import { NatsStreamConsumer } from 'packages/mds-stream/nats/stream-consumer'
+import { NatsError, Msg } from 'ts-nats'
 import { Clients } from './clients'
 import { ENTITY_TYPE } from './types'
 
-export const WebSocketServer = () => {
+export const WebSocketServer = async () => {
   const server = HttpServer(
     process.env.PORT ?? 4009,
     ApiServer(app => app)
@@ -108,21 +109,18 @@ export const WebSocketServer = () => {
     TENANT_ID: 'mds'
   })
 
-  const processor = async (type: string, data: VehicleEvent | Telemetry) => {
-    switch (type) {
-      case 'event': {
-        await writeEvent(data as VehicleEvent)
-        return
-      }
-      case 'telemetry': {
-        await writeTelemetry(data as Telemetry)
-        return
-      }
-      default:
-        logger.error(`Unprocessable entity of type: ${type} and data: ${JSON.stringify(data)}`)
-    }
+  const eventProcessor = async (err: Nullable<NatsError>, msg: Msg) => {
+    if (err) logger.error(err)
+    const data = JSON.parse(msg.data)
+    await writeEvent(data)
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-floating-promises
-  initializeNatsSubscriber({ TENANT_ID, processor })
+  const telemetryProcessor = async (err: Nullable<NatsError>, msg: Msg) => {
+    if (err) logger.error(err)
+    const data = JSON.parse(msg.data)
+    await writeTelemetry(data)
+  }
+
+  await NatsStreamConsumer(`${TENANT_ID}.event`, eventProcessor).initialize()
+  await NatsStreamConsumer(`${TENANT_ID}.telemetry`, telemetryProcessor).initialize()
 }

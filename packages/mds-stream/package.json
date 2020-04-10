@@ -17,10 +17,9 @@
     "@mds-core/mds-logger": "0.1.24",
     "@mds-core/mds-types": "0.1.23",
     "bluebird": "3.7.2",
-    "cloudevents-sdk": "1.0.0",
     "flat": "5.0.0",
     "kafkajs": "1.12.0",
-    "nats": "1.4.8",
+    "ts-nats": "1.2.12",
     "redis": "3.0.2"
   },
   "scripts": {
