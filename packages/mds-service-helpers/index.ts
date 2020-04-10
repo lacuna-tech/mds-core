@@ -24,3 +24,8 @@ export const ServiceError = <TError extends Error = Error>(error: TError): Servi
   error instanceof Error ? error : new ServerError(error),
   null
 ]
+
+export interface ServiceServerInterface {
+  startup: () => Promise<void>
+  shutdown: () => Promise<void>
+}

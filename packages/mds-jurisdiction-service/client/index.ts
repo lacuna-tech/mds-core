@@ -14,18 +14,23 @@
     limitations under the License.
  */
 
-import { ServiceServerInterface } from '@mds-core/mds-service-helpers'
-import { MetricsServiceInterface } from '../@types'
-import { WriteMetricsHandler, ReadMetricsHandler } from './handlers'
-import * as repository from './repository'
+import { JurisdictionServer } from '../server'
+import { JurisdictionServiceInterface } from '../@types'
 
-export const MetricsServer: ServiceServerInterface & MetricsServiceInterface = {
-  startup: async () => {
-    await repository.initialize()
-  },
-  readMetrics: ReadMetricsHandler,
-  writeMetrics: WriteMetricsHandler,
-  shutdown: async () => {
-    await repository.shutdown()
-  }
+const {
+  createJurisdiction,
+  createJurisdictions,
+  updateJurisdiction,
+  deleteJurisdiction,
+  getJurisdiction,
+  getJurisdictions
+} = JurisdictionServer
+
+export const JurisdictionService: JurisdictionServiceInterface = {
+  createJurisdiction,
+  createJurisdictions,
+  updateJurisdiction,
+  deleteJurisdiction,
+  getJurisdiction,
+  getJurisdictions
 }

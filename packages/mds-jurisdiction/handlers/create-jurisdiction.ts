@@ -1,6 +1,7 @@
-import { CreateJurisdictionType, JurisdictionService } from '@mds-core/mds-jurisdiction-service'
+import { JurisdictionService, CreateJurisdictionType } from '@mds-core/mds-jurisdiction-service'
 import { Jurisdiction } from '@mds-core/mds-types'
 import { ValidationError, ConflictError } from '@mds-core/mds-utils'
+
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../types'
 import { UnexpectedServiceError } from './utils'
 

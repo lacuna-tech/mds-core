@@ -1,5 +1,5 @@
 export * from './create-jurisdiction'
 export * from './delete-jurisdiction'
-export * from './get-one-jurisdiction'
-export * from './get-all-jurisdictions'
+export * from './get-jurisdiction'
+export * from './get-jurisdictions'
 export * from './update-jurisdiction'

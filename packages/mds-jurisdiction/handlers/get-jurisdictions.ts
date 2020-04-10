@@ -3,7 +3,7 @@ import { Jurisdiction } from '@mds-core/mds-types'
 import { HasJurisdictionClaim, UnexpectedServiceError } from './utils'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../types'
 
-interface GetAllJurisdictionsRequest extends JurisdictionApiRequest {
+interface GetJurisdictionsRequest extends JurisdictionApiRequest {
   // Query string parameters always come in as strings
   query: Partial<
     {
@@ -12,14 +12,14 @@ interface GetAllJurisdictionsRequest extends JurisdictionApiRequest {
   >
 }
 
-type GetAllJurisdictionsResponse = JurisdictionApiResponse<{
+type GetJurisdictionsResponse = JurisdictionApiResponse<{
   jurisdictions: Jurisdiction[]
 }>
 
-export const GetAllJurisdictionsHandler = async (req: GetAllJurisdictionsRequest, res: GetAllJurisdictionsResponse) => {
+export const GetAllJurisdictionsHandler = async (req: GetJurisdictionsRequest, res: GetJurisdictionsResponse) => {
   const { effective } = req.query
 
-  const [error, jurisdictions] = await JurisdictionService.getAllJurisdictions({
+  const [error, jurisdictions] = await JurisdictionService.getJurisdictions({
     effective: effective ? Number(effective) : undefined
   })
 

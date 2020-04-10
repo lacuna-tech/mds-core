@@ -15,16 +15,27 @@
  */
 
 import { ServiceServerInterface } from '@mds-core/mds-service-helpers'
-import { MetricsServiceInterface } from '../@types'
-import { WriteMetricsHandler, ReadMetricsHandler } from './handlers'
 import * as repository from './repository'
+import { JurisdictionServiceInterface } from '../@types'
+import {
+  CreateJurisdictionsHandler,
+  CreateJurisdictionHandler,
+  UpdateJurisdictionHandler,
+  DeleteJurisdictionHandler,
+  GetJurisdictionHandler,
+  GetJurisdictionsHandler
+} from './handlers'
 
-export const MetricsServer: ServiceServerInterface & MetricsServiceInterface = {
+export const JurisdictionServer: JurisdictionServiceInterface & ServiceServerInterface = {
   startup: async () => {
     await repository.initialize()
   },
-  readMetrics: ReadMetricsHandler,
-  writeMetrics: WriteMetricsHandler,
+  createJurisdictions: CreateJurisdictionsHandler,
+  createJurisdiction: CreateJurisdictionHandler,
+  updateJurisdiction: UpdateJurisdictionHandler,
+  deleteJurisdiction: DeleteJurisdictionHandler,
+  getJurisdictions: GetJurisdictionsHandler,
+  getJurisdiction: GetJurisdictionHandler,
   shutdown: async () => {
     await repository.shutdown()
   }

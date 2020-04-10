@@ -4,7 +4,7 @@ import { AuthorizationError, NotFoundError } from '@mds-core/mds-utils'
 import { JurisdictionApiResponse, JurisdictionApiRequest } from '../types'
 import { HasJurisdictionClaim, UnexpectedServiceError } from './utils'
 
-interface GetOneJurisdictionRequest extends JurisdictionApiRequest<{ jurisdiction_id: UUID }> {
+interface GetJurisdictionRequest extends JurisdictionApiRequest<{ jurisdiction_id: UUID }> {
   // Query string parameters always come in as strings
   query: Partial<
     {
@@ -13,15 +13,15 @@ interface GetOneJurisdictionRequest extends JurisdictionApiRequest<{ jurisdictio
   >
 }
 
-type GetOneJurisdictionResponse = JurisdictionApiResponse<{
+type GetJurisdictionResponse = JurisdictionApiResponse<{
   jurisdiction: Jurisdiction
 }>
 
-export const GetOneJurisdictionHandler = async (req: GetOneJurisdictionRequest, res: GetOneJurisdictionResponse) => {
+export const GetOneJurisdictionHandler = async (req: GetJurisdictionRequest, res: GetJurisdictionResponse) => {
   const { effective } = req.query
   const { jurisdiction_id } = req.params
 
-  const [error, jurisdiction] = await JurisdictionService.getOneJurisdiction(jurisdiction_id, {
+  const [error, jurisdiction] = await JurisdictionService.getJurisdiction(jurisdiction_id, {
     effective: effective ? Number(effective) : undefined
   })
 
