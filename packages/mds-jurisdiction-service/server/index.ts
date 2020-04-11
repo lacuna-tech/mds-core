@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { ServiceServerInterface } from '@mds-core/mds-service-helpers'
+import { ServiceProvider } from '@mds-core/mds-service-helpers'
 import * as repository from './repository'
 import { JurisdictionServiceInterface } from '../@types'
 import {
@@ -26,8 +26,8 @@ import {
   GetJurisdictionsHandler
 } from './handlers'
 
-export const JurisdictionServer: JurisdictionServiceInterface & ServiceServerInterface = {
-  startup: async () => {
+export const JurisdictionSericeProvider: ServiceProvider<JurisdictionServiceInterface> = {
+  start: async () => {
     await repository.initialize()
   },
   createJurisdictions: CreateJurisdictionsHandler,
@@ -36,7 +36,7 @@ export const JurisdictionServer: JurisdictionServiceInterface & ServiceServerInt
   deleteJurisdiction: DeleteJurisdictionHandler,
   getJurisdictions: GetJurisdictionsHandler,
   getJurisdiction: GetJurisdictionHandler,
-  shutdown: async () => {
+  stop: async () => {
     await repository.shutdown()
   }
 }

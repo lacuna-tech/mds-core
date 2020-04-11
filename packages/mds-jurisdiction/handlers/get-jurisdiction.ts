@@ -1,5 +1,5 @@
 import { Jurisdiction, UUID } from '@mds-core/mds-types'
-import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
+import { JurisdictionServiceClient } from '@mds-core/mds-jurisdiction-service'
 import { AuthorizationError, NotFoundError } from '@mds-core/mds-utils'
 import { JurisdictionApiResponse, JurisdictionApiRequest } from '../types'
 import { HasJurisdictionClaim, UnexpectedServiceError } from './utils'
@@ -21,7 +21,7 @@ export const GetOneJurisdictionHandler = async (req: GetJurisdictionRequest, res
   const { effective } = req.query
   const { jurisdiction_id } = req.params
 
-  const [error, jurisdiction] = await JurisdictionService.getJurisdiction(jurisdiction_id, {
+  const [error, jurisdiction] = await JurisdictionServiceClient.getJurisdiction(jurisdiction_id, {
     effective: effective ? Number(effective) : undefined
   })
 

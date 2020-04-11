@@ -1,4 +1,4 @@
-import { UpdateJurisdictionType, JurisdictionService } from '@mds-core/mds-jurisdiction-service'
+import { UpdateJurisdictionType, JurisdictionServiceClient } from '@mds-core/mds-jurisdiction-service'
 import { Jurisdiction, UUID } from '@mds-core/mds-types'
 import { ValidationError, NotFoundError } from '@mds-core/mds-utils'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../types'
@@ -13,7 +13,7 @@ type UpdateJurisdictionResponse = JurisdictionApiResponse<{
 }>
 
 export const UpdateJurisdictionHandler = async (req: UpdateJurisdictionRequest, res: UpdateJurisdictionResponse) => {
-  const [error, jurisdiction] = await JurisdictionService.updateJurisdiction(req.params.jurisdiction_id, req.body)
+  const [error, jurisdiction] = await JurisdictionServiceClient.updateJurisdiction(req.params.jurisdiction_id, req.body)
 
   // Handle result
   if (jurisdiction) {

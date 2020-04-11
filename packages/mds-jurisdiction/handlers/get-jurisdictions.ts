@@ -1,4 +1,4 @@
-import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
+import { JurisdictionServiceClient } from '@mds-core/mds-jurisdiction-service'
 import { Jurisdiction } from '@mds-core/mds-types'
 import { HasJurisdictionClaim, UnexpectedServiceError } from './utils'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../types'
@@ -19,7 +19,7 @@ type GetJurisdictionsResponse = JurisdictionApiResponse<{
 export const GetAllJurisdictionsHandler = async (req: GetJurisdictionsRequest, res: GetJurisdictionsResponse) => {
   const { effective } = req.query
 
-  const [error, jurisdictions] = await JurisdictionService.getJurisdictions({
+  const [error, jurisdictions] = await JurisdictionServiceClient.getJurisdictions({
     effective: effective ? Number(effective) : undefined
   })
 

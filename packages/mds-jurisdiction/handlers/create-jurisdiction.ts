@@ -1,4 +1,4 @@
-import { JurisdictionService, CreateJurisdictionType } from '@mds-core/mds-jurisdiction-service'
+import { JurisdictionServiceClient, CreateJurisdictionType } from '@mds-core/mds-jurisdiction-service'
 import { Jurisdiction } from '@mds-core/mds-types'
 import { ValidationError, ConflictError } from '@mds-core/mds-utils'
 
@@ -19,7 +19,7 @@ type CreateJurisdictionResponse = JurisdictionApiResponse<
 >
 
 export const CreateJurisdictionHandler = async (req: CreateJurisdictionRequest, res: CreateJurisdictionResponse) => {
-  const [error, jurisdictions] = await JurisdictionService.createJurisdictions(
+  const [error, jurisdictions] = await JurisdictionServiceClient.createJurisdictions(
     Array.isArray(req.body) ? req.body : [req.body]
   )
 

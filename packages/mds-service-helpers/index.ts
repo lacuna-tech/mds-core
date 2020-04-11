@@ -25,7 +25,7 @@ export const ServiceError = <TError extends Error = Error>(error: TError): Servi
   null
 ]
 
-export interface ServiceServerInterface {
-  startup: () => Promise<void>
-  shutdown: () => Promise<void>
+export type ServiceProvider<TServiceInterface> = TServiceInterface & {
+  start: () => Promise<void>
+  stop: () => Promise<void>
 }

@@ -14,23 +14,9 @@
     limitations under the License.
  */
 
-import { JurisdictionServer } from '../server'
+import { JurisdictionSericeProvider } from '../server'
 import { JurisdictionServiceInterface } from '../@types'
 
-const {
-  createJurisdiction,
-  createJurisdictions,
-  updateJurisdiction,
-  deleteJurisdiction,
-  getJurisdiction,
-  getJurisdictions
-} = JurisdictionServer
+const { start, stop, ...client } = JurisdictionSericeProvider
 
-export const JurisdictionService: JurisdictionServiceInterface = {
-  createJurisdiction,
-  createJurisdictions,
-  updateJurisdiction,
-  deleteJurisdiction,
-  getJurisdiction,
-  getJurisdictions
-}
+export const JurisdictionServiceClient: JurisdictionServiceInterface = client

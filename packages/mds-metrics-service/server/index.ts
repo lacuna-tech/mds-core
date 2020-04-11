@@ -14,18 +14,18 @@
     limitations under the License.
  */
 
-import { ServiceServerInterface } from '@mds-core/mds-service-helpers'
+import { ServiceProvider } from '@mds-core/mds-service-helpers'
 import { MetricsServiceInterface } from '../@types'
 import { WriteMetricsHandler, ReadMetricsHandler } from './handlers'
 import * as repository from './repository'
 
-export const MetricsServer: ServiceServerInterface & MetricsServiceInterface = {
-  startup: async () => {
+export const MetricsServivceProvider: ServiceProvider<MetricsServiceInterface> = {
+  start: async () => {
     await repository.initialize()
   },
   readMetrics: ReadMetricsHandler,
   writeMetrics: WriteMetricsHandler,
-  shutdown: async () => {
+  stop: async () => {
     await repository.shutdown()
   }
 }
