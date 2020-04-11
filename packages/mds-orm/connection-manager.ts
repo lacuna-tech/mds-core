@@ -51,32 +51,31 @@ export type ConnectionManagerOptions = Partial<PostgresConnectionOptions>
 export const ConnectionManager = (prefix: string, options: ConnectionManagerOptions = {}) => {
   let connections: Connection[] | null = null
 
-  const getConnectionConfigurations = (): ConnectionOptions[] =>
-    ConnectionModes.map(mode => ({
-      name: connectionName(prefix, mode),
-      type: 'postgres',
-      host: (mode === 'rw' ? PG_HOST : PG_HOST_READER) || PG_HOST || 'localhost',
-      port: Number(PG_PORT) || 5432,
-      username: PG_USER,
-      password: PG_PASS,
-      database: PG_NAME,
-      logging: loggingOption(PG_DEBUG.toLowerCase()),
-      maxQueryExecutionTime: 3000,
-      logger: 'simple-console',
-      synchronize: false,
-      migrationsRun: PG_MIGRATIONS === 'true' && mode === 'rw',
-      namingStrategy: new MdsNamingStrategy(),
-      cli: {
-        entitiesDir: './entities',
-        migrationsDir: './migrations'
-      },
-      ...options
-    }))
+  const config: ConnectionOptions[] = ConnectionModes.map(mode => ({
+    name: connectionName(prefix, mode),
+    type: 'postgres',
+    host: (mode === 'rw' ? PG_HOST : PG_HOST_READER) || PG_HOST || 'localhost',
+    port: Number(PG_PORT) || 5432,
+    username: PG_USER,
+    password: PG_PASS,
+    database: PG_NAME,
+    logging: loggingOption(PG_DEBUG.toLowerCase()),
+    maxQueryExecutionTime: 3000,
+    logger: 'simple-console',
+    synchronize: false,
+    migrationsRun: PG_MIGRATIONS === 'true' && mode === 'rw',
+    namingStrategy: new MdsNamingStrategy(),
+    cli: {
+      entitiesDir: './entities',
+      migrationsDir: './migrations'
+    },
+    ...options
+  }))
 
   const initialize = async () => {
     if (!connections) {
       try {
-        connections = await createConnections(getConnectionConfigurations())
+        connections = await createConnections(config)
       } catch (error) {
         logger.error('Database Initialization Error', error)
         throw new ServerError('Database Initialization Error')
@@ -84,7 +83,7 @@ export const ConnectionManager = (prefix: string, options: ConnectionManagerOpti
     }
   }
 
-  const getConnectionForMode = (mode: ConnectionMode) => async () => {
+  const getConnectionForMode = async (mode: ConnectionMode) => {
     await initialize()
     try {
       const connection =
@@ -109,9 +108,8 @@ export const ConnectionManager = (prefix: string, options: ConnectionManagerOpti
 
   return {
     initialize,
-    getConnectionConfigurations,
-    getReadOnlyConnection: getConnectionForMode('ro'),
-    getReadWriteConnection: getConnectionForMode('rw'),
+    config,
+    getConnectionForMode,
     shutdown
   }
 }

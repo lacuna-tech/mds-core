@@ -340,6 +340,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Tests: mds-orm",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-orm",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Tests: mds-policy",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": ["--project", "${workspaceFolder}/tsconfig.json", "-r", "ts-node/register", "--timeout", "0"],

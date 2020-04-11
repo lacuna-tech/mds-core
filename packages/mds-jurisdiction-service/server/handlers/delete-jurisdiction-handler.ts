@@ -3,18 +3,18 @@ import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-serv
 import { NotFoundError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { AsJurisdiction } from './utils'
-import * as repository from '../repository'
+import { JurisdictionReadWriteRepository } from '../repository'
 
 export const DeleteJurisdictionHandler = async (
   jurisdiction_id: UUID
 ): Promise<ServiceResponse<Pick<Jurisdiction, 'jurisdiction_id'>, NotFoundError>> => {
   try {
-    const entity = await repository.readJurisdiction(jurisdiction_id)
+    const entity = await JurisdictionReadWriteRepository.readJurisdiction(jurisdiction_id)
     if (entity) {
       const current = AsJurisdiction()(entity)
       if (current) {
         // "Soft" delete the jursidiction by updating it with a new version containing a null geography_id
-        await repository.updateJurisdiction(jurisdiction_id, {
+        await JurisdictionReadWriteRepository.updateJurisdiction(jurisdiction_id, {
           ...entity,
           versions: [
             {

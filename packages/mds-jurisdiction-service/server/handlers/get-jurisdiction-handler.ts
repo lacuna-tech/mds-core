@@ -4,14 +4,14 @@ import { NotFoundError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { GetJurisdictionsOptions } from '../../@types'
 import { AsJurisdiction } from './utils'
-import * as repository from '../repository'
+import { JurisdictionReadWriteRepository } from '../repository'
 
 export const GetJurisdictionHandler = async (
   jurisdiction_id: UUID,
   { effective = Date.now() }: Partial<GetJurisdictionsOptions> = {}
 ): Promise<ServiceResponse<Jurisdiction, NotFoundError>> => {
   try {
-    const entity = await repository.readJurisdiction(jurisdiction_id)
+    const entity = await JurisdictionReadWriteRepository.readJurisdiction(jurisdiction_id)
     const [jurisdiction] = [entity].map(AsJurisdiction(effective))
     return jurisdiction
       ? ServiceResult(jurisdiction)

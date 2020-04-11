@@ -4,7 +4,7 @@ import { ValidationError, NotFoundError, ServerError } from '@mds-core/mds-utils
 import logger from '@mds-core/mds-logger'
 import { UpdateJurisdictionType } from '../../@types'
 import { AsJurisdiction } from './utils'
-import * as repository from '../repository'
+import { JurisdictionReadWriteRepository } from '../repository'
 
 export const UpdateJurisdictionHandler = async (
   jurisdiction_id: UUID,
@@ -14,7 +14,7 @@ export const UpdateJurisdictionHandler = async (
     return ServiceError(new ValidationError('Invalid jurisdiction_id for update'))
   }
   try {
-    const entity = await repository.readJurisdiction(jurisdiction_id)
+    const entity = await JurisdictionReadWriteRepository.readJurisdiction(jurisdiction_id)
     if (entity) {
       const current = AsJurisdiction()(entity)
       if (current) {
@@ -22,7 +22,7 @@ export const UpdateJurisdictionHandler = async (
         if (timestamp <= current.timestamp) {
           return ServiceError(new ValidationError('Invalid timestamp for update'))
         }
-        const updated = await repository.updateJurisdiction(jurisdiction_id, {
+        const updated = await JurisdictionReadWriteRepository.updateJurisdiction(jurisdiction_id, {
           ...entity,
           agency_key: update.agency_key ?? current.agency_key,
           versions:

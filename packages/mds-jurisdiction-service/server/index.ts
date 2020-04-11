@@ -15,7 +15,7 @@
  */
 
 import { ServiceProvider } from '@mds-core/mds-service-helpers'
-import * as repository from './repository'
+import { JurisdictionReadWriteRepository } from './repository'
 import { JurisdictionServiceInterface } from '../@types'
 import {
   CreateJurisdictionsHandler,
@@ -28,7 +28,7 @@ import {
 
 export const JurisdictionSericeProvider: ServiceProvider<JurisdictionServiceInterface> = {
   start: async () => {
-    await repository.initialize()
+    await JurisdictionReadWriteRepository.initialize()
   },
   createJurisdictions: CreateJurisdictionsHandler,
   createJurisdiction: CreateJurisdictionHandler,
@@ -37,6 +37,6 @@ export const JurisdictionSericeProvider: ServiceProvider<JurisdictionServiceInte
   getJurisdictions: GetJurisdictionsHandler,
   getJurisdiction: GetJurisdictionHandler,
   stop: async () => {
-    await repository.shutdown()
+    await JurisdictionReadWriteRepository.shutdown()
   }
 }
