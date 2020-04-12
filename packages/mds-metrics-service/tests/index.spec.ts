@@ -18,7 +18,7 @@ import test from 'unit.js'
 import { v4 as uuid } from 'uuid'
 import { minutes, timeframe, days } from '@mds-core/mds-utils'
 import { VEHICLE_TYPE } from '@mds-core/mds-types'
-import { MetricsServivceProvider } from '../server'
+import { MetricsServiceProvider } from '../server'
 import { MetricsServiceClient } from '../client'
 import { MetricDomainModel, ReadMetricsOptions, ReadMetricsFilterOptions } from '../@types'
 
@@ -105,7 +105,7 @@ const testQuery = (query: () => ReadMetricsOptions & { expected: MetricDomainMod
 
 describe('Metrics Service', () => {
   before(async () => {
-    await MetricsServivceProvider.start()
+    await MetricsServiceProvider.start()
   })
 
   it(`Generate ${TEST_METRICS.length} Metric${TEST_METRICS.length === 1 ? '' : 's'}`, async () => {
@@ -198,6 +198,6 @@ describe('Metrics Service', () => {
   }))
 
   after(async () => {
-    await MetricsServivceProvider.stop()
+    await MetricsServiceProvider.stop()
   })
 })

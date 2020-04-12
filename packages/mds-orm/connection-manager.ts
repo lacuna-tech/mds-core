@@ -44,15 +44,15 @@ const {
   PG_MIGRATIONS = 'true' // Enable migrations by default
 } = process.env
 
-const connectionName = (prefix: string, mode: ConnectionMode) => `${prefix}-${mode}`
+const connectionName = (name: string, mode: ConnectionMode) => `${name}-${mode}`
 
 export type ConnectionManagerOptions = Partial<PostgresConnectionOptions>
 
-export const ConnectionManager = (prefix: string, options: ConnectionManagerOptions = {}) => {
+export const ConnectionManager = (name: string, options: ConnectionManagerOptions = {}) => {
   let connections: Connection[] | null = null
 
   const config: ConnectionOptions[] = ConnectionModes.map(mode => ({
-    name: connectionName(prefix, mode),
+    name: connectionName(name, mode),
     type: 'postgres',
     host: (mode === 'rw' ? PG_HOST : PG_HOST_READER) || PG_HOST || 'localhost',
     port: Number(PG_PORT) || 5432,
@@ -87,8 +87,8 @@ export const ConnectionManager = (prefix: string, options: ConnectionManagerOpti
     await initialize()
     try {
       const connection =
-        connections?.find(c => c.name === connectionName(prefix, mode)) ??
-        getConnectionManager().get(connectionName(prefix, mode))
+        connections?.find(c => c.name === connectionName(name, mode)) ??
+        getConnectionManager().get(connectionName(name, mode))
       if (!connection.isConnected) {
         await connection.connect()
       }

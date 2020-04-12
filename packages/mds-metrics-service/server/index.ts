@@ -19,7 +19,7 @@ import { MetricsServiceInterface } from '../@types'
 import { WriteMetricsHandler, ReadMetricsHandler } from './handlers'
 import { MetricsRepository } from './repository'
 
-export const MetricsServivceProvider: ServiceProvider<MetricsServiceInterface> = {
+export const MetricsServiceProvider: ServiceProvider<MetricsServiceInterface> = {
   start: async () => {
     await MetricsRepository.initialize()
   },

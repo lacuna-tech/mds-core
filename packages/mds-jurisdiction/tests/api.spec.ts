@@ -18,7 +18,7 @@ import supertest from 'supertest'
 import test from 'unit.js'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { v4 as uuid } from 'uuid'
-import { JurisdictionSericeProvider } from '@mds-core/mds-jurisdiction-service/server'
+import { JurisdictionServiceProvider } from '@mds-core/mds-jurisdiction-service/server'
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { Jurisdiction } from '@mds-core/mds-types'
 import { api } from '../api'
@@ -35,7 +35,7 @@ const [JURISDICTION0, JURISDICTION1, JURISDICTION2] = [uuid(), uuid(), uuid()].m
 
 describe('', () => {
   before(async () => {
-    await JurisdictionSericeProvider.start()
+    await JurisdictionServiceProvider.start()
   })
 
   it('Create Single Jurisdiction', async () => {
@@ -203,6 +203,6 @@ describe('', () => {
   })
 
   after(async () => {
-    await JurisdictionSericeProvider.stop()
+    await JurisdictionServiceProvider.stop()
   })
 })

@@ -14,9 +14,9 @@
     limitations under the License.
  */
 
-import { MetricsServivceProvider } from '../server'
+import { MetricsServiceProvider } from '../server'
 import { MetricsServiceInterface } from '../@types'
 
-const { start, stop, ...client } = MetricsServivceProvider
+const { start, stop, ...client } = MetricsServiceProvider
 
 export const MetricsServiceClient: MetricsServiceInterface = client

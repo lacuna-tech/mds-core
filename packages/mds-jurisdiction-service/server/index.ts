@@ -26,7 +26,7 @@ import {
   GetJurisdictionsHandler
 } from './handlers'
 
-export const JurisdictionSericeProvider: ServiceProvider<JurisdictionServiceInterface> = {
+export const JurisdictionServiceProvider: ServiceProvider<JurisdictionServiceInterface> = {
   start: async () => {
     await JurisdictionRepository.initialize()
   },
