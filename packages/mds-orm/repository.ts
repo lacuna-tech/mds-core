@@ -13,6 +13,7 @@
     See the License for the specific language governing permissions and
     limitations under the License.
  */
+
 import { Connection } from 'typeorm'
 import { ConnectionManager, ConnectionManagerOptions, ConnectionMode } from './connection-manager'
 
