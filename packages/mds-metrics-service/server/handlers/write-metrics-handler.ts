@@ -16,7 +16,7 @@
 
 import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
-import { MetricsReadWriteRepository } from '../repository'
+import { MetricsRepository } from '../repository'
 import { MetricDomainModel } from '../../@types'
 import { asMetricDomainModel, asMetricEntityModel } from './utils'
 
@@ -24,7 +24,7 @@ export const WriteMetricsHandler = async (
   metrics: MetricDomainModel[]
 ): Promise<ServiceResponse<MetricDomainModel[]>> => {
   try {
-    const entities = await MetricsReadWriteRepository.writeMetrics(metrics.map(asMetricEntityModel(Date.now())))
+    const entities = await MetricsRepository.writeMetrics(metrics.map(asMetricEntityModel(Date.now())))
     return ServiceResult(entities.map(asMetricDomainModel))
   } catch (error) /* istanbul ignore next */ {
     logger.error('Error Writing Metrics', error)

@@ -17,51 +17,65 @@
 import { UUID } from '@mds-core/mds-types'
 import { InsertReturning, UpdateReturning } from '@mds-core/mds-orm/types'
 import { DeepPartial } from 'typeorm'
-import { ReadWriteRepository } from '@mds-core/mds-orm'
+import { ReadWriteRepository, CustomRepositoryMethod } from '@mds-core/mds-orm'
 import { JurisdictionEntity } from './entities'
 import * as migrations from './migrations'
 
-export const JurisdictionReadWriteRepository = ReadWriteRepository(
+const RepositoryReadJurisdiction = CustomRepositoryMethod(connect => async (jurisdiction_id: UUID): Promise<
+  JurisdictionEntity | undefined
+> => {
+  const connection = await connect('rw')
+  return connection.getRepository(JurisdictionEntity).createQueryBuilder().where({ jurisdiction_id }).getOne()
+})
+
+const RepositoryReadJurisdictions = CustomRepositoryMethod(connect => async (): Promise<JurisdictionEntity[]> => {
+  const connection = await connect('rw')
+  const entities = await connection.getRepository(JurisdictionEntity).createQueryBuilder().getMany()
+  return entities
+})
+
+const RepositoryWriteJurisdictions = CustomRepositoryMethod(
+  connect => async (jurisdictions: DeepPartial<JurisdictionEntity>[]): Promise<JurisdictionEntity[]> => {
+    const connection = await connect('rw')
+    const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
+      .getRepository(JurisdictionEntity)
+      .createQueryBuilder()
+      .insert()
+      .values(jurisdictions)
+      .returning('*')
+      .execute()
+    return entities
+  }
+)
+
+const RepositoryUpdateJurisdiction = CustomRepositoryMethod(
+  connect => async (
+    jurisdiction_id: UUID,
+    { id, ...jurisdiction }: JurisdictionEntity
+  ): Promise<JurisdictionEntity> => {
+    const connection = await connect('rw')
+    const {
+      raw: [entity]
+    }: UpdateReturning<JurisdictionEntity> = await connection
+      .getRepository(JurisdictionEntity)
+      .createQueryBuilder()
+      .update()
+      .set(jurisdiction)
+      .where('jurisdiction_id = :jurisdiction_id', { jurisdiction_id })
+      .returning('*')
+      .execute()
+    return entity
+  }
+)
+
+export const JurisdictionRepository = ReadWriteRepository(
   'jurisdiction-repository',
   connect => {
     return {
-      readJurisdiction: async (jurisdiction_id: UUID): Promise<JurisdictionEntity | undefined> => {
-        const connection = await connect('rw')
-        return connection.getRepository(JurisdictionEntity).createQueryBuilder().where({ jurisdiction_id }).getOne()
-      },
-      readJurisdictions: async (): Promise<JurisdictionEntity[]> => {
-        const connection = await connect('rw')
-        const entities = await connection.getRepository(JurisdictionEntity).createQueryBuilder().getMany()
-        return entities
-      },
-      writeJurisdictions: async (jurisdictions: DeepPartial<JurisdictionEntity>[]): Promise<JurisdictionEntity[]> => {
-        const connection = await connect('rw')
-        const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
-          .getRepository(JurisdictionEntity)
-          .createQueryBuilder()
-          .insert()
-          .values(jurisdictions)
-          .returning('*')
-          .execute()
-        return entities
-      },
-      updateJurisdiction: async (
-        jurisdiction_id: UUID,
-        { id, ...jurisdiction }: JurisdictionEntity
-      ): Promise<JurisdictionEntity> => {
-        const connection = await connect('rw')
-        const {
-          raw: [entity]
-        }: UpdateReturning<JurisdictionEntity> = await connection
-          .getRepository(JurisdictionEntity)
-          .createQueryBuilder()
-          .update()
-          .set(jurisdiction)
-          .where('jurisdiction_id = :jurisdiction_id', { jurisdiction_id })
-          .returning('*')
-          .execute()
-        return entity
-      }
+      readJurisdiction: RepositoryReadJurisdiction(connect),
+      readJurisdictions: RepositoryReadJurisdictions(connect),
+      writeJurisdictions: RepositoryWriteJurisdictions(connect),
+      updateJurisdiction: RepositoryUpdateJurisdiction(connect)
     }
   },
   {

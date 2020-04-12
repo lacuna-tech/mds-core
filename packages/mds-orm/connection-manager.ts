@@ -83,7 +83,7 @@ export const ConnectionManager = (prefix: string, options: ConnectionManagerOpti
     }
   }
 
-  const getConnectionForMode = async (mode: ConnectionMode) => {
+  const connect = async (mode: ConnectionMode) => {
     await initialize()
     try {
       const connection =
@@ -109,7 +109,7 @@ export const ConnectionManager = (prefix: string, options: ConnectionManagerOpti
   return {
     initialize,
     config,
-    getConnectionForMode,
+    connect,
     shutdown
   }
 }

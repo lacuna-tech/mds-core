@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { MetricsReadWriteRepository } from './server/repository'
+import { MetricsRepository } from './server/repository'
 
 // Make connection options available to TypeORM CLI
-module.exports = MetricsReadWriteRepository.config
+module.exports = MetricsRepository.config

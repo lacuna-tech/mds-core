@@ -17,15 +17,15 @@
 import { ServiceProvider } from '@mds-core/mds-service-helpers'
 import { MetricsServiceInterface } from '../@types'
 import { WriteMetricsHandler, ReadMetricsHandler } from './handlers'
-import { MetricsReadWriteRepository } from './repository'
+import { MetricsRepository } from './repository'
 
 export const MetricsServivceProvider: ServiceProvider<MetricsServiceInterface> = {
   start: async () => {
-    await MetricsReadWriteRepository.initialize()
+    await MetricsRepository.initialize()
   },
   readMetrics: ReadMetricsHandler,
   writeMetrics: WriteMetricsHandler,
   stop: async () => {
-    await MetricsReadWriteRepository.shutdown()
+    await MetricsRepository.shutdown()
   }
 }

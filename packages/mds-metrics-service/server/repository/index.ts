@@ -18,51 +18,52 @@ import { InsertReturning } from '@mds-core/mds-orm/types'
 import { DeepPartial, Between } from 'typeorm'
 import { timeframe } from '@mds-core/mds-utils'
 import { entityPropertyFilter } from '@mds-core/mds-orm/utils'
-import { ReadWriteRepository } from '@mds-core/mds-orm'
+import { ReadWriteRepository, CustomRepositoryMethod } from '@mds-core/mds-orm'
 import { MetricEntity } from './entities'
 import { ReadMetricsOptions } from '../../@types'
 import * as migrations from './migrations'
 
-export const MetricsReadWriteRepository = ReadWriteRepository(
+const RepositoryReadMetrics = CustomRepositoryMethod(connect => async (options: ReadMetricsOptions): Promise<
+  MetricEntity[]
+> => {
+  const { name, time_bin_size, time_bin_start, time_bin_end, provider_id, geography_id, vehicle_type } = options
+  const connection = await connect('rw')
+  const entities = await connection.getRepository(MetricEntity).find({
+    where: {
+      name,
+      time_bin_size,
+      time_bin_start: Between(
+        timeframe(time_bin_size, time_bin_start).start_time,
+        timeframe(time_bin_size, time_bin_end ?? time_bin_start).end_time
+      ),
+      ...entityPropertyFilter<MetricEntity, 'provider_id'>('provider_id', provider_id),
+      ...entityPropertyFilter<MetricEntity, 'geography_id'>('geography_id', geography_id),
+      ...entityPropertyFilter<MetricEntity, 'vehicle_type'>('vehicle_type', vehicle_type)
+    }
+  })
+  return entities
+})
+
+const RepositoryWriteMetrics = CustomRepositoryMethod(connect => async (metrics: DeepPartial<MetricEntity>[]): Promise<
+  MetricEntity[]
+> => {
+  const connection = await connect('rw')
+  const { raw: entities }: InsertReturning<MetricEntity> = await connection
+    .getRepository(MetricEntity)
+    .createQueryBuilder()
+    .insert()
+    .values(metrics)
+    .returning('*')
+    .execute()
+  return entities
+})
+
+export const MetricsRepository = ReadWriteRepository(
   'metrics-repository',
   connect => {
     return {
-      readMetrics: async ({
-        name,
-        time_bin_size,
-        time_bin_start,
-        time_bin_end,
-        provider_id,
-        geography_id,
-        vehicle_type
-      }: ReadMetricsOptions): Promise<MetricEntity[]> => {
-        const connection = await connect('rw')
-        const entities = await connection.getRepository(MetricEntity).find({
-          where: {
-            name,
-            time_bin_size,
-            time_bin_start: Between(
-              timeframe(time_bin_size, time_bin_start).start_time,
-              timeframe(time_bin_size, time_bin_end ?? time_bin_start).end_time
-            ),
-            ...entityPropertyFilter<MetricEntity, 'provider_id'>('provider_id', provider_id),
-            ...entityPropertyFilter<MetricEntity, 'geography_id'>('geography_id', geography_id),
-            ...entityPropertyFilter<MetricEntity, 'vehicle_type'>('vehicle_type', vehicle_type)
-          }
-        })
-        return entities
-      },
-      writeMetrics: async (metrics: DeepPartial<MetricEntity>[]): Promise<MetricEntity[]> => {
-        const connection = await connect('rw')
-        const { raw: entities }: InsertReturning<MetricEntity> = await connection
-          .getRepository(MetricEntity)
-          .createQueryBuilder()
-          .insert()
-          .values(metrics)
-          .returning('*')
-          .execute()
-        return entities
-      }
+      readMetrics: RepositoryReadMetrics(connect),
+      writeMetrics: RepositoryWriteMetrics(connect)
     }
   },
   {
