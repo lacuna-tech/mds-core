@@ -15,7 +15,7 @@
  */
 
 import { UUID } from '@mds-core/mds-types'
-import { InsertReturning, UpdateReturning, CreateRepository, CreateRepositoryMethod } from '@mds-core/mds-orm'
+import { InsertReturning, UpdateReturning, CreateRepository, CreateRepositoryMethod } from '@mds-core/mds-repository'
 import { DeepPartial } from 'typeorm'
 
 import { JurisdictionEntity } from './entities'

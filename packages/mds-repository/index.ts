@@ -14,5 +14,8 @@
     limitations under the License.
  */
 
+export * from './entities'
 export * from './repository'
+export * from './transformers'
+export * from './utils'
 export * from './@types'

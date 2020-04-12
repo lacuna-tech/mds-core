@@ -14,10 +14,15 @@
     limitations under the License.
  */
 
-import { CreateRepository, CreateRepositoryMethod, InsertReturning } from '@mds-core/mds-orm'
+import {
+  CreateRepository,
+  CreateRepositoryMethod,
+  InsertReturning,
+  entityPropertyFilter
+} from '@mds-core/mds-repository'
 import { DeepPartial, Between } from 'typeorm'
 import { timeframe } from '@mds-core/mds-utils'
-import { entityPropertyFilter } from '@mds-core/mds-orm/utils'
+
 import { MetricEntity } from './entities'
 import { ReadMetricsOptions } from '../../@types'
 import * as migrations from './migrations'

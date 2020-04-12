@@ -18,10 +18,10 @@ import { Connection, createConnections, getConnectionManager, ConnectionOptions 
 import { ServerError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { types as PostgresTypes } from 'pg'
-import { MdsNamingStrategy } from '@mds-core/mds-orm/naming-strategies'
 import { LoggerOptions } from 'typeorm/logger/LoggerOptions'
 
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
+import { MdsNamingStrategy } from './naming-strategies'
 
 const loggingOption = (options: string): LoggerOptions => {
   return ['false', 'true', 'all'].includes(options) ? options !== 'false' : (options.split(' ') as LoggerOptions)
