@@ -26,7 +26,7 @@ const RepositoryReadMetrics = CustomRepositoryMethod(connect => async (options: 
   MetricEntity[]
 > => {
   const { name, time_bin_size, time_bin_start, time_bin_end, provider_id, geography_id, vehicle_type } = options
-  const connection = await connect('rw')
+  const connection = await connect('ro')
   const entities = await connection.getRepository(MetricEntity).find({
     where: {
       name,

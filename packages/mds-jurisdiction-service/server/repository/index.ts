@@ -24,13 +24,13 @@ import * as migrations from './migrations'
 const RepositoryReadJurisdiction = CustomRepositoryMethod(connect => async (jurisdiction_id: UUID): Promise<
   JurisdictionEntity | undefined
 > => {
-  const connection = await connect('rw')
-  return connection.getRepository(JurisdictionEntity).createQueryBuilder().where({ jurisdiction_id }).getOne()
+  const connection = await connect('ro')
+  return connection.getRepository(JurisdictionEntity).findOne({ where: { jurisdiction_id } })
 })
 
 const RepositoryReadJurisdictions = CustomRepositoryMethod(connect => async (): Promise<JurisdictionEntity[]> => {
-  const connection = await connect('rw')
-  const entities = await connection.getRepository(JurisdictionEntity).createQueryBuilder().getMany()
+  const connection = await connect('ro')
+  const entities = await connection.getRepository(JurisdictionEntity).find()
   return entities
 })
 
