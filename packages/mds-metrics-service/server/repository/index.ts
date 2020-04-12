@@ -14,11 +14,10 @@
     limitations under the License.
  */
 
-import { InsertReturning } from '@mds-core/mds-orm/types'
+import { ReadWriteRepository, CustomRepositoryMethod, InsertReturning } from '@mds-core/mds-orm'
 import { DeepPartial, Between } from 'typeorm'
 import { timeframe } from '@mds-core/mds-utils'
 import { entityPropertyFilter } from '@mds-core/mds-orm/utils'
-import { ReadWriteRepository, CustomRepositoryMethod } from '@mds-core/mds-orm'
 import { MetricEntity } from './entities'
 import { ReadMetricsOptions } from '../../@types'
 import * as migrations from './migrations'

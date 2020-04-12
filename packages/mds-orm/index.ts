@@ -14,28 +14,5 @@
     limitations under the License.
  */
 
-import { Connection } from 'typeorm'
-import { ConnectionManager, ConnectionManagerOptions, ConnectionMode } from './connection-manager'
-
-export type ReadWriteRepositoryOptions = Pick<
-  ConnectionManagerOptions,
-  'entities' | 'migrations' | 'migrationsTableName'
->
-
-type RepositoryMethod<TMethod> = (connect: (mode: ConnectionMode) => Promise<Connection>) => TMethod
-
-export const CustomRepositoryMethod: <TMethod>(
-  method: RepositoryMethod<TMethod>
-) => RepositoryMethod<TMethod> = method => method
-
-export const ReadWriteRepository = <TRepositoryMethods>(
-  prefix: string,
-  methods: (connect: (mode: ConnectionMode) => Promise<Connection>) => TRepositoryMethods,
-  options: ReadWriteRepositoryOptions = {}
-) => {
-  const { connect, ...manager } = ConnectionManager(prefix, options)
-  return {
-    ...manager,
-    ...methods(connect)
-  }
-}
+export * from './repository'
+export * from './@types'
