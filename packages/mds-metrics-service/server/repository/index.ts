@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { ReadWriteRepository, CustomRepositoryMethod, InsertReturning } from '@mds-core/mds-orm'
+import { CreateRepository, CreateRepositoryMethod, InsertReturning } from '@mds-core/mds-orm'
 import { DeepPartial, Between } from 'typeorm'
 import { timeframe } from '@mds-core/mds-utils'
 import { entityPropertyFilter } from '@mds-core/mds-orm/utils'
@@ -22,7 +22,7 @@ import { MetricEntity } from './entities'
 import { ReadMetricsOptions } from '../../@types'
 import * as migrations from './migrations'
 
-const RepositoryReadMetrics = CustomRepositoryMethod(connect => async (options: ReadMetricsOptions): Promise<
+const RepositoryReadMetrics = CreateRepositoryMethod(connect => async (options: ReadMetricsOptions): Promise<
   MetricEntity[]
 > => {
   const { name, time_bin_size, time_bin_start, time_bin_end, provider_id, geography_id, vehicle_type } = options
@@ -43,7 +43,7 @@ const RepositoryReadMetrics = CustomRepositoryMethod(connect => async (options: 
   return entities
 })
 
-const RepositoryWriteMetrics = CustomRepositoryMethod(connect => async (metrics: DeepPartial<MetricEntity>[]): Promise<
+const RepositoryWriteMetrics = CreateRepositoryMethod(connect => async (metrics: DeepPartial<MetricEntity>[]): Promise<
   MetricEntity[]
 > => {
   const connection = await connect('rw')
@@ -57,7 +57,7 @@ const RepositoryWriteMetrics = CustomRepositoryMethod(connect => async (metrics:
   return entities
 })
 
-export const MetricsRepository = ReadWriteRepository(
+export const MetricsRepository = CreateRepository(
   'metrics-repository',
   connect => {
     return {

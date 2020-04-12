@@ -19,7 +19,7 @@ import { ConnectionManager, ConnectionManagerOptions, ConnectionMode } from './c
 
 type RepositoryMethod<TMethod> = (connect: (mode: ConnectionMode) => Promise<Connection>) => TMethod
 
-export const CustomRepositoryMethod: <TMethod>(
+export const CreateRepositoryMethod: <TMethod>(
   method: RepositoryMethod<TMethod>
 ) => RepositoryMethod<TMethod> = method => method
 
@@ -28,7 +28,7 @@ export type ReadWriteRepositoryOptions = Pick<
   'entities' | 'migrations' | 'migrationsTableName'
 >
 
-export const ReadWriteRepository = <TRepositoryMethods>(
+export const CreateRepository = <TRepositoryMethods>(
   prefix: string,
   methods: (connect: (mode: ConnectionMode) => Promise<Connection>) => TRepositoryMethods,
   options: ReadWriteRepositoryOptions = {}

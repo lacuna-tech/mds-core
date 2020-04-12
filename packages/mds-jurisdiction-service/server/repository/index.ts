@@ -15,26 +15,26 @@
  */
 
 import { UUID } from '@mds-core/mds-types'
-import { InsertReturning, UpdateReturning, ReadWriteRepository, CustomRepositoryMethod } from '@mds-core/mds-orm'
+import { InsertReturning, UpdateReturning, CreateRepository, CreateRepositoryMethod } from '@mds-core/mds-orm'
 import { DeepPartial } from 'typeorm'
 
 import { JurisdictionEntity } from './entities'
 import * as migrations from './migrations'
 
-const RepositoryReadJurisdiction = CustomRepositoryMethod(connect => async (jurisdiction_id: UUID): Promise<
+const RepositoryReadJurisdiction = CreateRepositoryMethod(connect => async (jurisdiction_id: UUID): Promise<
   JurisdictionEntity | undefined
 > => {
   const connection = await connect('ro')
   return connection.getRepository(JurisdictionEntity).findOne({ where: { jurisdiction_id } })
 })
 
-const RepositoryReadJurisdictions = CustomRepositoryMethod(connect => async (): Promise<JurisdictionEntity[]> => {
+const RepositoryReadJurisdictions = CreateRepositoryMethod(connect => async (): Promise<JurisdictionEntity[]> => {
   const connection = await connect('ro')
   const entities = await connection.getRepository(JurisdictionEntity).find()
   return entities
 })
 
-const RepositoryWriteJurisdictions = CustomRepositoryMethod(
+const RepositoryWriteJurisdictions = CreateRepositoryMethod(
   connect => async (jurisdictions: DeepPartial<JurisdictionEntity>[]): Promise<JurisdictionEntity[]> => {
     const connection = await connect('rw')
     const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
@@ -48,7 +48,7 @@ const RepositoryWriteJurisdictions = CustomRepositoryMethod(
   }
 )
 
-const RepositoryUpdateJurisdiction = CustomRepositoryMethod(
+const RepositoryUpdateJurisdiction = CreateRepositoryMethod(
   connect => async (
     jurisdiction_id: UUID,
     { id, ...jurisdiction }: JurisdictionEntity
@@ -68,7 +68,7 @@ const RepositoryUpdateJurisdiction = CustomRepositoryMethod(
   }
 )
 
-export const JurisdictionRepository = ReadWriteRepository(
+export const JurisdictionRepository = CreateRepository(
   'jurisdiction-repository',
   connect => {
     return {
