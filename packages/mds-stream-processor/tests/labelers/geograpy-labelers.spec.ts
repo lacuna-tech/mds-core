@@ -81,4 +81,27 @@ describe('GeographyLabeler tests', async () => {
 
     assert(geographyLabelerMethods.pointInBbox(point, bbox) === false)
   })
+
+  it('Tests geography caching', async () => {
+    /* Initially seed half of the mock geographies */
+    const geographyLabeler = GeographyLabeler()
+    Sinon.stub(geographyLabelerMethods, 'pointInBbox').returns(true)
+    Sinon.stub(utils, 'pointInShape').returns(true)
+    Sinon.stub(db, 'readGeographies').returns(Promise.resolve(mockGeographies.slice(0, mockGeographies.length / 2)))
+
+    const { geography_ids: geography_ids_partial } = await geographyLabeler({ telemetry: mockTelemetry })
+    assert(geography_ids_partial.length === mockGeographies.length / 2)
+
+    /* Clear db mocks */
+    await Sinon.restore()
+
+    /* Seed all of the mock geographies */
+    Sinon.stub(geographyLabelerMethods, 'pointInBbox').returns(true)
+    Sinon.stub(utils, 'pointInShape').returns(true)
+    Sinon.stub(db, 'readGeographies').returns(Promise.resolve(mockGeographies))
+
+    const { geography_ids: geography_ids_complete } = await geographyLabeler({ telemetry: mockTelemetry })
+
+    assert(geography_ids_complete.length === mockGeographies.length)
+  })
 })
