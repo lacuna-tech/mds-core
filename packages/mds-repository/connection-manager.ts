@@ -44,15 +44,15 @@ const {
   PG_MIGRATIONS = 'true' // Enable migrations by default
 } = process.env
 
-const connectionName = (name: string, mode: ConnectionMode) => `${name}-${mode}`
+const connectionName = (prefix: string, mode: ConnectionMode) => `${prefix}-${mode}`
 
 export type ConnectionManagerOptions = Partial<PostgresConnectionOptions>
 
-export const ConnectionManager = (name: string, options: ConnectionManagerOptions = {}) => {
+export const ConnectionManager = (prefix: string, options: ConnectionManagerOptions = {}) => {
   let connections: Connection[] | null = null
 
-  const config: ConnectionOptions[] = ConnectionModes.map(mode => ({
-    name: connectionName(name, mode),
+  const [ro, rw]: ConnectionOptions[] = ConnectionModes.map(mode => ({
+    name: connectionName(prefix, mode),
     type: 'postgres',
     host: (mode === 'rw' ? PG_HOST : PG_HOST_READER) || PG_HOST || 'localhost',
     port: Number(PG_PORT) || 5432,
@@ -75,7 +75,7 @@ export const ConnectionManager = (name: string, options: ConnectionManagerOption
   const initialize = async () => {
     if (!connections) {
       try {
-        connections = await createConnections(config)
+        connections = await createConnections([ro, rw])
       } catch (error) {
         logger.error('Database Initialization Error', error)
         throw new ServerError('Database Initialization Error')
@@ -87,8 +87,8 @@ export const ConnectionManager = (name: string, options: ConnectionManagerOption
     await initialize()
     try {
       const connection =
-        connections?.find(c => c.name === connectionName(name, mode)) ??
-        getConnectionManager().get(connectionName(name, mode))
+        connections?.find(c => c.name === connectionName(prefix, mode)) ??
+        getConnectionManager().get(connectionName(prefix, mode))
       if (!connection.isConnected) {
         await connection.connect()
       }
@@ -106,8 +106,8 @@ export const ConnectionManager = (name: string, options: ConnectionManagerOption
     connections = null
   }
 
-  // Make the "rw" connection the default for TypeORM CLI
-  const [, { name: rw, ...ormconfig }] = config
+  // Make the "rw" connection the default for the TypeORM CLI by removing the connection name
+  const { name, ...ormconfig } = rw
 
   return {
     initialize,
