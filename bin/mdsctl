@@ -1508,7 +1508,8 @@ check() {
       # fixme: test ${configs[helm-environment]}
       # (creds) installNsc;;
       [ "${configs[helm-environment]}" ] && installOperations
-      [ ! -d ${configs[operations]}/${configs[helm-cluster]} ] && usage "unspecified cluster"
+      # fixme: better operations pre-check
+      #[ ! -d ${configs[operations]}/${configs[helm-cluster]} ] && usage "unspecified cluster"
       ;;
     installMetrics) kubectl get namespace istio-system > /dev/null 2>&1 || installIstio;&
     installHelm | installIstio | installLogging | installMetricsAdapter | testUnit | \
