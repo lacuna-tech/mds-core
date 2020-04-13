@@ -97,6 +97,7 @@ spec:
           - name: NATS
             value: {{ default "nats" $.Values.natsNamespace }}-nats-server.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
 #            value: nats-cluster-mgmt.{{ default "nats" $.Values.natsNamespace }}.svc.cluster.local
+          {{- end }}
           - name: KAFKA_HOST
             value: host.docker.internal:9092
           - name: TENANT_ID
@@ -138,8 +139,8 @@ data:
   postgresql-password: {{ .Values.postgresql.password | b64enc }}
   {{- end }}
 type: Opaque
+{{- if and $.Values.nats.enabled $.Values.nats.credentials }}
 ---
-{{- if false }}
 apiVersion: v1
 kind: Secret
 metadata:
