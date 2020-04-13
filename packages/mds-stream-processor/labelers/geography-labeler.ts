@@ -28,12 +28,9 @@ export interface GeographyLabel {
 type WithBbox<T> = T & { bbox: BBox }
 
 export const pointInBbox = ({ lat, lng }: { lat: number; lng: number }, bbox: BBox) => {
-  const [bottomLeft, topRight] = [
-    [bbox[0], bbox[1]],
-    [bbox[2], bbox[3]]
-  ]
+  const [bottomLeftLng, bottomLeftLat, topRightLng, topRightLat] = bbox
 
-  return bottomLeft[0] <= lng && bottomLeft[1] <= lat && topRight[0] >= lng && topRight[1] >= lat
+  return bottomLeftLng <= lng && bottomLeftLat <= lat && topRightLng >= lng && topRightLat >= lat
 }
 
 const computeBbox = (geography: Geography) => {
