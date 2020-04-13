@@ -6,6 +6,7 @@ import Sinon from 'sinon'
 import { Geography } from '@mds-core/mds-types'
 import { v4 as uuid } from 'uuid'
 import assert from 'assert'
+import { BBox } from '@turf/helpers'
 
 const mockGeographies: Geography[] = Array.from({ length: 100 }, () => ({
   geography_id: uuid(),
@@ -25,10 +26,14 @@ const mockTelemetry = {
 }
 
 describe('GeographyLabeler tests', async () => {
-  it('Tests all matched geographies are included in list', async () => {
-    Sinon.replace(utils, 'pointInShape', () => true)
-    Sinon.replace(geographyLabelerMethods, 'pointInBbox', () => true)
-    Sinon.replace(db, 'readGeographies', async () => mockGeographies)
+  afterEach(() => {
+    Sinon.restore()
+  })
+
+  it('Tests pointInBbox: true, pointInShape: true elicits matches', async () => {
+    Sinon.stub(geographyLabelerMethods, 'pointInBbox').returns(true)
+    Sinon.stub(utils, 'pointInShape').returns(true)
+    Sinon.stub(db, 'readGeographies').returns(Promise.resolve(mockGeographies))
 
     const { geography_ids } = await GeographyLabeler()({ telemetry: mockTelemetry })
 
@@ -40,5 +45,39 @@ describe('GeographyLabeler tests', async () => {
   it('Tests that absent gps in telemetry elicits no matches', async () => {
     const { geography_ids } = await GeographyLabeler()({})
     assert(geography_ids.length === [].length)
+  })
+
+  it('Tests that pointInBbox: false, pointInShape: true elicits no matches', async () => {
+    Sinon.stub(geographyLabelerMethods, 'pointInBbox').returns(false)
+    Sinon.stub(utils, 'pointInShape').returns(true)
+    Sinon.stub(db, 'readGeographies').returns(Promise.resolve(mockGeographies))
+
+    const { geography_ids } = await GeographyLabeler()({ telemetry: mockTelemetry })
+
+    assert(geography_ids.length === [].length)
+  })
+
+  it('Tests that pointInBbox: true, pointInShape: false elicits no matches', async () => {
+    Sinon.stub(geographyLabelerMethods, 'pointInBbox').returns(true)
+    Sinon.stub(utils, 'pointInShape').returns(false)
+    Sinon.stub(db, 'readGeographies').returns(Promise.resolve(mockGeographies))
+
+    const { geography_ids } = await GeographyLabeler()({ telemetry: mockTelemetry })
+
+    assert(geography_ids.length === [].length)
+  })
+
+  it('Tests pointInBbox success', async () => {
+    const bbox = [0, 0, 10, 10] as BBox
+    const point = { lat: 5, lng: 5 }
+
+    assert(geographyLabelerMethods.pointInBbox(point, bbox) === true)
+  })
+
+  it('Tests pointInBbox failure', async () => {
+    const bbox = [0, 0, 10, 10] as BBox
+    const point = { lat: 15, lng: 15 }
+
+    assert(geographyLabelerMethods.pointInBbox(point, bbox) === false)
   })
 })
