@@ -26,7 +26,7 @@ export const entityPropertyFilter = <T extends object, TProperty extends keyof T
   if (value) {
     if (Array.isArray(value)) {
       if (value.length) {
-        return value.length === 1 ? { [property]: value } : { [property]: In(value) }
+        return value.length === 1 ? { [property]: value[0] } : { [property]: In(value) }
       }
     } else {
       return { [property]: value }
