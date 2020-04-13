@@ -1,4 +1,5 @@
 import { GeographyLabeler } from '@mds-core/mds-stream-processor/labelers/geography-labeler'
+import * as geographyLabelerMethods from '@mds-core/mds-stream-processor/labelers/geography-labeler'
 import * as utils from '@mds-core/mds-utils'
 import db from '@mds-core/mds-db'
 import Sinon from 'sinon'
@@ -26,6 +27,7 @@ const mockTelemetry = {
 describe('GeographyLabeler tests', async () => {
   it('Tests all matched geographies are included in list', async () => {
     Sinon.replace(utils, 'pointInShape', () => true)
+    Sinon.replace(geographyLabelerMethods, 'pointInBbox', () => true)
     Sinon.replace(db, 'readGeographies', async () => mockGeographies)
 
     const { geography_ids } = await GeographyLabeler()({ telemetry: mockTelemetry })
