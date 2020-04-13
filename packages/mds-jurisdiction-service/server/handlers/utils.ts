@@ -24,6 +24,7 @@ import {
   timestampSchema
 } from '@mds-core/mds-schema-validators'
 import { v4 as uuid } from 'uuid'
+import { filterEmptyHelper } from '@mds-core/mds-utils'
 import { CreateJurisdictionType, JurisdictionDomainModel } from '../../@types'
 import { JurisdictionEntity } from '../repository/entities'
 
@@ -71,5 +72,4 @@ export const AsJurisdictionEntity = (jurisdiction: CreateJurisdictionType): Deep
   return entity
 }
 
-export const isJurisdiction = (jurisdiction: JurisdictionDomainModel | null): jurisdiction is JurisdictionDomainModel =>
-  jurisdiction !== null
+export const isJurisdiction = filterEmptyHelper<JurisdictionDomainModel>()
