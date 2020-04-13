@@ -7,6 +7,7 @@ import { Geography } from '@mds-core/mds-types'
 import { v4 as uuid } from 'uuid'
 import assert from 'assert'
 import { BBox } from '@turf/helpers'
+import { BBox2d } from '@turf/helpers/lib/geojson'
 
 const mockGeographies: Geography[] = Array.from({ length: 100 }, () => ({
   geography_id: uuid(),
@@ -68,14 +69,14 @@ describe('GeographyLabeler tests', async () => {
   })
 
   it('Tests pointInBbox success', async () => {
-    const bbox = [0, 0, 10, 10] as BBox
+    const bbox: BBox2d = [0, 0, 10, 10]
     const point = { lat: 5, lng: 5 }
 
     assert(geographyLabelerMethods.pointInBbox(point, bbox) === true)
   })
 
   it('Tests pointInBbox failure', async () => {
-    const bbox = [0, 0, 10, 10] as BBox
+    const bbox: BBox2d = [0, 0, 10, 10]
     const point = { lat: 15, lng: 15 }
 
     assert(geographyLabelerMethods.pointInBbox(point, bbox) === false)
