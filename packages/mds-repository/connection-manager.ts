@@ -14,14 +14,12 @@
     limitations under the License.
  */
 
-import { Connection, createConnections, getConnectionManager, ConnectionOptions } from 'typeorm'
-import { ServerError } from '@mds-core/mds-utils'
-import logger from '@mds-core/mds-logger'
+import { Connection, createConnections, ConnectionOptions } from 'typeorm'
 import { types as PostgresTypes } from 'pg'
 import { LoggerOptions } from 'typeorm/logger/LoggerOptions'
-
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import { MdsNamingStrategy } from './naming-strategies'
+import { RepositoryError } from './utils'
 
 const loggingOption = (options: string): LoggerOptions => {
   return ['false', 'true', 'all'].includes(options) ? options !== 'false' : (options.split(' ') as LoggerOptions)
@@ -76,34 +74,42 @@ export const ConnectionManager = (prefix: string, options: ConnectionManagerOpti
     if (!connections) {
       try {
         connections = await createConnections([ro, rw])
-      } catch (error) {
-        logger.error('Database Initialization Error', error)
-        throw new ServerError('Database Initialization Error')
+      } catch (error) /* istanbul ignore next */ {
+        throw RepositoryError('Failed to create connections', error)
       }
     }
   }
 
   const connect = async (mode: ConnectionMode) => {
-    await initialize()
-    try {
-      const connection =
-        connections?.find(c => c.name === connectionName(prefix, mode)) ??
-        getConnectionManager().get(connectionName(prefix, mode))
-      if (!connection.isConnected) {
-        await connection.connect()
-      }
-      return connection
-    } catch (error) {
-      logger.error('Database Connection Error', error)
-      throw new ServerError('Database Connection Error')
+    if (!connections) {
+      /* istanbul ignore next */
+      throw Error('Connection manager not initialized')
     }
+    const connection = connections.find(c => c.name === connectionName(prefix, mode))
+    if (!connection) {
+      /* istanbul ignore next */
+      throw RepositoryError(`Connection ${connectionName(prefix, mode)} not found`)
+    }
+    if (!connection.isConnected) {
+      try {
+        await connection.connect()
+      } catch (error) /* istanbul ignore next */ {
+        throw RepositoryError(`Connection ${connectionName(prefix, mode)} failed`, error)
+      }
+    }
+    return connection
   }
 
   const shutdown = async () => {
     if (connections) {
-      await Promise.all(connections.filter(connection => connection.isConnected).map(connection => connection.close()))
+      try {
+        await Promise.all(
+          connections.filter(connection => connection.isConnected).map(connection => connection.close())
+        )
+      } finally {
+        connections = null
+      }
     }
-    connections = null
   }
 
   // Make the "rw" connection the default for the TypeORM CLI by removing the connection name
