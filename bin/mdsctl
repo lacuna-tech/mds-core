@@ -692,6 +692,8 @@ installMds() {
 
   # installFallbackCertificate
 
+  (cd ${configs[home]}/helm/mds; /bin/rm -rf tmpcharts; helm dependency update)
+
   # todo: don't lock on namespace existence
   [[ "$(helm list --short ${configs[namespace-mds]}-mds${configs[helm-upgrade-release]})" = "${configs[namespace-mds]}-mds${configs[helm-upgrade-release]}" ]] || {
     installNamespace ${configs[namespace-mds]}
@@ -716,7 +718,7 @@ installMds() {
     # fixme: impl upgrade, interactive (diff)
     op=install #$([ $(helm list --short | grep ${configs[namespace-mds]}-mds${configs[helm-upgrade-release]}) ] && echo upgrade || echo install)
 
-    helm ${configs[helm-secrets]:+secrets} ${op} ${configs[home]}/helm/mds \
+echo "    helm ${configs[helm-secrets]:+secrets} ${op} ${configs[home]}/helm/mds \
       --name ${configs[namespace-mds]}-mds${configs[helm-upgrade-release]} \
       --namespace ${configs[namespace-mds]} \
       ${cv:+$(helmOptions values ${cv})} \
@@ -728,7 +730,7 @@ installMds() {
       ${configs[sets-mds]:+$(helmOptions set ${configs[sets-mds]})} \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-mds]:+$(helmOptions set-file ${configs[setfiles-mds]})} \
-      ${configs[dryrun]:+--dry-run --debug}
+      ${configs[dryrun]:+--dry-run --debug}"
 
     unset op cv
     pause 12
