@@ -16,26 +16,12 @@
 
 import { Timestamp } from '@mds-core/mds-types'
 import { DeepPartial } from 'typeorm'
-import {
-  ValidateSchema,
-  SchemaBuilder,
-  uuidSchema,
-  stringSchema,
-  timestampSchema
-} from '@mds-core/mds-schema-validators'
 import { v4 as uuid } from 'uuid'
 import { filterEmptyHelper } from '@mds-core/mds-utils'
+import { ValidateSchema } from 'packages/mds-schema-validators'
 import { CreateJurisdictionType, JurisdictionDomainModel } from '../../@types'
 import { JurisdictionEntity } from '../repository/entities'
-
-const jurisdictionSchema = (max: Timestamp = Date.now()) =>
-  SchemaBuilder.object().keys({
-    jurisdiction_id: uuidSchema,
-    agency_key: stringSchema,
-    agency_name: stringSchema,
-    geography_id: uuidSchema,
-    timestamp: timestampSchema.max(max)
-  })
+import { jurisdictionSchema } from './schemas'
 
 export const AsJurisdiction = (effective: Timestamp = Date.now()) => (
   entity: JurisdictionEntity | undefined
@@ -62,7 +48,10 @@ export const AsJurisdiction = (effective: Timestamp = Date.now()) => (
 export const AsJurisdictionEntity = (jurisdiction: CreateJurisdictionType): DeepPartial<JurisdictionEntity> => {
   const recorded = Date.now()
   const { jurisdiction_id = uuid(), agency_key, agency_name, geography_id, timestamp = recorded } = jurisdiction
-  ValidateSchema({ jurisdiction_id, agency_key, agency_name, geography_id, timestamp }, jurisdictionSchema())
+  ValidateSchema<JurisdictionDomainModel>(
+    { jurisdiction_id, agency_key, agency_name, geography_id, timestamp },
+    jurisdictionSchema()
+  )
   const entity: DeepPartial<JurisdictionEntity> = {
     jurisdiction_id,
     agency_key,
