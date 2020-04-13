@@ -17,4 +17,5 @@
 import { JurisdictionRepository } from './server/repository'
 
 // Make connection options available to TypeORM CLI
-module.exports = JurisdictionRepository.config
+const { ormconfig } = JurisdictionRepository
+module.exports = ormconfig

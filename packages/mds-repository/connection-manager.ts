@@ -106,9 +106,12 @@ export const ConnectionManager = (name: string, options: ConnectionManagerOption
     connections = null
   }
 
+  // Make the "rw" connection the default for TypeORM CLI
+  const [, { name: rw, ...ormconfig }] = config
+
   return {
     initialize,
-    config,
+    ormconfig,
     connect,
     shutdown
   }
