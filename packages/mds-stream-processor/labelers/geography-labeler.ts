@@ -33,8 +33,6 @@ export const pointInBbox = ({ lat, lng }: { lat: number; lng: number }, bbox: BB
     [bbox[2], bbox[3]]
   ]
 
-  console.log(bottomLeft, topRight)
-
   return bottomLeft[0] <= lng && bottomLeft[1] <= lat && topRight[0] >= lng && topRight[1] >= lat
 }
 
