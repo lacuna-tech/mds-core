@@ -14,8 +14,14 @@
     limitations under the License.
  */
 
-import { JurisdictionRepository } from './server/repository'
+import { SchemaBuilder, uuidSchema, stringSchema, timestampSchema } from '@mds-core/mds-schema-validators'
+import { Timestamp } from '@mds-core/mds-types'
 
-// Make connection options available to TypeORM CLI
-const { ormconfig } = JurisdictionRepository
-module.exports = ormconfig
+export const jurisdictionSchema = (max: Timestamp = Date.now()) =>
+  SchemaBuilder.object().keys({
+    jurisdiction_id: uuidSchema,
+    agency_key: stringSchema,
+    agency_name: stringSchema,
+    geography_id: uuidSchema,
+    timestamp: timestampSchema.max(max)
+  })
