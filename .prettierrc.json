@@ -1,8 +1,15 @@
 {
-  "arrowParens":  "avoid",
+  "arrowParens": "avoid",
   "printWidth": 120,
   "semi": false,
-  "singleQuote": true,
   "tabWidth": 2,
-  "trailingComma": "none"
+  "trailingComma": "none",
+  "overrides": [
+    {
+      "files": ["*.ts", "*.js"],
+      "options": {
+        "singleQuote": true
+      }
+    }
+  ]
 }
