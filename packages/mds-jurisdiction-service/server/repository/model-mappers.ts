@@ -22,51 +22,71 @@ import { JurisdictionEntityModel } from './entities/jurisdiction-entity'
 
 export const isJurisdiction = filterEmptyHelper<JurisdictionDomainModel>()
 
-interface MapToDomainOptions {
+type JurisdictionEntityModelMapper<ToModel> = ModelMapper<JurisdictionEntityModel, ToModel>
+
+interface JurisdictionEntityToDomainModelMapperOptions {
   effective: Timestamp
 }
 
-interface MapToEntityOptions {
+type JurisdictionDomainModelMapper<ToModel> = ModelMapper<JurisdictionDomainModel, ToModel>
+
+interface JurisdictionDomainToEntityModelMapperOptions {
   recorded: Timestamp
 }
 
-export const JurisdictionModelMapper = {
-  toDomain: ({ effective }: MapToDomainOptions): ModelMapper<JurisdictionEntityModel, JurisdictionDomainModel> => ({
-    map: entities => {
-      const models = entities.map<Nullable<JurisdictionDomainModel>>(entity => {
-        const { jurisdiction_id, agency_key, versions } = entity
-        const version = versions.find(properties => effective >= properties.timestamp)
-        if (version) {
-          const { agency_name, geography_id, timestamp } = version
-          if (geography_id !== null) {
-            return {
-              jurisdiction_id,
-              agency_key,
-              agency_name,
-              geography_id,
-              timestamp
-            }
+export const JurisdictionMappers = {
+  DomainModel: {
+    to: {
+      EntityModel: (
+        options: JurisdictionDomainToEntityModelMapperOptions
+      ): JurisdictionDomainModelMapper<CreateIdentityEntityModel<JurisdictionEntityModel>> => {
+        const { recorded } = options
+        return {
+          map: models => {
+            const entities = models.map(model => {
+              const { jurisdiction_id, agency_key, agency_name, geography_id, timestamp } = model
+              return {
+                jurisdiction_id,
+                agency_key,
+                versions: [{ timestamp, agency_name, geography_id }],
+                recorded
+              }
+            })
+            return entities
           }
         }
-        return null
-      })
-      return models.filter(isJurisdiction)
+      }
     }
-  }),
-  toEntity: ({
-    recorded
-  }: MapToEntityOptions): ModelMapper<JurisdictionDomainModel, CreateIdentityEntityModel<JurisdictionEntityModel>> => ({
-    map: models => {
-      const entities = models.map(model => {
-        const { jurisdiction_id, agency_key, agency_name, geography_id, timestamp } = model
+  },
+  EntityModel: {
+    to: {
+      DomainModel: (
+        options: JurisdictionEntityToDomainModelMapperOptions
+      ): JurisdictionEntityModelMapper<JurisdictionDomainModel> => {
+        const { effective } = options
         return {
-          jurisdiction_id,
-          agency_key,
-          versions: [{ timestamp, agency_name, geography_id }],
-          recorded
+          map: entities => {
+            const models = entities.map<Nullable<JurisdictionDomainModel>>(entity => {
+              const { jurisdiction_id, agency_key, versions } = entity
+              const version = versions.find(properties => effective >= properties.timestamp)
+              if (version) {
+                const { agency_name, geography_id, timestamp } = version
+                if (geography_id !== null) {
+                  return {
+                    jurisdiction_id,
+                    agency_key,
+                    agency_name,
+                    geography_id,
+                    timestamp
+                  }
+                }
+              }
+              return null
+            })
+            return models.filter(isJurisdiction)
+          }
         }
-      })
-      return entities
+      }
     }
-  })
+  }
 }

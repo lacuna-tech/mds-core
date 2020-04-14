@@ -19,25 +19,42 @@ import { ModelMapper, CreateIdentityEntityModel } from 'packages/mds-repository'
 import { MetricEntityModel } from './entities/metric-entity'
 import { MetricDomainModel } from '../../@types'
 
-interface MapToEntityOptions {
+type MetricEntityModelMapper<ToModel> = ModelMapper<MetricEntityModel, ToModel>
+
+type MetricDomainModelMapper<ToModel> = ModelMapper<MetricDomainModel, ToModel>
+
+interface MetricDomainToEntityModelMapperOptions {
   recorded: Timestamp
 }
 
-export const MetricModelMapper = {
-  toDomain: (): ModelMapper<MetricEntityModel, MetricDomainModel> => ({
-    map: models =>
-      models.map(model => {
-        const { id, recorded, ...domain } = model
-        return domain
-      })
-  }),
-  toEntity: ({
-    recorded
-  }: MapToEntityOptions): ModelMapper<MetricDomainModel, CreateIdentityEntityModel<MetricEntityModel>> => ({
-    map: models =>
-      models.map(model => {
-        const entity = { ...model, recorded }
-        return entity
-      })
-  })
+export const MetricMappers = {
+  EntityModel: {
+    to: {
+      DomainModel: (): MetricEntityModelMapper<MetricDomainModel> => {
+        return {
+          map: models =>
+            models.map(model => {
+              const { id, recorded, ...domain } = model
+              return domain
+            })
+        }
+      }
+    }
+  },
+  DomainModel: {
+    to: {
+      EntityModel: (
+        options: MetricDomainToEntityModelMapperOptions
+      ): MetricDomainModelMapper<CreateIdentityEntityModel<MetricEntityModel>> => {
+        const { recorded } = options
+        return {
+          map: models =>
+            models.map(model => {
+              const entity = { ...model, recorded }
+              return entity
+            })
+        }
+      }
+    }
+  }
 }
