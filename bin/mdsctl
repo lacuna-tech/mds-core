@@ -878,7 +878,10 @@ installNsc() {
 installNas() {
   check ${FUNCNAME[0]}
 
-  [[ "$(helm list --short ${configs[namespace-nats-account-server]}-nats-account-server)" = "${configs[namespace-nats-account-server]}-nats-account-server" ]] || {
+  releaseName="${configs[nats-namespace-account-server]}-nats-account-server}"
+  releases="$(helm list --quiet)"
+
+  if ! echo $releases | grep -E -q "(^| )$releaseName($| )"; then # this release has not yet been installed
     nscOperatorData=${configs[nats]}/nats-operator-data.zip
 
     [[ ! -f ${nscOperatorData} ]] && (cd $(nscHome); zip -r ${nscOperatorData} .)
@@ -902,7 +905,7 @@ installNas() {
     kubectl --namespace ${configs[namespace-nats-account-server]} wait --for=condition=Ready pod --selector=app=nats-account-server \
         --timeout=${configs[pause-kubectl]}s || error "nas installation error"
     pause 3
-  }
+  fi
 }
 
 installNatsInit() {
