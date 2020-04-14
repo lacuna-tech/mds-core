@@ -19,7 +19,7 @@ import { ServiceResponse, ServiceError, ServiceResult } from '@mds-core/mds-serv
 import { ValidationError, NotFoundError, ServerError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { UpdateJurisdictionType, JurisdictionDomainModel } from '../../@types'
-import { JurisdictionModelMapper } from './jurisdiction-model-mapper'
+import { JurisdictionModelMapper } from '../repository/model-mappers'
 import { JurisdictionRepository } from '../repository'
 
 export const UpdateJurisdictionHandler = async (

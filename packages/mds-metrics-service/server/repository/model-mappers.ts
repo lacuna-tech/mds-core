@@ -16,7 +16,7 @@
 
 import { Timestamp } from '@mds-core/mds-types'
 import { ModelMapper, CreateIdentityEntityModel } from 'packages/mds-repository'
-import { MetricEntityModel } from '../repository/entities/metric-entity'
+import { MetricEntityModel } from './entities/metric-entity'
 import { MetricDomainModel } from '../../@types'
 
 interface MapToEntityOptions {
@@ -31,10 +31,9 @@ export const MetricModelMapper = {
         return domain
       })
   }),
-  toEntity: ({ recorded = Date.now() }: Partial<MapToEntityOptions> = {}): ModelMapper<
-    MetricDomainModel,
-    CreateIdentityEntityModel<MetricEntityModel>
-  > => ({
+  toEntity: ({
+    recorded
+  }: MapToEntityOptions): ModelMapper<MetricDomainModel, CreateIdentityEntityModel<MetricEntityModel>> => ({
     map: models =>
       models.map(model => {
         const entity = { ...model, recorded }

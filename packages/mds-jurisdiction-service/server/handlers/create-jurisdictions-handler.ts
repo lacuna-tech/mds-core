@@ -19,7 +19,7 @@ import { ValidationError, ConflictError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { v4 as uuid } from 'uuid'
 import { CreateJurisdictionType, JurisdictionDomainModel } from '../../@types'
-import { JurisdictionModelMapper } from './jurisdiction-model-mapper'
+import { JurisdictionModelMapper } from '../repository/model-mappers'
 import { JurisdictionRepository } from '../repository'
 import { ValidateJurisdiction } from './jurisdiction-schema-validators'
 
@@ -30,7 +30,7 @@ export const CreateJurisdictionsHandler = async (
   try {
     const entities = await JurisdictionRepository.writeJurisdictions(
       JurisdictionModelMapper.toEntity({ recorded }).map(
-        jurisdictions.map(({ jurisdiction_id = uuid(), timestamp = Date.now(), ...jurisdiction }) =>
+        jurisdictions.map(({ jurisdiction_id = uuid(), timestamp = recorded, ...jurisdiction }) =>
           ValidateJurisdiction({
             jurisdiction_id,
             timestamp,

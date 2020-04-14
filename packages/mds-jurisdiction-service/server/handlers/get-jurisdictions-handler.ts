@@ -18,7 +18,7 @@ import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-serv
 import { ServerError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { GetJurisdictionsOptions, JurisdictionDomainModel } from '../../@types'
-import { JurisdictionModelMapper } from './jurisdiction-model-mapper'
+import { JurisdictionModelMapper } from '../repository/model-mappers'
 import { JurisdictionRepository } from '../repository'
 
 export const GetJurisdictionsHandler = async ({

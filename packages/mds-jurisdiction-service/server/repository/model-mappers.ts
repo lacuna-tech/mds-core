@@ -18,7 +18,7 @@ import { Timestamp, Nullable } from '@mds-core/mds-types'
 import { filterEmptyHelper } from '@mds-core/mds-utils'
 import { CreateIdentityEntityModel, ModelMapper } from '@mds-core/mds-repository'
 import { JurisdictionDomainModel } from '../../@types'
-import { JurisdictionEntityModel } from '../repository/entities/jurisdiction-entity'
+import { JurisdictionEntityModel } from './entities/jurisdiction-entity'
 
 export const isJurisdiction = filterEmptyHelper<JurisdictionDomainModel>()
 
@@ -31,10 +31,7 @@ interface MapToEntityOptions {
 }
 
 export const JurisdictionModelMapper = {
-  toDomain: ({ effective = Date.now() }: Partial<MapToDomainOptions> = {}): ModelMapper<
-    JurisdictionEntityModel,
-    JurisdictionDomainModel
-  > => ({
+  toDomain: ({ effective }: MapToDomainOptions): ModelMapper<JurisdictionEntityModel, JurisdictionDomainModel> => ({
     map: entities => {
       const models = entities.map<Nullable<JurisdictionDomainModel>>(entity => {
         const { jurisdiction_id, agency_key, versions } = entity
@@ -56,10 +53,9 @@ export const JurisdictionModelMapper = {
       return models.filter(isJurisdiction)
     }
   }),
-  toEntity: ({ recorded = Date.now() }: Partial<MapToEntityOptions> = {}): ModelMapper<
-    JurisdictionDomainModel,
-    CreateIdentityEntityModel<JurisdictionEntityModel>
-  > => ({
+  toEntity: ({
+    recorded
+  }: MapToEntityOptions): ModelMapper<JurisdictionDomainModel, CreateIdentityEntityModel<JurisdictionEntityModel>> => ({
     map: models => {
       const entities = models.map(model => {
         const { jurisdiction_id, agency_key, agency_name, geography_id, timestamp } = model

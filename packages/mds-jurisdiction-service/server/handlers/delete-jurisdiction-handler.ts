@@ -18,7 +18,7 @@ import { UUID } from '@mds-core/mds-types'
 import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-service-helpers'
 import { NotFoundError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
-import { JurisdictionModelMapper } from './jurisdiction-model-mapper'
+import { JurisdictionModelMapper } from '../repository/model-mappers'
 import { JurisdictionRepository } from '../repository'
 import { JurisdictionDomainModel } from '../../@types'
 
