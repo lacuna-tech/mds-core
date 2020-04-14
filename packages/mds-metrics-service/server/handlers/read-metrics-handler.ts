@@ -18,14 +18,14 @@ import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-serv
 import logger from '@mds-core/mds-logger'
 import { MetricDomainModel, ReadMetricsOptions } from '../../@types'
 import { MetricsRepository } from '../repository'
-import { asMetricDomainModel } from './utils'
+import { MetricModelMapper } from './metrics-model-mapper'
 
 export const ReadMetricsHandler = async (
   options: ReadMetricsOptions
 ): Promise<ServiceResponse<MetricDomainModel[]>> => {
   try {
     const entities = await MetricsRepository.readMetrics(options)
-    return ServiceResult(entities.map(asMetricDomainModel))
+    return ServiceResult(MetricModelMapper.toDomain().map(entities))
   } catch (error) /* istanbul ignore next */ {
     logger.error('Error Reading Metrics', error)
     return ServiceError(error)
