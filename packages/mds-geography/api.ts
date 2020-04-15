@@ -14,14 +14,10 @@ function api(app: express.Express): express.Express {
     }),
     async (req, res) => {
       const { scopes } = res.locals
-      const { get_published = null, get_unpublished = null } = req.query
-      const params = { get_published, get_unpublished }
-      if (get_published) {
-        params.get_published = get_published === 'true'
-      }
-
-      if (get_unpublished) {
-        params.get_unpublished = get_unpublished === 'true'
+      const { get_published, get_unpublished } = req.query
+      const params = {
+        get_published: get_published ? get_published === 'true' : null,
+        get_unpublished: get_unpublished ? get_unpublished === 'true' : null
       }
 
       /* If the user can only read published geos, and all they want is the unpublished metadata,
@@ -101,14 +97,10 @@ function api(app: express.Express): express.Express {
     }),
     async (req, res) => {
       const summary = req.query.summary === 'true'
-      const { get_published = null, get_unpublished = null } = req.query
-      const params = { get_published, get_unpublished }
-      if (get_published) {
-        params.get_published = get_published === 'true'
-      }
-
-      if (get_unpublished) {
-        params.get_unpublished = get_unpublished === 'true'
+      const { get_published, get_unpublished } = req.query
+      const params = {
+        get_published: get_published ? get_published === 'true' : null,
+        get_unpublished: get_unpublished ? get_unpublished === 'true' : null
       }
 
       try {

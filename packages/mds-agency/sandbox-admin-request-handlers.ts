@@ -40,9 +40,9 @@ export const wipeDevice = async (req: AgencyApiRequest, res: AgencyApiResponse) 
 
 export const refreshCache = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   // wipe the cache and rebuild from db
-  let { skip, take } = req.query
-  skip = parseInt(skip) || 0
-  take = parseInt(take) || 10000000000
+  const { skip: querySkip, take: queryTake } = req.query
+  const skip = parseInt(querySkip.toString()) || 0
+  const take = parseInt(queryTake.toString()) || 10000000000
 
   try {
     const rows = await db.readDeviceIds()

@@ -1,4 +1,5 @@
 import express from 'express'
+import { Query } from 'express-serve-static-core'
 
 import { isUUID, isPct, isTimestamp, isFloat, isInsideBoundingBox } from '@mds-core/mds-utils'
 import stream from '@mds-core/mds-stream'
@@ -107,7 +108,7 @@ export async function getVehicles(
   take: number,
   url: string,
   provider_id: string,
-  reqQuery: { [x: string]: string },
+  reqQuery: Query,
   bbox?: BoundingBox
 ): Promise<{
   total: number
