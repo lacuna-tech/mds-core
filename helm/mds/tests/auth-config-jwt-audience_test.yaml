@@ -32,7 +32,7 @@ tests:
         documentIndex: 3
       - equal:
           path: spec.origins[0].jwt.issuer
-          value: 'my-issuer'
+          value: "my-issuer"
         documentIndex: 3
       - equal:
           path: spec.origins[0].jwt.jwksUri

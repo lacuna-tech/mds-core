@@ -78,7 +78,7 @@ tests:
         documentIndex: 6
       - equal:
           path: spec.template.spec.containers[0].env[0].value
-          value: '4000'
+          value: "4000"
         documentIndex: 6
       - equal:
           path: spec.template.spec.containers[0].env[1].name
@@ -138,7 +138,7 @@ tests:
         documentIndex: 6
       - equal:
           path: spec.template.spec.containers[0].env[7].value
-          value: '5432'
+          value: "5432"
         documentIndex: 6
       - equal:
           path: spec.template.spec.containers[0].env[8].name
@@ -154,7 +154,7 @@ tests:
         documentIndex: 6
       - equal:
           path: spec.template.spec.containers[0].env[9].value
-          value: '6379'
+          value: "6379"
         documentIndex: 6
       - equal:
           path: spec.template.spec.containers[0].env[10].name

@@ -20,7 +20,7 @@ tests:
         documentIndex: 3
       - equal:
           path: spec.hosts[0]
-          value: 'my-domain'
+          value: "my-domain"
         documentIndex: 3
       - equal:
           path: spec.gateways[0]
@@ -32,7 +32,7 @@ tests:
         documentIndex: 3
       - equal:
           path: spec.http[0].corsPolicy.allowOrigin[0]
-          value: '*'
+          value: "*"
         documentIndex: 3
       - equal:
           path: spec.http[0].corsPolicy.allowMethods[0]
@@ -76,5 +76,5 @@ tests:
         documentIndex: 3
       - equal:
           path: spec.http[0].corsPolicy.maxAge
-          value: '10m'
+          value: "10m"
         documentIndex: 3
