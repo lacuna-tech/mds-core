@@ -17,6 +17,6 @@
 import { MetricsServiceProvider } from '../server'
 import { MetricsServiceInterface } from '../@types'
 
-const { start, stop, ...client } = MetricsServiceProvider
+const { initialize, shutdown, ...client } = MetricsServiceProvider
 
 export const MetricsServiceClient: MetricsServiceInterface = client

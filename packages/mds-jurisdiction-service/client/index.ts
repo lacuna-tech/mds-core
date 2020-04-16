@@ -17,6 +17,6 @@
 import { JurisdictionServiceProvider } from '../server'
 import { JurisdictionServiceInterface } from '../@types'
 
-const { start, stop, ...client } = JurisdictionServiceProvider
+const { initialize, shutdown, ...client } = JurisdictionServiceProvider
 
 export const JurisdictionServiceClient: JurisdictionServiceInterface = client

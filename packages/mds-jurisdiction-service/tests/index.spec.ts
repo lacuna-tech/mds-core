@@ -28,7 +28,7 @@ const LAST_WEEK = TODAY - days(7)
 
 describe('Write/Read Jurisdictions', () => {
   before(async () => {
-    await JurisdictionServiceProvider.start()
+    await JurisdictionServiceProvider.initialize()
   })
 
   it(`Write ${records} Jurisdiction${records > 1 ? 's' : ''}`, async () => {
@@ -182,6 +182,6 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   after(async () => {
-    await JurisdictionServiceProvider.stop()
+    await JurisdictionServiceProvider.shutdown()
   })
 })

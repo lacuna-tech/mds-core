@@ -35,7 +35,7 @@ const [JURISDICTION0, JURISDICTION1, JURISDICTION2] = [uuid(), uuid(), uuid()].m
 
 describe('', () => {
   before(async () => {
-    await JurisdictionServiceProvider.start()
+    await JurisdictionServiceProvider.initialize()
   })
 
   it('Create Single Jurisdiction', async () => {
@@ -203,6 +203,6 @@ describe('', () => {
   })
 
   after(async () => {
-    await JurisdictionServiceProvider.stop()
+    await JurisdictionServiceProvider.shutdown()
   })
 })
