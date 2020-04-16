@@ -45,7 +45,7 @@ export const CreateJurisdictionHandler = async (
     if (error instanceof ValidationError) {
       return ServiceError({ type: 'ValidationError', message: 'Error Creating Jurisdiction', details: error.message })
     }
-    if (RepositoryError.isRepositoryUniqueViolationError(error)) {
+    if (RepositoryError.is.uniqueViolationError(error)) {
       return ServiceError({ type: 'ConflictError', message: 'Error Creating Jurisdiction', details: error.message })
     }
     return ServiceException('Error Creating Jurisdiction', error)

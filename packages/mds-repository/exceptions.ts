@@ -27,15 +27,12 @@ export class RepositoryError extends Error {
     return (RepositoryError.hasProperty(property, error) && error[property]) || undefined
   }
 
-  // Type guard to detect general repository errors
-  static isRepositoryError(error: unknown): error is RepositoryError {
-    return error instanceof RepositoryError
-  }
-
-  // Type guards to detect specific repository errors
+  // Type guard to detect repository errors
   // https://www.postgresql.org/docs/9.2/errcodes-appendix.html
-  static isRepositoryUniqueViolationError(error: unknown): error is RepositoryError {
-    return RepositoryError.isRepositoryError(error) && error.code === '23505'
+  static is = {
+    repositoryError: (error: unknown): error is RepositoryError => error instanceof RepositoryError,
+    uniqueViolationError: (error: unknown): error is RepositoryError =>
+      RepositoryError.is.repositoryError(error) && error.code === '23505'
   }
 
   static create(error: unknown): RepositoryError {
