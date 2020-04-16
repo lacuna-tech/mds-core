@@ -5,6 +5,7 @@ import { pathsFor, ServerError, NotFoundError, InsufficientPermissionsError, Bad
 import logger from '@mds-core/mds-logger'
 
 import { checkAccess } from '@mds-core/mds-api-server'
+import { parseQuery } from '@mds-core/mds-api-helpers'
 
 function api(app: express.Express): express.Express {
   app.get(
@@ -14,10 +15,14 @@ function api(app: express.Express): express.Express {
     }),
     async (req, res) => {
       const { scopes } = res.locals
-      const { get_published, get_unpublished } = req.query
+      const { get_published, get_unpublished } = parseQuery(x => (x ? x === 'true' : null))(
+        req.query,
+        'get_published',
+        'get_unpublished'
+      )
       const params = {
-        get_published: get_published ? get_published === 'true' : null,
-        get_unpublished: get_unpublished ? get_unpublished === 'true' : null
+        get_published: get_published || null,
+        get_unpublished: get_unpublished || null
       }
 
       /* If the user can only read published geos, and all they want is the unpublished metadata,

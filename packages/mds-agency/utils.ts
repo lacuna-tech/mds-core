@@ -107,8 +107,8 @@ export async function getVehicles(
   skip: number,
   take: number,
   url: string,
-  provider_id: string,
   reqQuery: Query,
+  provider_id?: string,
   bbox?: BoundingBox
 ): Promise<{
   total: number

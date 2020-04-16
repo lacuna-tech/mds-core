@@ -55,8 +55,9 @@ import {
   TelemetryData,
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
-import { asPagingParams, asJsonApiLinks } from '@mds-core/mds-api-helpers'
+import { asPagingParams, asJsonApiLinks, parseQuery } from '@mds-core/mds-api-helpers'
 import { checkAccess } from '@mds-core/mds-api-server'
+import { isNullOrUndefined } from 'util'
 import {
   AuditApiAuditEndRequest,
   AuditApiAuditNoteRequest,
@@ -511,7 +512,12 @@ function api(app: express.Express): express.Express {
                 }
               }, {})
 
-            const event_viewport_adjustment = seconds(Number(req.query.event_viewport_adjustment) || 30)
+            const { event_viewport_adjustment: event_viewport_adjustment_query } = parseQuery(Number)(
+              req.query,
+              'event_viewport_adjustment'
+            )
+
+            const event_viewport_adjustment = seconds(event_viewport_adjustment_query || 30)
             const start_time = audit_start && audit_start - event_viewport_adjustment
             const end_time = (end => end && end + event_viewport_adjustment)(audit_end || last_event)
 
@@ -648,8 +654,8 @@ function api(app: express.Express): express.Express {
     checkAccess(scopes => scopes.includes('audits:vehicles:read')),
     async (req, res) => {
       const { skip, take } = { skip: 0, take: 10000 }
-      const bbox = JSON.parse(req.query.bbox)
-      const strict = JSON.parse(req.query.strict || true)
+      const { bbox, strict: strict_query } = parseQuery(JSON.parse)(req.query, 'bbox', 'strict')
+      const strict = !isNullOrUndefined(strict_query) ? strict_query : true
 
       const url = urls.format({
         protocol: req.get('x-forwarded-proto') || req.protocol,
@@ -657,10 +663,10 @@ function api(app: express.Express): express.Express {
         pathname: req.path
       })
 
-      const { provider_id } = req.query
+      const { provider_id } = parseQuery()(req.query, 'provider_id')
 
       try {
-        const response = await getVehicles(skip, take, url, provider_id, req.query, bbox, strict)
+        const response = await getVehicles(skip, take, url, req.query, bbox, strict, provider_id)
         return res.status(200).send(response)
       } catch (err) {
         logger.error('getVehicles fail', err)

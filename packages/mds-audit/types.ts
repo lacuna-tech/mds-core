@@ -73,7 +73,7 @@ export interface AuditApiAuditEndRequest extends AuditApiTripRequest {
   }
 }
 
-export interface AuditApiGetTripsRequest extends AuditApiRequest {
+export type AuditApiGetTripsRequest = AuditApiRequest & {
   // Query string parameters always come in as strings
   query: Partial<
     {
@@ -89,8 +89,8 @@ export interface AuditApiGetTripsRequest extends AuditApiRequest {
   >
 }
 
-export interface AuditApiGetTripRequest extends AuditApiTripRequest {
-  query: Partial<{ [P in 'event_viewport_adjustment']: string }>
+export type AuditApiGetTripRequest = AuditApiTripRequest & {
+  query: { [P in 'event_viewport_adjustment']: string }
 }
 
 export interface AuditApiGetVehicleRequest extends AuditApiRequest {

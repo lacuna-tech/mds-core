@@ -20,13 +20,11 @@ import { AuthorizationError, NotFoundError } from '@mds-core/mds-utils'
 import { JurisdictionApiResponse, JurisdictionApiRequest } from '../types'
 import { HasJurisdictionClaim, UnexpectedServiceError } from './utils'
 
-interface GetJurisdictionRequest extends JurisdictionApiRequest<{ jurisdiction_id: UUID }> {
+type GetJurisdictionRequest = JurisdictionApiRequest<{ jurisdiction_id: UUID }> & {
   // Query string parameters always come in as strings
-  query: Partial<
-    {
-      [P in 'effective']: string
-    }
-  >
+  query: {
+    [P in 'effective']: string
+  }
 }
 
 type GetJurisdictionResponse = JurisdictionApiResponse<{
