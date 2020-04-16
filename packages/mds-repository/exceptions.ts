@@ -22,7 +22,7 @@ class RepositoryError extends Error {
   }
 
   static GetProperty<T extends string>(property: T, error: unknown): string | undefined {
-    return (RepositoryError.hasProperty(property, error) && error[property]) || ''
+    return (RepositoryError.hasProperty(property, error) && error[property]) || undefined
   }
 
   constructor(message: string, public code?: string) {

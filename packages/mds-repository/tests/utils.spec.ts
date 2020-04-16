@@ -20,7 +20,7 @@ import { entityPropertyFilter } from '../utils'
 import { RepositoryException, isRepositoryError } from '../exceptions'
 
 describe('Test Repository Utilities', () => {
-  it('RepositoryError', done => {
+  it('RepositoryException', done => {
     const error = RepositoryException(Error('Some Caught Error'))
     test.value(isRepositoryError(error)).is(true)
     test.value(error.code).is(undefined)
