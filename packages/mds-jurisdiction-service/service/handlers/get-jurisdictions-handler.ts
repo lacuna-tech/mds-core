@@ -14,8 +14,7 @@
     limitations under the License.
  */
 
-import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-service-helpers'
-import { ServerError } from '@mds-core/mds-utils'
+import { ServiceResponse, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
 import { GetJurisdictionsOptions, JurisdictionDomainModel } from '../../@types'
 import { JursidictionMapper } from '../repository/model-mappers'
@@ -23,12 +22,12 @@ import { JurisdictionRepository } from '../repository'
 
 export const GetJurisdictionsHandler = async ({
   effective = Date.now()
-}: Partial<GetJurisdictionsOptions> = {}): Promise<ServiceResponse<JurisdictionDomainModel[], ServerError>> => {
+}: Partial<GetJurisdictionsOptions> = {}): Promise<ServiceResponse<JurisdictionDomainModel[]>> => {
   try {
     const entities = await JurisdictionRepository.readJurisdictions()
     return ServiceResult(JursidictionMapper.fromEntityModel(entities).toDomainModel({ effective }))
   } catch (error) /* istanbul ignore next */ {
     logger.error('Error Reading Jurisdicitons', error)
-    return ServiceError(error)
+    return ServiceException('Error Reading Jurisdicitons', error)
   }
 }

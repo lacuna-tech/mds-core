@@ -15,13 +15,22 @@
  */
 
 import { ServiceResponse, ServiceError, ServiceResult } from '@mds-core/mds-service-helpers'
-import { ValidationError, ConflictError, ServerError } from '@mds-core/mds-utils'
 import { CreateJurisdictionType, JurisdictionDomainModel } from '../../@types'
 import { CreateJurisdictionsHandler } from './create-jurisdictions-handler'
 
 export const CreateJurisdictionHandler = async (
   jurisdiction: CreateJurisdictionType
-): Promise<ServiceResponse<JurisdictionDomainModel, ValidationError | ConflictError>> => {
+): Promise<ServiceResponse<JurisdictionDomainModel>> => {
   const [error, jurisdictions] = await CreateJurisdictionsHandler([jurisdiction])
-  return error || !jurisdictions ? ServiceError(error ?? new ServerError()) : ServiceResult(jurisdictions[0])
+  if (error) {
+    return ServiceError(error)
+  }
+  if (jurisdictions) {
+    return ServiceResult(jurisdictions[0])
+  }
+  return ServiceError({
+    type: 'ServiceException',
+    message: 'Error Creating Jurisdiction',
+    details: 'Service did not return a result or an error'
+  })
 }

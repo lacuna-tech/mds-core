@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-service-helpers'
+import { ServiceResponse, ServiceResult, ServiceError, ServiceException } from '@mds-core/mds-service-helpers'
 import { ValidationError, ConflictError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { v4 as uuid } from 'uuid'
@@ -25,7 +25,7 @@ import { ValidateJurisdiction } from './jurisdiction-schema-validators'
 
 export const CreateJurisdictionsHandler = async (
   jurisdictions: CreateJurisdictionType[]
-): Promise<ServiceResponse<JurisdictionDomainModel[], ValidationError | ConflictError>> => {
+): Promise<ServiceResponse<JurisdictionDomainModel[]>> => {
   const recorded = Date.now()
   try {
     const entities = await JurisdictionRepository.writeJurisdictions(
@@ -42,6 +42,12 @@ export const CreateJurisdictionsHandler = async (
     return ServiceResult(JursidictionMapper.fromEntityModel(entities).toDomainModel({ effective: recorded }))
   } catch (error) /* istanbul ignore next */ {
     logger.error('Error Creating Jurisdictions', error)
-    return ServiceError(error instanceof ValidationError ? error : new ConflictError(error))
+    if (error instanceof ValidationError) {
+      return ServiceError({ type: 'ValidationError', message: 'Error Creating Jurisdictions', details: error.message })
+    }
+    if (error instanceof ConflictError) {
+      return ServiceError({ type: 'ConflictError', message: 'Error Creating Jurisdictions', details: error.message })
+    }
+    return ServiceException('Error Creating Jurisdictions', error)
   }
 }

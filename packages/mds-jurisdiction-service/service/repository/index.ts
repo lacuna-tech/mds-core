@@ -16,8 +16,9 @@
 
 import { UUID } from '@mds-core/mds-types'
 import { InsertReturning, UpdateReturning, CreateRepository, CreateRepositoryMethod } from '@mds-core/mds-repository'
-import { DeepPartial } from 'typeorm'
+import { DeepPartial, QueryFailedError } from 'typeorm'
 
+import { ConflictError } from '@mds-core/mds-utils'
 import { JurisdictionEntity } from './entities'
 import * as migrations from './migrations'
 
@@ -36,15 +37,23 @@ const RepositoryReadJurisdictions = CreateRepositoryMethod(connect => async (): 
 
 const RepositoryWriteJurisdictions = CreateRepositoryMethod(
   connect => async (jurisdictions: DeepPartial<JurisdictionEntity>[]): Promise<JurisdictionEntity[]> => {
-    const connection = await connect('rw')
-    const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
-      .getRepository(JurisdictionEntity)
-      .createQueryBuilder()
-      .insert()
-      .values(jurisdictions)
-      .returning('*')
-      .execute()
-    return entities
+    try {
+      const connection = await connect('rw')
+      const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
+        .getRepository(JurisdictionEntity)
+        .createQueryBuilder()
+        .insert()
+        .values(jurisdictions)
+        .returning('*')
+        .execute()
+      return entities
+    } catch (error) {
+      // TODO: Is there a better way to parse typeorm errors
+      if (error instanceof QueryFailedError && error.message.includes('duplicate')) {
+        throw new ConflictError(error.message)
+      }
+      throw error
+    }
   }
 )
 

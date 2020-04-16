@@ -83,11 +83,19 @@ describe('', () => {
       .is([JURISDICTION1.jurisdiction_id, JURISDICTION2.jurisdiction_id])
   })
 
-  it('Update Single Jurisdiction (validation error)', async () => {
+  it('Update Single Jurisdiction (conflict error)', async () => {
     await request
       .put(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
       .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
       .send({ ...JURISDICTION1, jurisdiction_id: uuid() })
+      .expect(409)
+  })
+
+  it('Update Single Jurisdiction (validation error)', async () => {
+    await request
+      .put(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .send({ ...JURISDICTION1, timestamp: 0 })
       .expect(400)
   })
 
