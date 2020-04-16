@@ -14,10 +14,17 @@
     limitations under the License.
  */
 
-import { QueryFailedError } from 'typeorm'
 import logger from '@mds-core/mds-logger'
 
 class RepositoryError extends Error {
+  private static hasProperty<T extends string>(property: T, error: unknown): error is { [P in T]: string } {
+    return error instanceof Error && property in error
+  }
+
+  static GetProperty<T extends string>(property: T, error: unknown): string | undefined {
+    return (RepositoryError.hasProperty(property, error) && error[property]) || ''
+  }
+
   constructor(message: string, public code?: string) {
     super(message)
     Error.captureStackTrace(this, RepositoryError)
@@ -26,14 +33,12 @@ class RepositoryError extends Error {
 }
 
 const isError = (error: unknown): error is Error => error instanceof Error
-const hasErrorCode = (error: unknown): error is Error & { code: string } => error instanceof QueryFailedError
-const hasErrorDetail = (error: unknown): error is Error & { detail: string } => error instanceof QueryFailedError
 
 export const RepositoryException = (error: unknown): RepositoryError => {
   const exception = isError(error)
     ? new RepositoryError(
-        hasErrorDetail(error) ? error.detail : error.message,
-        hasErrorCode(error) ? error.code : undefined
+        RepositoryError.GetProperty('detail', error) ?? error.message,
+        RepositoryError.GetProperty('code', error)
       )
     : new RepositoryError(typeof error === 'string' ? error : 'Unexpected Error')
   logger.error(exception)
@@ -44,4 +49,5 @@ export const RepositoryException = (error: unknown): RepositoryError => {
 export const isRepositoryError = (error: unknown): error is RepositoryError => error instanceof RepositoryError
 
 // Type guards to detect specific repository errors
+// https://www.postgresql.org/docs/9.2/errcodes-appendix.html
 export const isRepositoryUniqueViolationError = (error: unknown) => isRepositoryError(error) && error.code === '23505'
