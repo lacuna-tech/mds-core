@@ -34,11 +34,6 @@ apis:
     pathPrefix: /policy-author
     version: latest
     migration: false
-  mds-config:
-    enabled: true
-    pathPrefix: /config
-    version: latest
-    migration: false
   mds-web-sockets:
     enabled: true
     pathPrefix: /web-sockets
@@ -55,6 +50,10 @@ apis:
     version: latest
     migration: false
   mds-event-processor:
+    enabled: true
+    version: latest
+    migration: false
+  mds-telemetry-processor:
     enabled: true
     version: latest
     migration: false

@@ -21,13 +21,13 @@ tests:
           enabled: false
         mds-policy-author:
           enabled: false
-        mds-config:
-          enabled: false
         mds-web-sockets:
           enabled: false
         mds-event-processor:
           enabled: false
         mds-geography-author:
+          enabled: false
+        mds-telemetry-processor:
           enabled: false
     asserts:
       - hasDocuments:

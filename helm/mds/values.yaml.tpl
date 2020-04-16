@@ -34,15 +34,15 @@ apis:
     pathPrefix: /policy-author
     version: ${POLICY_AUTHOR_VERSION}
     migration: false
-  mds-config:
-    enabled: true
-    pathPrefix: /config
-    version: ${CONFIG_VERSION}
-    migration: false
   mds-web-sockets:
     enabled: true
     pathPrefix: /web-sockets
     version: ${WEB_SOCKETS_VERSION}
+    migration: false
+  mds-geography:
+    enabled: true
+    pathPrefix: /geography
+    version: ${GEOGRAPHY_VERSION}
     migration: false
   mds-geography-author:
     enabled: true
