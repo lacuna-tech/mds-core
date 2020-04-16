@@ -39,7 +39,8 @@ export const CreateJurisdictionsHandler = async (
         )
       ).toEntityModel({ recorded })
     )
-    return ServiceResult(JursidictionMapper.fromEntityModel(entities).toDomainModel({ effective: recorded }))
+    const created = JursidictionMapper.fromEntityModel(entities).toDomainModel({ effective: recorded })
+    return ServiceResult(created)
   } catch (error) /* istanbul ignore next */ {
     logger.error('Error Creating Jurisdictions', error)
     if (error instanceof ValidationError) {

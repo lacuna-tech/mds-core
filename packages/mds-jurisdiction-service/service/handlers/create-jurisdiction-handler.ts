@@ -14,23 +14,39 @@
     limitations under the License.
  */
 
-import { ServiceResponse, ServiceError, ServiceResult } from '@mds-core/mds-service-helpers'
+import { ServiceResponse, ServiceResult, ServiceError, ServiceException } from '@mds-core/mds-service-helpers'
+import { ValidationError, ConflictError } from '@mds-core/mds-utils'
+import logger from '@mds-core/mds-logger'
+import { v4 as uuid } from 'uuid'
 import { CreateJurisdictionType, JurisdictionDomainModel } from '../../@types'
-import { CreateJurisdictionsHandler } from './create-jurisdictions-handler'
+import { JursidictionMapper } from '../repository/model-mappers'
+import { JurisdictionRepository } from '../repository'
+import { ValidateJurisdiction } from './jurisdiction-schema-validators'
 
 export const CreateJurisdictionHandler = async (
   jurisdiction: CreateJurisdictionType
 ): Promise<ServiceResponse<JurisdictionDomainModel>> => {
-  const [error, jurisdictions] = await CreateJurisdictionsHandler([jurisdiction])
-  if (error) {
-    return ServiceError(error)
+  const recorded = Date.now()
+  try {
+    const entities = await JurisdictionRepository.writeJurisdictions(
+      JursidictionMapper.fromDomainModel([
+        ValidateJurisdiction({
+          jurisdiction_id: uuid(),
+          timestamp: recorded,
+          ...jurisdiction
+        })
+      ]).toEntityModel({ recorded })
+    )
+    const [created] = JursidictionMapper.fromEntityModel(entities).toDomainModel({ effective: recorded })
+    return ServiceResult(created)
+  } catch (error) /* istanbul ignore next */ {
+    logger.error('Error Creating Jurisdiction', error)
+    if (error instanceof ValidationError) {
+      return ServiceError({ type: 'ValidationError', message: 'Error Creating Jurisdiction', details: error.message })
+    }
+    if (error instanceof ConflictError) {
+      return ServiceError({ type: 'ConflictError', message: 'Error Creating Jurisdiction', details: error.message })
+    }
+    return ServiceException('Error Creating Jurisdiction', error)
   }
-  if (jurisdictions) {
-    return ServiceResult(jurisdictions[0])
-  }
-  return ServiceError({
-    type: 'ServiceException',
-    message: 'Error Creating Jurisdiction',
-    details: 'Service did not return a result or an error'
-  })
 }
