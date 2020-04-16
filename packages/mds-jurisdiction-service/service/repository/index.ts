@@ -15,24 +15,37 @@
  */
 
 import { UUID } from '@mds-core/mds-types'
-import { InsertReturning, UpdateReturning, CreateRepository, CreateRepositoryMethod } from '@mds-core/mds-repository'
-import { DeepPartial, QueryFailedError } from 'typeorm'
+import {
+  InsertReturning,
+  UpdateReturning,
+  CreateRepository,
+  CreateRepositoryMethod,
+  RepositoryException
+} from '@mds-core/mds-repository'
+import { DeepPartial } from 'typeorm'
 
-import { ConflictError } from '@mds-core/mds-utils'
 import { JurisdictionEntity } from './entities'
 import * as migrations from './migrations'
 
 const RepositoryReadJurisdiction = CreateRepositoryMethod(connect => async (jurisdiction_id: UUID): Promise<
   JurisdictionEntity | undefined
 > => {
-  const connection = await connect('ro')
-  return connection.getRepository(JurisdictionEntity).findOne({ where: { jurisdiction_id } })
+  try {
+    const connection = await connect('ro')
+    return connection.getRepository(JurisdictionEntity).findOne({ where: { jurisdiction_id } })
+  } catch (error) {
+    throw RepositoryException(error)
+  }
 })
 
 const RepositoryReadJurisdictions = CreateRepositoryMethod(connect => async (): Promise<JurisdictionEntity[]> => {
-  const connection = await connect('ro')
-  const entities = await connection.getRepository(JurisdictionEntity).find()
-  return entities
+  try {
+    const connection = await connect('ro')
+    const entities = await connection.getRepository(JurisdictionEntity).find()
+    return entities
+  } catch (error) {
+    throw RepositoryException(error)
+  }
 })
 
 const RepositoryWriteJurisdictions = CreateRepositoryMethod(
@@ -48,11 +61,7 @@ const RepositoryWriteJurisdictions = CreateRepositoryMethod(
         .execute()
       return entities
     } catch (error) {
-      // TODO: Is there a better way to parse typeorm errors
-      if (error instanceof QueryFailedError && error.message.includes('duplicate')) {
-        throw new ConflictError(error.message)
-      }
-      throw error
+      throw RepositoryException(error)
     }
   }
 )
@@ -62,18 +71,22 @@ const RepositoryUpdateJurisdiction = CreateRepositoryMethod(
     jurisdiction_id: UUID,
     { id, ...jurisdiction }: JurisdictionEntity
   ): Promise<JurisdictionEntity> => {
-    const connection = await connect('rw')
-    const {
-      raw: [entity]
-    }: UpdateReturning<JurisdictionEntity> = await connection
-      .getRepository(JurisdictionEntity)
-      .createQueryBuilder()
-      .update()
-      .set(jurisdiction)
-      .where('jurisdiction_id = :jurisdiction_id', { jurisdiction_id })
-      .returning('*')
-      .execute()
-    return entity
+    try {
+      const connection = await connect('rw')
+      const {
+        raw: [entity]
+      }: UpdateReturning<JurisdictionEntity> = await connection
+        .getRepository(JurisdictionEntity)
+        .createQueryBuilder()
+        .update()
+        .set(jurisdiction)
+        .where('jurisdiction_id = :jurisdiction_id', { jurisdiction_id })
+        .returning('*')
+        .execute()
+      return entity
+    } catch (error) {
+      throw RepositoryException(error)
+    }
   }
 )
 
