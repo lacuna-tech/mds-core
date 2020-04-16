@@ -19,7 +19,7 @@ import {
   CreateRepositoryMethod,
   InsertReturning,
   entityPropertyFilter,
-  RepositoryException
+  RepositoryError
 } from '@mds-core/mds-repository'
 import { DeepPartial, Between } from 'typeorm'
 import { timeframe } from '@mds-core/mds-utils'
@@ -49,7 +49,7 @@ const RepositoryReadMetrics = CreateRepositoryMethod(connect => async (options: 
     })
     return entities
   } catch (error) {
-    throw RepositoryException(error)
+    throw RepositoryError.create(error)
   }
 })
 
@@ -67,7 +67,7 @@ const RepositoryWriteMetrics = CreateRepositoryMethod(connect => async (metrics:
       .execute()
     return entities
   } catch (error) {
-    throw RepositoryException(error)
+    throw RepositoryError.create(error)
   }
 })
 

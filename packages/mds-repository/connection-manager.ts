@@ -19,7 +19,7 @@ import { types as PostgresTypes } from 'pg'
 import { LoggerOptions } from 'typeorm/logger/LoggerOptions'
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import { MdsNamingStrategy } from './naming-strategies'
-import { RepositoryException } from './exceptions'
+import { RepositoryError } from './exceptions'
 
 const loggingOption = (options: string): LoggerOptions => {
   return ['false', 'true', 'all'].includes(options) ? options !== 'false' : (options.split(' ') as LoggerOptions)
@@ -71,7 +71,7 @@ export const ConnectionManager = (prefix: string, options: Omit<ConnectionManage
       try {
         connections = await createConnections([ro, rw])
       } catch (error) /* istanbul ignore next */ {
-        throw RepositoryException(error)
+        throw RepositoryError.create(error)
       }
     }
   }
@@ -79,18 +79,18 @@ export const ConnectionManager = (prefix: string, options: Omit<ConnectionManage
   const connect = async (mode: ConnectionMode) => {
     if (!connections) {
       /* istanbul ignore next */
-      throw RepositoryException(Error('Connection manager not initialized'))
+      throw RepositoryError.create(Error('Connection manager not initialized'))
     }
     const connection = connections.find(c => c.name === connectionName(prefix, mode))
     if (!connection) {
       /* istanbul ignore next */
-      throw RepositoryException(Error(`Connection ${connectionName(prefix, mode)} not found`))
+      throw RepositoryError.create(Error(`Connection ${connectionName(prefix, mode)} not found`))
     }
     if (!connection.isConnected) {
       try {
         await connection.connect()
       } catch (error) /* istanbul ignore next */ {
-        throw RepositoryException(error)
+        throw RepositoryError.create(error)
       }
     }
     return connection

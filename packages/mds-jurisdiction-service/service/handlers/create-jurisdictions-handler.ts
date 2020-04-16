@@ -18,7 +18,7 @@ import { ServiceResponse, ServiceResult, ServiceError, ServiceException } from '
 import { ValidationError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { v4 as uuid } from 'uuid'
-import { isRepositoryUniqueViolationError } from '@mds-core/mds-repository'
+import { RepositoryError } from '@mds-core/mds-repository'
 import { CreateJurisdictionType, JurisdictionDomainModel } from '../../@types'
 import { JursidictionMapper } from '../repository/model-mappers'
 import { JurisdictionRepository } from '../repository'
@@ -47,7 +47,7 @@ export const CreateJurisdictionsHandler = async (
     if (error instanceof ValidationError) {
       return ServiceError({ type: 'ValidationError', message: 'Error Creating Jurisdictions', details: error.message })
     }
-    if (isRepositoryUniqueViolationError(error)) {
+    if (RepositoryError.isRepositoryUniqueViolationError(error)) {
       return ServiceError({ type: 'ConflictError', message: 'Error Creating Jurisdictions', details: error.message })
     }
     return ServiceException('Error Creating Jurisdictions', error)

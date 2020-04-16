@@ -20,7 +20,7 @@ import {
   UpdateReturning,
   CreateRepository,
   CreateRepositoryMethod,
-  RepositoryException
+  RepositoryError
 } from '@mds-core/mds-repository'
 import { DeepPartial } from 'typeorm'
 
@@ -34,7 +34,7 @@ const RepositoryReadJurisdiction = CreateRepositoryMethod(connect => async (juri
     const connection = await connect('ro')
     return connection.getRepository(JurisdictionEntity).findOne({ where: { jurisdiction_id } })
   } catch (error) {
-    throw RepositoryException(error)
+    throw RepositoryError.create(error)
   }
 })
 
@@ -44,7 +44,7 @@ const RepositoryReadJurisdictions = CreateRepositoryMethod(connect => async (): 
     const entities = await connection.getRepository(JurisdictionEntity).find()
     return entities
   } catch (error) {
-    throw RepositoryException(error)
+    throw RepositoryError.create(error)
   }
 })
 
@@ -61,7 +61,7 @@ const RepositoryWriteJurisdictions = CreateRepositoryMethod(
         .execute()
       return entities
     } catch (error) {
-      throw RepositoryException(error)
+      throw RepositoryError.create(error)
     }
   }
 )
@@ -85,7 +85,7 @@ const RepositoryUpdateJurisdiction = CreateRepositoryMethod(
         .execute()
       return entity
     } catch (error) {
-      throw RepositoryException(error)
+      throw RepositoryError.create(error)
     }
   }
 )

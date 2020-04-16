@@ -17,12 +17,12 @@
 import test from 'unit.js'
 import { FindOperator } from 'typeorm'
 import { entityPropertyFilter } from '../utils'
-import { RepositoryException, isRepositoryError } from '../exceptions'
+import { RepositoryError } from '../exceptions'
 
 describe('Test Repository Utilities', () => {
-  it('RepositoryException', done => {
-    const error = RepositoryException(Error('Some Caught Error'))
-    test.value(isRepositoryError(error)).is(true)
+  it('RepositoryError', done => {
+    const error = RepositoryError.create(Error('Some Caught Error'))
+    test.value(RepositoryError.isRepositoryError(error)).is(true)
     test.value(error.code).is(undefined)
     done()
   })
