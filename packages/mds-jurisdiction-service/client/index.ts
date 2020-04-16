@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { JurisdictionServiceProvider } from '../server'
+import { JurisdictionServiceProvider } from '../service/provider'
 import { JurisdictionServiceInterface } from '../@types'
 
 const { initialize, shutdown, ...client } = JurisdictionServiceProvider

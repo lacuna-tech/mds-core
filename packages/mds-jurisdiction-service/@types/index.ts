@@ -21,7 +21,7 @@ import { DeepPartial } from 'typeorm'
 import {
   JurisdictionEntityModel,
   JurisdictionVersionedProperties
-} from '../server/repository/entities/jurisdiction-entity'
+} from '../service/repository/entities/jurisdiction-entity'
 
 export type JurisdictionDomainModel = Omit<JurisdictionEntityModel, 'id' | 'recorded' | 'versions'> &
   JurisdictionVersionedProperties

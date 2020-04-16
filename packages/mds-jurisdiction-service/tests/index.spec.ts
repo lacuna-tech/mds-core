@@ -17,7 +17,7 @@
 import test from 'unit.js'
 import { v4 as uuid } from 'uuid'
 import { NotFoundError, ValidationError, days, ConflictError } from '@mds-core/mds-utils'
-import { JurisdictionServiceProvider } from '../server'
+import { JurisdictionServiceProvider } from '../service/provider'
 
 const records = 5_000
 
