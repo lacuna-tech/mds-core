@@ -18,7 +18,7 @@ import test from 'unit.js'
 import { v4 as uuid } from 'uuid'
 import { minutes, timeframe, days } from '@mds-core/mds-utils'
 import { VEHICLE_TYPE } from '@mds-core/mds-types'
-import { MetricsServiceProvider } from '../server'
+import { MetricsServiceProvider } from '../service/provider'
 import { MetricDomainModel, ReadMetricsOptions, ReadMetricsFilterOptions } from '../@types'
 
 // Test Constants
