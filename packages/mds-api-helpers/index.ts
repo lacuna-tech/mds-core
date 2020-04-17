@@ -16,7 +16,6 @@
 
 import urls from 'url'
 import express from 'express'
-import { Query } from 'express-serve-static-core'
 
 interface PagingParams {
   skip: number
@@ -56,17 +55,12 @@ export const asJsonApiLinks = (req: express.Request, skip: number, take: number,
   return undefined
 }
 
-/* eslint-disable no-nested-ternary */
-export const parseQuery = <T = string>(parser?: (val: string) => T) => <TKey extends string>(
-  query: Query,
-  ...keys: string[]
-) => {
-  return keys.reduce((acc: Partial<{ [P in TKey]: T }>, key) => {
-    const val = query[key]
-    return {
-      ...acc,
-      [key]: typeof val === 'string' ? (parser ? parser(val) : val) : val
-    }
-  }, {})
+export const parseQuery = <T = string>(query: { [k: string]: unknown }, parser?: (val: string) => T) => {
+  return {
+    keys: <TKey extends string>(...keys: TKey[]): Partial<{ [P in TKey]: T }> =>
+      keys
+        .map(key => ({ key, value: query[key] }))
+        .filter((param): param is { key: TKey; value: string } => typeof param.value === 'string')
+        .reduce((params, { key, value }) => ({ ...params, [key]: parser ? parser(value) : value }), {})
+  }
 }
-/* eslint-enable no-nested-ternary */

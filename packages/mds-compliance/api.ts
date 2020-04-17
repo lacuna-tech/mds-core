@@ -78,7 +78,10 @@ function api(app: express.Express): express.Express {
 
   app.get(pathsFor('/snapshot/:policy_uuid'), async (req: ComplianceApiRequest, res: ComplianceApiResponse) => {
     const { provider_id } = res.locals
-    const { provider_id: queried_provider_id } = parseQuery()(req.query, 'provider_id')
+    const { provider_id: queried_provider_id, end_date: query_end_date } = {
+      ...parseQuery(req.query).keys('provider_id'),
+      ...parseQuery(req.query, Number).keys('end_date')
+    }
 
     /* istanbul ignore next */
     async function fail(err: Error) {
@@ -87,7 +90,6 @@ function api(app: express.Express): express.Express {
     }
 
     const { policy_uuid } = req.params
-    const { end_date: query_end_date } = parseQuery(Number)(req.query, 'end_date')
 
     if (!isUUID(policy_uuid)) {
       return res.status(400).send({ err: 'bad_param' })

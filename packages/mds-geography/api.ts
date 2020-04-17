@@ -15,14 +15,9 @@ function api(app: express.Express): express.Express {
     }),
     async (req, res) => {
       const { scopes } = res.locals
-      const { get_published, get_unpublished } = parseQuery(x => (x ? x === 'true' : null))(
-        req.query,
-        'get_published',
-        'get_unpublished'
-      )
       const params = {
-        get_published: get_published || null,
-        get_unpublished: get_unpublished || null
+        ...{ get_published: null, get_unpublished: null },
+        ...parseQuery(req.query, x => (x ? x === 'true' : null)).keys('get_published', 'get_unpublished')
       }
 
       /* If the user can only read published geos, and all they want is the unpublished metadata,

@@ -57,7 +57,6 @@ import {
 } from '@mds-core/mds-types'
 import { asPagingParams, asJsonApiLinks, parseQuery } from '@mds-core/mds-api-helpers'
 import { checkAccess } from '@mds-core/mds-api-server'
-import { isNullOrUndefined } from 'util'
 import {
   AuditApiAuditEndRequest,
   AuditApiAuditNoteRequest,
@@ -512,12 +511,10 @@ function api(app: express.Express): express.Express {
                 }
               }, {})
 
-            const { event_viewport_adjustment: event_viewport_adjustment_query } = parseQuery(Number)(
-              req.query,
+            const { event_viewport_adjustment = seconds(30) } = parseQuery(req.query, x => seconds(Number(x))).keys(
               'event_viewport_adjustment'
             )
 
-            const event_viewport_adjustment = seconds(event_viewport_adjustment_query || 30)
             const start_time = audit_start && audit_start - event_viewport_adjustment
             const end_time = (end => end && end + event_viewport_adjustment)(audit_end || last_event)
 
@@ -654,16 +651,16 @@ function api(app: express.Express): express.Express {
     checkAccess(scopes => scopes.includes('audits:vehicles:read')),
     async (req, res) => {
       const { skip, take } = { skip: 0, take: 10000 }
-      const { bbox, strict: strict_query } = parseQuery(JSON.parse)(req.query, 'bbox', 'strict')
-      const strict = !isNullOrUndefined(strict_query) ? strict_query : true
+      const { strict = true, bbox, provider_id } = {
+        ...parseQuery(req.query, JSON.parse).keys('strict', 'bbox'),
+        ...parseQuery(req.query).keys('provider_id')
+      }
 
       const url = urls.format({
         protocol: req.get('x-forwarded-proto') || req.protocol,
         host: req.get('host'),
         pathname: req.path
       })
-
-      const { provider_id } = parseQuery()(req.query, 'provider_id')
 
       try {
         const response = await getVehicles(skip, take, url, req.query, bbox, strict, provider_id)
