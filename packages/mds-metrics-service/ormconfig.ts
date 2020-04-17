@@ -14,8 +14,7 @@
     limitations under the License.
  */
 
-import { MetricsRepository } from './server/repository'
+import { MetricsRepository } from './service/repository'
 
 // Make connection options available to TypeORM CLI
-const { ormconfig } = MetricsRepository
-module.exports = ormconfig
+module.exports = MetricsRepository.cli({ migrationsDir: 'service/repository/migrations' })

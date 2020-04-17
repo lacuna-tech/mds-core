@@ -14,8 +14,7 @@
     limitations under the License.
  */
 
-import { JurisdictionRepository } from './server/repository'
+import { JurisdictionRepository } from './service/repository'
 
 // Make connection options available to TypeORM CLI
-const { ormconfig } = JurisdictionRepository
-module.exports = ormconfig
+module.exports = JurisdictionRepository.cli({ migrationsDir: 'service/repository/migrations' })

@@ -15,28 +15,36 @@
  */
 
 import { UUID } from '@mds-core/mds-types'
-import { ServiceResponse, ServiceError, ServiceResult } from '@mds-core/mds-service-helpers'
-import { ValidationError, NotFoundError, ServerError } from '@mds-core/mds-utils'
+import { ServiceResponse, ServiceError, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
 import { UpdateJurisdictionType, JurisdictionDomainModel } from '../../@types'
-import { AsJurisdiction } from './utils'
+import { JursidictionMapper } from '../repository/model-mappers'
 import { JurisdictionRepository } from '../repository'
 
 export const UpdateJurisdictionHandler = async (
   jurisdiction_id: UUID,
   update: UpdateJurisdictionType
-): Promise<ServiceResponse<JurisdictionDomainModel, ValidationError | NotFoundError>> => {
+): Promise<ServiceResponse<JurisdictionDomainModel>> => {
   if (update.jurisdiction_id && update.jurisdiction_id !== jurisdiction_id) {
-    return ServiceError(new ValidationError('Invalid jurisdiction_id for update'))
+    return ServiceError({
+      type: 'ConflictError',
+      message: 'Error Updating Jurisdiction',
+      details: `Invalid jurisdiction_id ${update.jurisdiction_id}. Must match ${jurisdiction_id}.`
+    })
   }
   try {
     const entity = await JurisdictionRepository.readJurisdiction(jurisdiction_id)
     if (entity) {
-      const current = AsJurisdiction()(entity)
-      if (current) {
+      const versions = JursidictionMapper.fromEntityModel([entity]).toDomainModel({ effective: Date.now() })
+      if (versions.length) {
+        const [current] = versions
         const timestamp = update.timestamp ?? Date.now()
         if (timestamp <= current.timestamp) {
-          return ServiceError(new ValidationError('Invalid timestamp for update'))
+          return ServiceError({
+            type: 'ValidationError',
+            message: 'Error Updating Jurisdiction',
+            details: `Invalid timestamp ${timestamp}. Must be greater than ${current.timestamp}.`
+          })
         }
         const updated = await JurisdictionRepository.updateJurisdiction(jurisdiction_id, {
           ...entity,
@@ -54,15 +62,17 @@ export const UpdateJurisdictionHandler = async (
                 ].sort((a, b) => b.timestamp - a.timestamp)
               : entity.versions
         })
-        const jurisdiction = AsJurisdiction(timestamp)(updated)
-        return jurisdiction
-          ? ServiceResult(jurisdiction)
-          : ServiceError(new ServerError('Unexpected error during update'))
+        const [jurisdiction] = JursidictionMapper.fromEntityModel([updated]).toDomainModel({ effective: timestamp })
+        return jurisdiction ? ServiceResult(jurisdiction) : ServiceException('Unexpected error during update')
       }
     }
-    return ServiceError(new NotFoundError('Jurisdiction Not Found', { jurisdiction_id }))
+    return ServiceError({
+      type: 'NotFoundError',
+      message: 'Error Updating Jurisdiction',
+      details: `Jurisdiction ${jurisdiction_id} Not Found`
+    })
   } catch (error) /* istanbul ignore next */ {
     logger.error('Error Updating Jurisdiction', error)
-    return ServiceError(error)
+    return ServiceException('Error Updating Jurisdiction', error)
   }
 }

@@ -14,15 +14,18 @@
     limitations under the License.
  */
 
-import { Timestamp } from '@mds-core/mds-types'
-import { MetricEntityModel } from '../repository/entities/metric-entity'
-import { MetricDomainModel } from '../../@types'
+import { ServiceProvider } from '@mds-core/mds-service-helpers'
+import { MetricsServiceInterface } from '../@types'
+import { WriteMetricsHandler, ReadMetricsHandler } from './handlers'
+import { MetricsRepository } from './repository'
 
-export const asMetricDomainModel = ({ id, recorded, ...entity }: MetricEntityModel): MetricDomainModel => entity
-
-export const asMetricEntityModel = (recorded: Timestamp) => (
-  entity: MetricDomainModel
-): Omit<MetricEntityModel, 'id'> => ({
-  ...entity,
-  recorded
-})
+export const MetricsServiceProvider: ServiceProvider<MetricsServiceInterface> = {
+  initialize: async () => {
+    await MetricsRepository.initialize()
+  },
+  readMetrics: ReadMetricsHandler,
+  writeMetrics: WriteMetricsHandler,
+  shutdown: async () => {
+    await MetricsRepository.shutdown()
+  }
+}

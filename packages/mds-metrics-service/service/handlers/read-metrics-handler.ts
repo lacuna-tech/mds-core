@@ -14,20 +14,20 @@
     limitations under the License.
  */
 
-import { ServiceResponse, ServiceResult, ServiceError } from '@mds-core/mds-service-helpers'
+import { ServiceResponse, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
+import { MetricDomainModel, ReadMetricsOptions } from '../../@types'
 import { MetricsRepository } from '../repository'
-import { MetricDomainModel } from '../../@types'
-import { asMetricDomainModel, asMetricEntityModel } from './utils'
+import { MetricMapper } from '../repository/model-mappers'
 
-export const WriteMetricsHandler = async (
-  metrics: MetricDomainModel[]
+export const ReadMetricsHandler = async (
+  options: ReadMetricsOptions
 ): Promise<ServiceResponse<MetricDomainModel[]>> => {
   try {
-    const entities = await MetricsRepository.writeMetrics(metrics.map(asMetricEntityModel(Date.now())))
-    return ServiceResult(entities.map(asMetricDomainModel))
+    const entities = await MetricsRepository.readMetrics(options)
+    return ServiceResult(MetricMapper.fromEntityModel(entities).toDomainModel())
   } catch (error) /* istanbul ignore next */ {
-    logger.error('Error Writing Metrics', error)
-    return ServiceError(error)
+    logger.error('Error Reading Metrics', error)
+    return ServiceException('Error Reading Metrics', error)
   }
 }

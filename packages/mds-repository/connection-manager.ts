@@ -19,7 +19,7 @@ import { types as PostgresTypes } from 'pg'
 import { LoggerOptions } from 'typeorm/logger/LoggerOptions'
 import { PostgresConnectionOptions } from 'typeorm/driver/postgres/PostgresConnectionOptions'
 import { MdsNamingStrategy } from './naming-strategies'
-import { RepositoryError } from './utils'
+import { RepositoryError } from './exceptions'
 
 const loggingOption = (options: string): LoggerOptions => {
   return ['false', 'true', 'all'].includes(options) ? options !== 'false' : (options.split(' ') as LoggerOptions)
@@ -46,7 +46,7 @@ const connectionName = (prefix: string, mode: ConnectionMode) => `${prefix}-${mo
 
 export type ConnectionManagerOptions = Partial<PostgresConnectionOptions>
 
-export const ConnectionManager = (prefix: string, options: ConnectionManagerOptions = {}) => {
+export const ConnectionManager = (prefix: string, options: Omit<ConnectionManagerOptions, 'cli'> = {}) => {
   let connections: Connection[] | null = null
 
   const [ro, rw]: ConnectionOptions[] = ConnectionModes.map(mode => ({
@@ -63,10 +63,6 @@ export const ConnectionManager = (prefix: string, options: ConnectionManagerOpti
     synchronize: false,
     migrationsRun: PG_MIGRATIONS === 'true' && mode === 'rw',
     namingStrategy: new MdsNamingStrategy(),
-    cli: {
-      entitiesDir: './entities',
-      migrationsDir: './migrations'
-    },
     ...options
   }))
 
@@ -75,7 +71,7 @@ export const ConnectionManager = (prefix: string, options: ConnectionManagerOpti
       try {
         connections = await createConnections([ro, rw])
       } catch (error) /* istanbul ignore next */ {
-        throw RepositoryError('Failed to create connections', error)
+        throw RepositoryError.create(error)
       }
     }
   }
@@ -83,18 +79,18 @@ export const ConnectionManager = (prefix: string, options: ConnectionManagerOpti
   const connect = async (mode: ConnectionMode) => {
     if (!connections) {
       /* istanbul ignore next */
-      throw Error('Connection manager not initialized')
+      throw RepositoryError.create(Error('Connection manager not initialized'))
     }
     const connection = connections.find(c => c.name === connectionName(prefix, mode))
     if (!connection) {
       /* istanbul ignore next */
-      throw RepositoryError(`Connection ${connectionName(prefix, mode)} not found`)
+      throw RepositoryError.create(Error(`Connection ${connectionName(prefix, mode)} not found`))
     }
     if (!connection.isConnected) {
       try {
         await connection.connect()
       } catch (error) /* istanbul ignore next */ {
-        throw RepositoryError(`Connection ${connectionName(prefix, mode)} failed`, error)
+        throw RepositoryError.create(error)
       }
     }
     return connection
@@ -112,12 +108,13 @@ export const ConnectionManager = (prefix: string, options: ConnectionManagerOpti
     }
   }
 
-  // Make the "rw" connection the default for the TypeORM CLI by removing the connection name
-  const { name, ...ormconfig } = rw
-
   return {
     initialize,
-    ormconfig,
+    cli: (cli: Partial<ConnectionManagerOptions['cli']> = {}) => {
+      // Make the "rw" connection the default for the TypeORM CLI by removing the connection name
+      const { name, ...ormconfig } = rw
+      return { ...ormconfig, cli }
+    },
     connect,
     shutdown
   }
