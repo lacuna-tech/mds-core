@@ -1,0 +1,26 @@
+syntax = "proto2";
+
+import "proto/metric-message.proto";
+import "proto/service-error-descriptor-message.proto";
+
+message GetMetricsRequestMessage {
+  required string name = 1;
+  required int32 time_bin_size = 2;
+  required double time_bin_start = 3;
+  optional double time_bin_end = 4;
+  optional string provider_id = 5;
+  optional string geography_id = 6;
+  optional string vehicle_type = 7;
+}
+
+message GetMetricsResponseMessage {
+  required string version = 1;
+  oneof response {
+    ServiceErrorDescriptorMessage error = 2;
+    MetricMessages result = 3;
+  }
+}
+
+service MetricsService {
+  rpc getMetrics (GetMetricsRequestMessage) returns (GetMetricsResponseMessage) {};
+}

@@ -13,6 +13,10 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "grpcc": "grpcc -i -p service.proto -a localhost:50051",
+    "protoc": "yarn pbjs && yarn pbts",
+    "pbjs": "pbjs -t static-module --es6 --keep-case --no-create --no-encode --no-decode --no-verify --no-convert -w commonjs -o proto/index.js service.proto",
+    "pbts": "pbts -o proto/index.d.ts proto/index.js",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
     "test:unit": "yarn typeorm schema:drop && DOTENV_CONFIG_PATH=../../.env nyc --lines 90 ts-mocha --project ../../tsconfig.json && yarn typeorm schema:drop",
@@ -27,6 +31,7 @@
     "@mds-core/mds-service-helpers": "0.1.0",
     "@mds-core/mds-types": "0.1.23",
     "@mds-core/mds-utils": "0.1.26",
+    "protobufjs": "6.8.9",
     "typeorm": "0.2.24",
     "uuid": "7.0.3"
   },

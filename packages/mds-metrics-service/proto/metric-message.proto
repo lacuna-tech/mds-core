@@ -1,0 +1,19 @@
+syntax = "proto2";
+
+message MetricMessage {
+  required string name = 1;
+  required int32 time_bin_size = 2;
+  required double time_bin_start = 3;
+  optional double count = 4;
+  optional double sum = 5;
+  optional double min = 6;
+  required double max = 7;
+  required double avg = 8;
+  required string provider_id = 9;
+  optional string geography_id = 10;
+  required string vehicle_type = 11;
+}
+
+message MetricMessages {
+  repeated MetricMessage metrics = 1;
+}
