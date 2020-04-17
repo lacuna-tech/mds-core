@@ -9,6 +9,7 @@ import { AccessTokenScope } from '@mds-core/mds-types'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
 
 export type ApiRequest<P extends Params = ParamsDictionary> = express.Request<P>
+export type ApiQuery<Q extends string> = { query: { [P in Q]: string } }
 
 export interface ApiResponseLocals {
   claims: AuthorizerClaims | null
@@ -17,7 +18,7 @@ export interface ApiResponseLocals {
 
 export interface ApiResponse<TBody = unknown> extends express.Response {
   locals: ApiResponseLocals
-  send: (body: TBody | { error: Error }) => this
+  send: (body: TBody | { error: unknown }) => this
 }
 
 export interface ApiVersionedResponseLocals<TVersion extends string> extends ApiResponseLocals {
