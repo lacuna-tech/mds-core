@@ -495,7 +495,9 @@ installHelm() {
   pause 5
 
   for r in "${!helmRepositories[@]}"; do
-    helm repo add ${r} ${helmRepositories[${r}]}
+    [[ $(helm repo list | grep ".*${r}.*${helmRepositories[${r}]}.*"  > /dev/null 2>&1; echo $?)  == "1" ]] && {
+      helm repo add ${r} ${helmRepositories[${r}]}
+    }
   done; unset r
 
   updateHelmDependencies
