@@ -19,9 +19,6 @@ spec:
         app: {{ $name }}
     spec:
       volumes:
-        - name: mds-config-files
-          configMap:
-            name: mds-config-files
         {{- if and $.Values.nats.enabled $.Values.nats.credentials }}
         - name: creds-volume
           secret:
@@ -45,8 +42,6 @@ spec:
           name: user-port
           protocol: TCP
         volumeMounts:
-        - name: mds-config-files
-          mountPath: /mds-config/
         {{- if and $.Values.nats.enabled $.Values.nats.credentials }}
         - name: creds-volume
           mountPath: /var/run/nats/secrets
