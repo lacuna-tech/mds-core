@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+ 
 [[ -f ~/.mdsctl ]] && . ~/.mdsctl
 osx=darwin
 linux=linux
