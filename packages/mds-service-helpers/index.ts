@@ -14,21 +14,34 @@
     limitations under the License.
  */
 
-type ServiceErrorType = 'ServiceException' | 'NotFoundError' | 'ConflictError' | 'ValidationError'
-
 interface ServiceErrorDescriptor {
-  type: ServiceErrorType
+  type: 'ServiceException' | 'NotFoundError' | 'ConflictError' | 'ValidationError'
   message: string
   details?: string
 }
 
-export type ServiceResponse<TResult> = [ServiceErrorDescriptor, null] | [null, TResult]
+interface ServiceErrorType {
+  error: ServiceErrorDescriptor
+}
 
-export const ServiceResult = <TResult>(result: TResult): ServiceResponse<TResult> => [null, result]
+interface ServiceResultType<R> {
+  error: null
+  result: R
+}
 
-export const ServiceError = (error: ServiceErrorDescriptor): ServiceResponse<never> => [error, null]
+export type ServiceResponse<R> = ServiceErrorType | ServiceResultType<R>
 
-export const ServiceException = (message: string, error?: Error): ServiceResponse<never> =>
+export const ServiceResult = <R>(result: R): ServiceResultType<R> => ({ error: null, result })
+
+export const ServiceError = (error: ServiceErrorDescriptor): ServiceErrorType => ({ error })
+
+export const ProcessServiceResponse = <R>(
+  result: ServiceResponse<R>,
+  onerror: (error: ServiceErrorDescriptor) => void,
+  onresult: (result: R) => void
+) => (result.error ? onerror(result.error) : onresult(result.result))
+
+export const ServiceException = (message: string, error?: Error) =>
   ServiceError({
     type: 'ServiceException',
     message,

@@ -511,7 +511,7 @@ function api(app: express.Express): express.Express {
                 }
               }, {})
 
-            const { event_viewport_adjustment = seconds(30) } = parseQuery(req.query, x => seconds(Number(x))).keys(
+            const { event_viewport_adjustment = seconds(30) } = parseQuery(req, x => seconds(Number(x))).keys(
               'event_viewport_adjustment'
             )
 
@@ -652,8 +652,8 @@ function api(app: express.Express): express.Express {
     async (req, res) => {
       const { skip, take } = { skip: 0, take: 10000 }
       const { strict = true, bbox, provider_id } = {
-        ...parseQuery(req.query, JSON.parse).keys('strict', 'bbox'),
-        ...parseQuery(req.query).keys('provider_id')
+        ...parseQuery(req, JSON.parse).keys('strict', 'bbox'),
+        ...parseQuery(req).keys('provider_id')
       }
 
       const url = urls.format({

@@ -79,8 +79,8 @@ function api(app: express.Express): express.Express {
   app.get(pathsFor('/snapshot/:policy_uuid'), async (req: ComplianceApiRequest, res: ComplianceApiResponse) => {
     const { provider_id } = res.locals
     const { provider_id: queried_provider_id, end_date: query_end_date } = {
-      ...parseQuery(req.query).keys('provider_id'),
-      ...parseQuery(req.query, Number).keys('end_date')
+      ...parseQuery(req).keys('provider_id'),
+      ...parseQuery(req, Number).keys('end_date')
     }
 
     /* istanbul ignore next */

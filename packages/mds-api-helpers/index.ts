@@ -55,11 +55,11 @@ export const asJsonApiLinks = (req: express.Request, skip: number, take: number,
   return undefined
 }
 
-export const parseQuery = <T = string>(query: { [k: string]: unknown }, parser?: (val: string) => T) => {
+export const parseQuery = <T = string>(req: express.Request, parser?: (val: string) => T) => {
   return {
     keys: <TKey extends string>(first: TKey, ...rest: TKey[]): Partial<{ [P in TKey]: T }> =>
       [first, ...rest]
-        .map(key => ({ key, value: query[key] }))
+        .map(key => ({ key, value: req.query[key] }))
         .filter((param): param is { key: TKey; value: string } => typeof param.value === 'string')
         .reduce((params, { key, value }) => ({ ...params, [key]: parser ? parser(value) : value }), {})
   }

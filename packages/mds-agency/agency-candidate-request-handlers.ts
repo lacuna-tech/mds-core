@@ -7,7 +7,7 @@ import { parseQuery } from '@mds-core/mds-api-helpers'
 
 export const readAllVehicleIds = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   // read all the devices
-  const { provider_id: query_provider_id } = parseQuery(req.query).keys('provider_id')
+  const { provider_id: query_provider_id } = parseQuery(req).keys('provider_id')
 
   if (query_provider_id && !isUUID(query_provider_id)) {
     return res.status(400).send({
