@@ -106,7 +106,7 @@ describe('Tests app', () => {
         .expect(400)
         .end((err, result) => {
           const body = result.body
-          test.value(body[0].message).contains('rule_type')
+          test.value(body.error.reason).contains('rule_type')
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })

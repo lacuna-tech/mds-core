@@ -19,12 +19,14 @@ import { v4 as uuid } from 'uuid'
 import db from '@mds-core/mds-db'
 import {
   pathsFor,
-  ServerError,
   UUID_REGEX,
-  NotFoundError,
-  BadParamsError,
   AlreadyPublishedError,
-  DependencyMissingError
+  BadParamsError,
+  DependencyMissingError,
+  NotFoundError,
+  ValidationError,
+  ServerError,
+  ConflictError
 } from '@mds-core/mds-utils'
 import { policyValidationDetails } from '@mds-core/mds-schema-validators'
 import logger from '@mds-core/mds-logger'
@@ -32,6 +34,13 @@ import logger from '@mds-core/mds-logger'
 import { checkAccess } from '@mds-core/mds-api-server'
 import { PolicyAuthorApiVersionMiddleware } from './middleware/policy-author-api-version'
 import { getPolicies } from './request-handlers'
+import {
+  PolicyAuthorGetPolicyResponse,
+  PolicyAuthorApiRequest,
+  PolicyAuthorCreatePolicyResponse,
+  PolicyAuthorEditPolicyResponse,
+  PolicyAuthorDeletePolicyResponse
+} from './types'
 
 function api(app: express.Express): express.Express {
   app.use(PolicyAuthorApiVersionMiddleware)
@@ -44,14 +53,14 @@ function api(app: express.Express): express.Express {
   app.post(
     pathsFor('/policies'),
     checkAccess(scopes => scopes.includes('policies:write')),
-    async (req, res) => {
+    async (req: PolicyAuthorApiRequest, res: PolicyAuthorGetPolicyResponse) => {
       const policy = { policy_id: uuid(), ...req.body }
 
       const details = policyValidationDetails(policy)
 
       if (details != null) {
         logger.error('invalid policy json', details)
-        return res.status(400).send(details)
+        return res.status(400).send({ error: new ValidationError(JSON.stringify(details)) })
       }
 
       try {
@@ -59,7 +68,9 @@ function api(app: express.Express): express.Express {
         return res.status(201).send({ version: res.locals.version, policy })
       } catch (err) {
         if (err.code === '23505') {
-          return res.status(409).send({ result: `policy ${policy.policy_id} already exists! Did you mean to PUT?` })
+          return res
+            .status(409)
+            .send({ error: new ConflictError(`policy ${policy.policy_id} already exists! Did you mean to PUT?`) })
         }
         /* istanbul ignore next */
         logger.error('failed to write policy', err)
@@ -72,33 +83,19 @@ function api(app: express.Express): express.Express {
   app.post(
     pathsFor('/policies/:policy_id/publish'),
     checkAccess(scopes => scopes.includes('policies:publish')),
-    async (req, res) => {
+    async (req: PolicyAuthorApiRequest, res: PolicyAuthorCreatePolicyResponse) => {
       const { policy_id } = req.params
       try {
         await db.publishPolicy(policy_id)
         return res
           .status(200)
           .send({ version: res.locals.version, result: `successfully published policy of id ${policy_id}` })
-      } catch (err) {
-        if (err instanceof NotFoundError) {
-          if (err.message.includes('geography')) {
-            const geography_id = err.message.match(UUID_REGEX)
-            return res.status(404).send({ error: `geography_id ${geography_id} not_found` })
-          }
-          if (err.message.includes('policy')) {
-            return res.status(404).send({ error: `policy_id ${policy_id} not_found` })
-          }
+      } catch (error) {
+        logger.error('failed to publish policy', error.stack)
+        if (error instanceof AlreadyPublishedError) {
+          return res.status(409).send({ error })
         }
-        if (err instanceof AlreadyPublishedError) {
-          return res.status(409).send({ error: `policy_id ${policy_id} has already been published` })
-        }
-        if (err instanceof DependencyMissingError) {
-          return res.status(404).send({ error: err })
-        }
-        /* istanbul ignore next */
-        logger.error('failed to publish policy', err.stack)
-        /* istanbul ignore next */
-        return res.status(404).send({ result: 'not found' })
+        return res.status(404).send({ error })
       }
     }
   )
@@ -106,35 +103,31 @@ function api(app: express.Express): express.Express {
   app.put(
     pathsFor('/policies/:policy_id'),
     checkAccess(scopes => scopes.includes('policies:write')),
-    async (req, res) => {
+    async (req: PolicyAuthorApiRequest, res: PolicyAuthorEditPolicyResponse) => {
       const policy = req.body
 
       const details = policyValidationDetails(policy)
 
       if (details != null) {
         logger.error('invalid policy json', details)
-        return res.status(400).send(details)
+        return res.status(400).send({ error: new ValidationError(JSON.stringify(details)) })
       }
 
       try {
         await db.editPolicy(policy)
-        const result = db.readPolicy(policy.policy_id)
+        const result = await db.readPolicy(policy.policy_id)
         return res.status(200).send({ version: res.locals.version, policy: result })
-      } catch (err) {
-        if (err instanceof NotFoundError) {
-          return res.status(404).send({ error: 'not found' })
+      } catch (error) {
+        if (error instanceof NotFoundError) {
+          return res.status(404).send({ error })
         }
-        if (err instanceof AlreadyPublishedError) {
-          return res.status(409).send({ error: `policy ${policy.policy_id} has already been published!` })
+        if (error instanceof AlreadyPublishedError) {
+          return res.status(409).send({ error })
         }
         /* istanbul ignore next */
-        logger.error('failed to edit policy', err.stack)
+        logger.error('failed to edit policy', error.stack)
         /* istanbul ignore next */
-        if (err instanceof NotFoundError) {
-          res.status(404).send({ result: 'not found' })
-        } else {
-          res.status(500).send(new ServerError(err))
-        }
+        return res.status(500).send({ error: new ServerError(error) })
       }
     }
   )
@@ -142,16 +135,16 @@ function api(app: express.Express): express.Express {
   app.delete(
     pathsFor('/policies/:policy_id'),
     checkAccess(scopes => scopes.includes('policies:delete')),
-    async (req, res) => {
+    async (req: PolicyAuthorApiRequest, res: PolicyAuthorDeletePolicyResponse) => {
       const { policy_id } = req.params
       try {
         await db.deletePolicy(policy_id)
         return res.status(200).send({ version: res.locals.version, policy_id })
-      } catch (err) {
+      } catch (error) {
         /* istanbul ignore next */
-        logger.error('failed to delete policy', err.stack)
+        logger.error('failed to delete policy', error.stack)
         /* istanbul ignore next */
-        return res.status(404).send({ result: 'policy either not found, or has already been published' })
+        return res.status(404).send({ error })
       }
     }
   )
