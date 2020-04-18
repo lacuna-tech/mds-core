@@ -15,18 +15,18 @@
  */
 
 import test from 'unit.js'
-import { ServiceResult, ServiceError, ServiceException, ProcessServiceResponse } from '../index'
+import { ServiceResult, ServiceError, ServiceException, HandleServiceResponse } from '../index'
 
 describe('Tests Service Helpers', () => {
   it('Test ServiceResult', async () =>
-    ProcessServiceResponse(
+    HandleServiceResponse(
       ServiceResult('success'),
       error => test.value(error).is(null),
       result => test.value(result).is('success')
     ))
 
   it('Test ServiceError', async () =>
-    ProcessServiceResponse(
+    HandleServiceResponse(
       ServiceError({ type: 'ValidationError', message: 'Validation Error' }),
       error => {
         test.value(error.type).is('ValidationError')
@@ -37,7 +37,7 @@ describe('Tests Service Helpers', () => {
     ))
 
   it('Test ServiceException', async () =>
-    ProcessServiceResponse(
+    HandleServiceResponse(
       ServiceException('Validation Error'),
       error => {
         test.value(error.type).is('ServiceException')
@@ -48,7 +48,7 @@ describe('Tests Service Helpers', () => {
     ))
 
   it('Test ServiceException (with Error)', async () =>
-    ProcessServiceResponse(
+    HandleServiceResponse(
       ServiceException('Validation Error', Error('Error Message')),
       error => {
         test.value(error.type).is('ServiceException')

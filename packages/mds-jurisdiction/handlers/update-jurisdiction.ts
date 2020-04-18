@@ -20,7 +20,7 @@ import {
   JurisdictionDomainModel
 } from '@mds-core/mds-jurisdiction-service'
 import { UUID } from '@mds-core/mds-types'
-import { ProcessServiceResponse } from '@mds-core/mds-service-helpers'
+import { HandleServiceResponse } from '@mds-core/mds-service-helpers'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../types'
 
 interface UpdateJurisdictionRequest extends JurisdictionApiRequest<{ jurisdiction_id: UUID }> {
@@ -33,7 +33,7 @@ type UpdateJurisdictionResponse = JurisdictionApiResponse<{
 
 export const UpdateJurisdictionHandler = async (req: UpdateJurisdictionRequest, res: UpdateJurisdictionResponse) => {
   const { jurisdiction_id } = req.params
-  ProcessServiceResponse(
+  HandleServiceResponse(
     await JurisdictionServiceClient.updateJurisdiction(jurisdiction_id, req.body),
     error => {
       if (error.type === 'ValidationError') {

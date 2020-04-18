@@ -17,7 +17,7 @@
 import test from 'unit.js'
 import { v4 as uuid } from 'uuid'
 import { days } from '@mds-core/mds-utils'
-import { ProcessServiceResponse } from '@mds-core/mds-service-helpers'
+import { HandleServiceResponse } from '@mds-core/mds-service-helpers'
 import { JurisdictionServiceProvider } from '../service/provider'
 
 const records = 5_000
@@ -33,7 +33,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it(`Write ${records} Jurisdiction${records > 1 ? 's' : ''}`, async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.createJurisdictions(
         Array.from({ length: records }, (_, index) => ({
           jurisdiction_id: index ? uuid() : JURISDICTION_ID,
@@ -49,7 +49,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it(`Read ${records} Jurisdiction${records > 1 ? 's' : ''}`, async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.getJurisdictions(),
       error => test.value(error).is(null),
       jurisdictions => {
@@ -60,7 +60,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Write One Jurisdiction', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.createJurisdiction({
         agency_key: 'agency-key-one',
         agency_name: 'Agency Name One',
@@ -76,7 +76,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Write One Jurisdiction (duplicate id)', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.createJurisdiction({
         jurisdiction_id: JURISDICTION_ID,
         agency_key: 'agency-key-two',
@@ -89,7 +89,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Write One Jurisdiction (duplicate key)', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.createJurisdiction({
         agency_key: 'agency-key-one',
         agency_name: 'Agency Name One',
@@ -101,7 +101,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Write One Jurisdiction (validation error)', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.createJurisdiction({
         agency_key: '',
         agency_name: 'Agency Name One',
@@ -113,7 +113,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Update One Jurisdiction (invalid jurisdiction_id)', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.updateJurisdiction(JURISDICTION_ID, {
         jurisdiction_id: uuid(),
         agency_name: 'Some New Name',
@@ -125,7 +125,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Update One Jurisdiction (invalid timestamp)', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.updateJurisdiction(JURISDICTION_ID, {
         agency_name: 'Some New Name',
         timestamp: LAST_WEEK
@@ -136,7 +136,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Update One Jurisdiction (not found)', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.updateJurisdiction(uuid(), {
         agency_name: 'Some New Name',
         timestamp: TODAY
@@ -147,7 +147,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Update One Jurisdiction', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.updateJurisdiction(JURISDICTION_ID, {
         agency_name: 'Some New Name',
         timestamp: TODAY
@@ -162,7 +162,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Read Specific Jurisdiction (current version)', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.getJurisdiction(JURISDICTION_ID),
       error => test.value(error).is(null),
       jurisdiction => {
@@ -174,7 +174,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Read Specific Jurisdiction (prior version)', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.getJurisdiction(JURISDICTION_ID, {
         effective: YESTERDAY
       }),
@@ -188,7 +188,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Read Specific Jurisdiction (no version)', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.getJurisdiction(JURISDICTION_ID, {
         effective: LAST_WEEK
       }),
@@ -198,7 +198,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Read Missing Jurisdiction', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.getJurisdiction(uuid()),
       error => test.value(error.type).is('NotFoundError'),
       result => test.value(result).is(null)
@@ -206,7 +206,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Delete One Jurisdiction', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.deleteJurisdiction(JURISDICTION_ID),
       error => test.value(error).is(null),
       jurisdiction => {
@@ -217,7 +217,7 @@ describe('Write/Read Jurisdictions', () => {
   })
 
   it('Delete One Jurisdiction (not found)', async () => {
-    ProcessServiceResponse(
+    HandleServiceResponse(
       await JurisdictionServiceProvider.deleteJurisdiction(JURISDICTION_ID),
       error => test.value(error.type).is('NotFoundError'),
       result => test.value(result).is(null)

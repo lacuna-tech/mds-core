@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*
     Copyright 2019-2020 City of Los Angeles.
 
@@ -35,7 +36,7 @@ export const ServiceResult = <R>(result: R): ServiceResultType<R> => ({ error: n
 
 export const ServiceError = (error: ServiceErrorDescriptor): ServiceErrorType => ({ error })
 
-export const ProcessServiceResponse = <R>(
+export const HandleServiceResponse = <R>(
   response: ServiceResponse<R>,
   onerror: (error: ServiceErrorDescriptor) => void,
   onresult: (result: R) => void

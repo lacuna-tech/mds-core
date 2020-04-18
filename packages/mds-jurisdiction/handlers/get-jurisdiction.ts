@@ -17,7 +17,7 @@
 import { UUID } from '@mds-core/mds-types'
 import { JurisdictionServiceClient, JurisdictionDomainModel } from '@mds-core/mds-jurisdiction-service'
 import { AuthorizationError } from '@mds-core/mds-utils'
-import { ProcessServiceResponse } from '@mds-core/mds-service-helpers'
+import { HandleServiceResponse } from '@mds-core/mds-service-helpers'
 import { parseQuery } from '@mds-core/mds-api-helpers'
 import { JurisdictionApiResponse, JurisdictionApiRequest } from '../types'
 import { HasJurisdictionClaim } from './utils'
@@ -31,7 +31,7 @@ type GetJurisdictionResponse = JurisdictionApiResponse<{
 export const GetJurisdictionHandler = async (req: GetJurisdictionRequest, res: GetJurisdictionResponse) => {
   const { jurisdiction_id } = req.params
   const { effective } = parseQuery(req, Number).keys('effective')
-  ProcessServiceResponse(
+  HandleServiceResponse(
     await JurisdictionServiceClient.getJurisdiction(jurisdiction_id, { effective }),
     error => {
       if (error.type === 'NotFoundError') {
