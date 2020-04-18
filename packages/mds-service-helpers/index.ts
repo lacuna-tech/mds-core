@@ -36,10 +36,10 @@ export const ServiceResult = <R>(result: R): ServiceResultType<R> => ({ error: n
 export const ServiceError = (error: ServiceErrorDescriptor): ServiceErrorType => ({ error })
 
 export const ProcessServiceResponse = <R>(
-  result: ServiceResponse<R>,
+  response: ServiceResponse<R>,
   onerror: (error: ServiceErrorDescriptor) => void,
   onresult: (result: R) => void
-) => (result.error ? onerror(result.error) : onresult(result.result))
+) => (response.error ? onerror(response.error) : onresult(response.result))
 
 export const ServiceException = (message: string, error?: Error) =>
   ServiceError({
