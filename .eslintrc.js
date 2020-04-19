@@ -12,6 +12,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: 'tsconfig.settings.json'
   },
+  ignorePatterns: ['**/*.d.ts'],
   extends: [
     'airbnb-base',
     'plugin:@typescript-eslint/recommended',
