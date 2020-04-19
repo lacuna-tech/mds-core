@@ -75,10 +75,11 @@ const processVehicleTelemetry: StreamTransform<
   return null
 }
 
-export const VehicleTelemetryProcessor = StreamProcessor(
-  KafkaSource<Telemetry & { gps: TelemetryData } & { recorded: Timestamp }>(`${TENANT_ID}.telemetry`, {
-    groupId: 'mds-telemetry-processor'
-  }),
-  processVehicleTelemetry,
-  KafkaSink<LabeledVehicleTelemetry>(`${TENANT_ID}.telemetry.annotated`, { clientId: 'mds-telemetry-processor' })
-)
+export const VehicleTelemetryProcessor = () =>
+  StreamProcessor(
+    KafkaSource<Telemetry & { gps: TelemetryData } & { recorded: Timestamp }>(`${TENANT_ID}.telemetry`, {
+      groupId: 'mds-telemetry-processor'
+    }),
+    processVehicleTelemetry,
+    KafkaSink<LabeledVehicleTelemetry>(`${TENANT_ID}.telemetry.annotated`, { clientId: 'mds-telemetry-processor' })
+  )

@@ -107,8 +107,9 @@ const processVehicleEvent: StreamTransform<VehicleEvent, LabeledVehicleEvent> = 
   return null
 }
 
-export const VehicleEventProcessor = StreamProcessor(
-  KafkaSource<VehicleEvent>(`${TENANT_ID}.event`, { groupId: 'mds-event-processor' }),
-  processVehicleEvent,
-  KafkaSink<LabeledVehicleEvent>(`${TENANT_ID}.event.annotated`, { clientId: 'mds-event-processor' })
-)
+export const VehicleEventProcessor = () =>
+  StreamProcessor(
+    KafkaSource<VehicleEvent>(`${TENANT_ID}.event`, { groupId: 'mds-event-processor' }),
+    processVehicleEvent,
+    KafkaSink<LabeledVehicleEvent>(`${TENANT_ID}.event.annotated`, { clientId: 'mds-event-processor' })
+  )
