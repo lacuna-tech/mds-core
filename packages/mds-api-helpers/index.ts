@@ -58,6 +58,6 @@ export const asJsonApiLinks = (req: express.Request, skip: number, take: number,
 
 export const parseRequest = <T = string>(req: express.Request, parser?: (value: string) => T) => {
   const { keys: query } = parseObjectProperties<T>(req.query, parser)
-  const { keys: params } = parseObjectProperties<T>(req.query, parser)
+  const { keys: params } = parseObjectProperties<T>(req.params, parser)
   return { params, query }
 }
