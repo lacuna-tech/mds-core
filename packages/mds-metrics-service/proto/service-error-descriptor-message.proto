@@ -1,4 +1,4 @@
-
+syntax = "proto2";
 
 message ServiceErrorDescriptorMessage {
   required string type = 1;
