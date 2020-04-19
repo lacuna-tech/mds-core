@@ -599,12 +599,12 @@ const getEnvVar = <TProps extends { [name: string]: string }>(props: TProps): TP
   }, {} as TProps)
 
 export type ParseObjectPropertiesOptions<T> = Partial<{
-  using: (value: string) => T
+  parser: (value: string) => T
 }>
 
 const parseObjectProperties = <T = string>(
   obj: { [k: string]: unknown },
-  { using: parser }: ParseObjectPropertiesOptions<T> = {}
+  { parser }: ParseObjectPropertiesOptions<T> = {}
 ) => {
   return {
     keys: <TKey extends string>(first: TKey, ...rest: TKey[]): Partial<{ [P in TKey]: T }> =>
