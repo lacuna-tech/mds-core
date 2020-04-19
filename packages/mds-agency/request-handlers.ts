@@ -19,7 +19,7 @@ import {
   UUID
 } from '@mds-core/mds-types'
 import urls from 'url'
-import { parseQuery } from '@mds-core/mds-api-helpers'
+import { parseRequest } from '@mds-core/mds-api-helpers'
 import {
   badDevice,
   getVehicles,
@@ -103,7 +103,9 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiRespo
 export const getVehicleById = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   const { device_id } = req.params
 
-  const { provider_id } = res.locals.scopes.includes('vehicles:read') ? parseQuery(req).keys('provider_id') : res.locals
+  const { provider_id } = res.locals.scopes.includes('vehicles:read')
+    ? parseRequest(req).query('provider_id')
+    : res.locals
 
   const payload = await readPayload(device_id)
 
@@ -120,7 +122,7 @@ export const getVehicleById = async (req: AgencyApiRequest, res: AgencyApiRespon
 export const getVehiclesByProvider = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   const PAGE_SIZE = 1000
 
-  const { skip = 0, take = PAGE_SIZE } = parseQuery(req, Number).keys('skip', 'take')
+  const { skip = 0, take = PAGE_SIZE } = parseRequest(req, Number).query('skip', 'take')
 
   const url = urls.format({
     protocol: req.get('x-forwarded-proto') || req.protocol,
@@ -129,7 +131,9 @@ export const getVehiclesByProvider = async (req: AgencyApiRequest, res: AgencyAp
   })
 
   // TODO: Replace with express middleware
-  const { provider_id } = res.locals.scopes.includes('vehicles:read') ? parseQuery(req).keys('provider_id') : res.locals
+  const { provider_id } = res.locals.scopes.includes('vehicles:read')
+    ? parseRequest(req).query('provider_id')
+    : res.locals
 
   try {
     const response = await getVehicles(skip, take, url, req.query, provider_id)
