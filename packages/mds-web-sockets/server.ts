@@ -9,7 +9,10 @@ import { Clients } from './clients'
 import { ENTITY_TYPE } from './types'
 
 export const WebSocketServer = () => {
-  const server = HttpServer(ApiServer(app => app))
+  const server = HttpServer(
+    ApiServer(app => app),
+    { port: process.env.PORT || 4009 }
+  )
 
   logger.info('Creating WS server')
   const wss = new WebSocket.Server({ server })
