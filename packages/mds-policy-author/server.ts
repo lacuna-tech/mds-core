@@ -16,4 +16,4 @@ import { api } from './api'
 
 const { POLICY_AUTHOR_API_PORT } = process.env
 
-HttpServer(ApiServer(api, { handleCors: true }), POLICY_AUTHOR_API_PORT)
+HttpServer(ApiServer(api, { handleCors: true }), { port: POLICY_AUTHOR_API_PORT })

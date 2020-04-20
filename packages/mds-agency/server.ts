@@ -19,4 +19,4 @@ import { api } from './api'
 
 const { AGENCY_API_PORT } = process.env
 
-HttpServer(ApiServer(api), AGENCY_API_PORT)
+HttpServer(ApiServer(api), { port: AGENCY_API_PORT })

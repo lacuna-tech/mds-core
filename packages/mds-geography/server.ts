@@ -16,4 +16,4 @@ import { api } from './api'
 
 const { GEOGRAPHY_API_PORT } = process.env
 
-HttpServer(ApiServer(api), GEOGRAPHY_API_PORT)
+HttpServer(ApiServer(api), { port: GEOGRAPHY_API_PORT })

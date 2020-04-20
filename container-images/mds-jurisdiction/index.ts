@@ -18,4 +18,4 @@ import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { api } from '@mds-core/mds-jurisdiction'
 import { env } from '@container-images/env-inject'
 
-HttpServer(ApiServer(api), env().JURISDICTION_API_PORT)
+HttpServer(ApiServer(api), { port: env().JURISDICTION_API_PORT })

@@ -18,4 +18,4 @@ import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { api } from '@mds-core/mds-geography-author'
 import { env } from '@container-images/env-inject'
 
-HttpServer(ApiServer(api), env().GEOGRAPHY_AUTHOR_API_PORT)
+HttpServer(ApiServer(api), { port: env().GEOGRAPHY_AUTHOR_API_PORT })

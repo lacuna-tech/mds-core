@@ -194,14 +194,18 @@ const serverVersion = () => {
     : 'Server'
 }
 
-export const HttpServer = (api: express.Express, port?: string | number) => {
+type HttpServerOptions = Partial<{
+  port: string | number
+}>
+
+export const HttpServer = (api: express.Express, options: HttpServerOptions = {}) => {
   const { HTTP_KEEP_ALIVE_TIMEOUT = 15000, HTTP_HEADERS_TIMEOUT = 20000 } = process.env
 
-  const PORT = Number(port || process.env.PORT || 4000)
+  const port = Number(options.port || process.env.PORT || 4000)
 
-  const server = api.listen(PORT, () => {
+  const server = api.listen(port, () => {
     logger.info(
-      `${serverVersion()} running on port ${PORT}; Timeouts(${HTTP_KEEP_ALIVE_TIMEOUT}/${HTTP_HEADERS_TIMEOUT})`
+      `${serverVersion()} running on port ${port}; Timeouts(${HTTP_KEEP_ALIVE_TIMEOUT}/${HTTP_HEADERS_TIMEOUT})`
     )
   })
 

@@ -18,4 +18,4 @@ import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { api } from '@mds-core/mds-compliance'
 import { env } from '@container-images/env-inject'
 
-HttpServer(ApiServer(api), env().COMPLIENACE_API_PORT)
+HttpServer(ApiServer(api), { port: env().COMPLIENACE_API_PORT })

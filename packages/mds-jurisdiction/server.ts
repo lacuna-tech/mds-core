@@ -18,4 +18,4 @@ import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { api } from './api'
 
 const { JURISDICTION_API_PORT } = process.env
-HttpServer(ApiServer(api), JURISDICTION_API_PORT)
+HttpServer(ApiServer(api), { port: JURISDICTION_API_PORT })
