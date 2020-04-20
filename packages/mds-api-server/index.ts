@@ -187,20 +187,21 @@ export const HealthRequestHandler = async (req: ApiRequest, res: ApiResponse) =>
   })
 }
 
-export const HttpServer = (port: string | number, api: express.Express) => {
-  const {
-    npm_package_name,
-    npm_package_version,
-    npm_package_git_commit,
-    HTTP_KEEP_ALIVE_TIMEOUT = 15000,
-    HTTP_HEADERS_TIMEOUT = 20000
-  } = process.env
+const serverVersion = () => {
+  const { npm_package_name, npm_package_version, npm_package_git_commit } = process.env
+  return npm_package_name && npm_package_version && npm_package_git_commit
+    ? `${npm_package_name} v${npm_package_version} (${npm_package_git_commit})`
+    : 'Server'
+}
 
-  const server = api.listen(Number(port), () => {
+export const HttpServer = (api: express.Express, port?: string | number) => {
+  const { HTTP_KEEP_ALIVE_TIMEOUT = 15000, HTTP_HEADERS_TIMEOUT = 20000 } = process.env
+
+  const PORT = Number(port || process.env.PORT || 4000)
+
+  const server = api.listen(PORT, () => {
     logger.info(
-      `${npm_package_name} v${npm_package_version} (${
-        npm_package_git_commit ?? 'local'
-      }) running on port ${port}; Timeouts(${HTTP_KEEP_ALIVE_TIMEOUT}/${HTTP_HEADERS_TIMEOUT})`
+      `${serverVersion()} running on port ${PORT}; Timeouts(${HTTP_KEEP_ALIVE_TIMEOUT}/${HTTP_HEADERS_TIMEOUT})`
     )
   })
 

@@ -12,13 +12,9 @@
  */
 
 // Express local
-import { ApiServer } from '@mds-core/mds-api-server'
+import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { api } from './api'
 
-const {
-  env: { npm_package_name, PORT = 4010 }
-} = process
+const { GEOGRAPHY_API_PORT } = process.env
 
-/* eslint-reason avoids import of logger */
-/* eslint-disable-next-line no-console */
-ApiServer(api, { handleCors: true }).listen(PORT, () => console.log(`${npm_package_name} running on port ${PORT}`))
+HttpServer(ApiServer(api, { handleCors: true }), GEOGRAPHY_API_PORT)
