@@ -1,7 +1,7 @@
 import morgan from 'morgan'
 import bodyParser from 'body-parser'
 import express from 'express'
-import cors from 'cors'
+import CorsMiddleware from 'cors'
 import logger from '@mds-core/mds-logger'
 import { pathsFor, AuthorizationError } from '@mds-core/mds-utils'
 import { AuthorizationHeaderApiAuthorizer, ApiAuthorizer, AuthorizerClaims } from '@mds-core/mds-api-authorizer'
@@ -76,15 +76,6 @@ export const RequestLoggingMiddleware = (): express.RequestHandler =>
   )
 
 export const JsonBodyParserMiddleware = (options: bodyParser.OptionsJson) => bodyParser.json(options)
-
-type CorsMiddlewareOptions = { handleCors: boolean }
-export const CorsMiddleware = ({ handleCors = false }: Partial<CorsMiddlewareOptions> = {}) =>
-  handleCors
-    ? cors() // Server handles CORS
-    : (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
-        res.header('Access-Control-Allow-Origin', '*')
-        next()
-      }
 
 export const MaintenanceModeMiddleware = () => (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
   if (process.env.MAINTENANCE) {
@@ -189,8 +180,8 @@ export const HealthRequestHandler = async (req: ApiRequest, res: ApiResponse) =>
 
 const serverVersion = () => {
   const { npm_package_name, npm_package_version, npm_package_git_commit } = process.env
-  return npm_package_name && npm_package_version && npm_package_git_commit
-    ? `${npm_package_name} v${npm_package_version} (${npm_package_git_commit})`
+  return npm_package_name && npm_package_version
+    ? `${npm_package_name} v${npm_package_version} (${npm_package_git_commit || 'local'})`
     : 'Server'
 }
 
@@ -216,9 +207,11 @@ export const HttpServer = (api: express.Express, options: HttpServerOptions = {}
   return server
 }
 
+type CorsMiddlewareOptions = CorsMiddleware.CorsOptions
+
 export const ApiServer = (
   api: (server: express.Express) => express.Express,
-  { handleCors, authorizer }: Partial<CorsMiddlewareOptions & AuthorizerMiddlewareOptions> = {},
+  { authorizer, ...corsOptions }: Partial<AuthorizerMiddlewareOptions & CorsMiddlewareOptions> = {},
   app: express.Express = express()
 ): express.Express => {
   // Disable x-powered-by header
@@ -227,8 +220,8 @@ export const ApiServer = (
   // Middleware
   app.use(
     RequestLoggingMiddleware(),
+    CorsMiddleware(corsOptions),
     JsonBodyParserMiddleware({ limit: '5mb' }),
-    CorsMiddleware({ handleCors }),
     MaintenanceModeMiddleware(),
     AuthorizerMiddleware({ authorizer })
   )

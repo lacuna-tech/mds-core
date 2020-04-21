@@ -15,4 +15,4 @@
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { api } from './api'
 
-HttpServer(ApiServer(api, { handleCors: true }), { port: process.env.GEOGRAPHY_API_PORT })
+HttpServer(ApiServer(api), { port: process.env.GEOGRAPHY_API_PORT })
