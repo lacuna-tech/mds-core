@@ -17,6 +17,4 @@
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { api } from './api'
 
-const { DAILY_API_PORT } = process.env
-
-HttpServer(ApiServer(api), { port: DAILY_API_PORT })
+HttpServer(ApiServer(api), { port: process.env.DAILY_API_PORT })

@@ -14,6 +14,4 @@
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { api } from './api'
 
-const { COMPLIANCE_API_PORT } = process.env
-
-HttpServer(ApiServer(api), { port: COMPLIANCE_API_PORT })
+HttpServer(ApiServer(api), { port: process.env.COMPLIANCE_API_PORT })
