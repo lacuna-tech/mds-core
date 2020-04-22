@@ -25,32 +25,37 @@ import {
   GetJurisdictionHandler,
   UpdateJurisdictionHandler
 } from './handlers'
+import { JurisdictionApiAccessTokenScopes } from './types'
 
 export const api = (app: express.Express): express.Express =>
   app
     .use(JurisdictionApiVersionMiddleware)
     .get(
       pathsFor('/jurisdictions'),
-      checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')),
+      checkAccess<JurisdictionApiAccessTokenScopes>(
+        scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')
+      ),
       GetJurisdictionsHandler
     )
     .get(
       pathsFor('/jurisdictions/:jurisdiction_id'),
-      checkAccess(scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')),
+      checkAccess<JurisdictionApiAccessTokenScopes>(
+        scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')
+      ),
       GetJurisdictionHandler
     )
     .post(
       pathsFor('/jurisdictions'),
-      checkAccess(scopes => scopes.includes('jurisdictions:write')),
+      checkAccess<JurisdictionApiAccessTokenScopes>(scopes => scopes.includes('jurisdictions:write')),
       CreateJurisdictionHandler
     )
     .put(
       pathsFor('/jurisdictions/:jurisdiction_id'),
-      checkAccess(scopes => scopes.includes('jurisdictions:write')),
+      checkAccess<JurisdictionApiAccessTokenScopes>(scopes => scopes.includes('jurisdictions:write')),
       UpdateJurisdictionHandler
     )
     .delete(
       pathsFor('/jurisdictions/:jurisdiction_id'),
-      checkAccess(scopes => scopes.includes('jurisdictions:write')),
+      checkAccess<JurisdictionApiAccessTokenScopes>(scopes => scopes.includes('jurisdictions:write')),
       DeleteJurisdictionHandler
     )
