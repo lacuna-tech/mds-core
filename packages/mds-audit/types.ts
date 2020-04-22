@@ -119,11 +119,19 @@ export interface AuditApiGetVehicleRequest extends AuditApiRequest {
   }
 }
 
+export type AuditResponseLocals = {
+  locals: {
+    audit_subject_id?: UUID
+    recorded?: Timestamp
+  }
+}
+
 // Allow adding type definitions for Express Response objects
-export type AuditApiResponse<T extends {}> = ApiVersionedResponse<
-  AUDIT_API_SUPPORTED_VERSION,
-  {}
-> /* {
+export type AuditApiResponse<TBody extends {} = {}> = ApiVersionedResponse<AUDIT_API_SUPPORTED_VERSION, TBody> &
+  AuditResponseLocals
+
+export type AuditApiDeleteResponse = AuditApiResponse<{ audit_id: UUID }>
+/* {
   locals: ApiVersionedResponseLocals<AUDIT_API_SUPPORTED_VERSION> & {
     audit_subject_id: string
     audit_trip_id: UUID

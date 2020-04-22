@@ -68,7 +68,8 @@ import {
   AuditApiResponse,
   AuditApiTripRequest,
   AuditApiVehicleEventRequest,
-  AuditApiVehicleTelemetryRequest
+  AuditApiVehicleTelemetryRequest,
+  AuditApiDeleteResponse
 } from './types'
 import { AuditApiVersionMiddleware } from './middleware'
 import {
@@ -476,7 +477,7 @@ function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/trips/:audit_trip_id'),
     checkAccess(scopes => scopes.includes('audits:read')),
-    async (req: AuditApiGetTripRequest, res: AuditApiResponse<AuditDetails> & ) => {
+    async (req: AuditApiGetTripRequest, res: AuditApiResponse<AuditDetails>) => {
       try {
         const { audit_trip_id, audit } = res.locals
 
@@ -584,7 +585,7 @@ function api(app: express.Express): express.Express {
   app.delete(
     pathsFor('/trips/:audit_trip_id'),
     checkAccess(scopes => scopes.includes('audits:delete')),
-    async (req: AuditApiTripRequest, res: AuditApiResponse) => {
+    async (req: AuditApiTripRequest, res: AuditApiDeleteResponse) => {
       try {
         const { audit_trip_id, audit } = res.locals
         if (audit) {
