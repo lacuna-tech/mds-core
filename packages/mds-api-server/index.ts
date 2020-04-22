@@ -236,9 +236,14 @@ export const ApiServer = (
   return api(app)
 }
 
+export type AccessTokenScopeValidator<AccessTokenScope extends string = never> = (
+  scopes: AccessTokenScope[],
+  claims: AuthorizerClaims | null
+) => boolean | Promise<boolean>
+
 /* istanbul ignore next */
 export const checkAccess = <AccessTokenScope extends string = never>(
-  validator: (scopes: AccessTokenScope[], claims: AuthorizerClaims | null) => boolean | Promise<boolean>
+  validator: AccessTokenScopeValidator<AccessTokenScope>
 ) =>
   process.env.VERIFY_ACCESS_TOKEN_SCOPE === 'false'
     ? async (req: ApiRequest, res: ApiResponse<ApiClaims<AccessTokenScope>>, next: express.NextFunction) => {

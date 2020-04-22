@@ -16,7 +16,7 @@
 
 import express from 'express'
 import { pathsFor } from '@mds-core/mds-utils'
-import { checkAccess } from '@mds-core/mds-api-server'
+import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import { JurisdictionApiVersionMiddleware } from './middleware'
 import {
   CreateJurisdictionHandler,
@@ -27,35 +27,38 @@ import {
 } from './handlers'
 import { JurisdictionApiAccessTokenScopes } from './types'
 
+const checkJurisdictionApiAccess = (validator: AccessTokenScopeValidator<JurisdictionApiAccessTokenScopes>) =>
+  checkAccess(validator)
+
 export const api = (app: express.Express): express.Express =>
   app
     .use(JurisdictionApiVersionMiddleware)
     .get(
       pathsFor('/jurisdictions'),
-      checkAccess<JurisdictionApiAccessTokenScopes>(
+      checkJurisdictionApiAccess(
         scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')
       ),
       GetJurisdictionsHandler
     )
     .get(
       pathsFor('/jurisdictions/:jurisdiction_id'),
-      checkAccess<JurisdictionApiAccessTokenScopes>(
+      checkJurisdictionApiAccess(
         scopes => scopes.includes('jurisdictions:read') || scopes.includes('jurisdictions:read:claim')
       ),
       GetJurisdictionHandler
     )
     .post(
       pathsFor('/jurisdictions'),
-      checkAccess<JurisdictionApiAccessTokenScopes>(scopes => scopes.includes('jurisdictions:write')),
+      checkJurisdictionApiAccess(scopes => scopes.includes('jurisdictions:write')),
       CreateJurisdictionHandler
     )
     .put(
       pathsFor('/jurisdictions/:jurisdiction_id'),
-      checkAccess<JurisdictionApiAccessTokenScopes>(scopes => scopes.includes('jurisdictions:write')),
+      checkJurisdictionApiAccess(scopes => scopes.includes('jurisdictions:write')),
       UpdateJurisdictionHandler
     )
     .delete(
       pathsFor('/jurisdictions/:jurisdiction_id'),
-      checkAccess<JurisdictionApiAccessTokenScopes>(scopes => scopes.includes('jurisdictions:write')),
+      checkJurisdictionApiAccess(scopes => scopes.includes('jurisdictions:write')),
       DeleteJurisdictionHandler
     )

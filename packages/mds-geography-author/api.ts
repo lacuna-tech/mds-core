@@ -14,13 +14,16 @@ import {
 import { geographyValidationDetails } from '@mds-core/mds-schema-validators'
 import logger from '@mds-core/mds-logger'
 
-import { checkAccess } from '@mds-core/mds-api-server'
+import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import { GeographyAuthorApiRequest, GeographyAuthorApiResponse, GeographyAuthorApiAccessTokenScopes } from './types'
+
+const checkGeographyAuthorApiAccess = (validator: AccessTokenScopeValidator<GeographyAuthorApiAccessTokenScopes>) =>
+  checkAccess(validator)
 
 function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/geographies/meta/'),
-    checkAccess<GeographyAuthorApiAccessTokenScopes>(scopes => {
+    checkGeographyAuthorApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req: GeographyAuthorApiRequest, res: GeographyAuthorApiResponse) => {
@@ -75,7 +78,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id'),
-    checkAccess<GeographyAuthorApiAccessTokenScopes>(scopes => {
+    checkGeographyAuthorApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req: GeographyAuthorApiRequest, res: GeographyAuthorApiResponse) => {
@@ -103,7 +106,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies'),
-    checkAccess<GeographyAuthorApiAccessTokenScopes>(scopes => {
+    checkGeographyAuthorApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req: GeographyAuthorApiRequest, res: GeographyAuthorApiResponse) => {
@@ -142,7 +145,7 @@ function api(app: express.Express): express.Express {
 
   app.post(
     pathsFor('/geographies/'),
-    checkAccess<GeographyAuthorApiAccessTokenScopes>(scopes => scopes.includes('geographies:write')),
+    checkGeographyAuthorApiAccess(scopes => scopes.includes('geographies:write')),
     async (req: GeographyAuthorApiRequest, res: GeographyAuthorApiResponse) => {
       const geography = req.body
 
@@ -173,7 +176,7 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/geographies/:geography_id'),
-    checkAccess<GeographyAuthorApiAccessTokenScopes>(scopes => scopes.includes('geographies:write')),
+    checkGeographyAuthorApiAccess(scopes => scopes.includes('geographies:write')),
     async (req: GeographyAuthorApiRequest, res: GeographyAuthorApiResponse) => {
       const geography = req.body
       try {
@@ -198,7 +201,7 @@ function api(app: express.Express): express.Express {
 
   app.delete(
     pathsFor('/geographies/:geography_id'),
-    checkAccess<GeographyAuthorApiAccessTokenScopes>(scopes => scopes.includes('geographies:write')),
+    checkGeographyAuthorApiAccess(scopes => scopes.includes('geographies:write')),
     async (req: GeographyAuthorApiRequest, res: GeographyAuthorApiResponse) => {
       const { geography_id } = req.params
       try {
@@ -234,7 +237,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id/meta'),
-    checkAccess<GeographyAuthorApiAccessTokenScopes>(scopes => {
+    checkGeographyAuthorApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req: GeographyAuthorApiRequest, res: GeographyAuthorApiResponse) => {
@@ -261,7 +264,7 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/geographies/:geography_id/meta'),
-    checkAccess<GeographyAuthorApiAccessTokenScopes>(scopes => scopes.includes('geographies:write')),
+    checkGeographyAuthorApiAccess(scopes => scopes.includes('geographies:write')),
     async (req: GeographyAuthorApiRequest, res: GeographyAuthorApiResponse) => {
       const geography_metadata = req.body
       try {
@@ -288,7 +291,7 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/geographies/:geography_id/publish'),
-    checkAccess<GeographyAuthorApiAccessTokenScopes>(scopes => scopes.includes('geographies:publish')),
+    checkGeographyAuthorApiAccess(scopes => scopes.includes('geographies:publish')),
     async (req: GeographyAuthorApiRequest, res: GeographyAuthorApiResponse) => {
       const { geography_id } = req.params
       try {

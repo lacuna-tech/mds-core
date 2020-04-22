@@ -4,14 +4,17 @@ import db from '@mds-core/mds-db'
 import { pathsFor, ServerError, NotFoundError, InsufficientPermissionsError, BadParamsError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 
-import { checkAccess } from '@mds-core/mds-api-server'
+import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import { parseRequest } from '@mds-core/mds-api-helpers'
 import { GeographyApiAccessTokenScopes, GeographyApiResponse, GeographyApiRequest } from './types'
+
+const checkGeographyApiAccess = (validator: AccessTokenScopeValidator<GeographyApiAccessTokenScopes>) =>
+  checkAccess(validator)
 
 function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/geographies/meta/'),
-    checkAccess<GeographyApiAccessTokenScopes>(scopes => {
+    checkGeographyApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req: GeographyApiRequest, res: GeographyApiResponse) => {
@@ -65,7 +68,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id'),
-    checkAccess<GeographyApiAccessTokenScopes>(scopes => {
+    checkGeographyApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req: GeographyApiRequest, res: GeographyApiResponse) => {
@@ -93,7 +96,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies'),
-    checkAccess<GeographyApiAccessTokenScopes>(scopes => {
+    checkGeographyApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req: GeographyApiRequest, res: GeographyApiResponse) => {
@@ -132,7 +135,7 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id/meta'),
-    checkAccess<GeographyApiAccessTokenScopes>(scopes => {
+    checkGeographyApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (req: GeographyApiRequest, res: GeographyApiResponse) => {
