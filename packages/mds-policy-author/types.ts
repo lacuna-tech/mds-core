@@ -7,7 +7,7 @@ export const [POLICY_AUTHOR_API_DEFAULT_VERSION] = POLICY_AUTHOR_API_SUPPORTED_V
 
 export type PolicyAuthorApiRequest = ApiRequest
 
-type PolicyAuthorApiResponse<TBody = {}> = ApiVersionedResponse<POLICY_AUTHOR_API_SUPPORTED_VERSION, TBody>
+type PolicyAuthorApiResponse<TBody extends {}> = ApiVersionedResponse<POLICY_AUTHOR_API_SUPPORTED_VERSION, TBody>
 
 export type PolicyAuthorGetPoliciesResponse = PolicyAuthorApiResponse<{ policies: Policy[] }>
 export type PolicyAuthorGetPolicyResponse = PolicyAuthorApiResponse<{ policy: Policy }>
