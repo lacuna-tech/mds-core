@@ -1,21 +1,47 @@
+/*
+    Copyright 2019-2020 City of Los Angeles.
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ */
+
 import { Configuration, ConfigurationFactory, ContextReplacementPlugin, IgnorePlugin } from 'webpack'
 import GitRevisionPlugin from 'git-revision-webpack-plugin'
 import WrapperWebpackPlugin from 'wrapper-webpack-plugin'
 import WebpackMerge from 'webpack-merge'
+import { resolve } from 'path'
 
-const gitRevisionPlugin = new GitRevisionPlugin({
-  commithashCommand: 'rev-parse --short HEAD'
-})
+const gitRevisionPlugin = new GitRevisionPlugin({ commithashCommand: 'rev-parse --short HEAD' })
 
 type CustomConfiguration = Omit<Configuration, 'entry'>
 
-const MergeConfigurations = (entry = 'index') => (config: CustomConfiguration): ConfigurationFactory => (env, argv) => {
-  const { npm_package_name = '', npm_package_version = '' } = typeof env === 'string' ? {} : env
+const MergeConfigurations = (config: CustomConfiguration, name: string, path?: string): ConfigurationFactory => (
+  env,
+  argv
+) => {
   const dirname = process.cwd()
+
+  const entry = {
+    [name]: path || `${dirname}/${name}.ts`
+  }
+
+  const { npm_package_name = '', npm_package_version = '' } = typeof env === 'string' ? {} : env
+
+  console.log('BUNDLE:', resolve(entry[name])) /* eslint-disable-line no-console */
+
   return WebpackMerge(
     {
-      entry: { [entry]: `${dirname}/${entry}.ts` },
-      output: { path: `${dirname}/dist`, filename: `${entry}.js`, libraryTarget: 'commonjs' },
+      entry,
+      output: { path: `${dirname}/dist`, filename: `${name}.js`, libraryTarget: 'commonjs' },
       module: {
         rules: [
           {
@@ -92,12 +118,16 @@ const MergeConfigurations = (entry = 'index') => (config: CustomConfiguration): 
   )
 }
 
-const ConfigurationFactories = (entry: string) => ({
-  CustomConfiguration: (config: CustomConfiguration) => MergeConfigurations(entry)(config),
-  StandardConfiguration: () => MergeConfigurations(entry)({})
+const ConfigMethods = (name: string, path?: string) => ({
+  UsingDefaultConfig: () => MergeConfigurations({}, name, path),
+  UsingCustomConfig: (config: CustomConfiguration) => MergeConfigurations(config, name, path)
 })
 
 export default {
-  ...ConfigurationFactories('index'),
-  EntryPoint: (entry: string) => ConfigurationFactories(entry)
+  CreateBundle: (name = 'index') => ({
+    ...ConfigMethods(name),
+    From: (path: string) => ({
+      ...ConfigMethods(name, path)
+    })
+  })
 }
