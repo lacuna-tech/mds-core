@@ -1,6 +1,7 @@
-import { Configuration, ConfigurationFactory, ContextReplacementPlugin, IgnorePlugin, DefinePlugin } from 'webpack'
+import { Configuration, ConfigurationFactory, ContextReplacementPlugin, IgnorePlugin } from 'webpack'
 import GitRevisionPlugin from 'git-revision-webpack-plugin'
-import merge from 'webpack-merge'
+import WrapperWebpackPlugun from 'wrapper-webpack-plugin'
+import WebpackMerge from 'webpack-merge'
 
 const gitRevisionPlugin = new GitRevisionPlugin({
   commithashCommand: 'rev-parse --short HEAD'
@@ -11,7 +12,7 @@ type CustomConfiguration = Omit<Configuration, 'entry'>
 const MergeConfigurations = (entry = 'index') => (config: CustomConfiguration): ConfigurationFactory => (env, argv) => {
   const { npm_package_name = '', npm_package_version = '' } = typeof env === 'string' ? {} : env
   const dirname = process.cwd()
-  return merge(
+  return WebpackMerge(
     {
       entry: { [entry]: `${dirname}/${entry}.ts` },
       output: { path: `${dirname}/dist`, filename: `${entry}.js`, libraryTarget: 'commonjs' },
@@ -62,12 +63,15 @@ const MergeConfigurations = (entry = 'index') => (config: CustomConfiguration): 
           ] // TypeORM
         ].map(dependency => new IgnorePlugin(new RegExp(`^${dependency}$`))),
         // Make npm package name/version available to bundle
-        new DefinePlugin({
-          NPM_PACKAGE_NAME: JSON.stringify(npm_package_name),
-          NPM_PACKAGE_VERSION: JSON.stringify(npm_package_version),
-          NPM_PACKAGE_GIT_BRANCH: JSON.stringify(gitRevisionPlugin.branch()),
-          NPM_PACKAGE_GIT_COMMIT: JSON.stringify(gitRevisionPlugin.commithash()),
-          NPM_PACKAGE_BUILD_DATE: JSON.stringify(new Date().toISOString())
+        new WrapperWebpackPlugun({
+          header: () =>
+            `Object.assign(process.env, {
+              npm_package_name: '${npm_package_name}',
+              npm_package_version: '${npm_package_version}',
+              npm_package_git_branch: '${gitRevisionPlugin.branch()}',
+              npm_package_git_commit: '${gitRevisionPlugin.commithash()}',
+              npm_package_build_date: '${new Date().toISOString()}'
+            });`
         })
       ],
       resolve: {
