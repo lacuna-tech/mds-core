@@ -2,6 +2,7 @@
   "name": "@container-images/mds-web-sockets",
   "version": "0.0.1",
   "description": "Docker Image for MDS Web Sockets",
+  "private": true,
   "main": "dist/index.js",
   "files": [
     "dist/"

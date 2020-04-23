@@ -2,6 +2,7 @@
   "name": "@container-images/mds-audit",
   "version": "0.1.27",
   "description": "Docker Image for MDS Audit API",
+  "private": true,
   "main": "dist/index.js",
   "files": [
     "dist/"

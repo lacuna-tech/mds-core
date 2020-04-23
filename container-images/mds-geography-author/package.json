@@ -2,6 +2,7 @@
   "name": "@container-images/mds-geography-author",
   "version": "0.0.1",
   "description": "Docker Image for MDS Geography API",
+  "private": true,
   "main": "dist/index.js",
   "files": [
     "dist/"

@@ -2,6 +2,7 @@
   "name": "@container-images/mds-event-processor",
   "version": "0.0.1",
   "description": "Docker Image for MDS Vehicle Event Processor",
+  "private": true,
   "main": "dist/index.js",
   "files": [
     "dist/"

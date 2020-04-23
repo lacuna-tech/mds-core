@@ -2,6 +2,7 @@
   "name": "@container-images/mds-policy",
   "version": "0.1.26",
   "description": "Docker Image for MDS Policy API",
+  "private": true,
   "main": "dist/index.js",
   "files": [
     "dist/"

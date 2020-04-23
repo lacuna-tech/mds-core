@@ -2,6 +2,7 @@
   "name": "@container-images/mds-jurisdiction",
   "version": "0.0.1",
   "description": "Docker Image for MDS Jurisdiction API",
+  "private": true,
   "main": "dist/index.js",
   "files": [
     "dist/"
