@@ -1,6 +1,6 @@
 // data obtained from https://data.lacity.org/A-Well-Run-City/Council-Districts/5v3h-vptv
 
-module.exports = {
+export default {
   type: 'FeatureCollection',
   features: [
     {

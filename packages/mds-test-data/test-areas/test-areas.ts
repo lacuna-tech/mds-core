@@ -1,13 +1,12 @@
 import { UUID, Nullable } from '@mds-core/mds-types'
 import { Geometry } from 'geojson'
 
-/* eslint-disable @typescript-eslint/no-var-requires */
-const laCityBoundary = require('./la-city-boundary')
-const restrictedAreas = require('./restricted-areas')
-const laDacs = require('./la-dacs')
-const veniceSpecOps = require('./venice-special-ops-zone')
-const venice = require('./venice')
-const councilDistrict11 = require('./council-district-11')
+import laCityBoundary from './la-city-boundary'
+import restrictedAreas from './restricted-areas'
+import laDacs from './la-dacs'
+import veniceSpecOps from './venice-special-ops-zone'
+import venice from './venice'
+import councilDistrict11 from './council-district-11'
 
 const serviceAreaMap: {
   [key: string]: {
@@ -28,7 +27,7 @@ const serviceAreaMap: {
     replacement_area: null,
     type: 'unrestricted',
     description: 'Los Angeles',
-    area: laCityBoundary.features[0].geometry
+    area: (laCityBoundary.features[0].geometry as Geometry) as Geometry
   },
 
   // Council District 11
@@ -39,7 +38,7 @@ const serviceAreaMap: {
     replacement_area: null,
     type: 'restricted',
     description: 'Council District 11',
-    area: councilDistrict11.features[0].geometry
+    area: councilDistrict11.features[0].geometry as Geometry
   },
 
   // Venice
@@ -50,7 +49,7 @@ const serviceAreaMap: {
     replacement_area: null,
     type: 'restricted',
     description: 'Venice',
-    area: venice.features[0].geometry
+    area: venice.features[0].geometry as Geometry
   },
 
   // Venice Beach "Special Ops Zone"
@@ -61,7 +60,7 @@ const serviceAreaMap: {
     replacement_area: null,
     type: 'restricted',
     description: 'Venice Beach Special Operations Zone',
-    area: veniceSpecOps.features[0].geometry
+    area: veniceSpecOps.features[0].geometry as Geometry
   },
 
   // Venice Beach
@@ -72,7 +71,7 @@ const serviceAreaMap: {
     replacement_area: null,
     type: 'restricted',
     description: 'Venice Beach',
-    area: restrictedAreas.features[0].geometry
+    area: restrictedAreas.features[0].geometry as Geometry
   },
 
   // Venice canals
@@ -83,7 +82,7 @@ const serviceAreaMap: {
     replacement_area: null,
     type: 'restricted',
     description: 'Venice Canals',
-    area: restrictedAreas.features[1].geometry
+    area: restrictedAreas.features[1].geometry as Geometry
   },
 
   // San Fernando Valley DAC
@@ -94,7 +93,7 @@ const serviceAreaMap: {
     replacement_area: null,
     type: 'unrestricted',
     description: 'San Fernando Valley DAC',
-    area: laDacs.features[1].geometry
+    area: laDacs.features[1].geometry as Geometry
   },
 
   // Non San Fernando Valley DAC
@@ -105,7 +104,7 @@ const serviceAreaMap: {
     replacement_area: null,
     type: 'unrestricted',
     description: 'Non San Fernando Valley DAC',
-    area: laDacs.features[0].geometry
+    area: laDacs.features[0].geometry as Geometry
   }
 }
 
