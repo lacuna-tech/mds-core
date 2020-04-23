@@ -19,10 +19,8 @@ import { v4 as uuid } from 'uuid'
 import db from '@mds-core/mds-db'
 import {
   pathsFor,
-  UUID_REGEX,
   AlreadyPublishedError,
   BadParamsError,
-  DependencyMissingError,
   NotFoundError,
   ValidationError,
   ServerError,

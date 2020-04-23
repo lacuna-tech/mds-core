@@ -476,7 +476,7 @@ describe('Tests app', () => {
         .set('Authorization', POLICIES_READ_SCOPE)
         .expect(404)
         .end((err, result) => {
-          test.assert(result.body.result === 'not found')
+          test.assert(result.body.error === 'not found')
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })

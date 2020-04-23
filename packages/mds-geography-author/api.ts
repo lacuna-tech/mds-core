@@ -18,16 +18,15 @@ import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server
 import { GeographyAuthorApiVersionMiddleware } from './middleware'
 import {
   GeographyAuthorApiRequest,
-  GeographyAuthorApiResponse,
   GeographyAuthorApiAccessTokenScopes,
   GetGeographyMetadataResponse,
   GetGeographyResponse,
   GetGeographiesResponse,
   DeleteGeographyResponse,
-  DeleteGeographyMetadataResponse,
   PostGeographyResponse,
   PutGeographyResponse,
-  PutGeographyMetadataResponse
+  PutGeographyMetadataResponse,
+  GetGeographyMetadatumResponse
 } from './types'
 
 const checkGeographyAuthorApiAccess = (validator: AccessTokenScopeValidator<GeographyAuthorApiAccessTokenScopes>) =>
@@ -256,7 +255,7 @@ function api(app: express.Express): express.Express {
     checkGeographyAuthorApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
-    async (req: GeographyAuthorApiRequest, res: GetGeographyMetadataResponse) => {
+    async (req: GeographyAuthorApiRequest, res: GetGeographyMetadatumResponse) => {
       const { geography_id } = req.params
       try {
         const geography_metadata = await db.readSingleGeographyMetadata(geography_id)

@@ -55,4 +55,3 @@ export type PublishGeographyResponse = GeographyAuthorApiResponse<{ geography: G
 export type PutGeographyMetadataResponse = GeographyAuthorApiResponse<{ geography_metadata: GeographyMetadata }>
 
 export type DeleteGeographyResponse = GeographyAuthorApiResponse<{ result: string }>
-export type DeleteGeographyMetadataResponse = GeographyAuthorApiResponse<{ result: string }>
