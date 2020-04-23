@@ -1,6 +1,6 @@
 import { Configuration, ConfigurationFactory, ContextReplacementPlugin, IgnorePlugin } from 'webpack'
 import GitRevisionPlugin from 'git-revision-webpack-plugin'
-import WrapperWebpackPlugun from 'wrapper-webpack-plugin'
+import WrapperWebpackPlugin from 'wrapper-webpack-plugin'
 import WebpackMerge from 'webpack-merge'
 
 const gitRevisionPlugin = new GitRevisionPlugin({
@@ -63,7 +63,7 @@ const MergeConfigurations = (entry = 'index') => (config: CustomConfiguration): 
           ] // TypeORM
         ].map(dependency => new IgnorePlugin(new RegExp(`^${dependency}$`))),
         // Make npm package name/version available to bundle
-        new WrapperWebpackPlugun({
+        new WrapperWebpackPlugin({
           header: () =>
             `Object.assign(process.env, {
               npm_package_name: '${npm_package_name}',
