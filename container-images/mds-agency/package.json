@@ -21,8 +21,7 @@
   ],
   "author": "City of Los Angeles",
   "dependencies": {
-    "@mds-core/mds-agency": "0.0.28",
-    "@mds-core/mds-api-server": "0.1.26"
+    "@mds-core/mds-agency": "0.0.28"
   },
   "devDependencies": {
     "@mds-core/mds-webpack-config": "0.1.0"

@@ -4,7 +4,6 @@
     "outDir": "dist"
   },
   "references": [
-    { "path": "../../packages/mds-api-server/tsconfig.build.json" },
     { "path": "../../packages/mds-daily/tsconfig.build.json" },
     { "path": "../../packages/mds-webpack-config/tsconfig.build.json" }
   ]

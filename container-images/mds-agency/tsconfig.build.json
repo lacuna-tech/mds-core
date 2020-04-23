@@ -5,7 +5,6 @@
   },
   "references": [
     { "path": "../../packages/mds-agency/tsconfig.build.json" },
-    { "path": "../../packages/mds-api-server/tsconfig.build.json" },
     { "path": "../../packages/mds-webpack-config/tsconfig.build.json" }
   ]
 }
