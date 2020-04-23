@@ -25,11 +25,7 @@ import {
   Timestamp,
   Telemetry,
   VehicleEvent,
-  Policy,
-  PROVIDER_EVENT,
-  PROVIDER_REASON,
-  PROVIDER_EVENTS,
-  PROVIDER_REASONS
+  Policy
 } from '@mds-core/mds-types'
 import { Geometry } from 'geojson'
 
