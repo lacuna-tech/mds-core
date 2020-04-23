@@ -15,27 +15,8 @@
  */
 
 import { Audit, Telemetry, Timestamp, UUID } from '@mds-core/mds-types'
-import { ApiRequest, ApiVersionedResponse, ApiVersionedResponseLocals } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiResponse, ApiQuery, ApiClaims } from '@mds-core/mds-api-server'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
-/*
-    Copyright 2019 City of Los Angeles.
-
-    Licensed under the Apache License, Version 2.0 (the "License");
-    you may not use this file except in compliance with the License.
-    You may obtain a copy of the License at
-
-        http://www.apache.org/licenses/LICENSE-2.0
-
-    Unless required by applicable law or agreed to in writing, software
-    distributed under the License is distributed on an "AS IS" BASIS,
-    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    See the License for the specific language governing permissions and
-    limitations under the License.
- */
-
-export const AUDIT_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
-export type AUDIT_API_SUPPORTED_VERSION = typeof AUDIT_API_SUPPORTED_VERSIONS[number]
-export const [AUDIT_API_DEFAULT_VERSION] = AUDIT_API_SUPPORTED_VERSIONS
 
 // Allow adding type definitions for Express Request objects
 export type AuditApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
@@ -92,25 +73,10 @@ export interface AuditApiAuditEndRequest extends AuditApiTripRequest {
   }
 }
 
-export interface AuditApiGetTripsRequest extends AuditApiRequest {
-  // Query string parameters always come in as strings
-  query: Partial<
-    {
-      [P in
-        | 'skip'
-        | 'take'
-        | 'provider_id'
-        | 'provider_vehicle_id'
-        | 'audit_subject_id'
-        | 'start_time'
-        | 'end_time']: string
-    }
-  >
-}
+export type AuditApiGetTripsRequest = AuditApiRequest &
+  ApiQuery<'skip' | 'take' | 'provider_id' | 'provider_vehicle_id' | 'audit_subject_id' | 'start_time' | 'end_time'>
 
-export interface AuditApiGetTripRequest extends AuditApiTripRequest {
-  query: Partial<{ [P in 'event_viewport_adjustment']: string }>
-}
+export type AuditApiGetTripRequest = AuditApiTripRequest & ApiQuery<'event_viewport_adjustment'>
 
 export interface AuditApiGetVehicleRequest extends AuditApiRequest {
   params: {
@@ -119,34 +85,15 @@ export interface AuditApiGetVehicleRequest extends AuditApiRequest {
   }
 }
 
-export type AuditResponseLocals = {
-  locals: {
-    audit_subject_id?: UUID
-    recorded?: Timestamp
-  }
-}
+export type AuditApiAccessTokenScopes = 'audits:write' | 'audits:read' | 'audits:delete' | 'audits:vehicles:read'
 
 // Allow adding type definitions for Express Response objects
-export type AuditApiResponse<TBody extends {} = {}> = ApiVersionedResponse<AUDIT_API_SUPPORTED_VERSION, TBody> &
-  AuditResponseLocals
-
-export type AuditApiDeleteResponse = AuditApiResponse<{ audit_id: UUID }>
-/* {
-  locals: ApiVersionedResponseLocals<AUDIT_API_SUPPORTED_VERSION> & {
+export type AuditApiResponse<T = unknown> = ApiResponse<
+  ApiClaims<AuditApiAccessTokenScopes> & {
     audit_subject_id: string
     audit_trip_id: UUID
     audit: Audit | null
     recorded: Timestamp
-  }
-}
-  */
-
-/* export interface AuditApiResponse<T = {}> extends ApiResponse<T> {
-  locals: ApiResponseLocals & {
-    audit_subject_id: string
-    audit_trip_id: UUID
-    audit: Audit | null
-    recorded: Timestamp
-  }
-}
-*/
+  },
+  T
+>

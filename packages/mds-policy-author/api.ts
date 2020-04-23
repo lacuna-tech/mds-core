@@ -31,29 +31,37 @@ import {
 import { policyValidationDetails } from '@mds-core/mds-schema-validators'
 import logger from '@mds-core/mds-logger'
 
-import { checkAccess } from '@mds-core/mds-api-server'
+import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import { PolicyAuthorApiVersionMiddleware } from './middleware/policy-author-api-version'
 import { getPolicies } from './request-handlers'
 import {
-  PolicyAuthorGetPolicyResponse,
   PolicyAuthorApiRequest,
-  PolicyAuthorCreatePolicyResponse,
-  PolicyAuthorEditPolicyResponse,
-  PolicyAuthorDeletePolicyResponse
+  GetPolicyResponse,
+  PostPolicyResponse,
+  EditPolicyResponse,
+  DeletePolicyResponse,
+  PolicyAuthorApiAccessTokenScopes,
+  PublishPolicyResponse,
+  GetPolicyMetadataResponse,
+  GetPolicyMetadatumResponse,
+  EditPolicyMetadataResponse
 } from './types'
+
+const checkPolicyAuthorApiAccess = (validator: AccessTokenScopeValidator<PolicyAuthorApiAccessTokenScopes>) =>
+  checkAccess(validator)
 
 function api(app: express.Express): express.Express {
   app.use(PolicyAuthorApiVersionMiddleware)
   app.get(
     pathsFor('/policies'),
-    checkAccess(scopes => scopes.includes('policies:read')),
+    checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:read')),
     getPolicies
   )
 
   app.post(
     pathsFor('/policies'),
-    checkAccess(scopes => scopes.includes('policies:write')),
-    async (req: PolicyAuthorApiRequest, res: PolicyAuthorGetPolicyResponse) => {
+    checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:write')),
+    async (req: PolicyAuthorApiRequest, res: PostPolicyResponse) => {
       const policy = { policy_id: uuid(), ...req.body }
 
       const details = policyValidationDetails(policy)
@@ -82,14 +90,12 @@ function api(app: express.Express): express.Express {
 
   app.post(
     pathsFor('/policies/:policy_id/publish'),
-    checkAccess(scopes => scopes.includes('policies:publish')),
-    async (req: PolicyAuthorApiRequest, res: PolicyAuthorCreatePolicyResponse) => {
+    checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:publish')),
+    async (req: PolicyAuthorApiRequest, res: PublishPolicyResponse) => {
       const { policy_id } = req.params
       try {
-        await db.publishPolicy(policy_id)
-        return res
-          .status(200)
-          .send({ version: res.locals.version, result: `successfully published policy of id ${policy_id}` })
+        const policy = await db.publishPolicy(policy_id)
+        return res.status(200).send({ version: res.locals.version, policy })
       } catch (error) {
         logger.error('failed to publish policy', error.stack)
         if (error instanceof AlreadyPublishedError) {
@@ -102,8 +108,8 @@ function api(app: express.Express): express.Express {
 
   app.put(
     pathsFor('/policies/:policy_id'),
-    checkAccess(scopes => scopes.includes('policies:write')),
-    async (req: PolicyAuthorApiRequest, res: PolicyAuthorEditPolicyResponse) => {
+    checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:write')),
+    async (req: PolicyAuthorApiRequest, res: EditPolicyResponse) => {
       const policy = req.body
 
       const details = policyValidationDetails(policy)
@@ -134,8 +140,8 @@ function api(app: express.Express): express.Express {
 
   app.delete(
     pathsFor('/policies/:policy_id'),
-    checkAccess(scopes => scopes.includes('policies:delete')),
-    async (req: PolicyAuthorApiRequest, res: PolicyAuthorDeletePolicyResponse) => {
+    checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:delete')),
+    async (req: PolicyAuthorApiRequest, res: DeletePolicyResponse) => {
       const { policy_id } = req.params
       try {
         await db.deletePolicy(policy_id)
@@ -151,15 +157,12 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/policies/meta/'),
-    checkAccess(scopes => scopes.includes('policies:read')),
-    async (req, res) => {
-      const { get_published = null, get_unpublished = null } = req.query
-      const params = { get_published, get_unpublished }
-      if (get_published) {
-        params.get_published = get_published === 'true'
-      }
-      if (get_unpublished) {
-        params.get_unpublished = get_unpublished === 'true'
+    checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:read')),
+    async (req: PolicyAuthorApiRequest, res: GetPolicyMetadataResponse) => {
+      const { get_published, get_unpublished } = req.query
+      const params = {
+        get_published: get_published ? get_published === 'true' : null,
+        get_unpublished: get_unpublished ? get_unpublished === 'true' : null
       }
 
       logger.info('read /policies/meta', req.query)
@@ -171,12 +174,12 @@ function api(app: express.Express): express.Express {
         logger.error('failed to read policies', err)
         if (err instanceof BadParamsError) {
           res.status(400).send({
-            result:
+            error:
               'Cannot set both get_unpublished and get_published to be true. If you want all policy metadata, set both params to false or do not send them.'
           })
         }
         res.status(404).send({
-          result: 'not found'
+          error: 'not found'
         })
       }
     }
@@ -184,42 +187,42 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/policies/:policy_id'),
-    checkAccess(scopes => scopes.includes('policies:read')),
-    async (req, res) => {
+    checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:read')),
+    async (req: PolicyAuthorApiRequest, res: GetPolicyResponse) => {
       const { policy_id } = req.params
       try {
-        const policies = await db.readPolicies({ policy_id })
+        const policies = await db.readPolicies({ policy_id, get_published: null, get_unpublished: null })
         if (policies.length > 0) {
           res.status(200).send({ version: res.locals.version, policy: policies[0] })
         } else {
-          res.status(404).send({ result: 'not found' })
+          res.status(404).send({ error: 'not found' })
         }
       } catch (err) {
         logger.error('failed to read one policy', err)
-        res.status(404).send({ result: 'not found' })
+        res.status(404).send({ error: 'not found' })
       }
     }
   )
 
   app.get(
     pathsFor('/policies/:policy_id/meta'),
-    checkAccess(scopes => scopes.includes('policies:read')),
-    async (req, res) => {
+    checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:read')),
+    async (req: PolicyAuthorApiRequest, res: GetPolicyMetadatumResponse) => {
       const { policy_id } = req.params
       try {
         const result = await db.readSinglePolicyMetadata(policy_id)
         return res.status(200).send({ version: res.locals.version, policy_metadata: result })
       } catch (err) {
         logger.error('failed to read policy metadata', err.stack)
-        return res.status(404).send({ result: 'not found' })
+        return res.status(404).send({ error: 'not found' })
       }
     }
   )
 
   app.put(
     pathsFor('/policies/:policy_id/meta'),
-    checkAccess(scopes => scopes.includes('policies:write')),
-    async (req, res) => {
+    checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:write')),
+    async (req: PolicyAuthorApiRequest, res: EditPolicyMetadataResponse) => {
       const policy_metadata = req.body
       try {
         await db.updatePolicyMetadata(policy_metadata)
@@ -231,10 +234,10 @@ function api(app: express.Express): express.Express {
             return res.status(201).send({ version: res.locals.version, policy_metadata })
           } catch (writeErr) {
             logger.error('failed to write policy metadata', writeErr.stack)
-            return res.status(500).send(new ServerError())
+            return res.status(500).send({ error: new ServerError() })
           }
         } else {
-          return res.status(500).send(new ServerError())
+          return res.status(500).send({ error: new ServerError() })
         }
       }
     }

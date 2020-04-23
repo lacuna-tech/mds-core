@@ -14,7 +14,8 @@
     limitations under the License.
  */
 
-import { ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiVersionedResponse, ApiClaims } from '@mds-core/mds-api-server'
+import { Policy } from 'packages/mds-types'
 
 export const POLICY_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
 export type POLICY_API_SUPPORTED_VERSION = typeof POLICY_API_SUPPORTED_VERSIONS[number]
@@ -22,4 +23,13 @@ export const [POLICY_API_DEFAULT_VERSION] = POLICY_API_SUPPORTED_VERSIONS
 
 export type PolicyApiRequest = ApiRequest
 
-export type PolicyApiResponse = ApiResponse
+export type PolicyApiAccessTokenScopes = never
+
+export type PolicyApiResponse<TBody = {}> = ApiVersionedResponse<
+  POLICY_API_SUPPORTED_VERSION,
+  ApiClaims<PolicyApiAccessTokenScopes>,
+  TBody
+>
+
+export type GetPolicyResponse = PolicyApiResponse<{ policy: Policy }>
+export type GetPoliciesResponse = PolicyApiResponse<{ policies: Policy[] }>

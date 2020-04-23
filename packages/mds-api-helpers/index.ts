@@ -16,6 +16,7 @@
 
 import urls from 'url'
 import express from 'express'
+import { parseObjectProperties, ParseObjectPropertiesOptions } from '@mds-core/mds-utils'
 
 interface PagingParams {
   skip: number
@@ -53,4 +54,10 @@ export const asJsonApiLinks = (req: express.Request, skip: number, take: number,
     return { first, prev, next, last }
   }
   return undefined
+}
+
+export const parseRequest = <T = string>(req: express.Request, options?: ParseObjectPropertiesOptions<T>) => {
+  const { keys: query } = parseObjectProperties<T>(req.query, options)
+  const { keys: params } = parseObjectProperties<T>(req.params, options)
+  return { params, query }
 }

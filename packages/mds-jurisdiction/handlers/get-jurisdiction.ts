@@ -16,45 +16,35 @@
 
 import { UUID } from '@mds-core/mds-types'
 import { JurisdictionServiceClient, JurisdictionDomainModel } from '@mds-core/mds-jurisdiction-service'
-import { AuthorizationError, NotFoundError } from '@mds-core/mds-utils'
+import { AuthorizationError } from '@mds-core/mds-utils'
+import { HandleServiceResponse } from '@mds-core/mds-service-helpers'
+import { parseRequest } from '@mds-core/mds-api-helpers'
+import { ApiQuery } from '@mds-core/mds-api-server'
 import { JurisdictionApiResponse, JurisdictionApiRequest } from '../types'
-import { HasJurisdictionClaim, UnexpectedServiceError } from './utils'
+import { HasJurisdictionClaim } from './utils'
 
-interface GetJurisdictionRequest extends JurisdictionApiRequest<{ jurisdiction_id: UUID }> {
-  // Query string parameters always come in as strings
-  query: Partial<
-    {
-      [P in 'effective']: string
-    }
-  >
-}
+type GetJurisdictionRequest = JurisdictionApiRequest<{ jurisdiction_id: UUID }> & ApiQuery<'effective'>
 
 type GetJurisdictionResponse = JurisdictionApiResponse<{
   jurisdiction: JurisdictionDomainModel
 }>
 
-export const GetOneJurisdictionHandler = async (req: GetJurisdictionRequest, res: GetJurisdictionResponse) => {
-  const { effective } = req.query
+export const GetJurisdictionHandler = async (req: GetJurisdictionRequest, res: GetJurisdictionResponse) => {
   const { jurisdiction_id } = req.params
-
-  const [error, jurisdiction] = await JurisdictionServiceClient.getJurisdiction(jurisdiction_id, {
-    effective: effective ? Number(effective) : undefined
-  })
-
-  // Handle result
-  if (jurisdiction) {
-    return HasJurisdictionClaim(res)(jurisdiction)
-      ? res.status(200).send({
-          version: res.locals.version,
-          jurisdiction
-        })
-      : res.status(403).send({ error: new AuthorizationError('Access Denied', { jurisdiction_id }) })
-  }
-
-  // Handle errors
-  if (error instanceof NotFoundError) {
-    return res.status(404).send({ error })
-  }
-
-  return res.status(500).send({ error: UnexpectedServiceError(error) })
+  const { effective } = parseRequest(req, { parser: Number }).query('effective')
+  HandleServiceResponse(
+    await JurisdictionServiceClient.getJurisdiction(jurisdiction_id, { effective }),
+    error => {
+      if (error.type === 'NotFoundError') {
+        return res.status(404).send({ error })
+      }
+      return res.status(500).send({ error })
+    },
+    jurisdiction => {
+      const { version } = res.locals
+      return HasJurisdictionClaim(res)(jurisdiction)
+        ? res.status(200).send({ version, jurisdiction })
+        : res.status(403).send({ error: new AuthorizationError('Access Denied', { jurisdiction_id }) })
+    }
+  )
 }

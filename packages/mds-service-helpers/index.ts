@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /*
     Copyright 2019-2020 City of Los Angeles.
 
@@ -14,18 +15,48 @@
     limitations under the License.
  */
 
-import { ServerError } from '@mds-core/mds-utils'
+interface ServiceErrorDescriptor {
+  type: 'ServiceException' | 'NotFoundError' | 'ConflictError' | 'ValidationError'
+  message: string
+  details?: string
+}
 
-export type ServiceResponse<TResult, TError extends Error = Error> = [TError | ServerError, null] | [null, TResult]
+interface ServiceErrorType {
+  error: ServiceErrorDescriptor
+}
 
-export const ServiceResult = <TResult>(result: TResult): ServiceResponse<TResult, never> => [null, result]
+interface ServiceResultType<R> {
+  error: null
+  result: R
+}
 
-export const ServiceError = <TError extends Error = Error>(error: TError): ServiceResponse<never, TError> => [
-  error instanceof Error ? error : new ServerError(error),
-  null
-]
+export type ServiceResponse<R> = ServiceErrorType | ServiceResultType<R>
+
+export const ServiceResult = <R>(result: R): ServiceResultType<R> => ({ error: null, result })
+
+export const ServiceError = (error: ServiceErrorDescriptor): ServiceErrorType => ({ error })
+
+export const HandleServiceResponse = <R>(
+  response: ServiceResponse<R>,
+  onerror: (error: ServiceErrorDescriptor) => void,
+  onresult: (result: R) => void
+): ServiceResponse<R> => {
+  if (response.error) {
+    onerror(response.error)
+  } else {
+    onresult(response.result)
+  }
+  return response
+}
+
+export const ServiceException = (message: string, error?: Error) =>
+  ServiceError({
+    type: 'ServiceException',
+    message,
+    details: (error instanceof Error && error.message) || undefined
+  })
 
 export type ServiceProvider<TServiceInterface> = TServiceInterface & {
-  start: () => Promise<void>
-  stop: () => Promise<void>
+  initialize: () => Promise<void>
+  shutdown: () => Promise<void>
 }

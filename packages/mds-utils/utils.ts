@@ -598,6 +598,23 @@ const getEnvVar = <TProps extends { [name: string]: string }>(props: TProps): TP
     }
   }, {} as TProps)
 
+export type ParseObjectPropertiesOptions<T> = Partial<{
+  parser: (value: string) => T
+}>
+
+const parseObjectProperties = <T = string>(
+  obj: { [k: string]: unknown },
+  { parser }: ParseObjectPropertiesOptions<T> = {}
+) => {
+  return {
+    keys: <TKey extends string>(first: TKey, ...rest: TKey[]): Partial<{ [P in TKey]: T }> =>
+      [first, ...rest]
+        .map(key => ({ key, value: obj[key] }))
+        .filter((param): param is { key: TKey; value: string } => typeof param.value === 'string')
+        .reduce((params, { key, value }) => ({ ...params, [key]: parser ? parser(value) : value }), {})
+  }
+}
+
 export {
   UUID_REGEX,
   isUUID,
@@ -644,5 +661,6 @@ export {
   normalizeToArray,
   parseRelative,
   getCurrentDate,
-  getEnvVar
+  getEnvVar,
+  parseObjectProperties
 }

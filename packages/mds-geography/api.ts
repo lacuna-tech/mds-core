@@ -4,25 +4,33 @@ import db from '@mds-core/mds-db'
 import { pathsFor, ServerError, NotFoundError, InsufficientPermissionsError, BadParamsError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 
-import { checkAccess } from '@mds-core/mds-api-server'
+import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
+import { parseRequest } from '@mds-core/mds-api-helpers'
 import { GeographyApiVersionMiddleware } from './middleware'
+import {
+  GeographyApiAccessTokenScopes,
+  GeographyApiRequest,
+  GetGeographyResponse,
+  GetGeographyMetadataResponse,
+  GetGeographiesResponse,
+  GetGeographyMetadatumResponse
+} from './types'
+
+const checkGeographyApiAccess = (validator: AccessTokenScopeValidator<GeographyApiAccessTokenScopes>) =>
+  checkAccess(validator)
 
 function api(app: express.Express): express.Express {
-  app.use(GeographyApiVersionMiddleware).get(
+  app.use(GeographyApiVersionMiddleware)
+  app.get(
     pathsFor('/geographies/meta/'),
-    checkAccess(scopes => {
+    checkGeographyApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
-    async (req, res) => {
+    async (req: GeographyApiRequest, res: GetGeographyMetadataResponse) => {
       const { scopes } = res.locals
-      const { get_published = null, get_unpublished = null } = req.query
-      const params = { get_published, get_unpublished }
-      if (get_published) {
-        params.get_published = get_published === 'true'
-      }
-
-      if (get_unpublished) {
-        params.get_unpublished = get_unpublished === 'true'
+      const params = {
+        ...{ get_published: null, get_unpublished: null },
+        ...parseRequest(req, { parser: x => (x ? x === 'true' : null) }).query('get_published', 'get_unpublished')
       }
 
       /* If the user can only read published geos, and all they want is the unpublished metadata,
@@ -69,10 +77,10 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id'),
-    checkAccess(scopes => {
+    checkGeographyApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
-    async (req, res) => {
+    async (req: GeographyApiRequest, res: GetGeographyResponse) => {
       const { geography_id } = req.params
       try {
         const geography = await db.readSingleGeography(geography_id)
@@ -97,19 +105,15 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies'),
-    checkAccess(scopes => {
+    checkGeographyApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
-    async (req, res) => {
+    async (req: GeographyApiRequest, res: GetGeographiesResponse) => {
       const summary = req.query.summary === 'true'
-      const { get_published = null, get_unpublished = null } = req.query
-      const params = { get_published, get_unpublished }
-      if (get_published) {
-        params.get_published = get_published === 'true'
-      }
-
-      if (get_unpublished) {
-        params.get_unpublished = get_unpublished === 'true'
+      const { get_published, get_unpublished } = req.query
+      const params = {
+        get_published: get_published ? get_published === 'true' : null,
+        get_unpublished: get_unpublished ? get_unpublished === 'true' : null
       }
 
       try {
@@ -140,10 +144,10 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/geographies/:geography_id/meta'),
-    checkAccess(scopes => {
+    checkGeographyApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
-    async (req, res) => {
+    async (req: GeographyApiRequest, res: GetGeographyMetadatumResponse) => {
       const { geography_id } = req.params
       try {
         const geography_metadata = await db.readSingleGeographyMetadata(geography_id)

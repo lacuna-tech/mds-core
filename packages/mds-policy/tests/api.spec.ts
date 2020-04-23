@@ -68,15 +68,6 @@ describe('Tests app', () => {
     await db.shutdown()
   })
 
-  it('reads the Policy schema', async () => {
-    const result = await request.get('/schema/policy').expect(200)
-    const body = result.body
-    log('schema', JSON.stringify(body))
-    test.value(result).hasHeader('content-type', APP_JSON)
-  })
-
-  // MAIN TESTS HERE
-
   it('tries to get policy for invalid dates', async () => {
     const result = await request.get('/policies?start_date=100000&end_date=100').set('Authorization', AUTH).expect(400)
     test.value(result.body.result === 'start_date after end_date')
@@ -128,8 +119,6 @@ describe('Tests app', () => {
     log('read back all published policies response:', body)
     test.value(body.policies.length).is(3)
     test.value(body.version).is(POLICY_API_DEFAULT_VERSION)
-    console.log('resssss')
-    console.log(result.header)
     test.value(result).hasHeader('content-type', APP_JSON)
     const isSupersededPolicyPresent = body.policies.some((policy: Policy) => {
       return policy.policy_id === POLICY_JSON.policy_id

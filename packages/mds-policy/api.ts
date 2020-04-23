@@ -21,7 +21,7 @@ import db from '@mds-core/mds-db'
 import { now, pathsFor, NotFoundError, isUUID } from '@mds-core/mds-utils'
 import { policySchemaJson } from '@mds-core/mds-schema-validators'
 import logger from '@mds-core/mds-logger'
-import { PolicyApiRequest, PolicyApiResponse } from './types'
+import { PolicyApiRequest, PolicyApiResponse, GetPoliciesResponse, GetPolicyResponse } from './types'
 import { PolicyApiVersionMiddleware } from './middleware'
 
 function api(app: express.Express): express.Express {
@@ -54,7 +54,7 @@ function api(app: express.Express): express.Express {
           // }
           // logger.info(providerName(provider_id), req.method, req.originalUrl)
         } else {
-          return res.status(401).send('Unauthorized')
+          return res.status(401).send({ error: 'Unauthorized' })
         }
       }
     } catch (err) {
@@ -64,17 +64,17 @@ function api(app: express.Express): express.Express {
     next()
   })
 
-  app.get(pathsFor('/policies'), async (req, res) => {
+  app.get(pathsFor('/policies'), async (req: PolicyApiRequest, res: GetPoliciesResponse) => {
     // TODO extract start/end applicability
     // TODO filter by start/end applicability
     const { start_date = now(), end_date = now() } = req.query
     logger.info('read /policies', req.query, start_date, end_date)
     if (start_date > end_date) {
-      res.status(400).send({ result: 'start_date after end_date' })
+      res.status(400).send({ error: 'start_date after end_date' })
       return
     }
     try {
-      const policies = await db.readPolicies({ get_published: true })
+      const policies = await db.readPolicies({ get_published: true, get_unpublished: null })
       const prev_policies: UUID[] = policies.reduce((prev_policies_acc: UUID[], policy: Policy) => {
         if (policy.prev_policies) {
           prev_policies_acc.push(...policy.prev_policies)
@@ -90,12 +90,12 @@ function api(app: express.Express): express.Express {
       res.status(200).send({ version: res.locals.version, policies: active })
     } catch (err) {
       res.status(404).send({
-        result: 'not found'
+        error: 'not found'
       })
     }
   })
 
-  app.get(pathsFor('/policies/:policy_id'), async (req, res) => {
+  app.get(pathsFor('/policies/:policy_id'), async (req: PolicyApiRequest, res: GetPolicyResponse) => {
     logger.info('read policy', JSON.stringify(req.params))
     const { policy_id } = req.params
     if (!isUUID(policy_id)) {
@@ -108,15 +108,11 @@ function api(app: express.Express): express.Express {
     } catch (err) {
       logger.error('failed to read one policy', err)
       if (err instanceof NotFoundError) {
-        res.status(404).send({ result: 'not found' })
+        res.status(404).send({ error: 'not found' })
       } else {
-        res.status(500).send({ result: 'something else went wrong' })
+        res.status(500).send({ error: 'something else went wrong' })
       }
     }
-  })
-
-  app.get(pathsFor('/schema/policy'), (req, res) => {
-    res.status(200).send(policySchemaJson)
   })
 
   return app

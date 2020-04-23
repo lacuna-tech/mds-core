@@ -1,16 +1,13 @@
 import logger from '@mds-core/mds-logger'
 import db from '@mds-core/mds-db'
 import { BadParamsError } from '@mds-core/mds-utils'
-import { PolicyAuthorApiRequest, PolicyAuthorGetPoliciesResponse } from './types'
+import { PolicyAuthorApiRequest, GetPoliciesResponse } from './types'
 
-const getPolicies = async (req: PolicyAuthorApiRequest, res: PolicyAuthorGetPoliciesResponse) => {
-  const { get_published = null, get_unpublished = null } = req.query
-  const params = { get_published, get_unpublished }
-  if (get_published) {
-    params.get_published = get_published === 'true'
-  }
-  if (get_unpublished) {
-    params.get_unpublished = get_unpublished === 'true'
+const getPolicies = async (req: PolicyAuthorApiRequest, res: GetPoliciesResponse) => {
+  const { get_published, get_unpublished } = req.query
+  const params = {
+    get_published: get_published ? get_published === 'true' : null,
+    get_unpublished: get_unpublished ? get_unpublished === 'true' : null
   }
   logger.info('read /policies', req.query)
 

@@ -14,12 +14,8 @@
     limitations under the License.
  */
 
-import { ServerError } from '@mds-core/mds-utils'
 import { JurisdictionDomainModel } from '@mds-core/mds-jurisdiction-service'
 import { JurisdictionApiResponse } from '../types'
-
-export const UnexpectedServiceError = (error: ServerError | null) =>
-  error instanceof ServerError ? error : new ServerError('Unexected Service Error', { error })
 
 export const HasJurisdictionClaim = <TBody extends {}>(res: JurisdictionApiResponse<TBody>) => (
   jurisdiction: JurisdictionDomainModel

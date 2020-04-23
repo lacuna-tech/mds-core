@@ -200,7 +200,11 @@ describe('Tests app', () => {
 
       test.value(apiResult.body.version).is(POLICY_AUTHOR_API_DEFAULT_VERSION)
 
-      const [result] = await db.readPolicies({ policy_id: policy.policy_id, get_unpublished: true })
+      const [result] = await db.readPolicies({
+        policy_id: policy.policy_id,
+        get_unpublished: true,
+        get_published: null
+      })
       test.value(result.name).is('a shiny new name')
     })
 
@@ -374,7 +378,9 @@ describe('Tests app', () => {
           log('read back nonexistent policy response:', body)
           test.value(result).hasHeader('content-type', APP_JSON)
           test.value(result.body.version).is(POLICY_AUTHOR_API_DEFAULT_VERSION)
-          await db.readPolicies({ policy_id: POLICY2_UUID }).should.be.fulfilledWith([])
+          await db
+            .readPolicies({ policy_id: POLICY2_UUID, get_published: null, get_unpublished: null })
+            .should.be.fulfilledWith([])
           done(err)
         })
     })

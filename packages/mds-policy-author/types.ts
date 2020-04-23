@@ -1,5 +1,5 @@
-import { ApiRequest, ApiVersionedResponse } from '@mds-core/mds-api-server'
-import { Policy, UUID } from '@mds-core/mds-types'
+import { Policy, UUID, PolicyMetadata } from '@mds-core/mds-types'
+import { ApiRequest, ApiVersionedResponse, ApiClaims } from '@mds-core/mds-api-server'
 
 export const POLICY_AUTHOR_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
 export type POLICY_AUTHOR_API_SUPPORTED_VERSION = typeof POLICY_AUTHOR_API_SUPPORTED_VERSIONS[number]
@@ -7,10 +7,25 @@ export const [POLICY_AUTHOR_API_DEFAULT_VERSION] = POLICY_AUTHOR_API_SUPPORTED_V
 
 export type PolicyAuthorApiRequest = ApiRequest
 
-type PolicyAuthorApiResponse<TBody extends {}> = ApiVersionedResponse<POLICY_AUTHOR_API_SUPPORTED_VERSION, TBody>
+export type PolicyAuthorApiAccessTokenScopes =
+  | 'policies:read'
+  | 'policies:write'
+  | 'policies:publish'
+  | 'policies:delete'
 
-export type PolicyAuthorGetPoliciesResponse = PolicyAuthorApiResponse<{ policies: Policy[] }>
-export type PolicyAuthorGetPolicyResponse = PolicyAuthorApiResponse<{ policy: Policy }>
-export type PolicyAuthorCreatePolicyResponse = PolicyAuthorApiResponse<{ result: {} }>
-export type PolicyAuthorEditPolicyResponse = PolicyAuthorApiResponse<{ policy: Policy }>
-export type PolicyAuthorDeletePolicyResponse = PolicyAuthorApiResponse<{ policy_id: UUID }>
+type PolicyAuthorApiResponse<TBody extends {}> = ApiVersionedResponse<
+  POLICY_AUTHOR_API_SUPPORTED_VERSION,
+  ApiClaims<PolicyAuthorApiAccessTokenScopes>,
+  TBody
+>
+
+export type GetPoliciesResponse = PolicyAuthorApiResponse<{ policies: Policy[] }>
+export type GetPolicyResponse = PolicyAuthorApiResponse<{ policy: Policy }>
+export type PostPolicyResponse = PolicyAuthorApiResponse<{ policy: Policy }>
+export type PublishPolicyResponse = PolicyAuthorApiResponse<{ policy: Policy }>
+export type EditPolicyResponse = PolicyAuthorApiResponse<{ policy: Policy }>
+export type DeletePolicyResponse = PolicyAuthorApiResponse<{ policy_id: UUID }>
+
+export type GetPolicyMetadatumResponse = PolicyAuthorApiResponse<{ policy_metadata: PolicyMetadata }>
+export type GetPolicyMetadataResponse = PolicyAuthorApiResponse<{ policy_metadata: PolicyMetadata[] }>
+export type EditPolicyMetadataResponse = PolicyAuthorApiResponse<{ policy_metadata: PolicyMetadata }>

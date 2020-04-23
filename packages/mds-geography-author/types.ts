@@ -14,6 +14,45 @@
     limitations under the License.
  */
 
+import { ApiRequest, ApiVersionedResponse, ApiClaims } from '@mds-core/mds-api-server'
+import { GeographySummary, GeographyMetadata, Geography } from '@mds-core/mds-types'
+
 export const GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
 export type GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSION = typeof GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSIONS[number]
 export const [GEOGRAPHY_AUTHOR_API_DEFAULT_VERSION] = GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSIONS
+
+export type GeographyAuthorApiRequest = ApiRequest
+
+export type GeographyAuthorApiAccessTokenScopes =
+  | 'geographies:read'
+  | 'geographies:read:unpublished'
+  | 'geographies:read:published'
+  | 'geographies:write'
+  | 'geographies:publish'
+
+export type GeographyAuthorApiResponse<TBody extends {}> = ApiVersionedResponse<
+  GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSION,
+  ApiClaims<GeographyAuthorApiAccessTokenScopes>,
+  TBody
+>
+
+export type GetGeographyResponse = GeographyAuthorApiResponse<
+  { geographies: Geography[] | GeographySummary[] } | { geography: Geography | GeographySummary }
+>
+
+export type GetGeographiesResponse = GeographyAuthorApiResponse<{
+  geographies: Geography[] | GeographySummary[]
+}>
+
+export type GetGeographyMetadatumResponse = GeographyAuthorApiResponse<{ geography_metadata: GeographyMetadata }>
+
+export type GetGeographyMetadataResponse = GeographyAuthorApiResponse<{ geography_metadata: GeographyMetadata[] }>
+
+export type PostGeographyResponse = GeographyAuthorApiResponse<{ geography: Geography }>
+
+export type PutGeographyResponse = GeographyAuthorApiResponse<{ geography: Geography }>
+export type PublishGeographyResponse = GeographyAuthorApiResponse<{ geography: Geography }>
+export type PutGeographyMetadataResponse = GeographyAuthorApiResponse<{ geography_metadata: GeographyMetadata }>
+
+export type DeleteGeographyResponse = GeographyAuthorApiResponse<{ result: string }>
+export type DeleteGeographyMetadataResponse = GeographyAuthorApiResponse<{ result: string }>
