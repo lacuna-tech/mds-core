@@ -14,9 +14,24 @@
     limitations under the License.
  */
 
-import { Audit, Telemetry, Timestamp, UUID } from '@mds-core/mds-types'
-import { ApiRequest, ApiResponse, ApiQuery, ApiClaims } from '@mds-core/mds-api-server'
+import {
+  Audit,
+  AuditDetails,
+  Telemetry,
+  Timestamp,
+  UUID,
+  Attachment,
+  Device,
+  VehicleEvent,
+  AttachmentSummary,
+  AuditEvent
+} from '@mds-core/mds-types'
+import { ApiRequest, ApiQuery, ApiClaims, ApiVersionedResponse } from '@mds-core/mds-api-server'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
+
+export const AUDIT_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
+export type AUDIT_API_SUPPORTED_VERSION = typeof AUDIT_API_SUPPORTED_VERSIONS[number]
+export const [AUDIT_API_DEFAULT_VERSION] = AUDIT_API_SUPPORTED_VERSIONS
 
 // Allow adding type definitions for Express Request objects
 export type AuditApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P>
@@ -88,7 +103,8 @@ export interface AuditApiGetVehicleRequest extends AuditApiRequest {
 export type AuditApiAccessTokenScopes = 'audits:write' | 'audits:read' | 'audits:delete' | 'audits:vehicles:read'
 
 // Allow adding type definitions for Express Response objects
-export type AuditApiResponse<T = unknown> = ApiResponse<
+export type AuditApiResponse<T = unknown> = ApiVersionedResponse<
+  AUDIT_API_SUPPORTED_VERSION,
   ApiClaims<AuditApiAccessTokenScopes> & {
     audit_subject_id: string
     audit_trip_id: UUID
@@ -97,3 +113,62 @@ export type AuditApiResponse<T = unknown> = ApiResponse<
   },
   T
 >
+
+export type PostAuditTripStartResponse = AuditApiResponse<{
+  provider_id: string
+  provider_name: string
+  provider_vehicle_id: string
+  provider_device: (Device & { updated?: number | null | undefined }) | null
+}>
+
+type AuditWithAttachmentSummary = Audit & { attachments: AttachmentSummary[]; id: number }
+
+export type PostAuditTripVehicleEventResponse = AuditApiResponse<{}>
+export type PostAuditTripTelemetryResponse = AuditApiResponse<{}>
+export type PostAuditTripNoteResponse = AuditApiResponse<{}>
+export type PostAuditTripEventResponse = AuditApiResponse<{}>
+export type PostAuditTripEndResponse = AuditApiResponse<{}>
+export type PostAuditAttachmentResponse = AuditApiResponse<AttachmentSummary & { audit_trip_id: UUID }>
+
+export type GetAuditTripDetailsResponse = AuditApiResponse<
+  Audit & {
+    events: AuditEvent[]
+    attachments: AttachmentSummary[]
+    provider: null
+  }
+>
+
+export type GetAuditTripsDetailsResponse = AuditApiResponse<{
+  count: number
+  audits: AuditWithAttachmentSummary[]
+  links:
+    | Partial<{
+        first: string | undefined
+        prev: string | undefined
+        next: string | undefined
+        last: string | undefined
+      }>
+    | undefined
+}>
+
+export type GetAuditVehiclesResponse = AuditApiResponse<{
+  total: number
+  links: {
+    first: string
+    last: string
+    prev: string | null
+    next: string | null
+  }
+  vehicles: (Device & VehicleEvent)[]
+}>
+export type GetVehicleByVinResponse = AuditApiResponse<{
+  vehicles: (
+    | (Device & {
+        updated?: number | null | undefined
+      })
+    | null
+  )[]
+}>
+
+export type DeleteAuditTripResponse = AuditApiResponse<{}>
+export type DeleteAuditAttachmentResponse = AuditApiResponse<{}>
