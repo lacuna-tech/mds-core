@@ -118,10 +118,14 @@ const MergeConfigurations = (name: string, path: string, config: CustomConfigura
   )
 }
 
+type WebpackConfigurationBuilderOptions = Partial<{
+  name: string
+}>
+
 class WebpackConfigurationBuilder {
   private name: string
 
-  constructor(private path: string, name?: string) {
+  constructor(private path: string, { name }: WebpackConfigurationBuilderOptions = {}) {
     this.name = name || parse(path).name
   }
 
@@ -135,5 +139,5 @@ class WebpackConfigurationBuilder {
 }
 
 export default {
-  Bundle: (path: string, name?: string) => new WebpackConfigurationBuilder(path, name)
+  Bundle: (path: string, options?: WebpackConfigurationBuilderOptions) => new WebpackConfigurationBuilder(path, options)
 }
