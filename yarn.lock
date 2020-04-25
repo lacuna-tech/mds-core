@@ -10566,6 +10566,14 @@ ts-nats@1.2.12:
     nuid "^1.1.2"
     ts-nkeys "^1.0.16"
 
+ts-nats@1.2.14-2:
+  version "1.2.14-2"
+  resolved "https://registry.yarnpkg.com/ts-nats/-/ts-nats-1.2.14-2.tgz#4edfa5a99cb983b727b4e03d3280e9f851929b37"
+  integrity sha512-b0nPczfd8Z4+LQ5C7xWW391qiPsWNidhZRB9yrumQ0hfRHAos4NVwodPIZd78e/so3zBW5LRifejaAJE/UzNXA==
+  dependencies:
+    nuid "^1.1.2"
+    ts-nkeys "^1.0.16"
+
 ts-nkeys@^1.0.16:
   version "1.0.16"
   resolved "https://registry.yarnpkg.com/ts-nkeys/-/ts-nkeys-1.0.16.tgz#b0c6e7c4f16f976c7e7ddb6982fc789a2f971248"
