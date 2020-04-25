@@ -1665,6 +1665,6 @@ for arg in "${@:$OPTIND}"; do
     invoke install "$(normalize ${arg})";;
     home) echo ${configs[home]};;
     completion) cat ${configs[home]}/bin/mdsctl-completion.bash;;
-    *) invokeAny "$(normalized ${arg})";; #error "unknown command: ${arg}"
+    *) invokeAny "$(normalize ${arg})";; #error "unknown command: ${arg}"
   esac
 done; unset arg
