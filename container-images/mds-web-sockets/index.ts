@@ -15,13 +15,23 @@
  */
 
 import { WebSocketServer } from '@mds-core/mds-web-sockets'
-import { env } from '@container-images/env-inject'
+import logger from '@mds-core/mds-logger'
 
-const { npm_package_name, npm_package_version, npm_package_git_commit, PORT = 4009 } = env()
+const { npm_package_name, npm_package_version, npm_package_git_commit, NATS_HOST } = process.env
 
 WebSocketServer()
-  .then(() =>
-    console.log(`${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) running on port ${PORT}`)
-  )
-  // eslint-disable-next-line promise/prefer-await-to-callbacks
-  .catch(err => console.log(err))
+  .then(() => {
+    logger.info(
+      `Running ${npm_package_name} v${npm_package_version} (${
+        npm_package_git_commit ?? 'local'
+      }) connected to NATS on ${NATS_HOST}`
+    )
+    return 0
+  })
+  .catch(error => {
+    logger.error(
+      `${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) connection to NATS on ${NATS_HOST} failed`,
+      error
+    )
+    return 1
+  })

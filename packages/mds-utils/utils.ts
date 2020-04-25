@@ -31,7 +31,6 @@ import {
   BBox,
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
-import { TelemetryRecord } from '@mds-core/mds-db/types'
 import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
 
@@ -461,31 +460,6 @@ function csv<T>(list: T[] | Readonly<T[]>): string {
 function inc(map: { [key: string]: number }, key: string) {
   return Object.assign(map, { [key]: map[key] ? map[key] + 1 : 1 })
 }
-function convertTelemetryToTelemetryRecord(telemetry: Telemetry): TelemetryRecord {
-  const {
-    gps: { lat, lng, altitude, heading, speed, accuracy },
-    recorded = now(),
-    ...props
-  } = telemetry
-  return {
-    ...props,
-    lat,
-    lng,
-    altitude,
-    heading,
-    speed,
-    accuracy,
-    recorded
-  }
-}
-
-function convertTelemetryRecordToTelemetry(telemetryRecord: TelemetryRecord): Telemetry {
-  const { lat, lng, altitude, heading, speed, accuracy, ...props } = telemetryRecord
-  return {
-    ...props,
-    gps: { lat, lng, altitude, heading, speed, accuracy }
-  }
-}
 
 function pathsFor(path: string): string[] {
   const { PATH_PREFIX } = process.env
@@ -598,6 +572,23 @@ const getEnvVar = <TProps extends { [name: string]: string }>(props: TProps): TP
     }
   }, {} as TProps)
 
+export type ParseObjectPropertiesOptions<T> = Partial<{
+  parser: (value: string) => T
+}>
+
+const parseObjectProperties = <T = string>(
+  obj: { [k: string]: unknown },
+  { parser }: ParseObjectPropertiesOptions<T> = {}
+) => {
+  return {
+    keys: <TKey extends string>(first: TKey, ...rest: TKey[]): Partial<{ [P in TKey]: T }> =>
+      [first, ...rest]
+        .map(key => ({ key, value: obj[key] }))
+        .filter((param): param is { key: TKey; value: string } => typeof param.value === 'string')
+        .reduce((params, { key, value }) => ({ ...params, [key]: parser ? parser(value) : value }), {})
+  }
+}
+
 export {
   UUID_REGEX,
   isUUID,
@@ -633,8 +624,6 @@ export {
   tail,
   isStateTransitionValid,
   pointInGeometry,
-  convertTelemetryToTelemetryRecord,
-  convertTelemetryRecordToTelemetry,
   getPolygon,
   isInStatesOrEvents,
   routeDistance,
@@ -644,5 +633,6 @@ export {
   normalizeToArray,
   parseRelative,
   getCurrentDate,
-  getEnvVar
+  getEnvVar,
+  parseObjectProperties
 }
