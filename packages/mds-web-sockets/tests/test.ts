@@ -32,6 +32,7 @@ const ADMIN_AUTH = `Bearer ${goodToken}`
 
 before(() => {
   Sinon.stub(Clients, 'getKey').returns(returnRsaPublicKey())
+  /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
   WebSocketServer()
 })
 
