@@ -80,15 +80,13 @@
     "webpack-cli": "3.3.11"
   },
   "scripts": {
-    "build": "yarn run:concurrent build",
-    "bundle": "yarn run:concurrent bundle",
-    "image": "yarn run:concurrent image",
+    "build": "lerna run --no-bail --stream build --",
+    "bundle": "lerna run --no-bail --stream bundle --",
+    "image": "lerna run --no-bail --stream image --",
     "clean": "git clean -fdX -e '!.env' -e '!helm/mds/charts/*' -e '!helm/mds/files/*' -e '!helm/util/charts/*' && yarn",
-    "run:concurrent": "lerna run --stream",
-    "run:sequential": "lerna run --stream --concurrency 1",
     "test": "check-node-version --package --print && yarn test:eslint && yarn test:unit",
-    "test:eslint": "yarn run:concurrent test:eslint",
-    "test:unit": "yarn run:sequential test:unit",
+    "test:eslint": "lerna run --no-bail --stream test:eslint --",
+    "test:unit": "lerna run --no-bail --stream --concurrency 1 test:unit --",
     "values": "bin/mdsctl templateValues"
   }
 }
