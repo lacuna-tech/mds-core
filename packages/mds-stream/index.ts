@@ -31,9 +31,9 @@ import {
   StreamItemID
 } from './types'
 import { AgencyKafkaStream } from './kafka/agency-stream-kafka'
+import { KafkaStreamConsumer, KafkaStreamProducer } from './kafka'
 
-import { KafkaStreamConsumer } from './kafka/stream-consumer'
-import { KafkaStreamProducer } from './kafka/stream-producer'
+export { KafkaStreamConsumerOptions, KafkaStreamProducerOptions } from './kafka'
 
 const { env } = process
 
@@ -334,7 +334,7 @@ async function health() {
   return { using: 'redis', status }
 }
 
-export = {
+export default {
   createStreamGroup,
   getStreamInfo,
   health,
