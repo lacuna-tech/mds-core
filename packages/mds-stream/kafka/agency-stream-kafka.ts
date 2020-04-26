@@ -16,7 +16,7 @@
 
 import { VehicleEvent, Telemetry, Device } from '@mds-core/mds-types'
 import { getEnvVar } from '@mds-core/mds-utils'
-import { KafkaStreamProducer } from '.'
+import { KafkaStreamProducer } from './stream-producer'
 import { AgencyStreamInterface } from '../agency-stream-interface'
 
 const { TENANT_ID } = getEnvVar({
