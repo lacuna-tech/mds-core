@@ -31,9 +31,9 @@ export type CreateJurisdictionType = Partial<Pick<JurisdictionDomainModel, 'juri
 
 export type UpdateJurisdictionType = DeepPartial<JurisdictionDomainModel>
 
-export interface GetJurisdictionsOptions {
+export type GetJurisdictionsOptions = Partial<{
   effective: Timestamp
-}
+}>
 
 export interface JurisdictionServiceInterface {
   createJurisdiction: (jurisdiction: CreateJurisdictionType) => Promise<ServiceResponse<JurisdictionDomainModel>>
@@ -45,9 +45,9 @@ export interface JurisdictionServiceInterface {
   deleteJurisdiction: (
     jurisdiction_id: UUID
   ) => Promise<ServiceResponse<Pick<JurisdictionDomainModel, 'jurisdiction_id'>>>
-  getJurisdictions: (options?: Partial<GetJurisdictionsOptions>) => Promise<ServiceResponse<JurisdictionDomainModel[]>>
+  getJurisdictions: (options?: GetJurisdictionsOptions) => Promise<ServiceResponse<JurisdictionDomainModel[]>>
   getJurisdiction: (
     jurisdiction_id: UUID,
-    options?: Partial<GetJurisdictionsOptions>
+    options?: GetJurisdictionsOptions
   ) => Promise<ServiceResponse<JurisdictionDomainModel>>
 }

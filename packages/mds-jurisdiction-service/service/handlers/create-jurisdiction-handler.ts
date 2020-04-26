@@ -20,26 +20,25 @@ import logger from '@mds-core/mds-logger'
 import { v4 as uuid } from 'uuid'
 import { RepositoryError } from '@mds-core/mds-repository'
 import { CreateJurisdictionType, JurisdictionDomainModel } from '../../@types'
-import { JursidictionMapper } from '../repository/model-mappers'
 import { JurisdictionRepository } from '../repository'
 import { ValidateJurisdiction } from './jurisdiction-schema-validators'
+import { JurisdictionEntityToDomain, JurisdictionDomainToEntity } from '../repository/mappers'
 
 export const CreateJurisdictionHandler = async (
   jurisdiction: CreateJurisdictionType
 ): Promise<ServiceResponse<JurisdictionDomainModel>> => {
   const recorded = Date.now()
   try {
-    const entities = await JurisdictionRepository.writeJurisdictions(
-      JursidictionMapper.fromDomainModel([
+    const [entity] = await JurisdictionRepository.writeJurisdictions([
+      JurisdictionDomainToEntity.map(
         ValidateJurisdiction({
           jurisdiction_id: uuid(),
           timestamp: recorded,
           ...jurisdiction
         })
-      ]).toEntityModel({ recorded })
-    )
-    const [created] = JursidictionMapper.fromEntityModel(entities).toDomainModel({ effective: recorded })
-    return ServiceResult(created)
+      )
+    ])
+    return ServiceResult(JurisdictionEntityToDomain.map(entity))
   } catch (error) /* istanbul ignore next */ {
     logger.error('Error Creating Jurisdiction', error)
     if (error instanceof ValidationError) {

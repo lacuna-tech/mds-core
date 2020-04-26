@@ -14,12 +14,21 @@
     limitations under the License.
  */
 
-import { UUID } from '@mds-core/mds-types'
+import { UUID, Nullable } from '@mds-core/mds-types'
 import { ServiceResponse, ServiceResult, ServiceError, ServiceException } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
-import { JursidictionMapper } from '../repository/model-mappers'
 import { JurisdictionRepository } from '../repository'
 import { JurisdictionDomainModel } from '../../@types'
+import { JurisdictionEntityToDomain } from '../repository/mappers'
+import { JurisdictionEntity } from '../repository/entities'
+
+const toDomainModel = (entity: JurisdictionEntity): Nullable<JurisdictionDomainModel> => {
+  try {
+    return JurisdictionEntityToDomain.map(entity)
+  } catch {
+    return null
+  }
+}
 
 export const DeleteJurisdictionHandler = async (
   jurisdiction_id: UUID
@@ -27,15 +36,14 @@ export const DeleteJurisdictionHandler = async (
   try {
     const entity = await JurisdictionRepository.readJurisdiction(jurisdiction_id)
     if (entity) {
-      const versions = JursidictionMapper.fromEntityModel([entity]).toDomainModel({ effective: Date.now() })
-      if (versions.length) {
-        const [current] = versions
+      const jurisdiction = toDomainModel(entity)
+      if (jurisdiction) {
         // "Soft" delete the jursidiction by updating it with a new version containing a null geography_id
         await JurisdictionRepository.updateJurisdiction(jurisdiction_id, {
           ...entity,
           versions: [
             {
-              agency_name: current.agency_name,
+              agency_name: jurisdiction.agency_name,
               geography_id: null,
               timestamp: Date.now()
             },

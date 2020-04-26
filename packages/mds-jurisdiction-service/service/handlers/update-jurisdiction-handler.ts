@@ -18,8 +18,8 @@ import { UUID } from '@mds-core/mds-types'
 import { ServiceResponse, ServiceError, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
 import { UpdateJurisdictionType, JurisdictionDomainModel } from '../../@types'
-import { JursidictionMapper } from '../repository/model-mappers'
 import { JurisdictionRepository } from '../repository'
+import { JurisdictionEntityToDomain } from '../repository/mappers'
 
 export const UpdateJurisdictionHandler = async (
   jurisdiction_id: UUID,
@@ -35,35 +35,33 @@ export const UpdateJurisdictionHandler = async (
   try {
     const entity = await JurisdictionRepository.readJurisdiction(jurisdiction_id)
     if (entity) {
-      const versions = JursidictionMapper.fromEntityModel([entity]).toDomainModel({ effective: Date.now() })
-      if (versions.length) {
-        const [current] = versions
+      const jurisdiction = JurisdictionEntityToDomain.map(entity)
+      if (jurisdiction) {
         const timestamp = update.timestamp ?? Date.now()
-        if (timestamp <= current.timestamp) {
+        if (timestamp <= jurisdiction.timestamp) {
           return ServiceError({
             type: 'ValidationError',
             message: 'Error Updating Jurisdiction',
-            details: `Invalid timestamp ${timestamp}. Must be greater than ${current.timestamp}.`
+            details: `Invalid timestamp ${timestamp}. Must be greater than ${jurisdiction.timestamp}.`
           })
         }
         const updated = await JurisdictionRepository.updateJurisdiction(jurisdiction_id, {
           ...entity,
-          agency_key: update.agency_key ?? current.agency_key,
+          agency_key: update.agency_key ?? jurisdiction.agency_key,
           versions:
-            (update.agency_name && update.agency_name !== current.agency_name) ||
-            (update.geography_id && update.geography_id !== current.geography_id)
+            (update.agency_name && update.agency_name !== jurisdiction.agency_name) ||
+            (update.geography_id && update.geography_id !== jurisdiction.geography_id)
               ? [
                   {
-                    agency_name: update.agency_name ?? current.agency_name,
-                    geography_id: update.geography_id ?? current.geography_id,
+                    agency_name: update.agency_name ?? jurisdiction.agency_name,
+                    geography_id: update.geography_id ?? jurisdiction.geography_id,
                     timestamp
                   },
                   ...entity.versions
                 ].sort((a, b) => b.timestamp - a.timestamp)
               : entity.versions
         })
-        const [jurisdiction] = JursidictionMapper.fromEntityModel([updated]).toDomainModel({ effective: timestamp })
-        return jurisdiction ? ServiceResult(jurisdiction) : ServiceException('Unexpected error during update')
+        return ServiceResult(JurisdictionEntityToDomain.map(updated))
       }
     }
     return ServiceError({

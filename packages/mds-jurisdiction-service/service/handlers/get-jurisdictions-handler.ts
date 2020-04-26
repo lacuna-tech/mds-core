@@ -17,15 +17,15 @@
 import { ServiceResponse, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
 import { GetJurisdictionsOptions, JurisdictionDomainModel } from '../../@types'
-import { JursidictionMapper } from '../repository/model-mappers'
 import { JurisdictionRepository } from '../repository'
+import { JurisdictionEntityToDomain } from '../repository/mappers'
 
-export const GetJurisdictionsHandler = async ({
-  effective = Date.now()
-}: Partial<GetJurisdictionsOptions> = {}): Promise<ServiceResponse<JurisdictionDomainModel[]>> => {
+export const GetJurisdictionsHandler = async (
+  options: GetJurisdictionsOptions
+): Promise<ServiceResponse<JurisdictionDomainModel[]>> => {
   try {
     const entities = await JurisdictionRepository.readJurisdictions()
-    return ServiceResult(JursidictionMapper.fromEntityModel(entities).toDomainModel({ effective }))
+    return ServiceResult(entities.map(JurisdictionEntityToDomain.mapper(options)))
   } catch (error) /* istanbul ignore next */ {
     logger.error('Error Reading Jurisdicitons', error)
     return ServiceException('Error Reading Jurisdicitons', error)
