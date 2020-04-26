@@ -17,14 +17,7 @@
 import { VehicleEvent, Telemetry, Device } from '@mds-core/mds-types'
 import { getEnvVar } from '@mds-core/mds-utils'
 import { KafkaStreamProducer } from '.'
-
-export interface AgencyStream {
-  writeEvent: (event: VehicleEvent) => Promise<void>
-  writeTelemetry: (telemetry: Telemetry[]) => Promise<void>
-  writeDevice: (device: Device) => Promise<void>
-  shutdown: () => Promise<void>
-  initialize: () => Promise<void>
-}
+import { AgencyStreamInterface } from '../agency-stream-interface'
 
 const { TENANT_ID } = getEnvVar({
   TENANT_ID: 'mds'
@@ -33,7 +26,7 @@ const deviceProducer = KafkaStreamProducer<Device>(`${TENANT_ID}.device`)
 const eventProducer = KafkaStreamProducer<VehicleEvent>(`${TENANT_ID}.event`)
 const telemetryProducer = KafkaStreamProducer<Telemetry>(`${TENANT_ID}.telemetry`)
 
-export const AgencyKafkaStream: AgencyStream = {
+export const AgencyStreamKafka: AgencyStreamInterface = {
   initialize: async () => {
     await Promise.all([deviceProducer.initialize(), eventProducer.initialize(), telemetryProducer.initialize()])
   },
