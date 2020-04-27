@@ -30,9 +30,9 @@ import {
 import { AgencyStreamKafka } from './kafka/agency-stream-kafka'
 import { KafkaStreamConsumer, KafkaStreamProducer } from './kafka'
 
-export { KafkaStreamConsumerOptions, KafkaStreamProducerOptions } from './kafka'
+import { AgencyStreamNats } from './nats/agency-stream-nats'
 
-import { AgencyNatsStream } from './nats/agency-stream-nats'
+export { KafkaStreamConsumerOptions, KafkaStreamProducerOptions } from './kafka'
 
 const { env } = process
 
@@ -110,8 +110,8 @@ async function getClient() {
 }
 
 async function initialize() {
-  await AgencyKafkaStream.initialize()
-  await AgencyNatsStream.initialize()
+  await AgencyStreamKafka.initialize()
+  await AgencyStreamNats.initialize()
   await getClient()
 }
 
@@ -147,7 +147,7 @@ async function writeStreamBatch(stream: Stream, field: string, values: unknown[]
 // put basics of vehicle in the cache
 async function writeDevice(device: Device) {
   if (env.NATS) {
-    await AgencyNatsStream.writeDevice(device)
+    await AgencyStreamNats.writeDevice(device)
   }
   if (env.KAFKA_HOST) {
     await AgencyStreamKafka.writeDevice(device)
@@ -157,7 +157,7 @@ async function writeDevice(device: Device) {
 
 async function writeEvent(event: VehicleEvent) {
   if (env.NATS) {
-    await AgencyNatsStream.writeEvent(event)
+    await AgencyStreamNats.writeEvent(event)
   }
   if (env.KAFKA_HOST) {
     await AgencyStreamKafka.writeEvent(event)
@@ -168,7 +168,7 @@ async function writeEvent(event: VehicleEvent) {
 // put latest locations in the cache
 async function writeTelemetry(telemetry: Telemetry[]) {
   if (env.NATS) {
-    await AgencyNatsStream.writeTelemetry(telemetry)
+    await AgencyStreamNats.writeTelemetry(telemetry)
   }
   if (env.KAFKA_HOST) {
     await AgencyStreamKafka.writeTelemetry(telemetry)

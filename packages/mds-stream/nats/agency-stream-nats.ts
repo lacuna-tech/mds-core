@@ -1,6 +1,6 @@
 import { VehicleEvent, Telemetry, Device } from '@mds-core/mds-types'
 import { getEnvVar } from '@mds-core/mds-utils'
-import { AgencyStream } from '../stream-interface'
+import { AgencyStreamInterface } from '../agency-stream-interface'
 import { NatsStreamProducer } from './stream-producer'
 
 const { TENANT_ID } = getEnvVar({
@@ -10,7 +10,7 @@ const deviceProducer = NatsStreamProducer<Device>(`${TENANT_ID}.device`)
 const eventProducer = NatsStreamProducer<VehicleEvent>(`${TENANT_ID}.event`)
 const telemetryProducer = NatsStreamProducer<Telemetry>(`${TENANT_ID}.telemetry`)
 
-export const AgencyNatsStream: AgencyStream = {
+export const AgencyStreamNats: AgencyStreamInterface = {
   initialize: async () => {
     await Promise.all([deviceProducer.initialize(), eventProducer.initialize(), telemetryProducer.initialize()])
   },
