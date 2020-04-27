@@ -17,8 +17,8 @@
 import { UUID } from '@mds-core/mds-types'
 import { InsertReturning, UpdateReturning, CreateRepository, CreateRepositoryMethod } from '@mds-core/mds-repository'
 
-import { filterEmptyHelper, ValidationError, ConflictError, NotFoundError } from '@mds-core/mds-utils'
-import { v4 as uuid } from 'uuid'
+import { filterEmptyHelper, ValidationError, ConflictError, NotFoundError, uuid } from '@mds-core/mds-utils'
+
 import { JurisdictionEntity } from './entities'
 import * as migrations from './migrations'
 import {
