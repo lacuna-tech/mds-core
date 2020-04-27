@@ -27,10 +27,10 @@ import {
   ReadStreamOptions,
   StreamItemID
 } from './types'
-import { AgencyKafkaStream } from './kafka/agency-stream-kafka'
+import { AgencyStreamKafka } from './kafka/agency-stream-kafka'
+import { KafkaStreamConsumer, KafkaStreamProducer } from './kafka'
 
-import { KafkaStreamConsumer } from './kafka/stream-consumer'
-import { KafkaStreamProducer } from './kafka/stream-producer'
+export { KafkaStreamConsumerOptions, KafkaStreamProducerOptions } from './kafka'
 
 import { AgencyNatsStream } from './nats/agency-stream-nats'
 
@@ -129,7 +129,7 @@ async function shutdown() {
     await cachedClient.quit()
     cachedClient = null
   }
-  await AgencyKafkaStream.shutdown()
+  await AgencyStreamKafka.shutdown()
 }
 
 async function writeStream(stream: Stream, field: string, value: unknown) {
@@ -150,7 +150,7 @@ async function writeDevice(device: Device) {
     await AgencyNatsStream.writeDevice(device)
   }
   if (env.KAFKA_HOST) {
-    await AgencyKafkaStream.writeDevice(device)
+    await AgencyStreamKafka.writeDevice(device)
   }
   return writeStream(DEVICE_INDEX_STREAM, 'data', device)
 }
@@ -160,7 +160,7 @@ async function writeEvent(event: VehicleEvent) {
     await AgencyNatsStream.writeEvent(event)
   }
   if (env.KAFKA_HOST) {
-    await AgencyKafkaStream.writeEvent(event)
+    await AgencyStreamKafka.writeEvent(event)
   }
   return writeStream(DEVICE_RAW_STREAM, 'event', event)
 }
@@ -171,7 +171,7 @@ async function writeTelemetry(telemetry: Telemetry[]) {
     await AgencyNatsStream.writeTelemetry(telemetry)
   }
   if (env.KAFKA_HOST) {
-    await AgencyKafkaStream.writeTelemetry(telemetry)
+    await AgencyStreamKafka.writeTelemetry(telemetry)
   }
   const start = now()
   await writeStreamBatch(DEVICE_RAW_STREAM, 'telemetry', telemetry)
@@ -274,7 +274,7 @@ async function health() {
   return { using: 'redis', status }
 }
 
-export = {
+export default {
   createStreamGroup,
   getStreamInfo,
   health,
