@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { Timestamp } from '@mds-core/mds-types'
+import { Timestamp, Nullable } from '@mds-core/mds-types'
 import { CreateIdentityEntityModel } from '@mds-core/mds-repository'
 import { JurisdictionDomainModel } from '../../@types'
 import { JurisdictionEntityModel } from './entities/jurisdiction-entity'
@@ -26,7 +26,7 @@ type MapJurisdictionEntityToDomainModelOptions = Partial<{
 const MapJurisdictionEntityToDomainModel = (
   model: JurisdictionEntityModel,
   { effective = Date.now() }: MapJurisdictionEntityToDomainModelOptions = {}
-): JurisdictionDomainModel => {
+): Nullable<JurisdictionDomainModel> => {
   const { jurisdiction_id, agency_key, versions } = model
   const version = versions.find(properties => effective >= properties.timestamp)
   if (version) {
@@ -41,10 +41,10 @@ const MapJurisdictionEntityToDomainModel = (
       }
     }
   }
-  throw Error('TODO: Make this a better error')
+  return null
 }
 
-export const JurisdictionEntityToDomain = {
+export const JurisdictionEntityToDomainModel = {
   map: MapJurisdictionEntityToDomainModel,
   mapper: (options: MapJurisdictionEntityToDomainModelOptions = {}) => (model: JurisdictionEntityModel) =>
     MapJurisdictionEntityToDomainModel(model, options)
@@ -67,7 +67,7 @@ const MapJurisdictionDomainToEntityModel = (
   }
 }
 
-export const JurisdictionDomainToEntity = {
+export const JurisdictionDomainToEntityModel = {
   map: MapJurisdictionDomainToEntityModel,
   mapper: (options: MapJurisdictionDomainToEntityModelOptions = {}) => (
     model: JurisdictionDomainModel

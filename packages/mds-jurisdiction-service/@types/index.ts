@@ -15,8 +15,7 @@
  */
 
 import { ServiceResponse } from '@mds-core/mds-service-helpers'
-import { UUID, Timestamp } from '@mds-core/mds-types'
-import { DeepPartial } from 'typeorm'
+import { UUID, Timestamp, Optional } from '@mds-core/mds-types'
 
 export interface JurisdictionDomainModel {
   jurisdiction_id: UUID
@@ -26,10 +25,9 @@ export interface JurisdictionDomainModel {
   timestamp: Timestamp
 }
 
-export type CreateJurisdictionType = Partial<Pick<JurisdictionDomainModel, 'jurisdiction_id' | 'timestamp'>> &
-  Pick<JurisdictionDomainModel, 'agency_key' | 'agency_name' | 'geography_id'>
+export type CreateJurisdictionType = Optional<JurisdictionDomainModel, 'jurisdiction_id' | 'timestamp'>
 
-export type UpdateJurisdictionType = DeepPartial<JurisdictionDomainModel>
+export type UpdateJurisdictionType = Partial<JurisdictionDomainModel>
 
 export type GetJurisdictionsOptions = Partial<{
   effective: Timestamp

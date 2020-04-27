@@ -49,7 +49,7 @@ const RepositoryReadMetrics = CreateRepositoryMethod(connect => async (options: 
     })
     return entities
   } catch (error) {
-    throw RepositoryError.create(error)
+    throw RepositoryError(error)
   }
 })
 
@@ -67,7 +67,7 @@ const RepositoryWriteMetrics = CreateRepositoryMethod(connect => async (metrics:
       .execute()
     return entities
   } catch (error) {
-    throw RepositoryError.create(error)
+    throw RepositoryError(error)
   }
 })
 
