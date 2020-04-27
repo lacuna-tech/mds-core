@@ -14,12 +14,14 @@
     limitations under the License.
  */
 
-import { VehicleTelemetryProcessor } from '@mds-core/mds-stream-processor'
 import logger from '@mds-core/mds-logger'
+import { VehicleEventProcessor } from './index'
 
-const { npm_package_name, npm_package_version, npm_package_git_commit, KAFKA_HOST } = process.env
+const {
+  env: { npm_package_name, npm_package_version, npm_package_git_commit, KAFKA_HOST }
+} = process
 
-VehicleTelemetryProcessor()
+VehicleEventProcessor()
   .start()
   .then(() => {
     logger.info(
