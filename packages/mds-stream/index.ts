@@ -130,6 +130,7 @@ async function shutdown() {
     cachedClient = null
   }
   await AgencyStreamKafka.shutdown()
+  await AgencyStreamNats.shutdown()
 }
 
 async function writeStream(stream: Stream, field: string, value: unknown) {
