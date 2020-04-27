@@ -29,7 +29,7 @@ const MapMetricEntityToDomainModel = (
   return domain
 }
 
-export const MetricEntityToDomain = {
+export const MetricEntityToDomainModel = {
   map: MapMetricEntityToDomainModel,
   mapper: (options: MapMertricEntityToDomainModelOptions = {}) => (model: MetricEntityModel) =>
     MapMetricEntityToDomainModel(model, options)
@@ -47,7 +47,7 @@ const MapMetricDomainToEntityModel = (
   return entity
 }
 
-export const MetricDomainToEntity = {
+export const MetricDomainToEntityModel = {
   map: MapMetricDomainToEntityModel,
   mapper: (options: MetricDomainToEntityModelMapperOptions = {}) => (model: MetricDomainModel) =>
     MapMetricDomainToEntityModel(model, options)
