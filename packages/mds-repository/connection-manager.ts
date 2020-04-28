@@ -103,6 +103,7 @@ export const ConnectionManager = (prefix: string, options: Omit<ConnectionManage
   const initialize = async () => {
     try {
       const [, rw] = await Promise.all(ConnectionModes.map(mode => connect(mode)))
+      /* istanbul ignore if */
       if (options.migrationsTableName && PG_MIGRATIONS === 'true') {
         logger.info(`Checking ${options.migrationsTableName} for pending migrations`)
         const migrations = await rw.runMigrations({ transaction: 'all' })
