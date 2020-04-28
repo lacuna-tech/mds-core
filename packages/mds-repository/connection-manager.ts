@@ -104,7 +104,7 @@ export const ConnectionManager = (prefix: string, options: Omit<ConnectionManage
     try {
       const [, rw] = await Promise.all(ConnectionModes.map(mode => connect(mode)))
       /* istanbul ignore if */
-      if (PG_MIGRATIONS === 'true' && options.migrationsTableName) {
+      if (PG_MIGRATIONS === 'true' && rw.options.migrationsTableName) {
         const migrations = await rw.runMigrations({ transaction: 'all' })
         logger.info(
           `Ran ${migrations.length} ${migrations.length === 1 ? 'migration' : 'migrations'} (${
