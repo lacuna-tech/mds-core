@@ -1,5 +1,5 @@
 /*
-    Copyright 2019 City of Los Angeles.
+    Copyright 2019-2020 City of Los Angeles.
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -14,8 +14,7 @@
     limitations under the License.
  */
 
-import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
-import { api } from '@mds-core/mds-policy-author'
-import { env } from '@container-images/env-inject'
+import { ProcessorController } from './controller'
+import { VehicleEventProcessor } from './processors/vehicle-event-processor'
 
-HttpServer(ApiServer(api), { port: env().POLICY_AUTHOR_API_PORT })
+ProcessorController.start(VehicleEventProcessor())

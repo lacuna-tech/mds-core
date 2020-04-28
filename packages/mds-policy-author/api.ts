@@ -15,9 +15,8 @@
  */
 
 import express from 'express'
-import { v4 as uuid } from 'uuid'
-import db from '@mds-core/mds-db'
 import {
+  uuid,
   pathsFor,
   AlreadyPublishedError,
   BadParamsError,
@@ -26,6 +25,8 @@ import {
   ServerError,
   ConflictError
 } from '@mds-core/mds-utils'
+import db from '@mds-core/mds-db'
+
 import { policyValidationDetails } from '@mds-core/mds-schema-validators'
 import logger from '@mds-core/mds-logger'
 

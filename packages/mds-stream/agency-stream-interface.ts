@@ -14,8 +14,12 @@
     limitations under the License.
  */
 
-import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
-import { api } from '@mds-core/mds-audit'
-import { env } from '@container-images/env-inject'
+import { VehicleEvent, Telemetry, Device } from '@mds-core/mds-types'
 
-HttpServer(ApiServer(api), { port: env().AUDIT_API_PORT })
+export interface AgencyStreamInterface {
+  writeEvent: (event: VehicleEvent) => Promise<void>
+  writeTelemetry: (telemetry: Telemetry[]) => Promise<void>
+  writeDevice: (device: Device) => Promise<void>
+  shutdown: () => Promise<void>
+  initialize: () => Promise<void>
+}

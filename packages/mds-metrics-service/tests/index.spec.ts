@@ -15,8 +15,7 @@
  */
 
 import test from 'unit.js'
-import { v4 as uuid } from 'uuid'
-import { minutes, timeframe, days } from '@mds-core/mds-utils'
+import { uuid, minutes, timeframe, days } from '@mds-core/mds-utils'
 import { VEHICLE_TYPE } from '@mds-core/mds-types'
 import { HandleServiceResponse } from '@mds-core/mds-service-helpers'
 import { MetricsServiceProvider } from '../service/provider'
@@ -190,9 +189,11 @@ describe('Metrics Service', () => {
         metric.time_bin_size === TEST_TIME_BIN_SIZE &&
         metric.time_bin_start >= TEST_TIME_BIN_START &&
         metric.time_bin_start <= TEST_TIME_BIN_END &&
+        metric.provider_id &&
         [TEST_PROVIDER_ID2, TEST_PROVIDER_ID3].includes(metric.provider_id) &&
         metric.geography_id &&
         [TEST_GEOGRAPHY_ID2, TEST_GEOGRAPHY_ID3].includes(metric.geography_id) &&
+        metric.vehicle_type &&
         [TEST_VEHICLE_TYPE2, TEST_VEHICLE_TYPE3].includes(metric.vehicle_type)
     )
   }))

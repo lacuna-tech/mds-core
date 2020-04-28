@@ -15,13 +15,12 @@
  */
 
 import logger from '@mds-core/mds-logger'
-import stream from '@mds-core/mds-stream'
-import { StreamConsumerOptions, StreamProducerOptions } from '@mds-core/mds-stream/kafka/helpers'
+import stream, { KafkaStreamConsumerOptions, KafkaStreamProducerOptions } from '@mds-core/mds-stream'
 import { StreamSink, StreamSource } from './index'
 
 export const KafkaSource = <TMessage>(
   topic: string,
-  options?: Partial<StreamConsumerOptions>
+  options?: Partial<KafkaStreamConsumerOptions>
 ): StreamSource<TMessage> => processor => {
   logger.info('Creating KafkaStreamSource', topic, options)
   return stream.KafkaStreamConsumer(
@@ -42,7 +41,7 @@ export const KafkaSource = <TMessage>(
 
 export const KafkaSink = <TMessage>(
   topic: string,
-  options?: Partial<StreamProducerOptions>
+  options?: Partial<KafkaStreamProducerOptions>
 ): StreamSink<TMessage> => () => {
   logger.info('Creating KafkaStreamSink', topic, options)
   return stream.KafkaStreamProducer(topic, options)

@@ -14,8 +14,5 @@
     limitations under the License.
  */
 
-import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
-import { api } from '@mds-core/mds-geography'
-import { env } from '@container-images/env-inject'
-
-HttpServer(ApiServer(api), { port: env().GEOGRAPHY_API_PORT })
+export { KafkaStreamConsumer, KafkaStreamConsumerOptions } from './stream-consumer'
+export { KafkaStreamProducer, KafkaStreamProducerOptions } from './stream-producer'

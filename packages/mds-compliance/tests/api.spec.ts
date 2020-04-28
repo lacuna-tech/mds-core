@@ -13,14 +13,13 @@ import {
   veniceSpecOps,
   LA_CITY_BOUNDARY
 } from '@mds-core/mds-test-data'
-
 import test from 'unit.js'
 import { api as agency } from '@mds-core/mds-agency'
 import cache from '@mds-core/mds-cache'
 import db from '@mds-core/mds-db'
 import stream from '@mds-core/mds-stream'
 import supertest from 'supertest'
-import { now } from '@mds-core/mds-utils'
+import { now, uuid } from '@mds-core/mds-utils'
 import {
   Telemetry,
   Device,
@@ -34,7 +33,6 @@ import {
 } from '@mds-core/mds-types'
 import MockDate from 'mockdate'
 import { Feature, Polygon } from 'geojson'
-import { v4 as uuid } from 'uuid'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, MOCHA_PROVIDER_ID } from '@mds-core/mds-providers'
 import { api } from '../api'
@@ -681,7 +679,7 @@ describe('Tests Compliance API:', () => {
   describe('Verifies venice beach spec ops', () => {
     before(done => {
       const veniceSpecOpsPointIds: UUID[] = []
-      const geographies: Geography[] = veniceSpecOps.features.map((feature: Feature) => {
+      const geographies = (veniceSpecOps.features.map((feature: Feature) => {
         if (feature.geometry.type === 'Point') {
           const geography_id = uuid()
           veniceSpecOpsPointIds.push(geography_id)
@@ -694,7 +692,7 @@ describe('Tests Compliance API:', () => {
           geography_id: 'e0e4a085-7a50-43e0-afa4-6792ca897c5a',
           geography_json: feature.geometry
         }
-      })
+      }) as unknown) as Geography[]
 
       const VENICE_SPEC_OPS_POLICY: Policy = {
         name: 'Venice Special Operations Zone',
