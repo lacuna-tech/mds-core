@@ -9,8 +9,8 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "process:events": "yarn watch events",
-    "process:telemetry": "yarn watch telemetry",
+    "process": "yarn watch",
+    "start": "yarn watch",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --ignore-path ../../.gitignore '**/*.ts'",
     "test:unit": "DOTENV_CONFIG_PATH=../../.env nyc --lines 55 ts-mocha --project ../../tsconfig.json",

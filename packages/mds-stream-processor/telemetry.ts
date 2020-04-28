@@ -14,27 +14,7 @@
     limitations under the License.
  */
 
-import logger from '@mds-core/mds-logger'
+import { ProcessorController } from './controller'
 import { VehicleTelemetryProcessor } from './processors/vehicle-telemetry-processor'
 
-const {
-  env: { npm_package_name, npm_package_version, npm_package_git_commit, KAFKA_HOST }
-} = process
-
-VehicleTelemetryProcessor()
-  .start()
-  .then(() => {
-    logger.info(
-      `Running ${npm_package_name} v${npm_package_version} (${
-        npm_package_git_commit ?? 'local'
-      }) connected to Kafka on ${KAFKA_HOST}`
-    )
-    return 0
-  })
-  .catch(error => {
-    logger.error(
-      `${npm_package_name} v${npm_package_version} (${npm_package_git_commit}) connected to Kafka on ${KAFKA_HOST} failed to start`,
-      error
-    )
-    return 1
-  })
+ProcessorController.start(VehicleTelemetryProcessor())

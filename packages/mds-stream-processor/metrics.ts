@@ -15,6 +15,6 @@
  */
 
 import { ProcessorController } from './controller'
-import { VehicleEventProcessor } from './processors/vehicle-event-processor'
+import { MetricsProcessor } from './processors/metrics-processor'
 
-ProcessorController.start(VehicleEventProcessor())
+ProcessorController.start(MetricsProcessor())
