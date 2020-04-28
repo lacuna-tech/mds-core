@@ -17,7 +17,7 @@
 import logger from '@mds-core/mds-logger'
 import { StreamProcessorController } from './processors'
 
-const start = async (processor: StreamProcessorController) => {
+const launch = async (processor: StreamProcessorController) => {
   const {
     env: { npm_package_name, npm_package_version, npm_package_git_commit, KAFKA_HOST }
   } = process
@@ -44,6 +44,6 @@ const start = async (processor: StreamProcessorController) => {
 export const ProcessorController = {
   start: (processor: StreamProcessorController) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    start(processor)
+    launch(processor)
   }
 }

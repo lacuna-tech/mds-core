@@ -26,7 +26,7 @@ export const MetricsProcessor = () => {
     TENANT_ID: 'mds'
   })
 
-  const MetricsSink = (): StreamSink<MetricDomainModel> => () => {
+  const MetricsServiceSink = (): StreamSink<MetricDomainModel> => () => {
     return {
       initialize: async () => {
         // TODO: This won't be necessary when the service provider is a separate process
@@ -49,6 +49,6 @@ export const MetricsProcessor = () => {
 
   return StreamForwarder<MetricDomainModel>(
     KafkaSource(`${TENANT_ID}.metrics`, { groupId: 'mds-metrics-processor' }),
-    MetricsSink()
+    MetricsServiceSink()
   )
 }
