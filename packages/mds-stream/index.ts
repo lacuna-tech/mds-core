@@ -33,6 +33,7 @@ import { KafkaStreamConsumer, KafkaStreamProducer } from './kafka'
 import { AgencyStreamNats } from './nats/agency-stream-nats'
 
 export { KafkaStreamConsumerOptions, KafkaStreamProducerOptions } from './kafka'
+export { StreamConsumer, StreamProducer } from './stream-interface'
 
 const { env } = process
 
