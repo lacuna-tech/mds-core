@@ -104,16 +104,13 @@ export const ConnectionManager = (prefix: string, options: Omit<ConnectionManage
     try {
       const [, rw] = await Promise.all(ConnectionModes.map(mode => connect(mode)))
       /* istanbul ignore if */
-      if (options.migrationsTableName && PG_MIGRATIONS === 'true') {
-        logger.info(`Checking ${options.migrationsTableName} for pending migrations`)
+      if (PG_MIGRATIONS === 'true' && options.migrationsTableName) {
         const migrations = await rw.runMigrations({ transaction: 'all' })
         logger.info(
-          `Ran ${migrations.length} ${migrations.length === 1 ? 'migration' : 'migrations'}${
-            migrations.length ? `: ${migrations.map(migration => migration.name).join(', ')}` : ''
-          }`
+          `Ran ${migrations.length} ${migrations.length === 1 ? 'migration' : 'migrations'} (${
+            options.migrationsTableName
+          })${migrations.length ? `: ${migrations.map(migration => migration.name).join(', ')}` : ''}`
         )
-      } else {
-        logger.info('Skipping pending migrations check')
       }
     } catch (error) /* istanbul ignore next */ {
       throw RepositoryError(error)
