@@ -17,18 +17,12 @@
 import { UUID } from '@mds-core/mds-types'
 import { InsertReturning, UpdateReturning, CreateRepository, CreateRepositoryMethod } from '@mds-core/mds-repository'
 
-import { filterEmptyHelper, ValidationError, ConflictError, NotFoundError, uuid } from '@mds-core/mds-utils'
+import { filterEmptyHelper, ValidationError, ConflictError, NotFoundError } from '@mds-core/mds-utils'
 
 import { JurisdictionEntity } from './entities'
 import * as migrations from './migrations'
-import {
-  JurisdictionDomainModel,
-  GetJurisdictionsOptions,
-  CreateJurisdictionType,
-  UpdateJurisdictionType
-} from '../../@types'
+import { JurisdictionDomainModel, GetJurisdictionsOptions, UpdateJurisdictionDomainModel } from '../../@types'
 import { JurisdictionEntityToDomain, JurisdictionDomainToEntityCreate } from './mappers'
-import { ValidateJurisdiction } from '../handlers/jurisdiction-schema-validators'
 
 const ReadJurisdiction = CreateRepositoryMethod(
   connect => async (jurisdiction_id: UUID, options?: GetJurisdictionsOptions): Promise<JurisdictionDomainModel> => {
@@ -55,26 +49,16 @@ const ReadJurisdictions = CreateRepositoryMethod(connect => async (options?: Get
   return entities.map(JurisdictionEntityToDomain.mapper(options)).filter(isEffectiveJurisdiction)
 })
 
-const CreateJurisdictions = CreateRepositoryMethod(connect => async (jurisdictions: CreateJurisdictionType[]): Promise<
+const CreateJurisdictions = CreateRepositoryMethod(connect => async (jurisdictions: JurisdictionDomainModel[]): Promise<
   JurisdictionDomainModel[]
 > => {
   const connection = await connect('rw')
-
-  const creating = jurisdictions
-    .map(({ jurisdiction_id = uuid(), timestamp = Date.now(), ...jurisdiction }) =>
-      ValidateJurisdiction({
-        jurisdiction_id,
-        timestamp,
-        ...jurisdiction
-      })
-    )
-    .map(JurisdictionDomainToEntityCreate.mapper())
 
   const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
     .getRepository(JurisdictionEntity)
     .createQueryBuilder()
     .insert()
-    .values(creating)
+    .values(jurisdictions.map(JurisdictionDomainToEntityCreate.mapper()))
     .returning('*')
     .execute()
 
@@ -82,11 +66,11 @@ const CreateJurisdictions = CreateRepositoryMethod(connect => async (jurisdictio
 })
 
 const UpdateJurisdiction = CreateRepositoryMethod(
-  connect => async (jurisdiction_id: UUID, updates: UpdateJurisdictionType): Promise<JurisdictionDomainModel> => {
+  connect => async (jurisdiction_id: UUID, patch: UpdateJurisdictionDomainModel): Promise<JurisdictionDomainModel> => {
     const connection = await connect('rw')
 
-    if (updates.jurisdiction_id && updates.jurisdiction_id !== jurisdiction_id) {
-      throw new ConflictError(`Invalid jurisdiction_id ${updates.jurisdiction_id}. Must match ${jurisdiction_id}.`)
+    if (patch.jurisdiction_id && patch.jurisdiction_id !== jurisdiction_id) {
+      throw new ConflictError(`Invalid jurisdiction_id ${patch.jurisdiction_id}. Must match ${jurisdiction_id}.`)
     }
 
     const entity = await connection.getRepository(JurisdictionEntity).findOne({ where: { jurisdiction_id } })
@@ -100,7 +84,7 @@ const UpdateJurisdiction = CreateRepositoryMethod(
       throw new NotFoundError(`Jurisdiction ${jurisdiction_id} Not Found`)
     }
 
-    const timestamp = updates.timestamp ?? Date.now()
+    const timestamp = patch.timestamp ?? Date.now()
     if (timestamp <= jurisdiction.timestamp) {
       throw new ValidationError(`Invalid timestamp ${timestamp}. Must be greater than ${jurisdiction.timestamp}.`)
     }
@@ -113,14 +97,14 @@ const UpdateJurisdiction = CreateRepositoryMethod(
       .update()
       .set({
         ...current,
-        agency_key: updates.agency_key ?? jurisdiction.agency_key,
+        agency_key: patch.agency_key ?? jurisdiction.agency_key,
         versions:
-          (updates.agency_name && updates.agency_name !== jurisdiction.agency_name) ||
-          (updates.geography_id && updates.geography_id !== jurisdiction.geography_id)
+          (patch.agency_name && patch.agency_name !== jurisdiction.agency_name) ||
+          (patch.geography_id && patch.geography_id !== jurisdiction.geography_id)
             ? [
                 {
-                  agency_name: updates.agency_name ?? jurisdiction.agency_name,
-                  geography_id: updates.geography_id ?? jurisdiction.geography_id,
+                  agency_name: patch.agency_name ?? jurisdiction.agency_name,
+                  geography_id: patch.geography_id ?? jurisdiction.geography_id,
                   timestamp
                 },
                 ...current.versions
