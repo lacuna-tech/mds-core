@@ -16,7 +16,7 @@
 
 import test from 'unit.js'
 import { uuid, minutes, timeframe, days, pluralize } from '@mds-core/mds-utils'
-import { VEHICLE_TYPE } from '@mds-core/mds-types'
+import { VEHICLE_TYPE, Nullable, UUID } from '@mds-core/mds-types'
 import { HandleServiceResponse } from '@mds-core/mds-service-helpers'
 import { MetricsServiceProvider } from '../service/provider'
 import { MetricDomainModel, ReadMetricsOptions, ReadMetricsFilterOptions } from '../@types'
@@ -26,11 +26,11 @@ const TEST_METRIC_NAME = 'test.metric'
 const TEST_TIME_BIN_SIZE = minutes(5)
 const TEST_TIMESTAMP = Date.now() - days(1)
 const { start_time: TEST_TIME_BIN_START, end_time: TEST_TIME_BIN_END } = timeframe(TEST_TIME_BIN_SIZE, TEST_TIMESTAMP)
-const TEST_PROVIDER_IDS = Array.from({ length: 6 }, () => uuid())
+const TEST_PROVIDER_IDS: Nullable<UUID>[] = [...Array.from({ length: 6 }, () => uuid()), null]
 const [TEST_PROVIDER_ID1, TEST_PROVIDER_ID2, TEST_PROVIDER_ID3] = TEST_PROVIDER_IDS
-const TEST_GEOGRAPHY_IDS = Array.from({ length: 10 }, () => uuid())
+const TEST_GEOGRAPHY_IDS: Nullable<UUID>[] = [...Array.from({ length: 10 }, () => uuid()), null]
 const [TEST_GEOGRAPHY_ID1, TEST_GEOGRAPHY_ID2, TEST_GEOGRAPHY_ID3] = TEST_GEOGRAPHY_IDS
-const TEST_VEHICLE_TYPES: VEHICLE_TYPE[] = ['scooter', 'bicycle', 'moped']
+const TEST_VEHICLE_TYPES: Nullable<VEHICLE_TYPE>[] = ['scooter', 'bicycle', 'moped', null]
 const [TEST_VEHICLE_TYPE1, TEST_VEHICLE_TYPE2, TEST_VEHICLE_TYPE3] = TEST_VEHICLE_TYPES
 
 function* GenerateValues(maxLength: number, maxValue: number): Generator<number> {
