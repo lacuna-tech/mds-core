@@ -15,40 +15,25 @@
  */
 
 import { Timestamp } from '@mds-core/mds-types'
-import { CreateIdentityEntityModel } from '@mds-core/mds-repository'
+import { CreateIdentityEntityModel, CreateModelMapper } from '@mds-core/mds-repository'
 import { MetricEntityModel } from './entities/metric-entity'
 import { MetricDomainModel } from '../../@types'
 
-type MapMetricEntityToDomainModelOptions = Partial<{}>
-
-const MapMetricEntityToDomainModel = (
-  model: MetricEntityModel,
-  options: MapMetricEntityToDomainModelOptions = {}
-): MetricDomainModel => {
+export const MetricEntityToDomainModel = CreateModelMapper<MetricEntityModel, MetricDomainModel>((model, options) => {
   const { id, recorded, ...domain } = model
   return domain
-}
-
-export const MetricEntityToDomainModel = {
-  map: MapMetricEntityToDomainModel,
-  mapper: (options: MapMetricEntityToDomainModelOptions = {}) => (model: MetricEntityModel) =>
-    MapMetricEntityToDomainModel(model, options)
-}
+})
 
 type MetricDomainToEntityModelMapperOptions = Partial<{
   recorded: Timestamp
 }>
 
-const MapMetricDomainToEntityModel = (
-  model: MetricDomainModel,
-  { recorded = Date.now() }: MetricDomainToEntityModelMapperOptions = {}
-): CreateIdentityEntityModel<MetricEntityModel> => {
+export const MetricDomainToEntityModel = CreateModelMapper<
+  MetricDomainModel,
+  CreateIdentityEntityModel<MetricEntityModel>,
+  MetricDomainToEntityModelMapperOptions
+>((model, options) => {
+  const { recorded = Date.now() } = options ?? {}
   const entity = { ...model, recorded }
   return entity
-}
-
-export const MetricDomainToEntityModel = {
-  map: MapMetricDomainToEntityModel,
-  mapper: (options: MetricDomainToEntityModelMapperOptions = {}) => (model: MetricDomainModel) =>
-    MapMetricDomainToEntityModel(model, options)
-}
+})

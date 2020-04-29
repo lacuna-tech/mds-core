@@ -15,7 +15,7 @@
  */
 
 import { Timestamp, Nullable } from '@mds-core/mds-types'
-import { CreateIdentityEntityModel } from '@mds-core/mds-repository'
+import { CreateIdentityEntityModel, CreateModelMapper } from '@mds-core/mds-repository'
 import { JurisdictionDomainModel } from '../../@types'
 import { JurisdictionEntityModel } from './entities/jurisdiction-entity'
 
@@ -23,10 +23,12 @@ type MapJurisdictionEntityToDomainModelOptions = Partial<{
   effective: Timestamp
 }>
 
-const MapJurisdictionEntityToDomainModel = (
-  model: JurisdictionEntityModel,
-  { effective = Date.now() }: MapJurisdictionEntityToDomainModelOptions = {}
-): Nullable<JurisdictionDomainModel> => {
+export const JurisdictionEntityToDomainModel = CreateModelMapper<
+  JurisdictionEntityModel,
+  Nullable<JurisdictionDomainModel>,
+  MapJurisdictionEntityToDomainModelOptions
+>((model, options) => {
+  const { effective = Date.now() } = options ?? {}
   const { jurisdiction_id, agency_key, versions } = model
   const version = versions.find(properties => effective >= properties.timestamp)
   if (version) {
@@ -42,22 +44,18 @@ const MapJurisdictionEntityToDomainModel = (
     }
   }
   return null
-}
-
-export const JurisdictionEntityToDomainModel = {
-  map: MapJurisdictionEntityToDomainModel,
-  mapper: (options: MapJurisdictionEntityToDomainModelOptions = {}) => (model: JurisdictionEntityModel) =>
-    MapJurisdictionEntityToDomainModel(model, options)
-}
+})
 
 type MapJurisdictionDomainToEntityModelOptions = Partial<{
   recorded: Timestamp
 }>
 
-const MapJurisdictionDomainToEntityModel = (
-  model: JurisdictionDomainModel,
-  { recorded = Date.now() }: MapJurisdictionDomainToEntityModelOptions = {}
-): CreateIdentityEntityModel<JurisdictionEntityModel> => {
+export const JurisdictionDomainToEntityModel = CreateModelMapper<
+  JurisdictionDomainModel,
+  CreateIdentityEntityModel<JurisdictionEntityModel>,
+  MapJurisdictionDomainToEntityModelOptions
+>((model, options) => {
+  const { recorded = Date.now() } = options ?? {}
   const { jurisdiction_id, agency_key, agency_name, geography_id, timestamp } = model
   return {
     jurisdiction_id,
@@ -65,11 +63,4 @@ const MapJurisdictionDomainToEntityModel = (
     versions: [{ timestamp, agency_name, geography_id }],
     recorded
   }
-}
-
-export const JurisdictionDomainToEntityModel = {
-  map: MapJurisdictionDomainToEntityModel,
-  mapper: (options: MapJurisdictionDomainToEntityModelOptions = {}) => (
-    model: JurisdictionDomainModel
-  ): CreateIdentityEntityModel<JurisdictionEntityModel> => MapJurisdictionDomainToEntityModel(model, options)
-}
+})
