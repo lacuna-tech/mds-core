@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-export const CreateModelMapper = <From, To, Options = Partial<{}>>(
+export const ModelMapper = <From, To, Options = Partial<{}>>(
   map: (model: From, options?: Options) => To
 ): {
   map: (model: From, options?: Options) => To

@@ -15,7 +15,7 @@
  */
 
 import { Timestamp, Nullable } from '@mds-core/mds-types'
-import { CreateIdentityEntityModel, CreateModelMapper } from '@mds-core/mds-repository'
+import { IdentityEntityCreateModel, ModelMapper, RecordedEntityCreateModel } from '@mds-core/mds-repository'
 import { JurisdictionDomainModel } from '../../@types'
 import { JurisdictionEntityModel } from './entities/jurisdiction-entity'
 
@@ -23,7 +23,7 @@ type MapJurisdictionEntityToDomainModelOptions = Partial<{
   effective: Timestamp
 }>
 
-export const JurisdictionEntityToDomainModel = CreateModelMapper<
+export const JurisdictionEntityToDomain = ModelMapper<
   JurisdictionEntityModel,
   Nullable<JurisdictionDomainModel>,
   MapJurisdictionEntityToDomainModelOptions
@@ -46,16 +46,16 @@ export const JurisdictionEntityToDomainModel = CreateModelMapper<
   return null
 })
 
-type MapJurisdictionDomainToEntityModelOptions = Partial<{
+type JurisdictionDomainToEntityCreateOptions = Partial<{
   recorded: Timestamp
 }>
 
-export const JurisdictionDomainToEntityModel = CreateModelMapper<
+export const JurisdictionDomainToEntityCreate = ModelMapper<
   JurisdictionDomainModel,
-  CreateIdentityEntityModel<JurisdictionEntityModel>,
-  MapJurisdictionDomainToEntityModelOptions
+  RecordedEntityCreateModel<IdentityEntityCreateModel<JurisdictionEntityModel>>,
+  JurisdictionDomainToEntityCreateOptions
 >((model, options) => {
-  const { recorded = Date.now() } = options ?? {}
+  const { recorded } = options ?? {}
   const { jurisdiction_id, agency_key, agency_name, geography_id, timestamp } = model
   return {
     jurisdiction_id,

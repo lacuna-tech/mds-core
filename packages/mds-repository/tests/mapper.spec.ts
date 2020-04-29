@@ -15,9 +15,9 @@
  */
 
 import test from 'unit.js'
-import { CreateModelMapper } from '../mapper'
+import { ModelMapper } from '../mapper'
 
-const stringify = CreateModelMapper<number, string, Partial<{ multiplier: number }>>((from, options) => {
+const stringify = ModelMapper<number, string, Partial<{ multiplier: number }>>((from, options) => {
   const { multiplier = 1 } = options ?? {}
   return `${from * multiplier}`
 })

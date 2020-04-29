@@ -27,7 +27,7 @@ import {
   CreateJurisdictionType,
   UpdateJurisdictionType
 } from '../../@types'
-import { JurisdictionEntityToDomainModel, JurisdictionDomainToEntityModel } from './mappers'
+import { JurisdictionEntityToDomain, JurisdictionDomainToEntityCreate } from './mappers'
 import { ValidateJurisdiction } from '../handlers/jurisdiction-schema-validators'
 
 const ReadJurisdiction = CreateRepositoryMethod(
@@ -37,7 +37,7 @@ const ReadJurisdiction = CreateRepositoryMethod(
     if (!entity) {
       throw new NotFoundError(`Jurisdiction ${jurisdiction_id} Not Found`)
     }
-    const jurisdiction = JurisdictionEntityToDomainModel.map(entity, options)
+    const jurisdiction = JurisdictionEntityToDomain.map(entity, options)
     if (!jurisdiction) {
       throw new NotFoundError(`Jurisdiction ${jurisdiction_id} Not Found`)
     }
@@ -52,7 +52,7 @@ const ReadJurisdictions = CreateRepositoryMethod(connect => async (options?: Get
 > => {
   const connection = await connect('ro')
   const entities = await connection.getRepository(JurisdictionEntity).find()
-  return entities.map(JurisdictionEntityToDomainModel.mapper(options)).filter(isEffectiveJurisdiction)
+  return entities.map(JurisdictionEntityToDomain.mapper(options)).filter(isEffectiveJurisdiction)
 })
 
 const CreateJurisdictions = CreateRepositoryMethod(connect => async (jurisdictions: CreateJurisdictionType[]): Promise<
@@ -68,7 +68,7 @@ const CreateJurisdictions = CreateRepositoryMethod(connect => async (jurisdictio
         ...jurisdiction
       })
     )
-    .map(JurisdictionDomainToEntityModel.mapper())
+    .map(JurisdictionDomainToEntityCreate.mapper())
 
   const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
     .getRepository(JurisdictionEntity)
@@ -78,7 +78,7 @@ const CreateJurisdictions = CreateRepositoryMethod(connect => async (jurisdictio
     .returning('*')
     .execute()
 
-  return entities.map(JurisdictionEntityToDomainModel.mapper()).filter(isEffectiveJurisdiction)
+  return entities.map(JurisdictionEntityToDomain.mapper()).filter(isEffectiveJurisdiction)
 })
 
 const UpdateJurisdiction = CreateRepositoryMethod(
@@ -95,7 +95,7 @@ const UpdateJurisdiction = CreateRepositoryMethod(
     }
     const { id, ...current } = entity
 
-    const jurisdiction = JurisdictionEntityToDomainModel.map(entity)
+    const jurisdiction = JurisdictionEntityToDomain.map(entity)
     if (!jurisdiction) {
       throw new NotFoundError(`Jurisdiction ${jurisdiction_id} Not Found`)
     }
@@ -131,7 +131,7 @@ const UpdateJurisdiction = CreateRepositoryMethod(
       .returning('*')
       .execute()
 
-    return { ...jurisdiction, ...JurisdictionEntityToDomainModel.map(updated) }
+    return { ...jurisdiction, ...JurisdictionEntityToDomain.map(updated) }
   }
 )
 
@@ -146,7 +146,7 @@ const DeleteJurisdiction = CreateRepositoryMethod(connect => async (jurisdiction
   }
   const { id, ...current } = entity
 
-  const jurisdiction = JurisdictionEntityToDomainModel.map(entity)
+  const jurisdiction = JurisdictionEntityToDomain.map(entity)
   if (!jurisdiction) {
     throw new NotFoundError(`Jurisdiction ${jurisdiction_id} Not Found`)
   }
