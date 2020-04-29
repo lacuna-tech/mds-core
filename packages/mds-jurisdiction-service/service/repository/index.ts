@@ -21,7 +21,12 @@ import { filterEmptyHelper, ValidationError, ConflictError, NotFoundError } from
 
 import { JurisdictionEntity } from './entities'
 import * as migrations from './migrations'
-import { JurisdictionDomainModel, GetJurisdictionsOptions, UpdateJurisdictionDomainModel } from '../../@types'
+import {
+  JurisdictionDomainModel,
+  GetJurisdictionsOptions,
+  UpdateJurisdictionDomainModel,
+  CreateJurisdictionDomainModel
+} from '../../@types'
 import { JurisdictionEntityToDomain, JurisdictionDomainToEntityCreate } from './mappers'
 
 const ReadJurisdiction = CreateRepositoryMethod(
@@ -49,21 +54,21 @@ const ReadJurisdictions = CreateRepositoryMethod(connect => async (options?: Get
   return entities.map(JurisdictionEntityToDomain.mapper(options)).filter(isEffectiveJurisdiction)
 })
 
-const CreateJurisdictions = CreateRepositoryMethod(connect => async (jurisdictions: JurisdictionDomainModel[]): Promise<
-  JurisdictionDomainModel[]
-> => {
-  const connection = await connect('rw')
+const CreateJurisdictions = CreateRepositoryMethod(
+  connect => async (jurisdictions: CreateJurisdictionDomainModel[]): Promise<JurisdictionDomainModel[]> => {
+    const connection = await connect('rw')
 
-  const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
-    .getRepository(JurisdictionEntity)
-    .createQueryBuilder()
-    .insert()
-    .values(jurisdictions.map(JurisdictionDomainToEntityCreate.mapper()))
-    .returning('*')
-    .execute()
+    const { raw: entities }: InsertReturning<JurisdictionEntity> = await connection
+      .getRepository(JurisdictionEntity)
+      .createQueryBuilder()
+      .insert()
+      .values(jurisdictions.map(JurisdictionDomainToEntityCreate.mapper()))
+      .returning('*')
+      .execute()
 
-  return entities.map(JurisdictionEntityToDomain.mapper()).filter(isEffectiveJurisdiction)
-})
+    return entities.map(JurisdictionEntityToDomain.mapper()).filter(isEffectiveJurisdiction)
+  }
+)
 
 const UpdateJurisdiction = CreateRepositoryMethod(
   connect => async (jurisdiction_id: UUID, patch: UpdateJurisdictionDomainModel): Promise<JurisdictionDomainModel> => {

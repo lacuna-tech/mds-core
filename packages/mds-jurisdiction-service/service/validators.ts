@@ -22,8 +22,6 @@ import {
   ValidationError,
   SchemaBuilder
 } from '@mds-core/mds-schema-validators'
-import { JurisdictionDomainModel } from '@mds-core/mds-jurisdiction-service'
-import { uuid } from '@mds-core/mds-utils'
 import { CreateJurisdictionDomainModel } from '../@types'
 
 const createJurisdictionDomainModelSchema = SchemaBuilder.object().keys({
@@ -34,10 +32,12 @@ const createJurisdictionDomainModelSchema = SchemaBuilder.object().keys({
   timestamp: timestampSchema.optional()
 })
 
-export const ValidateJurisdictionForCreate = (jurisdiction: CreateJurisdictionDomainModel): JurisdictionDomainModel => {
+export const ValidateJurisdictionForCreate = (
+  jurisdiction: CreateJurisdictionDomainModel
+): CreateJurisdictionDomainModel => {
   try {
     ValidateSchema<CreateJurisdictionDomainModel>(jurisdiction, createJurisdictionDomainModelSchema)
-    return { jurisdiction_id: uuid(), timestamp: Date.now(), ...jurisdiction }
+    return jurisdiction
   } catch (error) {
     throw new ValidationError('Invalid Jurisdiction', { jurisdiction, error })
   }
