@@ -32,7 +32,7 @@ export const CreateRepository = <TRepositoryMethods>(
   { entities = [], migrations = [] }: RepositoryOptions = {}
 ) => {
   const migrationsTableName = `${name}-migrations`
-  const { connect, ...manager } = ConnectionManager(name, {
+  const { connect, ...manager } = new ConnectionManager(name, {
     migrationsTableName,
     entities,
     migrations: [CreateRepositoryMigration(migrationsTableName), ...migrations]
