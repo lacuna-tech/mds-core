@@ -59,7 +59,7 @@ function now(): Timestamp {
   return Date.now()
 }
 
-const APP_JSON = 'application/json; charset=utf-8'
+const APP_JSON = 'application/vnd.mds.agency+json; charset=utf-8; version=0.1'
 
 const PROVIDER_SCOPES = 'admin:all'
 const DEVICE_UUID = 'ec551174-f324-4251-bfed-28d9f3f473fc'
