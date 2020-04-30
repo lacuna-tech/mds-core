@@ -1,4 +1,4 @@
 import { writeEvent, writeTelemetry, shutdown } from './client'
-import { WebSocketServer } from './server'
+import { WebSocketServer } from './wsServer'
 
 export { writeEvent, writeTelemetry, WebSocketServer, shutdown }

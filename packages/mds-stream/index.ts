@@ -30,6 +30,9 @@ import {
 import { AgencyStreamKafka } from './kafka/agency-stream-kafka'
 import { KafkaStreamConsumer, KafkaStreamProducer } from './kafka'
 
+import { NatsStreamConsumer } from './nats/stream-consumer'
+import { NatsStreamProducer } from './nats/stream-producer'
+
 import { AgencyStreamNats } from './nats/agency-stream-nats'
 
 export { KafkaStreamConsumerOptions, KafkaStreamProducerOptions } from './kafka'
@@ -292,5 +295,7 @@ export default {
   writeStreamBatch,
   writeTelemetry,
   KafkaStreamConsumer,
-  KafkaStreamProducer
+  KafkaStreamProducer,
+  NatsStreamConsumer,
+  NatsStreamProducer
 }

@@ -6,7 +6,7 @@ import { PROVIDER_SCOPES } from '@mds-core/mds-test-data'
 import Sinon from 'sinon'
 import jwt from 'jsonwebtoken'
 import NodeRSA from 'node-rsa'
-import { WebSocketServer } from '../server'
+import { WebSocketServer } from '../wsServer'
 import { Clients } from '../clients'
 
 const JWT_AUDIENCE = 'https://example.com'
