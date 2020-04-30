@@ -35,14 +35,15 @@ export type ConnectionMode = typeof ConnectionModes[number]
 // Use parseInt for bigint columns so the values get returned as numbers instead of strings
 PostgresTypes.setTypeParser(20, Number)
 
-export type ConnectionManagerOptions = Partial<PostgresConnectionOptions>
+export type ConnectionManagerOptions = Partial<Omit<PostgresConnectionOptions, 'cli'>>
+export type ConnectionManagerCliOptions = Partial<PostgresConnectionOptions['cli']>
 
 export class ConnectionManager {
-  private connections: { [mode in ConnectionMode]: Nullable<Connection> } = { ro: null, rw: null }
+  private readonly connections: { [mode in ConnectionMode]: Nullable<Connection> } = { ro: null, rw: null }
 
-  private lock = new AwaitLock()
+  private readonly lock = new AwaitLock()
 
-  private instance: UUID = uuid()
+  private readonly instance: UUID = uuid()
 
   private connectionName = (mode: ConnectionMode): string => {
     const { prefix, instance } = this
@@ -85,23 +86,6 @@ export class ConnectionManager {
     return connections[mode]
   }
 
-  public connect = async (mode: ConnectionMode): Promise<Connection> => {
-    const { getConnection, connectionName } = this
-    const connection = await getConnection(mode)
-    if (!connection) {
-      /* istanbul ignore next */
-      throw RepositoryError(Error(`Connection ${connectionName(mode)} not found`))
-    }
-    if (!connection.isConnected) {
-      try {
-        await connection.connect()
-      } catch (error) /* istanbul ignore next */ {
-        throw RepositoryError(error)
-      }
-    }
-    return connection
-  }
-
   public initialize = async (): Promise<void> => {
     const { connect, options } = this
     const {
@@ -124,6 +108,23 @@ export class ConnectionManager {
     }
   }
 
+  public connect = async (mode: ConnectionMode): Promise<Connection> => {
+    const { getConnection, connectionName } = this
+    const connection = await getConnection(mode)
+    if (!connection) {
+      /* istanbul ignore next */
+      throw RepositoryError(Error(`Connection ${connectionName(mode)} not found`))
+    }
+    if (!connection.isConnected) {
+      try {
+        await connection.connect()
+      } catch (error) /* istanbul ignore next */ {
+        throw RepositoryError(error)
+      }
+    }
+    return connection
+  }
+
   public shutdown = async (): Promise<void> => {
     const { connections } = this
     try {
@@ -139,12 +140,12 @@ export class ConnectionManager {
     }
   }
 
-  public cli = (cli: Partial<ConnectionManagerOptions['cli']> = {}) => {
+  public cli = (options: ConnectionManagerCliOptions = {}) => {
     const { connectionOptions } = this
     // Make the "rw" connection the default for the TypeORM CLI by removing the connection name
     const { name, ...ormconfig } = connectionOptions('rw')
-    return { ...ormconfig, cli }
+    return { ...ormconfig, options }
   }
 
-  constructor(private prefix: string, private options: Omit<ConnectionManagerOptions, 'cli'> = {}) {}
+  constructor(private prefix: string, private options: ConnectionManagerOptions = {}) {}
 }
