@@ -14,24 +14,10 @@
     limitations under the License.
  */
 
-import test from 'unit.js'
-import { MdsNamingStrategy } from '../naming-strategies'
+import { ApiVersionMiddleware } from '@mds-core/mds-api-server'
+import { AUDIT_API_SUPPORTED_VERSIONS, AUDIT_API_DEFAULT_VERSION } from '../types'
 
-const strategy = new MdsNamingStrategy()
-
-describe('Test Naming Strategy', () => {
-  it('Primary Key Naming Strategy', done => {
-    test.value(strategy.primaryKeyName('table', ['column'])).is('table_pkey')
-    done()
-  })
-
-  it('Index Naming Strategy', done => {
-    test.value(strategy.indexName('table', ['column'])).is('idx_column_table')
-    done()
-  })
-
-  it('Unique Constraint Naming Strategy', done => {
-    test.value(strategy.uniqueConstraintName('table', ['column'])).is('uc_column_table')
-    done()
-  })
-})
+export const AuditApiVersionMiddleware = ApiVersionMiddleware(
+  'application/vnd.mds.audit+json',
+  AUDIT_API_SUPPORTED_VERSIONS
+).withDefaultVersion(AUDIT_API_DEFAULT_VERSION)
