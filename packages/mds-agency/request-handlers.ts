@@ -31,11 +31,22 @@ import {
   readPayload,
   computeCompositeVehicleData
 } from './utils'
+import {
+  AgencyRegisterVehicleResponse,
+  AgencyGetVehicleByIdResponse,
+  AgencyGetVehiclesByProviderResponse,
+  AgencyUpdateVehicleResponse,
+  AgencySubmitVehicleEventResponse,
+  AgencySubmitVehicleTelemetryResponse,
+  AgencyRegisterStopResponse,
+  AgencyReadStopsResponse,
+  AgencyReadStopResponse
+} from './types'
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 stream.initialize()
 
-export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
+export const registerVehicle = async (req: AgencyApiRequest, res: AgencyRegisterVehicleResponse) => {
   const { body } = req
   const recorded = now()
 
@@ -65,7 +76,9 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiRespo
 
   const failure = badDevice(device)
   if (failure) {
-    return res.status(400).send(failure)
+    if (typeof failure !== 'boolean') {
+      return res.status(400).send(failure)
+    }
   }
 
   // writing to the DB is the crucial part.  other failures should be noted as bugs but tolerated
@@ -83,7 +96,8 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiRespo
     } catch (err) {
       logger.error('writeRegisterEvent failure', err)
     }
-    res.status(201).send({ result: 'register device success', recorded, device })
+    const { version } = res.locals
+    res.status(201).send({ version, recorded, device })
   } catch (err) {
     if (String(err).includes('duplicate')) {
       res.status(409).send({
@@ -92,15 +106,15 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyApiRespo
       })
     } else if (String(err).includes('db')) {
       logger.error(providerName(res.locals.provider_id), 'register vehicle failed:', err)
-      res.status(500).send(new ServerError())
+      res.status(500).send({ error: new ServerError() })
     } else {
       logger.error(providerName(res.locals.provider_id), 'register vehicle failed:', err)
-      res.status(500).send(new ServerError())
+      res.status(500).send({ error: new ServerError() })
     }
   }
 }
 
-export const getVehicleById = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
+export const getVehicleById = async (req: AgencyApiRequest, res: AgencyGetVehicleByIdResponse) => {
   const { device_id } = req.params
 
   const { provider_id } = res.locals.scopes.includes('vehicles:read')
@@ -116,10 +130,11 @@ export const getVehicleById = async (req: AgencyApiRequest, res: AgencyApiRespon
     return
   }
   const compositeData = computeCompositeVehicleData(payload)
-  res.status(200).send(compositeData)
+  const { version } = res.locals
+  res.status(200).send({ version, ...compositeData })
 }
 
-export const getVehiclesByProvider = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
+export const getVehiclesByProvider = async (req: AgencyApiRequest, res: AgencyGetVehiclesByProviderResponse) => {
   const PAGE_SIZE = 1000
 
   const { skip = 0, take = PAGE_SIZE } = parseRequest(req, { parser: Number }).query('skip', 'take')
@@ -137,16 +152,17 @@ export const getVehiclesByProvider = async (req: AgencyApiRequest, res: AgencyAp
 
   try {
     const response = await getVehicles(skip, take, url, req.query, provider_id)
-    return res.status(200).send(response)
+    const { version } = res.locals
+    return res.status(200).send({ version, ...response })
   } catch (err) {
     logger.error('getVehicles fail', err)
-    return res.status(500).send(new ServerError())
+    return res.status(500).send({ error: new ServerError() })
   }
 }
 
 export async function updateVehicleFail(
   req: AgencyApiRequest,
-  res: AgencyApiResponse,
+  res: AgencyUpdateVehicleResponse,
   provider_id: UUID,
   device_id: UUID,
   err: Error | string
@@ -165,11 +181,11 @@ export async function updateVehicleFail(
     })
   } else {
     logger.error(providerName(provider_id), `fail PUT /vehicles/${device_id}`, req.body, err)
-    res.status(500).send(new ServerError())
+    res.status(500).send({ error: new ServerError() })
   }
 }
 
-export const updateVehicle = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
+export const updateVehicle = async (req: AgencyApiRequest, res: AgencyUpdateVehicleResponse) => {
   const { device_id } = req.params
 
   const { vehicle_id } = req.body
@@ -188,7 +204,9 @@ export const updateVehicle = async (req: AgencyApiRequest, res: AgencyApiRespons
       const device = await db.updateDevice(device_id, provider_id, update)
       // TODO should we warn instead of fail if the cache/stream doesn't work?
       await Promise.all([cache.writeDevice(device), stream.writeDevice(device)])
+      const { version } = res.locals
       return res.status(201).send({
+        version,
         result: 'success',
         vehicle: device
       })
@@ -198,7 +216,7 @@ export const updateVehicle = async (req: AgencyApiRequest, res: AgencyApiRespons
   }
 }
 
-export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
+export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencySubmitVehicleEventResponse) => {
   const { device_id } = req.params
 
   const { provider_id } = res.locals
@@ -230,8 +248,10 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
   }
 
   async function success() {
+    const { version } = res.locals
     function fin() {
       res.status(201).send({
+        version,
         result: 'success',
         recorded,
         device_id,
@@ -265,7 +285,7 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
       })
     } else {
       logger.error('post event fail:', event, message)
-      res.status(500).send(new ServerError())
+      res.status(500).send({ error: new ServerError() })
     }
   }
 
@@ -314,7 +334,7 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
   }
 }
 
-export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
+export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencySubmitVehicleTelemetryResponse) => {
   const start = Date.now()
 
   const { data } = req.body
@@ -393,7 +413,9 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
         )
       }
       if (recorded_telemetry.length) {
+        const { version } = res.locals
         res.status(201).send({
+          version,
           result: `telemetry success for ${valid.length} of ${data.length}`,
           recorded: now(),
           unique: recorded_telemetry.length,
@@ -429,50 +451,51 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyA
   }
 }
 
-export const registerStop = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
+export const registerStop = async (req: AgencyApiRequest, res: AgencyRegisterStopResponse) => {
   const stop = req.body
 
   try {
     isValidStop(stop)
     const recorded_stop = await db.writeStop(stop)
-    return res.status(201).send(recorded_stop)
-  } catch (err) {
-    if (err instanceof NotFoundError) {
-      return res.status(404).send(err.message)
+    const { version } = res.locals
+    return res.status(201).send({ version, ...recorded_stop })
+  } catch (error) {
+    if (error instanceof NotFoundError) {
+      return res.status(404).send({ error })
     }
-    if (err instanceof ValidationError) {
-      return res.status(400).send({ error: err })
+    if (error instanceof ValidationError) {
+      return res.status(400).send({ error })
     }
 
-    return res.status(500).send(new ServerError())
+    return res.status(500).send({ error: new ServerError() })
   }
 }
 
-export const readStop = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
+export const readStop = async (req: AgencyApiRequest, res: AgencyReadStopResponse) => {
   const { stop_id } = req.params
   try {
     const recorded_stop = await db.readStop(stop_id)
 
     if (!recorded_stop) {
-      return res.status(404).send(new NotFoundError())
+      return res.status(404).send({ error: new ServerError() })
     }
-
-    res.status(200).send(recorded_stop)
+    const { version } = res.locals
+    res.status(200).send({ version, ...recorded_stop })
   } catch (err) {
-    res.status(500).send(new ServerError())
+    res.status(500).send({ error: new ServerError() })
   }
 }
 
-export const readStops = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
+export const readStops = async (req: AgencyApiRequest, res: AgencyReadStopsResponse) => {
   try {
     const stops = await db.readStops()
 
     if (!stops) {
-      return res.status(404).send(new NotFoundError())
+      return res.status(404).send({ error: new ServerError() })
     }
-
-    res.status(200).send(stops)
+    const { version } = res.locals
+    res.status(200).send({ version, ...stops })
   } catch (err) {
-    return res.status(500).send(new ServerError())
+    return res.status(500).send({ error: new ServerError() })
   }
 }

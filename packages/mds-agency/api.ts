@@ -36,6 +36,7 @@ import { readAllVehicleIds } from './agency-candidate-request-handlers'
 import { getCacheInfo, wipeDevice, refreshCache } from './sandbox-admin-request-handlers'
 import { validateDeviceId } from './utils'
 import { AgencyApiAccessTokenScopes } from './types'
+import { AgencyApiVersionMiddleware } from './middleware/agency-api-version'
 
 const checkAgencyApiAccess = (validator: AccessTokenScopeValidator<AgencyApiAccessTokenScopes>) =>
   checkAccess(validator)
@@ -44,6 +45,8 @@ function api(app: express.Express): express.Express {
   /**
    * Agency-specific middleware to extract provider_id into locals, do some logging, etc.
    */
+  app.use(AgencyApiVersionMiddleware)
+
   app.use(async (req: AgencyApiRequest, res: AgencyApiResponse, next) => {
     try {
       // verify presence of provider_id
@@ -54,7 +57,7 @@ function api(app: express.Express): express.Express {
           if (!isUUID(provider_id)) {
             logger.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
             return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a UUID`
+              error: `invalid provider_id ${provider_id} is not a UUID`
             })
           }
 
