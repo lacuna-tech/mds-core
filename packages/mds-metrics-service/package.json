@@ -15,7 +15,7 @@
     "build": "tsc --build tsconfig.build.json",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --ignore-path ../../.gitignore '**/*.ts'",
-    "test:unit": "yarn typeorm schema:drop && DOTENV_CONFIG_PATH=../../.env nyc --lines 90 ts-mocha --project ../../tsconfig.json && yarn typeorm schema:drop",
+    "test:unit": "yarn typeorm schema:drop && DOTENV_CONFIG_PATH=../../.env nyc ts-mocha --project ../../tsconfig.json && yarn typeorm schema:drop",
     "ts-node": "DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config",
     "typeorm": "yarn ts-node ./node_modules/.bin/typeorm"
   },
