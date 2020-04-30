@@ -21,14 +21,14 @@ export interface MetricDomainModel {
   name: string
   time_bin_size: Timestamp
   time_bin_start: Timestamp
-  provider_id: UUID
+  provider_id: Nullable<UUID>
   geography_id: Nullable<UUID>
-  vehicle_type: VEHICLE_TYPE
-  count: number
-  sum: number
-  min: number
-  max: number
-  avg: number
+  vehicle_type: Nullable<VEHICLE_TYPE>
+  count: Nullable<number>
+  sum: Nullable<number>
+  min: Nullable<number>
+  max: Nullable<number>
+  avg: Nullable<number>
 }
 
 export interface ReadMetricsTimeOptions {
@@ -38,9 +38,9 @@ export interface ReadMetricsTimeOptions {
 }
 
 export interface ReadMetricsFilterOptions {
-  provider_id: SingleOrArray<UUID>
-  geography_id: SingleOrArray<UUID>
-  vehicle_type: SingleOrArray<VEHICLE_TYPE>
+  provider_id: Nullable<SingleOrArray<UUID>>
+  geography_id: Nullable<SingleOrArray<UUID>>
+  vehicle_type: Nullable<SingleOrArray<VEHICLE_TYPE>>
 }
 
 export interface ReadMetricsOptions extends ReadMetricsTimeOptions, Partial<ReadMetricsFilterOptions> {

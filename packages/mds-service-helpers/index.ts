@@ -15,6 +15,8 @@
     limitations under the License.
  */
 
+import { NotFoundError, ValidationError, ConflictError } from '@mds-core/mds-utils'
+
 interface ServiceErrorDescriptor {
   type: 'ServiceException' | 'NotFoundError' | 'ConflictError' | 'ValidationError'
   message: string
@@ -49,12 +51,26 @@ export const HandleServiceResponse = <R>(
   return response
 }
 
-export const ServiceException = (message: string, error?: Error) =>
-  ServiceError({
-    type: 'ServiceException',
-    message,
-    details: (error instanceof Error && error.message) || undefined
-  })
+export const ServiceException = (message: string, error?: unknown) => {
+  const details = (error instanceof Error && error.message) || undefined
+
+  /* istanbul ignore if */
+  if (error instanceof NotFoundError) {
+    return ServiceError({ type: 'NotFoundError', message, details })
+  }
+
+  /* istanbul ignore if */
+  if (error instanceof ValidationError) {
+    return ServiceError({ type: 'ValidationError', message, details })
+  }
+
+  /* istanbul ignore if */
+  if (error instanceof ConflictError) {
+    return ServiceError({ type: 'ConflictError', message, details })
+  }
+
+  return ServiceError({ type: 'ServiceException', message, details })
+}
 
 export type ServiceProvider<TServiceInterface> = TServiceInterface & {
   initialize: () => Promise<void>
