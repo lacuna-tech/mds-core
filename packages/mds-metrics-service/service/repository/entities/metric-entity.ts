@@ -14,56 +14,68 @@
     limitations under the License.
  */
 
-import { Entity, Column } from 'typeorm'
-import { UUID, Timestamp, Nullable, VEHICLE_TYPE } from '@mds-core/mds-types'
-import { RecordedEntityModel, RecordedEntity, BigintTransformer } from '@mds-core/mds-repository'
+import { Entity, Column, Index } from 'typeorm'
+import {
+  BigintTransformer,
+  IdentityEntity,
+  IdentityEntityModel,
+  RecordedEntity,
+  RecordedEntityModel
+} from '@mds-core/mds-repository'
+import { MetricDomainModel } from '../../../@types'
 
-export interface MetricEntityModel extends RecordedEntityModel {
-  name: string
-  time_bin_size: Timestamp
-  time_bin_start: Timestamp
-  provider_id: UUID
-  geography_id: Nullable<UUID>
-  vehicle_type: VEHICLE_TYPE
-  count: number
-  sum: number
-  min: number
-  max: number
-  avg: number
+export interface MetricEntityModel extends IdentityEntityModel, RecordedEntityModel {
+  name: MetricDomainModel['name']
+  time_bin_size: MetricDomainModel['time_bin_size']
+  time_bin_start: MetricDomainModel['time_bin_start']
+  provider_id: MetricDomainModel['provider_id']
+  geography_id: MetricDomainModel['geography_id']
+  vehicle_type: MetricDomainModel['vehicle_type']
+  count: MetricDomainModel['count']
+  sum: MetricDomainModel['sum']
+  min: MetricDomainModel['min']
+  max: MetricDomainModel['max']
+  avg: MetricDomainModel['avg']
 }
 
 @Entity('metrics')
-export class MetricEntity extends RecordedEntity implements MetricEntityModel {
+@Index(
+  'idx_dimensions_metrics',
+  ['name', 'time_bin_size', 'time_bin_start', 'provider_id', 'vehicle_type', 'geography_id'],
+  { unique: true }
+)
+export class MetricEntity extends IdentityEntity(RecordedEntity(class {}), { primary: true })
+  implements MetricEntityModel {
   @Column('varchar', { primary: true, length: 255 })
-  name: string
+  name: MetricEntityModel['name']
 
   @Column('bigint', { primary: true, transformer: BigintTransformer })
-  time_bin_size: Timestamp
+  time_bin_size: MetricEntityModel['time_bin_size']
 
   @Column('bigint', { primary: true, transformer: BigintTransformer })
-  time_bin_start: Timestamp
+  time_bin_start: MetricEntityModel['time_bin_start']
 
-  @Column('uuid', { primary: true })
-  provider_id: UUID
+  @Column('uuid', { nullable: true })
+  provider_id: MetricEntityModel['provider_id']
 
-  @Column('uuid', { primary: true, nullable: true })
-  geography_id: Nullable<UUID>
+  @Column('uuid', { nullable: true })
+  geography_id: MetricEntityModel['geography_id']
 
-  @Column('varchar', { primary: true, length: 31 })
-  vehicle_type: VEHICLE_TYPE
+  @Column('varchar', { length: 31, nullable: true })
+  vehicle_type: MetricEntityModel['vehicle_type']
 
-  @Column('bigint', { transformer: BigintTransformer })
-  count: number
+  @Column('bigint', { transformer: BigintTransformer, nullable: true })
+  count: MetricEntityModel['count']
 
-  @Column('double precision')
-  sum: number
+  @Column('double precision', { nullable: true })
+  sum: MetricEntityModel['sum']
 
-  @Column('double precision')
-  min: number
+  @Column('double precision', { nullable: true })
+  min: MetricEntityModel['min']
 
-  @Column('double precision')
-  max: number
+  @Column('double precision', { nullable: true })
+  max: MetricEntityModel['max']
 
-  @Column('double precision')
-  avg: number
+  @Column('double precision', { nullable: true })
+  avg: MetricEntityModel['avg']
 }

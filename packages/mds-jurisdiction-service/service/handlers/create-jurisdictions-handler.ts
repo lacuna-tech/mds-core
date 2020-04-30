@@ -14,42 +14,22 @@
     limitations under the License.
  */
 
-import { ServiceResponse, ServiceResult, ServiceError, ServiceException } from '@mds-core/mds-service-helpers'
-import { ValidationError } from '@mds-core/mds-utils'
+import { ServiceResponse, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
-import { v4 as uuid } from 'uuid'
 import { RepositoryError } from '@mds-core/mds-repository'
-import { CreateJurisdictionType, JurisdictionDomainModel } from '../../@types'
-import { JursidictionMapper } from '../repository/model-mappers'
+import { CreateJurisdictionDomainModel, JurisdictionDomainModel } from '../../@types'
 import { JurisdictionRepository } from '../repository'
-import { ValidateJurisdiction } from './jurisdiction-schema-validators'
+import { ValidateJurisdictionForCreate } from '../validators'
 
 export const CreateJurisdictionsHandler = async (
-  jurisdictions: CreateJurisdictionType[]
+  models: CreateJurisdictionDomainModel[]
 ): Promise<ServiceResponse<JurisdictionDomainModel[]>> => {
-  const recorded = Date.now()
   try {
-    const entities = await JurisdictionRepository.writeJurisdictions(
-      JursidictionMapper.fromDomainModel(
-        jurisdictions.map(({ jurisdiction_id = uuid(), timestamp = recorded, ...jurisdiction }) =>
-          ValidateJurisdiction({
-            jurisdiction_id,
-            timestamp,
-            ...jurisdiction
-          })
-        )
-      ).toEntityModel({ recorded })
-    )
-    const created = JursidictionMapper.fromEntityModel(entities).toDomainModel({ effective: recorded })
-    return ServiceResult(created)
+    const jurisdictions = await JurisdictionRepository.createJurisdictions(models.map(ValidateJurisdictionForCreate))
+    return ServiceResult(jurisdictions)
   } catch (error) /* istanbul ignore next */ {
-    logger.error('Error Creating Jurisdictions', error)
-    if (error instanceof ValidationError) {
-      return ServiceError({ type: 'ValidationError', message: 'Error Creating Jurisdictions', details: error.message })
-    }
-    if (RepositoryError.is.uniqueViolationError(error)) {
-      return ServiceError({ type: 'ConflictError', message: 'Error Creating Jurisdictions', details: error.message })
-    }
-    return ServiceException('Error Creating Jurisdictions', error)
+    const exception = ServiceException('Error Creating Jurisdictions', RepositoryError(error))
+    logger.error(exception, error)
+    return exception
   }
 }

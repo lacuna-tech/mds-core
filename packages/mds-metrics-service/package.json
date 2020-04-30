@@ -18,9 +18,10 @@
     "pbjs": "pbjs -t static-module --es6 --keep-case --no-create --no-encode --no-decode --no-verify --no-convert -w commonjs -o proto/index.js service.proto",
     "pbts": "pbts -o proto/index.d.ts proto/index.js",
     "test": "yarn test:eslint && yarn test:unit",
-    "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
-    "test:unit": "yarn typeorm schema:drop && DOTENV_CONFIG_PATH=../../.env nyc --lines 90 ts-mocha --project ../../tsconfig.json && yarn typeorm schema:drop",
-    "typeorm": "DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config ./node_modules/.bin/typeorm"
+    "test:eslint": "eslint --ignore-path ../../.gitignore '**/*.ts'",
+    "test:unit": "yarn typeorm schema:drop && DOTENV_CONFIG_PATH=../../.env nyc ts-mocha --project ../../tsconfig.json && yarn typeorm schema:drop",
+    "ts-node": "DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config",
+    "typeorm": "yarn ts-node ./node_modules/.bin/typeorm"
   },
   "author": "City of Los Angeles",
   "license": "Apache-2.0",
@@ -32,8 +33,7 @@
     "@mds-core/mds-types": "0.1.23",
     "@mds-core/mds-utils": "0.1.26",
     "protobufjs": "6.8.9",
-    "typeorm": "0.2.24",
-    "uuid": "7.0.3"
+    "typeorm": "0.2.24"
   },
   "devDependencies": {}
 }

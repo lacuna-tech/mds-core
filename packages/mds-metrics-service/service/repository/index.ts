@@ -14,73 +14,63 @@
     limitations under the License.
  */
 
-import {
-  CreateRepository,
-  CreateRepositoryMethod,
-  InsertReturning,
-  entityPropertyFilter,
-  RepositoryError
-} from '@mds-core/mds-repository'
-import { DeepPartial, Between } from 'typeorm'
+import { InsertReturning, entityPropertyFilter, RepositoryError, ReadWriteRepository } from '@mds-core/mds-repository'
+import { Between } from 'typeorm'
 import { timeframe } from '@mds-core/mds-utils'
 
 import { MetricEntity } from './entities'
-import { ReadMetricsOptions } from '../../@types'
+import { ReadMetricsOptions, MetricDomainModel } from '../../@types'
 import * as migrations from './migrations'
+import { MetricEntityToDomain, MetricDomainToEntityCreate } from './mappers'
 
-const RepositoryReadMetrics = CreateRepositoryMethod(connect => async (options: ReadMetricsOptions): Promise<
-  MetricEntity[]
-> => {
-  try {
-    const { name, time_bin_size, time_bin_start, time_bin_end, provider_id, geography_id, vehicle_type } = options
-    const connection = await connect('ro')
-    const entities = await connection.getRepository(MetricEntity).find({
-      where: {
-        name,
-        time_bin_size,
-        time_bin_start: Between(
-          timeframe(time_bin_size, time_bin_start).start_time,
-          timeframe(time_bin_size, time_bin_end ?? time_bin_start).end_time
-        ),
-        ...entityPropertyFilter<MetricEntity, 'provider_id'>('provider_id', provider_id),
-        ...entityPropertyFilter<MetricEntity, 'geography_id'>('geography_id', geography_id),
-        ...entityPropertyFilter<MetricEntity, 'vehicle_type'>('vehicle_type', vehicle_type)
-      }
-    })
-    return entities
-  } catch (error) {
-    throw RepositoryError.create(error)
-  }
-})
-
-const RepositoryWriteMetrics = CreateRepositoryMethod(connect => async (metrics: DeepPartial<MetricEntity>[]): Promise<
-  MetricEntity[]
-> => {
-  try {
-    const connection = await connect('rw')
-    const { raw: entities }: InsertReturning<MetricEntity> = await connection
-      .getRepository(MetricEntity)
-      .createQueryBuilder()
-      .insert()
-      .values(metrics)
-      .returning('*')
-      .execute()
-    return entities
-  } catch (error) {
-    throw RepositoryError.create(error)
-  }
-})
-
-export const MetricsRepository = CreateRepository(
-  'metrics',
-  connect => {
-    return {
-      readMetrics: RepositoryReadMetrics(connect),
-      writeMetrics: RepositoryWriteMetrics(connect)
+class MetricsReadWriteRepository extends ReadWriteRepository {
+  public readMetrics = async (options: ReadMetricsOptions): Promise<MetricDomainModel[]> => {
+    const { connect } = this
+    try {
+      const { name, time_bin_size, time_bin_start, time_bin_end, provider_id, geography_id, vehicle_type } = options
+      const connection = await connect('ro')
+      const entities = await connection.getRepository(MetricEntity).find({
+        where: {
+          name,
+          time_bin_size,
+          time_bin_start: Between(
+            timeframe(time_bin_size, time_bin_start).start_time,
+            timeframe(time_bin_size, time_bin_end ?? time_bin_start).end_time
+          ),
+          ...entityPropertyFilter<MetricEntity, 'provider_id'>('provider_id', provider_id),
+          ...entityPropertyFilter<MetricEntity, 'geography_id'>('geography_id', geography_id),
+          ...entityPropertyFilter<MetricEntity, 'vehicle_type'>('vehicle_type', vehicle_type)
+        }
+      })
+      return entities.map(MetricEntityToDomain.mapper())
+    } catch (error) {
+      throw RepositoryError(error)
     }
-  },
-  {
-    entities: [MetricEntity],
-    migrations: Object.values(migrations)
   }
-)
+
+  public writeMetrics = async (metrics: MetricDomainModel[]): Promise<MetricDomainModel[]> => {
+    const { connect } = this
+    try {
+      const connection = await connect('rw')
+      const { raw: entities }: InsertReturning<MetricEntity> = await connection
+        .getRepository(MetricEntity)
+        .createQueryBuilder()
+        .insert()
+        .values(metrics.map(MetricDomainToEntityCreate.mapper()))
+        .returning('*')
+        .execute()
+      return entities
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  constructor() {
+    super('metrics', {
+      entities: [MetricEntity],
+      migrations: Object.values(migrations)
+    })
+  }
+}
+
+export const MetricsRepository = new MetricsReadWriteRepository()

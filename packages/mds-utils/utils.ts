@@ -29,9 +29,9 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_STATUS,
   BBox,
-  VEHICLE_EVENT
+  VEHICLE_EVENT,
+  SingleOrArray
 } from '@mds-core/mds-types'
-import { TelemetryRecord } from '@mds-core/mds-db/types'
 import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
 
@@ -461,31 +461,6 @@ function csv<T>(list: T[] | Readonly<T[]>): string {
 function inc(map: { [key: string]: number }, key: string) {
   return Object.assign(map, { [key]: map[key] ? map[key] + 1 : 1 })
 }
-function convertTelemetryToTelemetryRecord(telemetry: Telemetry): TelemetryRecord {
-  const {
-    gps: { lat, lng, altitude, heading, speed, accuracy },
-    recorded = now(),
-    ...props
-  } = telemetry
-  return {
-    ...props,
-    lat,
-    lng,
-    altitude,
-    heading,
-    speed,
-    accuracy,
-    recorded
-  }
-}
-
-function convertTelemetryRecordToTelemetry(telemetryRecord: TelemetryRecord): Telemetry {
-  const { lat, lng, altitude, heading, speed, accuracy, ...props } = telemetryRecord
-  return {
-    ...props,
-    gps: { lat, lng, altitude, heading, speed, accuracy }
-  }
-}
 
 function pathsFor(path: string): string[] {
   const { PATH_PREFIX } = process.env
@@ -615,6 +590,10 @@ const parseObjectProperties = <T = string>(
   }
 }
 
+const asArray = <T>(value: SingleOrArray<T>): T[] => (Array.isArray(value) ? value : [value])
+
+const pluralize = (count: number, singular: string, plural: string) => (count === 1 ? singular : plural)
+
 export {
   UUID_REGEX,
   isUUID,
@@ -650,8 +629,6 @@ export {
   tail,
   isStateTransitionValid,
   pointInGeometry,
-  convertTelemetryToTelemetryRecord,
-  convertTelemetryRecordToTelemetry,
   getPolygon,
   isInStatesOrEvents,
   routeDistance,
@@ -662,5 +639,7 @@ export {
   parseRelative,
   getCurrentDate,
   getEnvVar,
-  parseObjectProperties
+  parseObjectProperties,
+  asArray,
+  pluralize
 }

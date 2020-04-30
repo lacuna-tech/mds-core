@@ -14,8 +14,8 @@
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "test": "yarn test:eslint && yarn test:unit",
-    "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
-    "test:unit": "DOTENV_CONFIG_PATH=../../.env nyc --lines 90 ts-mocha --project ../../tsconfig.json"
+    "test:eslint": "eslint --ignore-path ../../.gitignore '**/*.ts'",
+    "test:unit": "DOTENV_CONFIG_PATH=../../.env nyc ts-mocha --project ../../tsconfig.json"
   },
   "author": "City of Los Angeles",
   "license": "Apache-2.0",
@@ -24,7 +24,8 @@
     "@mds-core/mds-providers": "0.1.26",
     "@mds-core/mds-types": "0.1.23",
     "@mds-core/mds-utils": "0.1.26",
-    "pg": "8.0.2",
+    "await-lock": "2.0.1",
+    "pg": "8.0.3",
     "typeorm": "0.2.24"
   },
   "devDependencies": {

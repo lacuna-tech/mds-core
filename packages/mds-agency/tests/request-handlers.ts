@@ -1,9 +1,9 @@
 import Sinon from 'sinon'
 import assert from 'assert'
-import { v4 as uuid } from 'uuid'
+import { uuid } from '@mds-core/mds-utils'
 import { Device, VEHICLE_TYPES } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
-import cache from '@mds-core/mds-cache'
+import cache from '@mds-core/mds-agency-cache'
 import stream from '@mds-core/mds-stream'
 import { AgencyApiRequest, AgencyApiResponse } from '../types'
 import {
