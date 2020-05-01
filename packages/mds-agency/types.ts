@@ -43,15 +43,15 @@ export type AgencySubmitVehicleTelemetryResponse = AgencyApiResponse<{
 
 export type AgencyRegisterStopResponse = AgencyApiResponse<Recorded<Stop>>
 export type AgencyReadStopResponse = AgencyApiResponse<Recorded<Stop>>
-export type AgencyReadStopsResponse = AgencyApiResponse<
-  Readonly<
+export type AgencyReadStopsResponse = AgencyApiResponse<{
+  stops: Readonly<
     Required<
       Stop & {
         id: number
       }
     >
   >[]
->
+}>
 
 export interface ServiceArea {
   service_area_id: UUID
