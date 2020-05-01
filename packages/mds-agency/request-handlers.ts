@@ -1,6 +1,16 @@
 import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
 import logger from '@mds-core/mds-logger'
-import { isUUID, now, ServerError, ValidationError, NotFoundError, normalizeToArray } from '@mds-core/mds-utils'
+import {
+  isUUID,
+  now,
+  ServerError,
+  ValidationError,
+  NotFoundError,
+  normalizeToArray,
+  BadParamsError,
+  ConflictError,
+  DependencyMissingError
+} from '@mds-core/mds-utils'
 import { isValidStop, isValidDevice, validateEvent, isValidTelemetry } from '@mds-core/mds-schema-validators'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-agency-cache'
@@ -101,8 +111,7 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyRegister
   } catch (err) {
     if (String(err).includes('duplicate')) {
       res.status(409).send({
-        error: 'already_registered',
-        error_description: 'A vehicle with this device_id is already registered'
+        error: new ConflictError('A vehicle with this device_id is already registered')
       })
     } else if (String(err).includes('db')) {
       logger.error(providerName(res.locals.provider_id), 'register vehicle failed:', err)
@@ -274,14 +283,12 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencySubmi
     if (message.includes('duplicate')) {
       logger.info(name, 'duplicate event', event.event_type)
       res.status(409).send({
-        error: 'duplicate_event',
-        error_description: 'an event with this device_id and timestamp has already been received'
+        error: new ConflictError('an event with this device_id and timestamp has already been received')
       })
     } else if (message.includes('not found') || message.includes('unregistered')) {
       logger.info(name, 'event for unregistered', event.device_id, event.event_type)
       res.status(400).send({
-        error: 'unregistered',
-        error_description: 'the specified device_id has not been registered'
+        error: new DependencyMissingError('the specified device_id has not been registered')
       })
     } else {
       logger.error('post event fail:', event, message)
@@ -341,8 +348,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyS
   const { provider_id } = res.locals
   if (!provider_id) {
     res.status(400).send({
-      error: 'bad_param',
-      error_description: 'bad or missing provider_id'
+      error: new BadParamsError('bad or missing provider_id')
     })
     return
   }
@@ -424,10 +430,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyS
       } else {
         logger.info(name, 'no unique telemetry in', data.length, 'items')
         res.status(400).send({
-          error: 'invalid_data',
-          error_description: 'none of the provided data was unique',
-          result: 'no new valid telemetry submitted',
-          unique: 0
+          error: new ValidationError('none of the provided data was unique')
         })
       }
     } else {
@@ -435,18 +438,14 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyS
       const fails = `${JSON.stringify(failures).substring(0, 128)} ...`
       logger.info(name, 'no valid telemetry in', data.length, 'items:', body, 'failures:', fails)
       res.status(400).send({
-        error: 'invalid_data',
-        error_description: 'none of the provided data was valid',
-        result: 'no valid telemetry submitted',
-        failures
+        error: new ValidationError('none of the provided data was valid', { failures })
       })
     }
   } catch (err) {
     res.status(400).send({
-      error: 'invalid_data',
-      error_description: 'none of the provided data was valid',
-      result: 'no valid telemetry submitted',
-      failures: [`device_id ${data[0].device_id}: not found`]
+      error: new ValidationError('none of the provided data was valid.', {
+        failures: [` device_id ${data[0].device_id}: not found`]
+      })
     })
   }
 }
@@ -494,7 +493,7 @@ export const readStops = async (req: AgencyApiRequest, res: AgencyReadStopsRespo
       return res.status(404).send({ error: new ServerError() })
     }
     const { version } = res.locals
-    res.status(200).send({ version, ...stops })
+    res.status(200).send({ version, stops })
   } catch (err) {
     return res.status(500).send({ error: new ServerError() })
   }

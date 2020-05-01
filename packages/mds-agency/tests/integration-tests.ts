@@ -142,30 +142,6 @@ after(async () => {
 })
 
 describe('Tests API', () => {
-  it('verifies non-uuid provider_id is rejected', done => {
-    request
-      .get('/devices')
-      .set('Authorization', AUTH_GARBAGE_PROVIDER)
-      .expect(400)
-      .end((err, result) => {
-        test.value(result).hasHeader('content-type', APP_JSON)
-        test.string(result.body.result).contains('invalid provider_id', 'is not a UUID')
-        done(err)
-      })
-  })
-
-  it('verifies unknown provider_id is rejected', done => {
-    request
-      .get('/devices')
-      .set('Authorization', AUTH_UNKNOWN_UUID_PROVIDER)
-      .expect(400)
-      .end((err, result) => {
-        test.value(result).hasHeader('content-type', APP_JSON)
-        test.string(result.body.result).contains('invalid provider_id', 'is not a known provider')
-        done(err)
-      })
-  })
-
   it('verifies unable to access admin if not scoped', done => {
     request
       .get('/admin/cache/info')
@@ -362,7 +338,7 @@ describe('Tests API', () => {
       .expect(201)
       .end((err, result) => {
         log('err', err, 'body', result.body)
-        test.string(result.body.result).contains('success')
+        test.value(result.body.device.device_id, TEST_VEHICLE.device_id)
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -442,7 +418,7 @@ describe('Tests API', () => {
       .expect(409)
       .end((err, result) => {
         log('err', err, 'body', result.body)
-        test.string(result.body.error).contains('already_registered')
+        test.string(result.body.error.reason).contains('already registered')
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -682,7 +658,7 @@ describe('Tests API', () => {
       .expect(400)
       .end((err, result) => {
         log('post event err', result.body)
-        test.string(result.body.error).contains('unregistered')
+        test.string(result.body.error.reason).contains('the specified device_id has not been registered')
         done(err)
       })
   })
@@ -747,7 +723,9 @@ describe('Tests API', () => {
       .expect(409)
       .end((err, result) => {
         // log('post event', result.body)
-        test.string(result.body.error).contains('duplicate')
+        test
+          .string(result.body.error.reason)
+          .contains('an event with this device_id and timestamp has already been received')
         done(err)
       })
   })
@@ -763,7 +741,7 @@ describe('Tests API', () => {
       .expect(400)
       .end((err, result) => {
         // log('----> post event meant to fail', result.body)
-        test.string(result.body.error).contains('unregistered')
+        test.string(result.body.error.reason).contains('the specified device_id has not been registered')
         done(err)
       })
   })
@@ -1178,7 +1156,7 @@ describe('Tests API', () => {
           log('telemetry err', err)
         } else {
           // log('telemetry result', result)
-          test.string(result.body.result).contains('no new valid')
+          test.string(result.body.error.reason).contains('none of the provided data was unique')
         }
         done(err)
       })
@@ -1210,7 +1188,6 @@ describe('Tests API', () => {
           log('telemetry err', err)
         } else {
           log('telemetry result', result.body)
-          test.value(result.body.failures.length).is(1)
         }
         done(err)
       })
@@ -1229,10 +1206,10 @@ describe('Tests API', () => {
       .expect(400)
       .end((err, result) => {
         if (err) {
-          log('telemetry err', err)
+          log('post bad telemetry err', err)
         } else {
-          log('telemetry result', result.body)
-          test.value(result.body.failures.length).is(1)
+          log('post bad telemetry result', result.body)
+          test.value(result.body.error.info.failures.length).is(1)
         }
         done(err)
       })
@@ -1254,7 +1231,7 @@ describe('Tests API', () => {
           log('telemetry err', err)
         } else {
           log('telemetry result', result.body)
-          test.value(result.body.failures.length).is(1)
+          test.value(result.body.error.info.failures.length).is(1)
         }
         done(err)
       })
@@ -1276,7 +1253,7 @@ describe('Tests API', () => {
           log('telemetry err', err)
         } else {
           log('telemetry result', result.body)
-          test.value(result.body.failures.length).is(1)
+          test.value(result.body.error.info.failures.length).is(1)
         }
         done(err)
       })
@@ -1298,7 +1275,7 @@ describe('Tests API', () => {
           log('telemetry err', err)
         } else {
           log('telemetry result', result.body)
-          test.value(result.body.failures.length).is(1)
+          test.value(result.body.error.info.failures.length).is(1)
         }
         done(err)
       })
@@ -1313,10 +1290,10 @@ describe('Tests API', () => {
       .expect(400)
       .end((err, result) => {
         if (err) {
-          log('telemetry err', err)
+          log('telemetry err with mismatched provider', err)
         } else {
-          log('telemetry result', result.body)
-          test.value(result.body.failures.length).is(1)
+          log('telemetry result with mismatched provider', result.body)
+          test.value(result.body.error.info.failures.length).is(1)
         }
         done(err)
       })
@@ -1560,8 +1537,8 @@ describe('Tests Stops', async () => {
       .set('Authorization', AUTH)
       .expect(200)
       .end((err, result) => {
-        test.assert(result.body.length === 1)
-        test.assert(result.body[0].stop_id === TEST_STOP.stop_id)
+        test.assert(result.body.stops.length === 1)
+        test.assert(result.body.stops[0].stop_id === TEST_STOP.stop_id)
         done(err)
       })
   })
