@@ -17,4 +17,4 @@
 import { ServiceController } from '@mds-core/mds-service-helpers'
 import { JurisdictionServiceProvider } from '../service/provider'
 
-ServiceController.start(JurisdictionServiceProvider)
+ServiceController(JurisdictionServiceProvider).start()

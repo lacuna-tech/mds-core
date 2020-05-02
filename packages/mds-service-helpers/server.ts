@@ -16,6 +16,7 @@
 
 import logger from '@mds-core/mds-logger'
 import { hours } from '@mds-core/mds-utils'
+import { Nullable } from '@mds-core/mds-types'
 import { ServiceProvider } from './@types'
 
 type ProcessMonitorOptions = Partial<{
@@ -23,11 +24,14 @@ type ProcessMonitorOptions = Partial<{
   signals: NodeJS.Signals[]
 }>
 
-const ProcessMonitor = async <TServiceInterface>(
+type ProcessMonitor = {
+  stop: () => Promise<void>
+}
+
+export const ServiceMonitor = async <TServiceInterface>(
   service: ServiceProvider<TServiceInterface>,
-  onSignal: (signal: NodeJS.Signals) => Promise<void>,
   options: ProcessMonitorOptions = {}
-) => {
+): Promise<ProcessMonitor> => {
   const { interval = hours(1), signals = ['SIGINT', 'SIGTERM'] } = options
 
   const {
@@ -47,39 +51,38 @@ const ProcessMonitor = async <TServiceInterface>(
     logger.info(`Monitoring service ${version} for ${signals.join(', ')}`)
   }, interval)
 
+  const shutdown = async (signal: NodeJS.Signals) => {
+    clearInterval(timeout)
+    logger.info(`Terminating service ${version} on ${signal}`)
+    await service.shutdown()
+  }
+
   // Monitor process for signals
   signals.forEach(signal =>
     process.on(signal, async () => {
-      clearInterval(timeout)
-      logger.info(`Terminating service ${version} on ${signal}`)
-      await onSignal(signal)
+      await shutdown(signal)
     })
   )
 
-  return async () => {
-    clearInterval(timeout)
-    logger.info(`Terminating service ${version}`)
-    await service.shutdown()
-  }
+  return { stop: async () => shutdown('SIGUSR1') }
 }
 
-const ServiceProcess = async <TServiceInterface>(
+export const ServiceController = <TServiceInterface>(
   service: ServiceProvider<TServiceInterface>,
-  options?: ProcessMonitorOptions
+  options: ProcessMonitorOptions = {}
 ) => {
-  // Initialize the service
-  return ProcessMonitor(
-    service,
-    async signal => {
-      await service.shutdown()
+  let monitor: Nullable<ProcessMonitor> = null
+  return {
+    start: async () => {
+      if (!monitor) {
+        monitor = await ServiceMonitor(service, options)
+      }
     },
-    options
-  )
-}
-
-export const ServiceController = {
-  start: <TServiceInterface>(service: ServiceProvider<TServiceInterface>, options?: ProcessMonitorOptions) => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    return ServiceProcess(service, options)
+    stop: async () => {
+      if (monitor) {
+        await monitor.stop()
+        monitor = null
+      }
+    }
   }
 }

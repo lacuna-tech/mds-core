@@ -20,7 +20,7 @@ import { ServiceController } from '../server'
 describe('Tests Service Helpers', () => {
   it('Test ServiceController', async () => {
     let started = false
-    const shutdown = await ServiceController.start({
+    const controller = ServiceController({
       initialize: async () => {
         started = true
       },
@@ -28,8 +28,9 @@ describe('Tests Service Helpers', () => {
         started = false
       }
     })
+    await controller.start()
     test.value(started).is(true)
-    await shutdown()
+    await controller.stop()
     test.value(started).is(false)
   })
 })
