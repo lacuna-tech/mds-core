@@ -15,12 +15,12 @@
  */
 
 import test from 'unit.js'
-import { ServiceController } from '../server'
+import { ServiceManager } from '../server'
 
 describe('Tests Service Helpers', () => {
-  it('Test ServiceController', async () => {
+  it('Test ServiceManager Controller', async () => {
     let started = false
-    const controller = ServiceController({
+    const controller = ServiceManager.controller({
       initialize: async () => {
         started = true
       },

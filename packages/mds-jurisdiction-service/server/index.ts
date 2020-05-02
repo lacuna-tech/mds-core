@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import { ServiceRunner } from '@mds-core/mds-service-helpers'
+import { ServiceManager } from '@mds-core/mds-service-helpers'
 import { JurisdictionServiceProvider } from '../service/provider'
 
-ServiceRunner(JurisdictionServiceProvider).start()
+ServiceManager.start(JurisdictionServiceProvider)

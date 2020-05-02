@@ -28,7 +28,7 @@ type ProcessMonitor = {
   stop: () => Promise<void>
 }
 
-export const ServiceMonitor = async <TServiceInterface>(
+const ServiceMonitor = async <TServiceInterface>(
   service: ServiceProvider<TServiceInterface>,
   options: ProcessMonitorOptions = {}
 ): Promise<ProcessMonitor> => {
@@ -67,32 +67,25 @@ export const ServiceMonitor = async <TServiceInterface>(
   return { stop: async () => shutdown('SIGUSR1') }
 }
 
-export const ServiceController = <TServiceInterface>(
-  service: ServiceProvider<TServiceInterface>,
-  options: ProcessMonitorOptions = {}
-) => {
-  let monitor: Nullable<ProcessMonitor> = null
-  return {
-    start: async () => {
-      if (!monitor) {
-        monitor = await ServiceMonitor(service, options)
-      }
-    },
-    stop: async () => {
-      if (monitor) {
-        await monitor.stop()
-        monitor = null
+export const ServiceManager = {
+  start: <TServiceInterface>(service: ServiceProvider<TServiceInterface>, options: ProcessMonitorOptions = {}) => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ServiceMonitor(service, options)
+  },
+  controller: <TServiceInterface>(service: ServiceProvider<TServiceInterface>, options: ProcessMonitorOptions = {}) => {
+    let monitor: Nullable<ProcessMonitor> = null
+    return {
+      start: async () => {
+        if (!monitor) {
+          monitor = await ServiceMonitor(service, options)
+        }
+      },
+      stop: async () => {
+        if (monitor) {
+          await monitor.stop()
+          monitor = null
+        }
       }
     }
   }
 }
-
-export const ServiceRunner = <TServiceInterface>(
-  service: ServiceProvider<TServiceInterface>,
-  options: ProcessMonitorOptions = {}
-) => ({
-  start: () => {
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    ServiceMonitor(service, options)
-  }
-})
