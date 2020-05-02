@@ -14,7 +14,22 @@
     limitations under the License.
  */
 
-import { ServiceController } from '@mds-core/mds-service-helpers'
-import { JurisdictionServiceProvider } from '../service/provider'
+import test from 'unit.js'
+import { ServiceController } from '../server'
 
-ServiceController.start(JurisdictionServiceProvider)
+describe('Tests Service Helpers', () => {
+  it('Test ServiceController', async () => {
+    let started = false
+    const shutdown = await ServiceController.start({
+      initialize: async () => {
+        started = true
+      },
+      shutdown: async () => {
+        started = false
+      }
+    })
+    test.value(started).is(true)
+    await shutdown()
+    test.value(started).is(false)
+  })
+})
