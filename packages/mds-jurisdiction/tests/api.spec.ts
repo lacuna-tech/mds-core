@@ -22,7 +22,7 @@ import { JurisdictionServiceProvider } from '@mds-core/mds-jurisdiction-service/
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { JurisdictionDomainModel } from '@mds-core/mds-jurisdiction-service'
 import { api } from '../api'
-import { JURISDICTION_API_DEFAULT_VERSION } from '../types'
+import { JURISDICTION_API_DEFAULT_VERSION } from '../@types'
 
 const request = supertest(ApiServer(api))
 
