@@ -86,3 +86,13 @@ export const ServiceController = <TServiceInterface>(
     }
   }
 }
+
+export const ServiceRunner = <TServiceInterface>(
+  service: ServiceProvider<TServiceInterface>,
+  options: ProcessMonitorOptions = {}
+) => ({
+  start: () => {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    ServiceMonitor(service, options)
+  }
+})
