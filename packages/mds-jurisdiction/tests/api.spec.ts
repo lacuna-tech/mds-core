@@ -36,7 +36,7 @@ const [JURISDICTION0, JURISDICTION1, JURISDICTION2] = [uuid(), uuid(), uuid()].m
 
 const service = ServiceManager.controller(JurisdictionServiceProvider)
 
-describe('', () => {
+describe('Test Jurisdiction API', () => {
   before(async () => {
     await service.start()
   })
