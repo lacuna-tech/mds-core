@@ -21,6 +21,7 @@ import { uuid } from '@mds-core/mds-utils'
 import { JurisdictionServiceProvider } from '@mds-core/mds-jurisdiction-service/service/provider'
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { JurisdictionDomainModel } from '@mds-core/mds-jurisdiction-service'
+import { ServiceManager } from '@mds-core/mds-service-helpers'
 import { api } from '../api'
 import { JURISDICTION_API_DEFAULT_VERSION } from '../@types'
 
@@ -33,9 +34,11 @@ const [JURISDICTION0, JURISDICTION1, JURISDICTION2] = [uuid(), uuid(), uuid()].m
   geography_id: uuid()
 }))
 
+const service = ServiceManager.controller(JurisdictionServiceProvider)
+
 describe('', () => {
   before(async () => {
-    await JurisdictionServiceProvider.initialize()
+    await service.start()
   })
 
   it('Create Single Jurisdiction', async () => {
@@ -211,6 +214,6 @@ describe('', () => {
   })
 
   after(async () => {
-    await JurisdictionServiceProvider.shutdown()
+    await service.stop()
   })
 })
