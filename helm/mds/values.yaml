@@ -29,6 +29,11 @@ apis:
     pathPrefix: /jurisdiction
     version: latest
     migration: false
+  mds-jurisdiction-service:
+    enabled: true
+    pathPrefix: /jurisdiction-service
+    version: latest
+    migration: false
   mds-policy-author:
     enabled: true
     pathPrefix: /policy-author
@@ -49,14 +54,6 @@ apis:
     pathPrefix: /geography-author
     version: latest
     migration: false
-  mds-event-processor:
-    enabled: true
-    version: latest
-    migration: false
-  mds-telemetry-processor:
-    enabled: true
-    version: latest
-    migration: false
 nats:
   enabled: true
   credentials: false
@@ -64,7 +61,7 @@ tenantId:
 timezone: America/Los_Angeles
 registry:
 useLatestImage: true
-domain: '*'
+domain: "*"
 tls:
   enabled: false
   domain:

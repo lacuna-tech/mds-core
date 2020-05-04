@@ -15,24 +15,107 @@
  */
 
 import { Connection } from 'typeorm'
-import { ConnectionManager, ConnectionManagerOptions, ConnectionMode } from './connection-manager'
-
-type RepositoryMethod<TMethod> = (connect: (mode: ConnectionMode) => Promise<Connection>) => TMethod
-
-export const CreateRepositoryMethod: <TMethod>(
-  method: RepositoryMethod<TMethod>
-) => RepositoryMethod<TMethod> = method => method
+import logger from '@mds-core/mds-logger'
+import { pluralize } from '@mds-core/mds-utils'
+import { ConnectionManager, ConnectionManagerOptions, ConnectionMode, ConnectionManagerCliOptions } from './connection'
+import { CreateRepositoryMigration } from './migration'
 
 export type RepositoryOptions = Pick<ConnectionManagerOptions, 'entities' | 'migrations'>
 
-export const CreateRepository = <TRepositoryMethods>(
-  name: string,
-  methods: (connect: (mode: ConnectionMode) => Promise<Connection>) => TRepositoryMethods,
-  options: RepositoryOptions = {}
-) => {
-  const { connect, ...manager } = ConnectionManager(name, { migrationsTableName: `${name}-migrations`, ...options })
-  return {
-    ...manager,
-    ...methods(connect)
+abstract class BaseRepository<TConnectionMode extends ConnectionMode> {
+  protected readonly manager: ConnectionManager
+
+  protected abstract initialize(): Promise<void>
+
+  protected connect = async (mode: TConnectionMode): Promise<Omit<Connection, 'connect' | 'close'>> => {
+    const { connect } = this.manager
+    const connection = await connect(mode)
+    return connection
+  }
+
+  protected abstract shutdown(): Promise<void>
+
+  public cli = (options: ConnectionManagerCliOptions) => {
+    const { cli } = this.manager
+    return cli(options)
+  }
+
+  constructor(public readonly name: string, { entities, migrations }: Required<RepositoryOptions>) {
+    const migrationsTableName = `${name}-migrations`
+    this.manager = new ConnectionManager(name, {
+      migrationsTableName,
+      entities,
+      migrations: migrations.length === 0 ? [] : [CreateRepositoryMigration(migrationsTableName), ...migrations]
+    })
+  }
+}
+
+export abstract class ReadOnlyRepository extends BaseRepository<'ro'> {
+  public initialize = async (): Promise<void> => {
+    const { name } = this
+    logger.info(`Initializing R/O repository: ${name}`)
+  }
+
+  public shutdown = async (): Promise<void> => {
+    const {
+      name,
+      manager: { disconnect }
+    } = this
+    logger.info(`Terminating R/O repository: ${name}`)
+    await disconnect('ro')
+  }
+
+  constructor(name: string, { entities = [] }: Omit<RepositoryOptions, 'migrations'> = {}) {
+    super(name, { entities, migrations: [] })
+  }
+}
+
+export abstract class ReadWriteRepository extends BaseRepository<'ro' | 'rw'> {
+  public initialize = async (): Promise<void> => {
+    const {
+      name,
+      manager: { connect }
+    } = this
+    logger.info(`Initializing R/W repository: ${name}`)
+
+    const {
+      PG_MIGRATIONS = 'true' // Enable migrations by default
+    } = process.env
+
+    /* istanbul ignore if */
+    if (PG_MIGRATIONS === 'true') {
+      const connection = await connect('rw')
+      const {
+        options: { migrationsTableName }
+      } = connection
+      if (migrationsTableName) {
+        const migrations = await connection.runMigrations({ transaction: 'all' })
+        logger.info(
+          `Ran ${migrations.length || 'no'} ${pluralize(
+            migrations.length,
+            'migration',
+            'migrations'
+          )} (${migrationsTableName})${
+            migrations.length ? `: ${migrations.map(migration => migration.name).join(', ')}` : ''
+          }`
+        )
+      }
+    }
+  }
+
+  public shutdown = async (): Promise<void> => {
+    const {
+      name,
+      manager: { disconnect }
+    } = this
+    logger.info(`Terminating R/W repository: ${name}`)
+    await Promise.all([disconnect('rw'), disconnect('ro')])
+  }
+
+  constructor(name: string, { entities = [], migrations = [] }: RepositoryOptions = {}) {
+    super(name, {
+      entities,
+      migrations
+    })
   }
 }

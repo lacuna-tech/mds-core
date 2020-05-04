@@ -15,8 +15,7 @@
  */
 
 import { ServiceResponse } from '@mds-core/mds-service-helpers'
-import { UUID, Timestamp } from '@mds-core/mds-types'
-import { DeepPartial } from 'typeorm'
+import { UUID, Timestamp, Optional } from '@mds-core/mds-types'
 
 export interface JurisdictionDomainModel {
   jurisdiction_id: UUID
@@ -26,28 +25,31 @@ export interface JurisdictionDomainModel {
   timestamp: Timestamp
 }
 
-export type CreateJurisdictionType = Partial<Pick<JurisdictionDomainModel, 'jurisdiction_id' | 'timestamp'>> &
-  Pick<JurisdictionDomainModel, 'agency_key' | 'agency_name' | 'geography_id'>
+export type JurisdictionIdType = JurisdictionDomainModel['jurisdiction_id']
 
-export type UpdateJurisdictionType = DeepPartial<JurisdictionDomainModel>
+export type CreateJurisdictionDomainModel = Optional<JurisdictionDomainModel, 'jurisdiction_id' | 'timestamp'>
 
-export interface GetJurisdictionsOptions {
+export type UpdateJurisdictionDomainModel = Partial<JurisdictionDomainModel>
+
+export type GetJurisdictionsOptions = Partial<{
   effective: Timestamp
-}
+}>
 
 export interface JurisdictionServiceInterface {
-  createJurisdiction: (jurisdiction: CreateJurisdictionType) => Promise<ServiceResponse<JurisdictionDomainModel>>
-  createJurisdictions: (jurisdictions: CreateJurisdictionType[]) => Promise<ServiceResponse<JurisdictionDomainModel[]>>
+  createJurisdiction: (jurisdiction: CreateJurisdictionDomainModel) => Promise<ServiceResponse<JurisdictionDomainModel>>
+  createJurisdictions: (
+    jurisdictions: CreateJurisdictionDomainModel[]
+  ) => Promise<ServiceResponse<JurisdictionDomainModel[]>>
   updateJurisdiction: (
-    jurisdiction_id: UUID,
-    update: UpdateJurisdictionType
+    jurisdiction_id: JurisdictionIdType,
+    update: UpdateJurisdictionDomainModel
   ) => Promise<ServiceResponse<JurisdictionDomainModel>>
   deleteJurisdiction: (
-    jurisdiction_id: UUID
+    jurisdiction_id: JurisdictionIdType
   ) => Promise<ServiceResponse<Pick<JurisdictionDomainModel, 'jurisdiction_id'>>>
-  getJurisdictions: (options?: Partial<GetJurisdictionsOptions>) => Promise<ServiceResponse<JurisdictionDomainModel[]>>
+  getJurisdictions: (options?: GetJurisdictionsOptions) => Promise<ServiceResponse<JurisdictionDomainModel[]>>
   getJurisdiction: (
-    jurisdiction_id: UUID,
-    options?: Partial<GetJurisdictionsOptions>
+    jurisdiction_id: JurisdictionIdType,
+    options?: GetJurisdictionsOptions
   ) => Promise<ServiceResponse<JurisdictionDomainModel>>
 }

@@ -29,7 +29,8 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_STATUS,
   BBox,
-  VEHICLE_EVENT
+  VEHICLE_EVENT,
+  SingleOrArray
 } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
@@ -589,6 +590,10 @@ const parseObjectProperties = <T = string>(
   }
 }
 
+const asArray = <T>(value: SingleOrArray<T>): T[] => (Array.isArray(value) ? value : [value])
+
+const pluralize = (count: number, singular: string, plural: string) => (count === 1 ? singular : plural)
+
 export {
   UUID_REGEX,
   isUUID,
@@ -634,5 +639,7 @@ export {
   parseRelative,
   getCurrentDate,
   getEnvVar,
-  parseObjectProperties
+  parseObjectProperties,
+  asArray,
+  pluralize
 }

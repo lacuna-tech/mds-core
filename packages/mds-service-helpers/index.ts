@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /*
     Copyright 2019-2020 City of Los Angeles.
 
@@ -15,48 +14,6 @@
     limitations under the License.
  */
 
-interface ServiceErrorDescriptor {
-  type: 'ServiceException' | 'NotFoundError' | 'ConflictError' | 'ValidationError'
-  message: string
-  details?: string
-}
-
-interface ServiceErrorType {
-  error: ServiceErrorDescriptor
-}
-
-interface ServiceResultType<R> {
-  error: null
-  result: R
-}
-
-export type ServiceResponse<R> = ServiceErrorType | ServiceResultType<R>
-
-export const ServiceResult = <R>(result: R): ServiceResultType<R> => ({ error: null, result })
-
-export const ServiceError = (error: ServiceErrorDescriptor): ServiceErrorType => ({ error })
-
-export const HandleServiceResponse = <R>(
-  response: ServiceResponse<R>,
-  onerror: (error: ServiceErrorDescriptor) => void,
-  onresult: (result: R) => void
-): ServiceResponse<R> => {
-  if (response.error) {
-    onerror(response.error)
-  } else {
-    onresult(response.result)
-  }
-  return response
-}
-
-export const ServiceException = (message: string, error?: Error) =>
-  ServiceError({
-    type: 'ServiceException',
-    message,
-    details: (error instanceof Error && error.message) || undefined
-  })
-
-export type ServiceProvider<TServiceInterface> = TServiceInterface & {
-  initialize: () => Promise<void>
-  shutdown: () => Promise<void>
-}
+export * from './@types'
+export * from './client'
+export * from './server'
