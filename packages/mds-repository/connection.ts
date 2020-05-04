@@ -39,7 +39,7 @@ export type ConnectionManagerOptions = Partial<Omit<PostgresConnectionOptions, '
 export type ConnectionManagerCliOptions = Partial<PostgresConnectionOptions['cli']>
 
 export class ConnectionManager {
-  private readonly connections: { [mode in ConnectionMode]: Nullable<Connection> } = { ro: null, rw: null }
+  private readonly connections: Map<ConnectionMode, Nullable<Connection>> = new Map()
 
   private readonly lock = new AwaitLock()
 
@@ -49,6 +49,8 @@ export class ConnectionManager {
     const { prefix, instance } = this
     return `${prefix}-${mode}-${instance}`
   }
+
+  private connectionMode = (mode: ConnectionMode): string => (mode === 'ro' ? 'R/O' : 'R/W')
 
   private connectionOptions = (mode: ConnectionMode): ConnectionOptions => {
     const { connectionName, options } = this
@@ -73,17 +75,18 @@ export class ConnectionManager {
   }
 
   public connect = async (mode: ConnectionMode): Promise<Connection> => {
-    const { lock, connections, connectionOptions, connectionName } = this
+    const { lock, connections, connectionOptions, connectionMode, connectionName } = this
     await lock.acquireAsync()
     try {
-      if (!connections[mode]) {
-        connections[mode] = await createConnection(connectionOptions(mode))
-        logger.info(`Initializing ${mode} connection: ${connections[mode]?.options.name}`)
+      if (!connections.has(mode)) {
+        const options = connectionOptions(mode)
+        logger.info(`Initializing ${connectionMode(mode)} connection: ${options.name}`)
+        connections.set(mode, await createConnection(options))
       }
     } finally {
       lock.release()
     }
-    const { [mode]: connection } = connections
+    const connection = connections.get(mode)
     if (!connection) {
       /* istanbul ignore next */
       throw RepositoryError(Error(`Connection ${connectionName(mode)} not found`))
@@ -99,16 +102,18 @@ export class ConnectionManager {
   }
 
   public disconnect = async (mode: ConnectionMode) => {
-    const { lock, connections } = this
+    const { lock, connections, connectionMode } = this
     try {
       await lock.acquireAsync()
-      const { [mode]: connection } = connections
-      if (connection?.isConnected) {
-        logger.info(`Terminating ${mode} connection: ${connection.options.name}`)
-        await connection.close()
+      const connection = connections.get(mode)
+      if (connection) {
+        if (connection.isConnected) {
+          logger.info(`Terminating ${connectionMode(mode)} connection: ${connection.options.name}`)
+          await connection.close()
+        }
+        connections.delete(mode)
       }
     } finally {
-      connections[mode] = null
       lock.release()
     }
   }

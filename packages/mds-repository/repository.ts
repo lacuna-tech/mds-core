@@ -22,16 +22,61 @@ import { CreateRepositoryMigration } from './migration'
 
 export type RepositoryOptions = Pick<ConnectionManagerOptions, 'entities' | 'migrations'>
 
-export abstract class ReadWriteRepository {
-  private readonly manager: ConnectionManager
+abstract class BaseRepository<TConnectionMode extends ConnectionMode> {
+  protected readonly manager: ConnectionManager
 
+  protected abstract initialize(): Promise<void>
+
+  protected connect = async (mode: TConnectionMode): Promise<Omit<Connection, 'connect' | 'close'>> => {
+    const { connect } = this.manager
+    const connection = await connect(mode)
+    return connection
+  }
+
+  protected abstract shutdown(): Promise<void>
+
+  public cli = (options: ConnectionManagerCliOptions) => {
+    const { cli } = this.manager
+    return cli(options)
+  }
+
+  constructor(public readonly name: string, { entities, migrations }: Required<RepositoryOptions>) {
+    const migrationsTableName = `${name}-migrations`
+    this.manager = new ConnectionManager(name, {
+      migrationsTableName,
+      entities,
+      migrations: migrations.length === 0 ? [] : [CreateRepositoryMigration(migrationsTableName), ...migrations]
+    })
+  }
+}
+
+export abstract class ReadOnlyRepository extends BaseRepository<'ro'> {
+  public initialize = async (): Promise<void> => {
+    const { name } = this
+    logger.info(`Initializing R/O repository: ${name}`)
+  }
+
+  public shutdown = async (): Promise<void> => {
+    const {
+      name,
+      manager: { disconnect }
+    } = this
+    logger.info(`Terminating R/O repository: ${name}`)
+    await disconnect('ro')
+  }
+
+  constructor(name: string, { entities = [] }: Omit<RepositoryOptions, 'migrations'> = {}) {
+    super(name, { entities, migrations: [] })
+  }
+}
+
+export abstract class ReadWriteRepository extends BaseRepository<'ro' | 'rw'> {
   public initialize = async (): Promise<void> => {
     const {
       name,
       manager: { connect }
     } = this
-
-    logger.info(`Initializing Repostory: ${name}`)
+    logger.info(`Initializing R/W repository: ${name}`)
 
     const {
       PG_MIGRATIONS = 'true' // Enable migrations by default
@@ -58,32 +103,19 @@ export abstract class ReadWriteRepository {
     }
   }
 
-  protected connect = async (mode: ConnectionMode): Promise<Omit<Connection, 'connect' | 'close'>> => {
-    const { connect } = this.manager
-    const connection = await connect(mode)
-    return connection
-  }
-
   public shutdown = async (): Promise<void> => {
     const {
       name,
       manager: { disconnect }
     } = this
-    logger.info(`Terminating Repository: ${name}`)
+    logger.info(`Terminating R/W repository: ${name}`)
     await Promise.all([disconnect('rw'), disconnect('ro')])
   }
 
-  public cli = (options: ConnectionManagerCliOptions) => {
-    const { cli } = this.manager
-    return cli(options)
-  }
-
-  constructor(public readonly name: string, { entities = [], migrations = [] }: RepositoryOptions = {}) {
-    const migrationsTableName = `${name}-migrations`
-    this.manager = new ConnectionManager(name, {
-      migrationsTableName,
+  constructor(name: string, { entities = [], migrations = [] }: RepositoryOptions = {}) {
+    super(name, {
       entities,
-      migrations: [CreateRepositoryMigration(migrationsTableName), ...migrations]
+      migrations
     })
   }
 }
