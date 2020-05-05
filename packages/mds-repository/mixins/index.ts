@@ -16,3 +16,4 @@
 
 export * from './identity-column'
 export * from './recorded-column'
+export * from './timestamp-column'
