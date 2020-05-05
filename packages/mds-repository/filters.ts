@@ -18,8 +18,8 @@ export const NullablePropertyValue = <TProperty extends string>(
     : PropertyValue(property, value)
 }
 
-export const OptionalProperty = <TProperty extends string>(
+export const OptionalPropertyValue = <TProperty extends string>(
+  filter: (property: TProperty, value: unknown) => Partial<{ [P in TProperty]: FindOperator<unknown> }>,
   property: TProperty,
-  value: unknown,
-  filter: (property: TProperty, value: unknown) => Partial<{ [P in TProperty]: FindOperator<unknown> }>
+  value: unknown
 ): Partial<{ [P in TProperty]: FindOperator<unknown> }> => (value === undefined ? {} : filter(property, value))
