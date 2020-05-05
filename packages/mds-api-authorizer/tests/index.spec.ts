@@ -5,13 +5,17 @@ import jwt from 'jsonwebtoken'
 import { uuid } from '@mds-core/mds-utils'
 import { AuthorizationHeaderApiAuthorizer, WebSocketAuthorizer } from '../index'
 
-const TOKEN_PROVIDER_ID_CLAIM = 'https://some-domain.ai/provider_id'
+const TOKEN_PROVIDER_ID_CLAIM = 'https://test.ai/provider_id'
 const PROVIDER_SCOPES = 'admin:all'
-const Basic = `Basic ${Buffer.from(`${MOCHA_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
 const PROVIDER_SUBJECT = uuid()
+const PROVIDER_EMAIL = 'user@test.ai'
+
+const Basic = `Basic ${Buffer.from(`${MOCHA_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
+
 const Bearer = `Bearer ${jwt.sign(
   {
     sub: PROVIDER_SUBJECT,
+    'https://ladot.io/user_email': PROVIDER_EMAIL,
     [TOKEN_PROVIDER_ID_CLAIM]: MOCHA_PROVIDER_ID,
     scope: PROVIDER_SCOPES
   },
@@ -64,6 +68,7 @@ describe('Test API Authorizer', () => {
         )
         .hasProperty('principalId', PROVIDER_SUBJECT)
         .hasProperty('provider_id', MOCHA_PROVIDER_ID)
+        .hasProperty('user_email', PROVIDER_EMAIL)
         .hasProperty('scope', PROVIDER_SCOPES)
     })
   })
@@ -82,6 +87,7 @@ describe('Test API Authorizer', () => {
         .object(WebSocketAuthorizer(Bearer))
         .hasProperty('principalId', PROVIDER_SUBJECT)
         .hasProperty('provider_id', MOCHA_PROVIDER_ID)
+        .hasProperty('user_email', PROVIDER_EMAIL)
         .hasProperty('scope', PROVIDER_SCOPES)
     })
   })
