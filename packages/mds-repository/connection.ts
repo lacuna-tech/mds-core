@@ -122,7 +122,7 @@ export class ConnectionManager {
     const { connectionOptions } = this
     // Make the "rw" connection the default for the TypeORM CLI by removing the connection name
     const { name, ...ormconfig } = connectionOptions(mode)
-    return { ...ormconfig, options }
+    return { ...ormconfig, cli: options }
   }
 
   constructor(private prefix: string, private options: ConnectionManagerOptions = {}) {}
