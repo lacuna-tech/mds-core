@@ -14,8 +14,8 @@
     limitations under the License.
  */
 
-import { Timestamp, Nullable } from '@mds-core/mds-types'
-import { IdentityEntityCreateModel, ModelMapper, RecordedEntityCreateModel } from '@mds-core/mds-repository'
+import { Timestamp, Nullable, Optional } from '@mds-core/mds-types'
+import { ModelMapper, IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
 import { uuid } from '@mds-core/mds-utils'
 import { JurisdictionDomainModel, CreateJurisdictionDomainModel } from '../../@types'
 import { JurisdictionEntityModel } from './entities/jurisdiction-entity'
@@ -28,20 +28,21 @@ export const JurisdictionEntityToDomain = ModelMapper<
   JurisdictionEntityModel,
   Nullable<JurisdictionDomainModel>,
   MapJurisdictionEntityToDomainModelOptions
->((model, options) => {
+>((entity, options) => {
   const { effective = Date.now() } = options ?? {}
-  const { jurisdiction_id, agency_key, versions } = model
+  const { jurisdiction_id, agency_key, versions } = entity
   const version = versions.find(properties => effective >= properties.timestamp)
   if (version) {
     const { agency_name, geography_id, timestamp } = version
     if (geography_id !== null) {
-      return {
+      const domain = {
         jurisdiction_id,
         agency_key,
         agency_name,
         geography_id,
         timestamp
       }
+      return domain
     }
   }
   return null
@@ -51,17 +52,23 @@ type JurisdictionDomainToEntityCreateOptions = Partial<{
   recorded: Timestamp
 }>
 
+type JurisdictionDomainToEntityCreateModel = Omit<
+  Optional<JurisdictionEntityModel, keyof RecordedColumn>,
+  keyof IdentityColumn
+>
+
 export const JurisdictionDomainToEntityCreate = ModelMapper<
   CreateJurisdictionDomainModel,
-  RecordedEntityCreateModel<IdentityEntityCreateModel<JurisdictionEntityModel>>,
+  JurisdictionDomainToEntityCreateModel,
   JurisdictionDomainToEntityCreateOptions
->((model, options) => {
+>((domain, options) => {
   const { recorded } = options ?? {}
-  const { jurisdiction_id = uuid(), agency_key, agency_name, geography_id, timestamp = Date.now() } = model
-  return {
+  const { jurisdiction_id = uuid(), agency_key, agency_name, geography_id, timestamp = Date.now() } = domain
+  const entity = {
     jurisdiction_id,
     agency_key,
     versions: [{ timestamp, agency_name, geography_id }],
     recorded
   }
+  return entity
 })

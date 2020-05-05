@@ -29,6 +29,11 @@ apis:
     pathPrefix: /jurisdiction
     version: ${JURISDICTION_VERSION}
     migration: false
+  mds-jurisdiction-service:
+    enabled: true
+    pathPrefix: /jurisdiction-service
+    version: ${JURISDICTION_SERVICE_VERSION}
+    migration: false
   mds-policy-author:
     enabled: true
     pathPrefix: /policy-author
@@ -48,16 +53,4 @@ apis:
     enabled: true
     pathPrefix: /geography-author
     version: ${GEOGRAPHY_AUTHOR_VERSION}
-    migration: false
-  mds-event-processor:
-    enabled: true
-    version: ${EVENT_PROCESSOR_VERSION}
-    migration: false
-  mds-metrics-processor:
-    enabled: true
-    version: ${METRIC_PROCESSOR_VERSION}
-    migration: false
-  mds-telemetry-processor:
-    enabled: true
-    version: ${TELEMETRY_PROCESSOR_VERSION}
     migration: false
