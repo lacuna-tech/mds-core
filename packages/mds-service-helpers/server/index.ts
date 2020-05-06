@@ -17,7 +17,7 @@
 import logger from '@mds-core/mds-logger'
 import { hours, NotFoundError, ValidationError, ConflictError } from '@mds-core/mds-utils'
 import { Nullable } from '@mds-core/mds-types'
-import { ServiceProvider, ServiceResultType, ServiceErrorDescriptor, ServiceErrorType } from './@types'
+import { ServiceProvider, ServiceResultType, ServiceErrorDescriptor, ServiceErrorType } from '../@types'
 
 type ProcessMonitorOptions = Partial<{
   interval: number
