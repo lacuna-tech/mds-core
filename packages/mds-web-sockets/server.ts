@@ -1,4 +1,4 @@
-import { WebSocketServer } from './wsServer'
+import { WebSocketServer } from './ws-server'
 
 WebSocketServer()
   .then(() => console.log(`WebSockerServer running`))
