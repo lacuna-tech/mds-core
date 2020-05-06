@@ -15,18 +15,25 @@
  */
 
 import test from 'unit.js'
-import { ServiceResult, ServiceError, ServiceException, HandleServiceResponse } from '../index'
+import {
+  ServiceResult,
+  ServiceError,
+  ServiceException,
+  handleServiceResponse,
+  getServiceResult,
+  isServiceError
+} from '../index'
 
-describe('Tests Client Helpers', () => {
+describe('Tests HandleServiceResponse', () => {
   it('Test ServiceResult', async () =>
-    HandleServiceResponse(
+    handleServiceResponse(
       ServiceResult('success'),
       error => test.value(error).is(null),
       result => test.value(result).is('success')
     ))
 
   it('Test ServiceError', async () =>
-    HandleServiceResponse(
+    handleServiceResponse(
       ServiceError({ type: 'ValidationError', message: 'Validation Error' }),
       error => {
         test.value(error.type).is('ValidationError')
@@ -37,7 +44,7 @@ describe('Tests Client Helpers', () => {
     ))
 
   it('Test ServiceException', async () =>
-    HandleServiceResponse(
+    handleServiceResponse(
       ServiceException('Validation Error'),
       error => {
         test.value(error.type).is('ServiceException')
@@ -48,7 +55,7 @@ describe('Tests Client Helpers', () => {
     ))
 
   it('Test ServiceException (with Error)', async () =>
-    HandleServiceResponse(
+    handleServiceResponse(
       ServiceException('Validation Error', Error('Error Message')),
       error => {
         test.value(error.type).is('ServiceException')
@@ -57,4 +64,29 @@ describe('Tests Client Helpers', () => {
       },
       result => test.value(result).is(null)
     ))
+})
+
+describe('Test GetServiceResult', () => {
+  it('Test ServiceResult', async () => {
+    try {
+      const result = getServiceResult(ServiceResult('success'))
+      test.value(result).is('success')
+    } catch (error) {
+      test.value(error).is(null)
+    }
+  })
+
+  it('Test ServiceError', async () => {
+    try {
+      const result = getServiceResult(ServiceError({ type: 'ValidationError', message: 'Validation Error' }))
+      test.value(result).is(null)
+    } catch (error) {
+      test.value(isServiceError(error)).is(true)
+      if (isServiceError(error)) {
+        test.value(error.type).is('ValidationError')
+        test.value(error.message).is('Validation Error')
+        test.value(error.details).is(undefined)
+      }
+    }
+  })
 })
