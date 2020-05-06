@@ -21,18 +21,19 @@ import {
   ServiceException,
   handleServiceResponse,
   getServiceResult,
-  isServiceError
+  isServiceError,
+  ServiceManager
 } from '../index'
 
-describe('Tests HandleServiceResponse', () => {
-  it('Test ServiceResult', async () =>
+describe('Tests Service Helpers', () => {
+  it('Handle ServiceResult', async () =>
     handleServiceResponse(
       ServiceResult('success'),
       error => test.value(error).is(null),
       result => test.value(result).is('success')
     ))
 
-  it('Test ServiceError', async () =>
+  it('Handle ServiceError', async () =>
     handleServiceResponse(
       ServiceError({ type: 'ValidationError', message: 'Validation Error' }),
       error => {
@@ -43,7 +44,7 @@ describe('Tests HandleServiceResponse', () => {
       result => test.value(result).is(null)
     ))
 
-  it('Test ServiceException', async () =>
+  it('Handle ServiceException', async () =>
     handleServiceResponse(
       ServiceException('Validation Error'),
       error => {
@@ -54,7 +55,7 @@ describe('Tests HandleServiceResponse', () => {
       result => test.value(result).is(null)
     ))
 
-  it('Test ServiceException (with Error)', async () =>
+  it('Handle ServiceException (with Error)', async () =>
     handleServiceResponse(
       ServiceException('Validation Error', Error('Error Message')),
       error => {
@@ -64,10 +65,8 @@ describe('Tests HandleServiceResponse', () => {
       },
       result => test.value(result).is(null)
     ))
-})
 
-describe('Test GetServiceResult', () => {
-  it('Test ServiceResult', async () => {
+  it('Get ServiceResult', async () => {
     try {
       const result = getServiceResult(ServiceResult('success'))
       test.value(result).is('success')
@@ -76,7 +75,7 @@ describe('Test GetServiceResult', () => {
     }
   })
 
-  it('Test ServiceError', async () => {
+  it('Catch ServiceError', async () => {
     try {
       const result = getServiceResult(ServiceError({ type: 'ValidationError', message: 'Validation Error' }))
       test.value(result).is(null)
@@ -88,5 +87,32 @@ describe('Test GetServiceResult', () => {
         test.value(error.details).is(undefined)
       }
     }
+  })
+
+  it('ServiceError type guard', async () => {
+    try {
+      const error = Error('Error')
+      test.value(isServiceError(ServiceException('Error', error))).is(true)
+      throw error
+    } catch (error) {
+      test.value(isServiceError(error)).is(false)
+      test.value(error instanceof Error).is(true)
+    }
+  })
+
+  it('Test ServiceManager Controller', async () => {
+    let started = false
+    const controller = ServiceManager.controller({
+      initialize: async () => {
+        started = true
+      },
+      shutdown: async () => {
+        started = false
+      }
+    })
+    await controller.start()
+    test.value(started).is(true)
+    await controller.stop()
+    test.value(started).is(false)
   })
 })
