@@ -16,7 +16,7 @@
 
 import { InsertReturning, UpdateReturning, ReadWriteRepository } from '@mds-core/mds-repository'
 
-import { ValidationError, ConflictError, NotFoundError, filterDefined, isDefined } from '@mds-core/mds-utils'
+import { ValidationError, ConflictError, NotFoundError, filterDefined } from '@mds-core/mds-utils'
 
 import { JurisdictionEntity } from './entities'
 import * as migrations from './migrations'
