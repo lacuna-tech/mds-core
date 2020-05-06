@@ -534,7 +534,10 @@ function clone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
 }
 
-const isDefined = <T>(elem: T | undefined | null, warnOnEmpty = false, index?: number): elem is T => {
+type isDefinedOptions = Partial<{ warnOnEmpty: boolean }>
+
+const isDefined = <T>(elem: T | undefined | null, options: isDefinedOptions = {}, index?: number): elem is T => {
+  const { warnOnEmpty } = options
   if (elem !== undefined && elem !== null) {
     return true
   }
@@ -544,11 +547,11 @@ const isDefined = <T>(elem: T | undefined | null, warnOnEmpty = false, index?: n
   return false
 }
 
-const filterDefined = (warnOnEmpty = false) => <T>(
+const filterDefined = (options: isDefinedOptions = {}) => <T>(
   value: T | undefined | null,
   index: number,
   array: (T | undefined | null)[]
-): value is T => isDefined(value, warnOnEmpty, index)
+): value is T => isDefined(value, options, index)
 
 function moved(latA: number, lngA: number, latB: number, lngB: number) {
   const limit = 0.00001 // arbitrary amount

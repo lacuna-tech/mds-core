@@ -16,7 +16,7 @@
 
 import { InsertReturning, UpdateReturning, ReadWriteRepository } from '@mds-core/mds-repository'
 
-import { ValidationError, ConflictError, NotFoundError, filterDefined } from '@mds-core/mds-utils'
+import { ValidationError, ConflictError, NotFoundError, filterDefined, isDefined } from '@mds-core/mds-utils'
 
 import { JurisdictionEntity } from './entities'
 import * as migrations from './migrations'
@@ -103,7 +103,7 @@ class JurisdictionReadWriteRepository extends ReadWriteRepository {
   public readJurisdictions = async (options?: GetJurisdictionsOptions): Promise<JurisdictionDomainModel[]> => {
     const connection = await this.connect('ro')
     const entities = await connection.getRepository(JurisdictionEntity).find()
-    return entities.map(JurisdictionEntityToDomain.mapper(options)).filter(isEffectiveJurisdiction)
+    return entities.map(JurisdictionEntityToDomain.mapper(options)).filter(filterDefined())
   }
 
   public updateJurisdiction = async (

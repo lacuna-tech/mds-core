@@ -107,7 +107,7 @@ export async function getVehicleCounts(req: DailyApiRequest, res: DailyApiRespon
         logger.info(
           `MDS-DAILY /admin/vehicle_counts -> db.readDeviceIds(${stat.provider_id}) time elapsed: ${timeElapsed2}`
         )
-        items.filter(filterDefined(true)).map(async item => {
+        items.filter(filterDefined({ warnOnEmpty: true })).map(async item => {
           const event = eventMap[item.device_id]
           inc(stat.event_type, event ? event.event_type : 'default')
           const status = event ? EVENT_STATUS_MAP[event.event_type] : VEHICLE_STATUSES.removed
