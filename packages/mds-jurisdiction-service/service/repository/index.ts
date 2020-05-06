@@ -16,7 +16,7 @@
 
 import { InsertReturning, UpdateReturning, ReadWriteRepository } from '@mds-core/mds-repository'
 
-import { isDefined, ValidationError, ConflictError, NotFoundError } from '@mds-core/mds-utils'
+import { ValidationError, ConflictError, NotFoundError, filterDefined } from '@mds-core/mds-utils'
 
 import { JurisdictionEntity } from './entities'
 import * as migrations from './migrations'
@@ -28,8 +28,6 @@ import {
   JurisdictionIdType
 } from '../../@types'
 import { JurisdictionEntityToDomain, JurisdictionDomainToEntityCreate } from './mappers'
-
-const isEffectiveJurisdiction = isDefined()
 
 class JurisdictionReadWriteRepository extends ReadWriteRepository {
   public createJurisdictions = async (
@@ -45,7 +43,7 @@ class JurisdictionReadWriteRepository extends ReadWriteRepository {
       .returning('*')
       .execute()
 
-    return entities.map(JurisdictionEntityToDomain.mapper()).filter(isEffectiveJurisdiction)
+    return entities.map(JurisdictionEntityToDomain.mapper()).filter(filterDefined())
   }
 
   public deleteJurisdiction = async (

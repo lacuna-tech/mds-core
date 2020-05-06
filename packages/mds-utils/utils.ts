@@ -534,19 +534,21 @@ function clone<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
 }
 
-// T is the non-null and non-undefined type
-function isDefined(warnOnEmpty?: boolean) {
-  // https://stackoverflow.com/a/51577579 to remove null/undefined in typesafe way
-  return <T>(elem: T | undefined | null, idx?: number): elem is T => {
-    if (elem !== undefined && elem !== null) {
-      return true
-    }
-    if (warnOnEmpty) {
-      logger.warn(`Encountered empty element at index: ${idx}`) // eslint-disable-line @typescript-eslint/no-floating-promises
-    }
-    return false
+const isDefined = <T>(elem: T | undefined | null, warnOnEmpty = false, index?: number): elem is T => {
+  if (elem !== undefined && elem !== null) {
+    return true
   }
+  if (warnOnEmpty) {
+    logger.warn(`Encountered empty element at index: ${index}`)
+  }
+  return false
 }
+
+const filterDefined = (warnOnEmpty = false) => <T>(
+  value: T | undefined | null,
+  index: number,
+  array: (T | undefined | null)[]
+): value is T => isDefined(value, warnOnEmpty, index)
 
 function moved(latA: number, lngA: number, latB: number, lngB: number) {
   const limit = 0.00001 // arbitrary amount
@@ -641,5 +643,6 @@ export {
   getEnvVar,
   parseObjectProperties,
   asArray,
-  pluralize
+  pluralize,
+  filterDefined
 }
