@@ -43,14 +43,14 @@ describe('Tests Utilities', () => {
   describe('Filter empty', () => {
     it('Filters out null/undefined elements', () => {
       const arr = [1, 2, null, 3, undefined, 4]
-      const actual = arr.filter(isDefined<number>())
+      const actual = arr.filter(isDefined())
       const expected = [1, 2, 3, 4]
       assert.deepStrictEqual(actual, expected)
     })
 
     it('Does not filter 0 or "" (empty string) or [] (empty array)', () => {
       const arr = [1, 2, '', 3, [], 0]
-      const actual = arr.filter(isDefined<number | string | Array<unknown>>())
+      const actual = arr.filter(isDefined())
       const expected = arr
       assert.deepStrictEqual(actual, expected)
     })
@@ -64,7 +64,7 @@ describe('Tests Utilities', () => {
     //   logger.warn = spy
 
     //   const arr = [1, 2, null, 3, undefined, 4]
-    //   const actual = arr.filter(isDefined<number>())
+    //   const actual = arr.filter(isDefined())
     //   const expected = [1, 2, 3, 4]
     //   assert.deepStrictEqual(actual, expected)
     //   assert.equal(spy.calledTwice, true)

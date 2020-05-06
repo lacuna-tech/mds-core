@@ -29,7 +29,7 @@ import {
 } from '../../@types'
 import { JurisdictionEntityToDomain, JurisdictionDomainToEntityCreate } from './mappers'
 
-const isEffectiveJurisdiction = isDefined<JurisdictionDomainModel>()
+const isEffectiveJurisdiction = isDefined()
 
 class JurisdictionReadWriteRepository extends ReadWriteRepository {
   public createJurisdictions = async (

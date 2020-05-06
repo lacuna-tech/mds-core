@@ -535,9 +535,9 @@ function clone<T>(obj: T): T {
 }
 
 // T is the non-null and non-undefined type
-function isDefined<T>(warnOnEmpty?: boolean) {
+function isDefined(warnOnEmpty?: boolean) {
   // https://stackoverflow.com/a/51577579 to remove null/undefined in typesafe way
-  return (elem: T | undefined | null, idx?: number): elem is T => {
+  return <T>(elem: T | undefined | null, idx?: number): elem is T => {
     if (elem !== undefined && elem !== null) {
       return true
     }
