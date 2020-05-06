@@ -13,20 +13,19 @@ export interface AuthorizerClaims {
 export type Authorizer = (authorization: string) => AuthorizerClaims | null
 export type ApiAuthorizer = (req: express.Request) => AuthorizerClaims | null
 
+export const CustomClaim = (claim: 'provider_id' | 'user_email' | 'jurisdictions') => {
+  const { TOKEN_CUSTOM_CLAIM_NAMESPACE = 'https://openmobilityfoundation.org' } = process.env
+  return `${TOKEN_CUSTOM_CLAIM_NAMESPACE}${TOKEN_CUSTOM_CLAIM_NAMESPACE.endsWith('/') ? '' : '/'}${claim}`
+}
+
 const decoders: { [scheme: string]: (token: string) => AuthorizerClaims } = {
   bearer: (token: string) => {
     const {
-      TOKEN_PROVIDER_ID_CLAIM = 'https://ladot.io/provider_id',
-      TOKEN_USER_EMAIL_CLAIM = 'https://ladot.io/user_email',
-      TOKEN_JURISDICTIONS_CLAIM = 'https://ladot.io/jurisdictions'
-    } = process.env
-
-    const {
       sub: principalId,
       scope,
-      [TOKEN_PROVIDER_ID_CLAIM]: provider_id = null,
-      [TOKEN_USER_EMAIL_CLAIM]: user_email = null,
-      [TOKEN_JURISDICTIONS_CLAIM]: jurisdictions = null,
+      [CustomClaim('provider_id')]: provider_id = null,
+      [CustomClaim('user_email')]: user_email = null,
+      [CustomClaim('jurisdictions')]: jurisdictions = null,
       ...claims
     } = decode(token)
     return {
