@@ -1,4 +1,4 @@
-import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
+import { AgencyApiRequest } from '@mds-core/mds-agency/types'
 import logger from '@mds-core/mds-logger'
 import {
   isUUID,

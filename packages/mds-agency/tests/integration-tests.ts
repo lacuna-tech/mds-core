@@ -127,10 +127,6 @@ function deepCopy<T>(obj: T): T {
 // TODO Inherit all of these from mds-test-data
 const AUTH = `basic ${Buffer.from(`${TEST1_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
 const AUTH2 = `basic ${Buffer.from(`${TEST2_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
-const AUTH_GARBAGE_PROVIDER = `basic ${Buffer.from(`tinylittleinvalidteapot|${PROVIDER_SCOPES}`).toString('base64')}`
-const AUTH_UNKNOWN_UUID_PROVIDER = `basic ${Buffer.from(
-  `c8f984c5-62a5-4453-b1f7-3b7704a95cfe|${PROVIDER_SCOPES}`
-).toString('base64')}`
 const AUTH_NO_SCOPE = `basic ${Buffer.from(`${TEST1_PROVIDER_ID}`).toString('base64')}`
 
 before(async () => {
