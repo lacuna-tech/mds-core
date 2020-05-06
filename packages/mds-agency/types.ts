@@ -3,7 +3,7 @@ import { MultiPolygon } from 'geojson'
 import { ApiRequest, ApiVersionedResponse, ApiClaims } from '@mds-core/mds-api-server'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
 
-export const AGENCY_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
+export const AGENCY_API_SUPPORTED_VERSIONS = ['0.4.1'] as const
 export type AGENCY_API_SUPPORTED_VERSION = typeof AGENCY_API_SUPPORTED_VERSIONS[number]
 export const [AGENCY_API_DEFAULT_VERSION] = AGENCY_API_SUPPORTED_VERSIONS
 
