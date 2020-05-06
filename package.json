@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.1",
+    "@types/async-retry": "1.4.1",
     "@types/bluebird": "3.5.30",
     "@types/body-parser": "1.19.0",
     "@types/cors": "2.8.6",
