@@ -21,8 +21,5 @@
   "dependencies": {
     "@mds-core/mds-geography": "0.0.1"
   },
-  "devDependencies": {
-    "@mds-core/mds-webpack-config": "0.1.0"
-  },
   "license": "Apache-2.0"
 }
