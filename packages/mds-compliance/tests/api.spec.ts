@@ -342,6 +342,7 @@ describe('Tests Compliance API:', () => {
         .expect(200)
         .end((err, result) => {
           test.assert.deepEqual(result.body.total_violations, 0)
+          test.object(result.body).hasProperty('timestamp')
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
@@ -446,6 +447,7 @@ describe('Tests Compliance API:', () => {
         .end((err, result) => {
           test.assert.deepEqual(result.body.compliance[0].matches[0].measured, 10)
           test.assert.deepEqual(result.body.total_violations, 5)
+          test.object(result.body).hasProperty('timestamp')
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })

@@ -267,6 +267,19 @@ export async function readRule(rule_id: UUID): Promise<Rule> {
   }
 }
 
+export async function findPoliciesByRule(rule_id: UUID): Promise<Policy[]> {
+  const client = await getReadOnlyClient()
+  const sql = `SELECT * from ${schema.TABLE.policies} where EXISTS(SELECT FROM json_array_elements(policy_json->'rules') elem WHERE (elem->'rule_id')::jsonb ? '${rule_id}');`
+  const res = await client.query(sql).catch(err => {
+    throw err
+  })
+  if (res.rowCount !== 1) {
+    throw new Error(`invalid rule_id ${rule_id}`)
+  } else {
+    return res.rows.map(row => row.policy_json)
+  }
+}
+
 export async function findPoliciesByGeographyID(geography_id: UUID): Promise<Policy[]> {
   const client = await getReadOnlyClient()
   const sql = `select * from ${schema.TABLE.policies}

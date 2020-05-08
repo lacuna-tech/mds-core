@@ -97,6 +97,9 @@ function api(app: express.Express): express.Express {
     const { start_date, end_date } = query_end_date
       ? { end_date: query_end_date, start_date: query_end_date - days(365) }
       : { end_date: now() + days(365), start_date: now() - days(365) }
+
+    const timestamp = query_end_date || Date.now()
+
     try {
       const all_policies = await db.readPolicies({ start_date, get_published: null, get_unpublished: null })
       const policy = compliance_engine.filterPolicies(all_policies).find(p => {
@@ -145,7 +148,7 @@ function api(app: express.Express): express.Express {
           if (result === undefined) {
             return res.status(400).send({ err: 'bad_param' })
           }
-          return res.status(200).send(result)
+          return res.status(200).send({ ...result, timestamp })
         }
       } else {
         return res.status(401).send({ err: 'Unauthorized' })
@@ -159,6 +162,10 @@ function api(app: express.Express): express.Express {
   })
 
   app.get(pathsFor('/count/:rule_id'), async (req: ComplianceApiRequest, res: ComplianceApiResponse) => {
+    /*    const { timestamp: query_end_date } = {
+      ...parseRequest(req, { parser: Number }).query('timestamp')
+    }
+    */
     if (!AllowedProviderIDs.includes(res.locals.provider_id)) {
       return res.status(401).send({ result: 'unauthorized access' })
     }

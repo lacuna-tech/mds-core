@@ -322,6 +322,12 @@ if (pg_info.database) {
         assert.deepEqual(policy.name, POLICY_JSON.name)
       })
 
+      it('can find Policies by rule id', async () => {
+        const rule_id = '7ea0d16e-ad15-4337-9722-9924e3af9146'
+        const policies = await MDSDBPostgres.findPoliciesByRule(rule_id)
+        assert(policies[0].rules.map(rule => rule.rule_id).includes(rule_id))
+      })
+
       it('cannot find a nonexistent Policy', async () => {
         await MDSDBPostgres.readPolicy('incrediblefailure').should.be.rejected()
       })
