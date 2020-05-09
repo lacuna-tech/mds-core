@@ -258,8 +258,6 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencySubmi
     function fin() {
       res.status(201).send({
         version,
-        result: 'success',
-        recorded,
         device_id,
         status: EVENT_STATUS_MAP[event.event_type]
       })

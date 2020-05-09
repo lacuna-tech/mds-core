@@ -25,8 +25,6 @@ export type AgencyGetVehicleByIdResponse = AgencyApiResponse<CompositeVehicle>
 export type AgencyGetVehiclesByProviderResponse = AgencyApiResponse<PaginatedVehiclesList>
 export type AgencyUpdateVehicleResponse = AgencyApiResponse<{ result: string; vehicle: Device }>
 export type AgencySubmitVehicleEventResponse = AgencyApiResponse<{
-  result: string
-  recorded: Timestamp
   device_id: UUID
   status: VEHICLE_STATUS
 }>
