@@ -39,7 +39,7 @@ describe('Agency API request handlers', () => {
         type,
         propulsion,
         year: 1990,
-        mfgr: 'foo inc.',
+        mfgr: 'foo inc',
         model: 'i date one'
       }
       return body
@@ -293,7 +293,8 @@ describe('Agency API request handlers', () => {
         assert.equal(statusHandler.calledWith(404), true)
         assert.equal(
           sendHandler.calledWith({
-            error: 'not_found'
+            error: 'not_found',
+            error_description: 'Vehicle not found'
           }),
           true
         )
@@ -325,7 +326,8 @@ describe('Agency API request handlers', () => {
         assert.equal(statusHandler.calledWith(400), true)
         assert.equal(
           sendHandler.calledWith({
-            error: 'invalid_data'
+            error: 'invalid_data',
+            error_description: 'Invalid parameters for vehicle were sent'
           }),
           true
         )
@@ -357,7 +359,8 @@ describe('Agency API request handlers', () => {
         assert.equal(statusHandler.calledWith(404), true)
         assert.equal(
           sendHandler.calledWith({
-            error: 'not_found'
+            error: 'not_found',
+            error_description: 'Vehicle not found'
           }),
           true
         )

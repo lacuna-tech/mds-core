@@ -19,10 +19,7 @@ export type AgencyApiResponse<TBody = any> = ApiVersionedResponse<
   TBody
 >
 
-export type AgencyRegisterVehicleResponse = AgencyApiResponse<{
-  recorded: number
-  device: Device
-}>
+export type AgencyRegisterVehicleResponse = AgencyApiResponse<{}>
 
 export type AgencyGetVehicleByIdResponse = AgencyApiResponse<CompositeVehicle>
 export type AgencyGetVehiclesByProviderResponse = AgencyApiResponse<PaginatedVehiclesList>

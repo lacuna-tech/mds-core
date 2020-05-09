@@ -334,7 +334,7 @@ describe('Tests API', () => {
       .expect(201)
       .end((err, result) => {
         log('err', err, 'body', result.body)
-        test.value(result.body.device.device_id, TEST_VEHICLE.device_id)
+        test.value(result.body.version, '0.4')
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -414,7 +414,7 @@ describe('Tests API', () => {
       .expect(409)
       .end((err, result) => {
         log('err', err, 'body', result.body)
-        test.string(result.body.error.reason).contains('already registered')
+        test.string(result.body.error_description).contains('already registered')
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -654,7 +654,7 @@ describe('Tests API', () => {
       .expect(400)
       .end((err, result) => {
         log('post event err', result.body)
-        test.string(result.body.error.reason).contains('the specified device_id has not been registered')
+        test.string(result.body.error_description).contains('The specified device_id has not been registered')
         done(err)
       })
   })
@@ -716,12 +716,12 @@ describe('Tests API', () => {
         telemetry: TEST_TELEMETRY,
         timestamp: testTimestamp - 1
       })
-      .expect(409)
+      .expect(400)
       .end((err, result) => {
         // log('post event', result.body)
         test
-          .string(result.body.error.reason)
-          .contains('an event with this device_id and timestamp has already been received')
+          .string(result.body.error_description)
+          .contains('An event with this device_id and timestamp has already been received')
         done(err)
       })
   })
@@ -737,7 +737,7 @@ describe('Tests API', () => {
       .expect(400)
       .end((err, result) => {
         // log('----> post event meant to fail', result.body)
-        test.string(result.body.error.reason).contains('the specified device_id has not been registered')
+        test.string(result.body.error_description).contains('The specified device_id has not been registered')
         done(err)
       })
   })
@@ -1152,7 +1152,7 @@ describe('Tests API', () => {
           log('telemetry err', err)
         } else {
           // log('telemetry result', result)
-          test.string(result.body.error.reason).contains('none of the provided data was unique')
+          test.string(result.body.error_description).contains('None of the provided data was valid')
         }
         done(err)
       })
@@ -1205,7 +1205,7 @@ describe('Tests API', () => {
           log('post bad telemetry err', err)
         } else {
           log('post bad telemetry result', result.body)
-          test.value(result.body.error.info.failures.length).is(1)
+          test.value(result.body.error_details.length).is(1)
         }
         done(err)
       })
@@ -1227,7 +1227,7 @@ describe('Tests API', () => {
           log('telemetry err', err)
         } else {
           log('telemetry result', result.body)
-          test.value(result.body.error.info.failures.length).is(1)
+          test.value(result.body.error_details.length).is(1)
         }
         done(err)
       })
@@ -1249,7 +1249,7 @@ describe('Tests API', () => {
           log('telemetry err', err)
         } else {
           log('telemetry result', result.body)
-          test.value(result.body.error.info.failures.length).is(1)
+          test.value(result.body.error_details.length).is(1)
         }
         done(err)
       })
@@ -1271,7 +1271,7 @@ describe('Tests API', () => {
           log('telemetry err', err)
         } else {
           log('telemetry result', result.body)
-          test.value(result.body.error.info.failures.length).is(1)
+          test.value(result.body.error_details.length).is(1)
         }
         done(err)
       })
@@ -1283,13 +1283,13 @@ describe('Tests API', () => {
       .send({
         data: [TEST_TELEMETRY]
       })
-      .expect(400)
+      .expect(500)
       .end((err, result) => {
         if (err) {
           log('telemetry err with mismatched provider', err)
         } else {
           log('telemetry result with mismatched provider', result.body)
-          test.value(result.body.error.info.failures.length).is(1)
+          test.value(result.body.error_details.length).is(1)
         }
         done(err)
       })

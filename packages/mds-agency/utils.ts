@@ -26,7 +26,7 @@ import cache from '@mds-core/mds-agency-cache'
 import { isArray } from 'util'
 import { VehiclePayload, TelemetryResult, CompositeVehicle, PaginatedVehiclesList } from './types'
 
-export function badDevice(device: Device): { error: string; error_description: string } | boolean {
+export function badDevice(device: Device): { error: string; error_description: string } | null {
   if (!device.device_id) {
     return {
       error: 'missing_param',
@@ -98,7 +98,7 @@ export function badDevice(device: Device): { error: string; error_description: s
   //         error_description: 'missing string field "model"'
   //     }
   // }
-  return false
+  return null
 }
 
 export async function getVehicles(
