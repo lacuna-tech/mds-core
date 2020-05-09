@@ -14,6 +14,7 @@
     limitations under the License.
  */
 
+import { AnyFunction } from '@mds-core/mds-types'
 import { ServiceResponse, ServiceErrorDescriptor } from '../@types'
 
 export const isServiceError = (error: unknown): error is ServiceErrorDescriptor =>
@@ -39,3 +40,11 @@ export const getServiceResult = async <R>(request: Promise<ServiceResponse<R>>):
   }
   return response.result
 }
+
+// eslint-reason type inference requires any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyServiceResponseMethod = AnyFunction<Promise<ServiceResponse<any>>>
+
+export const UnwrapServiceResult = <M extends AnyServiceResponseMethod>(method: M) => async (
+  ...args: Parameters<M>
+): Promise<ReturnType<M> extends Promise<ServiceResponse<infer R>> ? R : unknown> => getServiceResult(method(...args))
