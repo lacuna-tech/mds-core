@@ -1,6 +1,6 @@
 import { AgencyApiRequest } from '@mds-core/mds-agency/types'
 import logger from '@mds-core/mds-logger'
-import { isUUID, now, ValidationError, NotFoundError, normalizeToArray, BadParamsError } from '@mds-core/mds-utils'
+import { isUUID, now, ValidationError, normalizeToArray } from '@mds-core/mds-utils'
 import { isValidStop, isValidDevice, validateEvent, isValidTelemetry } from '@mds-core/mds-schema-validators'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-agency-cache'
