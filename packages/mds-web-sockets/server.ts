@@ -2,11 +2,16 @@ import logger from '@mds-core/mds-logger'
 import { seconds, getEnvVar } from '@mds-core/mds-utils'
 import WebSocket from 'ws'
 import { setWsHeartbeat } from 'ws-heartbeat/server'
-import { Telemetry, VehicleEvent } from '@mds-core/mds-types'
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { initializeNatsSubscriber } from '@mds-core/mds-stream/nats/nats'
 import { Clients } from './clients'
 import { ENTITY_TYPE } from './types'
+
+type Json = boolean | number | string | null | JsonArray | JsonMap
+interface JsonMap {
+  [key: string]: Json
+}
+type JsonArray = Array<Json>
 
 export const WebSocketServer = () => {
   const server = HttpServer(ApiServer(app => app))
@@ -46,15 +51,6 @@ export const WebSocketServer = () => {
     staleClients.forEach(client => client.close())
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  function writeTelemetry(telemetry: Telemetry) {
-    pushToClients('TELEMETRIES', JSON.stringify(telemetry))
-  }
-
-  function writeEvent(event: VehicleEvent) {
-    pushToClients('EVENTS', JSON.stringify(event))
-  }
-
   wss.on('connection', (ws: WebSocket) => {
     ws.on('message', async (data: WebSocket.Data) => {
       const message = data.toString().trim().split('%')
@@ -65,14 +61,15 @@ export const WebSocketServer = () => {
         if (clients.isAuthenticated(ws)) {
           if (args.length === 2) {
             const [entity, payload] = args
+            // Limit messages to only supported entities
             switch (entity) {
               case 'EVENTS': {
                 const event = JSON.parse(payload)
-                return writeEvent(event)
+                return pushToClients(entity, event)
               }
               case 'TELEMETRIES': {
                 const telemetry = JSON.parse(payload)
-                return writeTelemetry(telemetry)
+                return pushToClients(entity, telemetry)
               }
               default: {
                 return ws.send(`Invalid entity: ${entity}`)
@@ -105,16 +102,14 @@ export const WebSocketServer = () => {
     TENANT_ID: 'mds'
   })
 
-  const processor = async (type: string, data: VehicleEvent | Telemetry) => {
+  const processor = async (type: string, data: Json) => {
     switch (type) {
-      case 'event': {
-        await writeEvent(data as VehicleEvent)
-        return
-      }
-      case 'telemetry': {
-        await writeTelemetry(data as Telemetry)
-        return
-      }
+      case 'event':
+        await pushToClients('EVENTS', JSON.stringify(data))
+        break
+      case 'telemetry':
+        await pushToClients('TELEMETRIES', JSON.stringify(data))
+        break
       default:
         logger.error(`Unprocessable entity of type: ${type} and data: ${JSON.stringify(data)}`)
     }
