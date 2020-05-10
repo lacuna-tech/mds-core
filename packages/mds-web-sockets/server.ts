@@ -8,7 +8,12 @@ import { initializeNatsSubscriber } from '@mds-core/mds-stream/nats/nats'
 import { Clients } from './clients'
 import { EventEntityMap, WS_EVENT_TOPIC } from './types'
 
-export const WebSocketServer = (eventEntityMap?: EventEntityMap) => {
+const defaultEventEntityMap: EventEntityMap = {
+  event: 'EVENTS',
+  telemetry: 'TELEMETRIES'
+}
+
+export const WebSocketServer = (eventEntityMap: EventEntityMap = defaultEventEntityMap) => {
   const server = HttpServer(ApiServer(app => app))
 
   logger.info('Creating WS server')
