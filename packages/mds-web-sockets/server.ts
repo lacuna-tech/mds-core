@@ -106,13 +106,9 @@ export const WebSocketServer = (eventEntityMap: EventEntityMap = defaultEventEnt
     if (eventEntityMap) {
       const entity = eventEntityMap[event as WS_EVENT_TOPIC]
       if (entity) await pushToClients(entity, JSON.stringify(data))
-      else {
-        logger.error(`Unprocessable entity of type: ${event} and data: ${JSON.stringify(data)}`)
-      }
-    } else {
-      // Default to sending all events to WS clients
-      await pushToClients(event, JSON.stringify(data))
+      return
     }
+    logger.error(`Unprocessable entity of type: ${event} and data: ${JSON.stringify(data)}`)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
