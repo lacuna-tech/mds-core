@@ -1,17 +1,12 @@
 import logger from '@mds-core/mds-logger'
 import { seconds, getEnvVar } from '@mds-core/mds-utils'
+import { Json } from '@mds-core/mds-types'
 import WebSocket from 'ws'
 import { setWsHeartbeat } from 'ws-heartbeat/server'
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { initializeNatsSubscriber } from '@mds-core/mds-stream/nats/nats'
 import { Clients } from './clients'
 import { ENTITY_TYPE } from './types'
-
-type Json = boolean | number | string | null | JsonArray | JsonMap
-interface JsonMap {
-  [key: string]: Json
-}
-type JsonArray = Array<Json>
 
 export const WebSocketServer = () => {
   const server = HttpServer(ApiServer(app => app))

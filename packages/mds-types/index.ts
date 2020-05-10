@@ -444,3 +444,15 @@ export interface Stop {
   wheelchair_boarding?: boolean
   reservation_cost?: Partial<{ [S in VEHICLE_TYPE]: number }> // Cost to reserve a spot per vehicle_type
 }
+
+// eslint-reason recursive declarations require interfaces
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface JsonArray extends Array<Json> {}
+
+export interface JsonObject {
+  [property: string]: Json
+}
+
+export type JsonValue = string | number | boolean | JsonArray | JsonObject
+
+export type Json = Nullable<JsonValue>
