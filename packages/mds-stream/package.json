@@ -19,6 +19,7 @@
     "@types/redis": "2.8.20",
     "@mds-core/mds-logger": "0.1.24",
     "@mds-core/mds-types": "0.1.23",
+    "@mds-core/mds-utils": "0.1.26",
     "bluebird": "3.7.2",
     "cloudevents-sdk": "1.0.0",
     "flat": "5.0.0",

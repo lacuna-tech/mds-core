@@ -18,8 +18,9 @@
     "mds"
   ],
   "author": "City of Los Angeles",
+  "license": "Apache-2.0",
   "dependencies": {
-    "@mds-core/mds-audit": "0.1.38"
-  },
-  "license": "Apache-2.0"
+    "@mds-core/mds-audit": "0.1.38",
+    "@mds-core/mds-webpack-config": "0.1.0"
+  }
 }

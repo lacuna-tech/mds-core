@@ -18,8 +18,9 @@
     "mds"
   ],
   "author": "City of Los Angeles",
+  "license": "Apache-2.0",
   "dependencies": {
-    "@mds-core/mds-geography-author": "0.0.1"
-  },
-  "license": "Apache-2.0"
+    "@mds-core/mds-geography-author": "0.0.1",
+    "@mds-core/mds-webpack-config": "0.1.0"
+  }
 }

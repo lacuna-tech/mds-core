@@ -13,7 +13,7 @@ export interface AuthorizerClaims {
 export type Authorizer = (authorization: string) => AuthorizerClaims | null
 export type ApiAuthorizer = (req: express.Request) => AuthorizerClaims | null
 
-const decode = (token:string) => {
+const decode = (token: string) => {
   const decoded = jwt.decode(token)
   return typeof decoded === 'string' || decoded === null ? {} : decoded
 }
