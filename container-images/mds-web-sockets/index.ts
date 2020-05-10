@@ -16,4 +16,7 @@
 
 import { WebSocketServer } from '@mds-core/mds-web-sockets'
 
-WebSocketServer()
+WebSocketServer({
+  event: 'EVENTS',
+  telemetry: 'TELEMETRIES'
+})

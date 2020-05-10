@@ -6,9 +6,9 @@ import { setWsHeartbeat } from 'ws-heartbeat/server'
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { initializeNatsSubscriber } from '@mds-core/mds-stream/nats/nats'
 import { Clients } from './clients'
-import { ENTITY_TYPE } from './types'
+import { EventEntityMap, WS_EVENT_TOPIC } from './types'
 
-export const WebSocketServer = () => {
+export const WebSocketServer = (eventEntityMap?: EventEntityMap) => {
   const server = HttpServer(ApiServer(app => app))
 
   logger.info('Creating WS server')
@@ -27,7 +27,7 @@ export const WebSocketServer = () => {
 
   const clients = new Clients()
 
-  function pushToClients(entity: ENTITY_TYPE, message: string) {
+  function pushToClients(entity: string, message: string) {
     const staleClients: WebSocket[] = []
     if (clients.subList[entity]) {
       clients.subList[entity].forEach(client => {
@@ -97,16 +97,16 @@ export const WebSocketServer = () => {
     TENANT_ID: 'mds'
   })
 
-  const processor = async (type: string, data: Json) => {
-    switch (type) {
-      case 'event':
-        await pushToClients('EVENTS', JSON.stringify(data))
-        break
-      case 'telemetry':
-        await pushToClients('TELEMETRIES', JSON.stringify(data))
-        break
-      default:
-        logger.error(`Unprocessable entity of type: ${type} and data: ${JSON.stringify(data)}`)
+  const processor = async (event: string, data: Json) => {
+    if (eventEntityMap) {
+      const entity = eventEntityMap[event as WS_EVENT_TOPIC]
+      if (entity) await pushToClients(entity, JSON.stringify(data))
+      else {
+        logger.error(`Unprocessable entity of type: ${event} and data: ${JSON.stringify(data)}`)
+      }
+    } else {
+      // Default to sending all events to WS clients
+      await pushToClients(event, JSON.stringify(data))
     }
   }
 
