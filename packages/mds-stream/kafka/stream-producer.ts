@@ -18,9 +18,10 @@ import { Kafka, Producer } from 'kafkajs'
 import { isArray } from 'util'
 import { Nullable } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
-import { isDefined } from '@mds-core/mds-utils'
+import { isDefined, ClientDisconnectedError } from '@mds-core/mds-utils'
 import { StreamProducer } from '../stream-interface'
 import { getKafkaBrokers } from './helpers'
+import { INITIALIZE_CLIENT_MESSAGE } from '../@types'
 
 export interface KafkaStreamProducerOptions {
   clientId: string
@@ -66,6 +67,7 @@ export const KafkaStreamProducer = <TMessage>(
           messages
         })
       }
+      throw new ClientDisconnectedError(INITIALIZE_CLIENT_MESSAGE)
     },
     shutdown: async () => {
       await disconnectProducer(producer)
