@@ -6,14 +6,14 @@ import { setWsHeartbeat } from 'ws-heartbeat/server'
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { initializeNatsSubscriber } from '@mds-core/mds-stream/nats/nats'
 import { Clients } from './clients'
-import { EventEntityMap, WS_EVENT_TOPIC } from './types'
+import { EntityTypes } from './types'
 
-const defaultEventEntityMap: EventEntityMap = {
-  event: 'EVENTS',
-  telemetry: 'TELEMETRIES'
-}
-
-export const WebSocketServer = (eventEntityMap: EventEntityMap = defaultEventEntityMap) => {
+/**
+ * Web Socket Server that pas
+ * @param entityTypes - entities to pass on to clients
+ */
+export const WebSocketServer = <T extends readonly string[]>(entityTypes?: T) => {
+  const supportedEntities = entityTypes || EntityTypes
   const server = HttpServer(ApiServer(app => app))
 
   logger.info('Creating WS server')
@@ -31,6 +31,10 @@ export const WebSocketServer = (eventEntityMap: EventEntityMap = defaultEventEnt
   )
 
   const clients = new Clients()
+
+  function isSupported(entity: string) {
+    return supportedEntities.findIndex(e => e === entity) === -1
+  }
 
   function pushToClients(entity: string, message: string) {
     const staleClients: WebSocket[] = []
@@ -62,19 +66,11 @@ export const WebSocketServer = (eventEntityMap: EventEntityMap = defaultEventEnt
           if (args.length === 2) {
             const [entity, payload] = args
             // Limit messages to only supported entities
-            switch (entity) {
-              case 'EVENTS': {
-                const event = JSON.parse(payload)
-                return pushToClients(entity, event)
-              }
-              case 'TELEMETRIES': {
-                const telemetry = JSON.parse(payload)
-                return pushToClients(entity, telemetry)
-              }
-              default: {
-                return ws.send(`Invalid entity: ${entity}`)
-              }
+            if (isSupported(entity)) {
+              await pushToClients(entity, JSON.parse(payload))
+              return
             }
+            return ws.send(`Invalid entity: ${entity}`)
           }
         }
       }
@@ -102,13 +98,12 @@ export const WebSocketServer = (eventEntityMap: EventEntityMap = defaultEventEnt
     TENANT_ID: 'mds'
   })
 
-  const processor = async (event: string, data: Json) => {
-    if (eventEntityMap) {
-      const entity = eventEntityMap[event as WS_EVENT_TOPIC]
-      if (entity) await pushToClients(entity, JSON.stringify(data))
+  const processor = async (entity: string, data: Json) => {
+    if (isSupported(entity)) {
+      await pushToClients(entity, JSON.stringify(data))
       return
     }
-    logger.error(`Unprocessable entity of type: ${event} and data: ${JSON.stringify(data)}`)
+    logger.error(`Unprocessable entity of type: ${entity} and data: ${JSON.stringify(data)}`)
   }
 
   // eslint-disable-next-line @typescript-eslint/no-floating-promises
