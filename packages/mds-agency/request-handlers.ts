@@ -1,4 +1,3 @@
-import { AgencyApiRequest } from '@mds-core/mds-agency/types'
 import logger from '@mds-core/mds-logger'
 import { isUUID, now, ValidationError, normalizeToArray } from '@mds-core/mds-utils'
 import { isValidStop, isValidDevice, validateEvent, isValidTelemetry } from '@mds-core/mds-schema-validators'
@@ -21,17 +20,7 @@ import {
 import urls from 'url'
 import { parseRequest } from '@mds-core/mds-api-helpers'
 import {
-  badDevice,
-  getVehicles,
-  lower,
-  writeTelemetry,
-  badEvent,
-  badTelemetry,
-  writeRegisterEvent,
-  readPayload,
-  computeCompositeVehicleData
-} from './utils'
-import {
+  AgencyApiRequest,
   AgencyRegisterVehicleResponse,
   AgencyGetVehicleByIdResponse,
   AgencyGetVehiclesByProviderResponse,
@@ -42,6 +31,17 @@ import {
   AgencyReadStopsResponse,
   AgencyReadStopResponse
 } from './types'
+import {
+  badDevice,
+  getVehicles,
+  lower,
+  writeTelemetry,
+  badEvent,
+  badTelemetry,
+  writeRegisterEvent,
+  readPayload,
+  computeCompositeVehicleData
+} from './utils'
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 stream.initialize()
