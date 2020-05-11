@@ -64,13 +64,14 @@ const ServiceMonitor = async <TServiceInterface>(
 
         ...retryOptions,
         onRetry: (error, attempt) => {
+          /* istanbul ignore next */
           logger.error(
             `Initializing service ${version} failed: ${error.message}, Retrying ${attempt} of ${retries}....`
           )
         }
       }
     )
-  } catch (error) {
+  } catch (error) /* istanbul ignore next */ {
     logger.error(`Initializing service ${version} failed: ${error.message}, Exiting...`)
     await service.shutdown()
     process.exit(1)
