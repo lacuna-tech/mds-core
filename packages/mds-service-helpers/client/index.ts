@@ -20,6 +20,7 @@ import { ServiceResponse, ServiceErrorDescriptor } from '../@types'
 export const isServiceError = (error: unknown): error is ServiceErrorDescriptor =>
   (error as ServiceErrorDescriptor).name === '__ServiceErrorDescriptor__'
 
+/* istanbul ignore next */
 export const handleServiceResponse = <R>(
   response: ServiceResponse<R>,
   onerror: (error: ServiceErrorDescriptor) => void,
