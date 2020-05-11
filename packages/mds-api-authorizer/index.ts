@@ -1,5 +1,5 @@
 import express from 'express'
-import decode from 'jwt-decode'
+import jwt from 'jsonwebtoken'
 import { UUID } from '@mds-core/mds-types'
 import { getEnvVar } from '@mds-core/mds-utils'
 
@@ -42,6 +42,11 @@ export const JurisdictionsClaim = () => {
   return TOKEN_JURISDICTIONS_CLAIM
 }
 
+const decode = (token: string) => {
+  const decoded = jwt.decode(token)
+  return typeof decoded === 'string' || decoded === null ? {} : decoded
+}
+
 const decoders: { [scheme: string]: (token: string) => AuthorizerClaims } = {
   bearer: (token: string) => {
     const {
@@ -52,6 +57,7 @@ const decoders: { [scheme: string]: (token: string) => AuthorizerClaims } = {
       [JurisdictionsClaim()]: jurisdictions = null,
       ...claims
     } = decode(token)
+
     return {
       principalId,
       scope,
