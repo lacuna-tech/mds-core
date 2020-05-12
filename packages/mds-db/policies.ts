@@ -56,6 +56,18 @@ export async function readPolicies(params?: {
   return res.rows.map(row => row.policy_json)
 }
 
+export async function readActivePolicies(timestamp: Timestamp = now()): Promise<Policy[]> {
+  const client = await getReadOnlyClient()
+  const conditions = []
+  const vals = new SqlVals()
+  conditions.push(`policy_json->>'start_date' <= ${vals.add(timestamp)}`)
+  conditions.push(`policy_json->>'end_date' >= ${vals.add(timestamp)}`)
+  const sql = `select * from ${schema.TABLE.policies} WHERE ${conditions.join(' AND ')}`
+  const values = vals.values()
+  const res = await client.query(sql, values)
+  return res.rows.map(row => row.policy_json)
+}
+
 export async function readBulkPolicyMetadata(params?: {
   policy_id?: UUID
   name?: string
