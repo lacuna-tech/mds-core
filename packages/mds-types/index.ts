@@ -456,3 +456,7 @@ export interface JsonObject {
 export type JsonValue = string | number | boolean | JsonArray | JsonObject
 
 export type Json = Nullable<JsonValue>
+// eslint-reason Function and constructor inference must use a single rest parameter of type 'any[]'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type AnyFunction<A = any> = (...args: any[]) => A
+export type AnyConstructor<A = object> = new (...args: any[]) => A
