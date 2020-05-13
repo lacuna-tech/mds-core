@@ -1,4 +1,3 @@
-import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
 import logger from '@mds-core/mds-logger'
 import { isUUID, now, ServerError, ValidationError, NotFoundError, normalizeToArray } from '@mds-core/mds-utils'
 import { isValidStop, isValidDevice, validateEvent, isValidTelemetry } from '@mds-core/mds-schema-validators'
@@ -20,6 +19,7 @@ import {
 } from '@mds-core/mds-types'
 import urls from 'url'
 import { parseRequest } from '@mds-core/mds-api-helpers'
+import { AgencyApiRequest, AgencyApiResponse } from './types'
 import {
   badDevice,
   getVehicles,
@@ -186,8 +186,11 @@ export const updateVehicle = async (req: AgencyApiRequest, res: AgencyApiRespons
       await updateVehicleFail(req, res, provider_id, device_id, 'not found')
     } else {
       const device = await db.updateDevice(device_id, provider_id, update)
-      // TODO should we warn instead of fail if the cache/stream doesn't work?
-      await Promise.all([cache.writeDevice(device), stream.writeDevice(device)])
+      try {
+        await Promise.all([cache.writeDevice(device), stream.writeDevice(device)])
+      } catch (error) {
+        logger.warn(`Error writing to cache/stream ${error}`)
+      }
       return res.status(201).send({
         result: 'success',
         vehicle: device
@@ -275,8 +278,12 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencyApiRe
     try {
       await cache.readDevice(event.device_id)
     } catch (err) {
-      await Promise.all([cache.writeDevice(device), stream.writeDevice(device)])
-      logger.info('Re-adding previously deregistered device to cache', err)
+      try {
+        await Promise.all([cache.writeDevice(device), stream.writeDevice(device)])
+        logger.info('Re-adding previously deregistered device to cache', err)
+      } catch (error) {
+        logger.warn(`Error writing to cache/stream ${error}`)
+      }
     }
     if (event.telemetry) {
       event.telemetry.device_id = event.device_id
