@@ -30,10 +30,10 @@ export const WebSocketServer = <T extends readonly string[]>(entityTypes?: T) =>
     seconds(60)
   )
 
-  const clients = new Clients()
+  const clients = new Clients(supportedEntities)
 
   function isSupported(entity: string) {
-    return supportedEntities.findIndex(e => e === entity) === -1
+    return supportedEntities.findIndex(e => e === entity) > -1
   }
 
   function pushToClients(entity: string, message: string) {
@@ -67,7 +67,7 @@ export const WebSocketServer = <T extends readonly string[]>(entityTypes?: T) =>
             const [entity, payload] = args
             // Limit messages to only supported entities
             if (isSupported(entity)) {
-              await pushToClients(entity, JSON.parse(payload))
+              await pushToClients(entity, payload)
               return
             }
             return ws.send(`Invalid entity: ${entity}`)
