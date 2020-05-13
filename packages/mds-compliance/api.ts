@@ -21,7 +21,6 @@ import logger from '@mds-core/mds-logger'
 import {
   isUUID,
   now,
-  days,
   pathsFor,
   getPolygon,
   pointInShape,
