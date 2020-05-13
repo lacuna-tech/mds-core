@@ -94,14 +94,11 @@ function api(app: express.Express): express.Express {
     if (!isUUID(policy_uuid)) {
       return res.status(400).send({ err: 'bad_param' })
     }
-    const { start_date, end_date } = query_end_date
-      ? { end_date: query_end_date, start_date: query_end_date - days(365) }
-      : { end_date: now() + days(365), start_date: now() - days(365) }
 
     const timestamp = query_end_date || Date.now()
 
     try {
-      const all_policies = await db.readPolicies({ start_date, get_published: null, get_unpublished: null })
+      const all_policies = await db.readActivePolicies(timestamp)
       const policy = compliance_engine.filterPolicies(all_policies).find(p => {
         return p.policy_id === policy_uuid
       })
@@ -135,8 +132,8 @@ function api(app: express.Express): express.Express {
           const deviceIdSubset = deviceRecords.map((record: { device_id: UUID; provider_id: UUID }) => record.device_id)
           const devices = await cache.readDevices(deviceIdSubset)
           const events =
-            query_end_date && end_date < now()
-              ? await db.readHistoricalEvents({ provider_id: target_provider_id, end_date })
+            query_end_date && timestamp < now()
+              ? await db.readHistoricalEvents({ provider_id: target_provider_id, end_date: timestamp })
               : await cache.readEvents(deviceIdSubset)
 
           const deviceMap = devices.reduce((map: { [d: string]: Device }, device) => {

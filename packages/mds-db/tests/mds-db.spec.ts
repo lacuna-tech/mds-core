@@ -17,7 +17,8 @@ import {
   GEOGRAPHY2_UUID,
   LA_CITY_BOUNDARY,
   DISTRICT_SEVEN,
-  START_ONE_MONTH_AGO
+  START_ONE_MONTH_AGO,
+  POLICY5_JSON
 } from '@mds-core/mds-test-data'
 import { now, clone, NotFoundError, rangeRandomInt, uuid } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
@@ -318,8 +319,9 @@ if (pg_info.database) {
       })
 
       it('can retrieve Policies that were active at a particular date', async () => {
+        await MDSDBPostgres.writePolicy(POLICY5_JSON)
         const policies = await MDSDBPostgres.readActivePolicies(START_ONE_MONTH_AGO)
-        assert.deepEqual(policies.length, 1)
+        assert.deepEqual(policies.length, 2)
       })
 
       it('can read a single Policy', async () => {

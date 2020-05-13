@@ -61,11 +61,15 @@ export async function readActivePolicies(timestamp: Timestamp = now()): Promise<
   const conditions = []
   const vals = new SqlVals()
   conditions.push(`policy_json->>'start_date' <= ${vals.add(timestamp)}`)
-  conditions.push(`policy_json->>'end_date' >= ${vals.add(timestamp)}`)
+  //  conditions.push(`policy_json->>'end_date' >= ${vals.add(timestamp)}`)
   const sql = `select * from ${schema.TABLE.policies} WHERE ${conditions.join(' AND ')}`
   const values = vals.values()
   const res = await client.query(sql, values)
-  return res.rows.map(row => row.policy_json)
+  return res.rows
+    .map(row => row.policy_json)
+    .filter(policy => {
+      return policy.end_date === null || policy.end_date >= timestamp
+    })
 }
 
 export async function readBulkPolicyMetadata(params?: {

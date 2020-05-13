@@ -233,6 +233,28 @@ const POLICY4_JSON: Policy = {
   ]
 }
 
+const POLICY5_JSON: Policy = {
+  policy_id: uuid(),
+  name: 'Policy 5',
+  description: 'just here to enable testing for policies by start date',
+  start_date: START_ONE_MONTH_AGO,
+  end_date: null,
+  prev_policies: null,
+  provider_ids: [],
+  rules: [
+    {
+      name: 'Greater LA',
+      rule_id: uuid(),
+      rule_type: 'speed',
+      rule_units: 'mph',
+      geographies: [GEOGRAPHY_UUID],
+      statuses: { trip: [] },
+      vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
+      maximum: 25
+    }
+  ]
+}
+
 const POLICY_JSON_MISSING_POLICY_ID = {
   name: 'I have no identity woe is me',
   description: 'LADOT Pilot Speed Limit Limitations',
@@ -495,6 +517,7 @@ export {
   POLICY2_JSON,
   POLICY3_JSON,
   POLICY4_JSON,
+  POLICY5_JSON,
   POLICY_JSON_MISSING_POLICY_ID,
   POLICY_UUID,
   SUPERSEDING_POLICY_UUID,
