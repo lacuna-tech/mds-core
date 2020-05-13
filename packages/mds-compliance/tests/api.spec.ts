@@ -11,7 +11,8 @@ import {
   makeTelemetryInArea,
   restrictedAreas,
   veniceSpecOps,
-  LA_CITY_BOUNDARY
+  LA_CITY_BOUNDARY,
+  START_ONE_MONTH_AGO
 } from '@mds-core/mds-test-data'
 import test from 'unit.js'
 import { api as agency } from '@mds-core/mds-agency'
@@ -343,6 +344,7 @@ describe('Tests Compliance API:', () => {
         .end((err, result) => {
           test.assert.deepEqual(result.body.total_violations, 0)
           test.object(result.body).hasProperty('timestamp')
+          test.value(result.body.policy, COUNT_POLICY_UUID)
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
@@ -879,17 +881,32 @@ describe('Tests Compliance API:', () => {
       })
     })
 
-    it('Test count endpoint success', done => {
+    it('Test count endpoint, expecting events', done => {
       request
         .get(`/count/47c8c7d4-14b5-43a3-b9a5-a32ecc2fb2c6`)
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
           test.assert.deepEqual(result.body.count, 30)
+          test.object(result.body).hasProperty('policy')
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
     })
+
+    // /*
+    it('Test count endpoint, expecting no events', done => {
+      request
+        .get(`/count/47c8c7d4-14b5-43a3-b9a5-a32ecc2fb2c6?timestamp=${START_ONE_MONTH_AGO}`)
+        .set('Authorization', ADMIN_AUTH)
+        .expect(200)
+        .end((err, result) => {
+          test.assert.deepEqual(result.body.count, 0)
+          test.value(result).hasHeader('content-type', APP_JSON)
+          done(err)
+        })
+    })
+    //* /
 
     it('Test count endpoint failure with bad rule_id', done => {
       request

@@ -26,7 +26,8 @@ import {
   getPolygon,
   pointInShape,
   isInStatesOrEvents,
-  ServerError
+  ServerError,
+  NotFoundError
 } from '@mds-core/mds-utils'
 import { Geography, Device, UUID, VehicleEvent } from '@mds-core/mds-types'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, BLUE_SYSTEMS_PROVIDER_ID, providerName } from '@mds-core/mds-providers'
@@ -95,7 +96,7 @@ function api(app: express.Express): express.Express {
       return res.status(400).send({ err: 'bad_param' })
     }
 
-    const timestamp = query_end_date || Date.now()
+    const timestamp = query_end_date || now()
 
     try {
       const all_policies = await db.readActivePolicies(timestamp)
@@ -159,17 +160,20 @@ function api(app: express.Express): express.Express {
   })
 
   app.get(pathsFor('/count/:rule_id'), async (req: ComplianceApiRequest, res: ComplianceApiResponse) => {
-    /*    const { timestamp: query_end_date } = {
+    // /*
+    const { timestamp: query_end_date } = {
       ...parseRequest(req, { parser: Number }).query('timestamp')
     }
-    */
+    //* /
     if (!AllowedProviderIDs.includes(res.locals.provider_id)) {
       return res.status(401).send({ result: 'unauthorized access' })
     }
 
+    const timestamp = query_end_date || now()
+
     async function fail(err: Error) {
       logger.error(err.stack || err)
-      if (err.message.includes('invalid rule_id')) {
+      if (err.message.includes('invalid rule_id') || err.message.includes('not found in any policy')) {
         return res.status(404).send(err.message)
       }
       /* istanbul ignore next */
@@ -181,6 +185,10 @@ function api(app: express.Express): express.Express {
     const { rule_id } = req.params
     try {
       const rule = await db.readRule(rule_id)
+      const policies = await db.findPoliciesByRule(rule_id)
+      if (policies.length === 0) {
+        throw new NotFoundError('Rule ID not found in any policy')
+      }
       const geography_ids = rule.geographies.reduce((acc: UUID[], geo: UUID) => {
         return [...acc, geo]
       }, [])
@@ -199,11 +207,19 @@ function api(app: express.Express): express.Express {
         return [...acc, getPolygon(geographies, geography.geography_id)]
       }, [])
 
+      // Reading all devices since this is across all providers.
+      const deviceRecords = await db.readDeviceIds()
+      const deviceIDs = deviceRecords.map(recorded_device => recorded_device.device_id)
+      const events =
+        query_end_date && timestamp < now()
+          ? await db.readHistoricalEvents({ end_date: timestamp })
+          : await cache.readEvents(deviceIDs)
+
       // https://stackoverflow.com/a/51577579 to remove nulls in typesafe way
-      const events = (await cache.readAllEvents()).filter(
+      const filteredVehicleEvents = events.filter(
         (event): event is VehicleEvent => event !== null && isInStatesOrEvents(rule, event)
       )
-      const filteredEvents = compliance_engine.filterEvents(events)
+      const filteredEvents = compliance_engine.filterEvents(filteredVehicleEvents)
 
       const count = filteredEvents.reduce((count_acc, event) => {
         return (
@@ -217,7 +233,7 @@ function api(app: express.Express): express.Express {
         )
       }, 0)
 
-      return res.status(200).send({ count })
+      return res.status(200).send({ policy: policies[0], count })
     } catch (err) {
       await fail(err)
     }
