@@ -68,11 +68,11 @@ function api(app: express.Express): express.Express {
         await db.writePolicy(policy)
         return res.status(201).send({ version: res.locals.version, policy })
       } catch (error) {
-        if (error.includes('duplicate')) {
-          return res.status(409).send({ error: new ConflictError(error) })
+        if (error.code === '23505') {
+          return res
+            .status(409)
+            .send({ error: new ConflictError(`policy ${policy.policy_id} already exists! Did you mean to PUT?`) })
         }
-        /* istanbul ignore next */
-        logger.error('failed to write policy', error)
         /* istanbul ignore next */
         return next(new ServerError(error))
       }
@@ -190,10 +190,11 @@ function api(app: express.Express): express.Express {
     async (req: PolicyAuthorApiRequest, res: GetPolicyMetadatumResponse, next: express.NextFunction) => {
       const { policy_id } = req.params
 
-      if (!isUUID(policy_id)) {
-        throw new BadParamsError(`${policy_id} is not a valid UUID`)
-      }
       try {
+        if (!isUUID(policy_id)) {
+          throw new BadParamsError(`${policy_id} is not a valid UUID`)
+        }
+
         const result = await db.readSinglePolicyMetadata(policy_id)
         return res.status(200).send({ version: res.locals.version, policy_metadata: result })
       } catch (error) {
