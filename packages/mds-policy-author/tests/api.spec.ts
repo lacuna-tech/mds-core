@@ -395,6 +395,16 @@ describe('Tests app', () => {
         })
     })
 
+    it('cannot GET policy metadata (no entries exist)', done => {
+      request
+        .get(`/policies/meta`)
+        .set('Authorization', POLICIES_READ_SCOPE)
+        .expect(404)
+        .end(err => {
+          done(err)
+        })
+    })
+
     it('cannot PUTing policy metadata to create (no auth)', async () => {
       const metadata = { some_arbitrary_thing: 'boop' }
       await request
@@ -498,6 +508,13 @@ describe('Tests app', () => {
 
     it('cannot GET policy metadata (wrong auth)', async () => {
       await request.get(`/policies/meta`).set('Authorization', EVENTS_READ_SCOPE).expect(403)
+    })
+
+    it('cannot GET policy metadata with both get_published and get_unpublished set to true', async () => {
+      await request
+        .get(`/policies/meta?get_published=true&get_unpublished=true`)
+        .set('Authorization', POLICIES_READ_SCOPE)
+        .expect(400)
     })
 
     it('verifies GETting policy metadata with the same params as for bulk policy reads', async () => {
