@@ -20,7 +20,7 @@ import { Policy, UUID } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import { now, pathsFor, NotFoundError, isUUID } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
-import { parseRequest } from 'packages/mds-api-helpers'
+import { parseRequest } from '@mds-core/mds-api-helpers'
 import { PolicyApiRequest, PolicyApiResponse, GetPoliciesResponse, GetPolicyResponse } from './types'
 import { PolicyApiVersionMiddleware } from './middleware'
 
@@ -69,9 +69,10 @@ function api(app: express.Express): express.Express {
     // TODO filter by start/end applicability
     const { start_date = now(), end_date = now() } = req.query
     const { scopes } = res.locals
-    const { get_published = true, get_unpublished = null } = scopes.includes('policies:read')
-      ? parseRequest(req, { parser: Boolean }).query('get_published', 'get_unpublished')
-      : { get_published: true, get_unpublished: null }
+
+    const { get_published = null, get_unpublished = null } = scopes.includes('policies:read')
+      ? parseRequest(req, { parser: x => (x ? JSON.parse(x) : null) }).query('get_published', 'get_unpublished')
+      : { get_published: true }
 
     if (start_date > end_date) {
       res.status(400).send({ error: 'start_date after end_date' })
@@ -113,9 +114,11 @@ function api(app: express.Express): express.Express {
       /* If the client is scoped to read unpublished policies, they are permitted to read-back unpublished policies.
          Otherwise, they can only read published.
       */
-      const policies = scopes.includes('policies:read')
-        ? await db.readPolicies({ policy_id, get_unpublished: null, get_published: null })
-        : await db.readPolicies({ policy_id, get_published: true, get_unpublished: null })
+      const { get_published = null, get_unpublished = null } = scopes.includes('policies:read')
+        ? parseRequest(req, { parser: x => (x ? JSON.parse(x) : null) }).query('get_published', 'get_unpublished')
+        : { get_published: true }
+
+      const policies = await db.readPolicies({ policy_id, get_published, get_unpublished })
 
       if (policies.length === 0) {
         throw new NotFoundError(`policy_id ${policy_id} not found`)
