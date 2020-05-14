@@ -163,7 +163,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it.only('verifies get non-existent device', done => {
+  it('verifies get non-existent device', done => {
     request
       .get(`/vehicles/${DEVICE_UUID}`)
       .set('Authorization', AUTH)
@@ -181,7 +181,6 @@ describe('Tests API', () => {
       .expect(404)
       .end((err, result) => {
         log('err', err, 'body', result.body)
-        test.string(result.body.error).contains('not_found')
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -392,7 +391,6 @@ describe('Tests API', () => {
       .expect(404)
       .end((err, result) => {
         log('err', err, 'error', result.body.error)
-        test.string(result.body.error).contains('not_found')
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -404,7 +402,6 @@ describe('Tests API', () => {
       .expect(404)
       .end((err, result) => {
         log('err', err, 'error', result.body.error)
-        test.string(result.body.error).contains('not_found')
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -449,7 +446,6 @@ describe('Tests API', () => {
       .expect(404)
       .end((err, result) => {
         log('----> err', err, 'body', result.body.error)
-        test.string(result.body.error).contains('not_found')
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })

@@ -292,10 +292,7 @@ describe('Agency API request handlers', () => {
         )
         assert.equal(statusHandler.calledWith(404), true)
         assert.equal(
-          sendHandler.calledWith({
-            error: 'not_found',
-            error_description: 'Vehicle not found'
-          }),
+          sendHandler.called,
           true
         )
         Sinon.restore()
@@ -326,7 +323,7 @@ describe('Agency API request handlers', () => {
         assert.equal(statusHandler.calledWith(400), true)
         assert.equal(
           sendHandler.calledWith({
-            error: 'invalid_data',
+            error: 'bad_param',
             error_description: 'Invalid parameters for vehicle were sent'
           }),
           true
@@ -358,10 +355,7 @@ describe('Agency API request handlers', () => {
         )
         assert.equal(statusHandler.calledWith(404), true)
         assert.equal(
-          sendHandler.calledWith({
-            error: 'not_found',
-            error_description: 'Vehicle not found'
-          }),
+          sendHandler.called,
           true
         )
         Sinon.restore()

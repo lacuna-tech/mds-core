@@ -20,7 +20,7 @@ import {
 } from '@mds-core/mds-types'
 import urls from 'url'
 import { parseRequest } from '@mds-core/mds-api-helpers'
-import { NotFoundError, ServerError } from 'packages/mds-utils/exceptions'
+import { NotFoundError, ServerError } from '@mds-core/mds-utils/exceptions'
 import {
   badDevice,
   getVehicles,
@@ -124,7 +124,7 @@ export const getVehicleById = async (req: AgencyApiRequest, res: AgencyGetVehicl
   const payload = await readPayload(device_id)
 
   if (!payload.device || (provider_id && payload.device.provider_id !== provider_id)) {
-    res.status(404).send()
+    res.status(404).send({})
     return
   }
   const compositeData = computeCompositeVehicleData(payload)
@@ -166,14 +166,14 @@ export async function updateVehicleFail(
   err: Error | string
 ) {
   if (String(err).includes('not found')) {
-    res.status(404).send()
+    res.status(404).send({})
   } else if (String(err).includes('invalid')) {
     res.status(400).send({
       error: 'bad_param',
       error_description: 'Invalid parameters for vehicle were sent'
     })
   } else if (!provider_id) {
-    res.status(404).send()
+    res.status(404).send({})
   } else {
     logger.error(providerName(provider_id), `fail PUT /vehicles/${device_id}`, req.body, err)
     res.status(500).send(agencyServerError)
