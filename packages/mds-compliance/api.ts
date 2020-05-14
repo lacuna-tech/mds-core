@@ -26,7 +26,9 @@ import {
   pointInShape,
   isInStatesOrEvents,
   ServerError,
-  NotFoundError
+  NotFoundError,
+  BadParamsError,
+  AuthorizationError
 } from '@mds-core/mds-utils'
 import { Geography, Device, UUID, VehicleEvent } from '@mds-core/mds-types'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, BLUE_SYSTEMS_PROVIDER_ID, providerName } from '@mds-core/mds-providers'
@@ -48,17 +50,13 @@ function api(app: express.Express): express.Express {
           /* istanbul ignore next */
           if (!provider_id) {
             logger.warn('Missing provider_id in', req.originalUrl)
-            return res.status(400).send({
-              result: 'missing provider_id'
-            })
+            return res.status(400).send(new BadParamsError('missing provider_id'))
           }
 
           /* istanbul ignore next */
           if (!isUUID(provider_id)) {
             logger.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
-            return res.status(400).send({
-              result: `invalid provider_id ${provider_id} is not a UUID`
-            })
+            return res.status(400).send(new BadParamsError(`invalid provider_id ${provider_id} is not a UUID`))
           }
 
           // stash provider_id
@@ -66,7 +64,7 @@ function api(app: express.Express): express.Express {
 
           logger.info(providerName(provider_id), req.method, req.originalUrl)
         } else {
-          return res.status(401).send('Unauthorized')
+          return res.status(401).send(new AuthorizationError('Unauthorized'))
         }
       }
     } catch (err) {
@@ -83,18 +81,13 @@ function api(app: express.Express): express.Express {
       ...parseRequest(req, { parser: Number }).query('timestamp')
     }
 
+    // default to now() if no timestamp supplied
     const query_date = timestamp || now()
-
-    /* istanbul ignore next */
-    async function fail(err: Error) {
-      logger.error(err.stack || err)
-      return res.status(500).send(new ServerError())
-    }
 
     const { policy_uuid } = req.params
 
     if (!isUUID(policy_uuid)) {
-      return res.status(400).send({ err: 'bad_param' })
+      return res.status(400).send({ error: new BadParamsError('Bad policy UUID') })
     }
 
     try {
@@ -103,7 +96,7 @@ function api(app: express.Express): express.Express {
         return p.policy_id === policy_uuid
       })
       if (!policy) {
-        return res.status(404).send({ err: 'not found' })
+        return res.status(404).send({ error: new NotFoundError('Policy not found') })
       }
 
       if (
@@ -131,6 +124,7 @@ function api(app: express.Express): express.Express {
           ])
           const deviceIdSubset = deviceRecords.map((record: { device_id: UUID; provider_id: UUID }) => record.device_id)
           const devices = await cache.readDevices(deviceIdSubset)
+          // if a timestamp was supplied, the data we want is probably old enough it's going to be in the db
           const events = timestamp
             ? await db.readHistoricalEvents({ provider_id: target_provider_id, end_date: timestamp })
             : await cache.readEvents(deviceIdSubset)
@@ -142,18 +136,15 @@ function api(app: express.Express): express.Express {
           const filteredEvents = compliance_engine.filterEvents(events)
           const result = compliance_engine.processPolicy(policy, filteredEvents, geographies, deviceMap)
           if (result === undefined) {
-            return res.status(400).send({ err: 'bad_param' })
+            return res.status(400).send(new BadParamsError('Unable to process compliance results'))
           }
           return res.status(200).send({ ...result, timestamp: query_date })
         }
       } else {
-        return res.status(401).send({ err: 'Unauthorized' })
+        return res.status(401).send(new AuthorizationError())
       }
     } catch (err) {
-      if (err.message.includes('not_found')) {
-        return res.status(400).send({ err: 'bad_param' })
-      }
-      await fail(err)
+      return res.status(500).send(new ServerError())
     }
   })
 
@@ -163,24 +154,11 @@ function api(app: express.Express): express.Express {
     }
     const query_date = timestamp || now()
     if (!AllowedProviderIDs.includes(res.locals.provider_id)) {
-      return res.status(401).send({ result: 'unauthorized access' })
-    }
-
-    async function fail(err: Error) {
-      logger.error(err.stack || err)
-      if (err.message.includes('invalid rule_id')) {
-        console.log('err ', err)
-        return res.status(404).send(err.message)
-      }
-      /* istanbul ignore next */
-      return res
-        .status(500)
-        .send({ error: 'server_error', error_description: 'an internal server error has occurred and been logged' })
+      return res.status(401).send(new AuthorizationError('Unauthorized'))
     }
 
     const { rule_id } = req.params
     try {
-      const rule = await db.readRule(rule_id)
       const policies = await db.readActivePolicies(query_date)
       const filteredPolicies = policies.filter(policy => {
         const matches = policy.rules.filter(policy_rule => policy_rule.rule_id === rule_id)
@@ -189,6 +167,7 @@ function api(app: express.Express): express.Express {
       if (filteredPolicies.length === 0) {
         throw new NotFoundError('invalid rule_id')
       }
+      const rule = filteredPolicies[0].rules.filter(r => r.rule_id === rule_id)[0]
       const geography_ids = rule.geographies.reduce((acc: UUID[], geo: UUID) => {
         return [...acc, geo]
       }, [])
@@ -228,8 +207,12 @@ function api(app: express.Express): express.Express {
       }, 0)
 
       return res.status(200).send({ policy: policies[0], count, timestamp })
-    } catch (err) {
-      await fail(err)
+    } catch (error) {
+      await logger.error(error.stack)
+      if (error instanceof NotFoundError) {
+        return res.status(404).send(error)
+      }
+      return res.status(500).send(new ServerError('An internal server error has occurred and been logged'))
     }
   })
   return app

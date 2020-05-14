@@ -222,7 +222,7 @@ const POLICY4_JSON: Policy = {
   rules: [
     {
       name: 'Greater LA',
-      rule_id: 'bfd790d3-87d6-41ec-afa0-98fa443ee0d3',
+      rule_id: uuid(),
       rule_type: 'speed',
       rule_units: 'mph',
       geographies: [GEOGRAPHY_UUID],
@@ -265,7 +265,7 @@ const POLICY_JSON_MISSING_POLICY_ID = {
   rules: [
     {
       name: 'Greater LA',
-      rule_id: 'bfd790d3-87d6-41ec-afa0-98fa443ee0d3',
+      rule_id: uuid(),
       rule_type: 'speed',
       rule_units: 'mph',
       geographies: [NONEXISTENT_GEOGRAPHY_UUID],

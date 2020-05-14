@@ -891,7 +891,6 @@ describe('Tests Compliance API:', () => {
         })
     })
 
-    // /*
     it('Test count endpoint, expecting no events', done => {
       request
         .get(`/count/47c8c7d4-14b5-43a3-b9a5-a32ecc2fb2c6?timestamp=${START_ONE_MONTH_AGO}`)
@@ -903,7 +902,6 @@ describe('Tests Compliance API:', () => {
           done(err)
         })
     })
-    //* /
 
     it('Test count endpoint failure with bad rule_id', done => {
       request
