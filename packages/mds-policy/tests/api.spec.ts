@@ -181,7 +181,7 @@ describe('Tests app', () => {
     test.assert(result.body.policies.length === 1)
   })
 
-  it('can GET one unpublished policies', async () => {
+  it('can GET one unpublished policy', async () => {
     await request
       .get(`/policies/${POLICY4_JSON.policy_id}?get_unpublished=true`)
       .set('Authorization', POLICIES_READ_SCOPE)
