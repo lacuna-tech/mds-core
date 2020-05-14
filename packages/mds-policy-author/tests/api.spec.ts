@@ -27,7 +27,7 @@ import should from 'should'
 import supertest from 'supertest'
 import test from 'unit.js'
 import db from '@mds-core/mds-db'
-import { clone, isUUID } from '@mds-core/mds-utils'
+import { clone, isUUID, uuid } from '@mds-core/mds-utils'
 import { Policy } from '@mds-core/mds-types'
 import { ApiServer } from '@mds-core/mds-api-server'
 import {
@@ -284,7 +284,7 @@ describe('Tests app', () => {
       const result = await request
         .post(`/policies/${POLICY_JSON.policy_id}/publish`)
         .set('Authorization', POLICIES_PUBLISH_SCOPE)
-        .expect(404)
+        .expect(424)
       test.value(result).hasHeader('content-type', APP_JSON)
     })
 
@@ -470,13 +470,23 @@ describe('Tests app', () => {
         })
     })
 
-    it('verifies cannot GET non-existent policy metadata', done => {
+    it('verifies cannot GET non-uuid policy_id metadata', done => {
       request
         .get(`/policies/beepbapboop/meta`)
         .set('Authorization', POLICIES_READ_SCOPE)
+        .expect(400)
+        .end((err, result) => {
+          test.value(result).hasHeader('content-type', APP_JSON)
+          done(err)
+        })
+    })
+
+    it('verifies cannot GET non-existent policy metadata', done => {
+      request
+        .get(`/policies/${uuid()}/meta`)
+        .set('Authorization', POLICIES_READ_SCOPE)
         .expect(404)
         .end((err, result) => {
-          test.assert(result.body.error === 'not found')
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
