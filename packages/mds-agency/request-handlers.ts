@@ -19,18 +19,6 @@ import {
 } from '@mds-core/mds-types'
 import urls from 'url'
 import { parseRequest } from '@mds-core/mds-api-helpers'
-
-import {
-  badDevice,
-  getVehicles,
-  lower,
-  writeTelemetry,
-  badEvent,
-  badTelemetry,
-  writeRegisterEvent,
-  readPayload,
-  computeCompositeVehicleData
-} from './utils'
 import {
   AgencyApiRequest,
   AgencyRegisterVehicleResponse,
@@ -43,6 +31,17 @@ import {
   AgencyReadStopsResponse,
   AgencyReadStopResponse
 } from './types'
+import {
+  badDevice,
+  getVehicles,
+  lower,
+  writeTelemetry,
+  badEvent,
+  badTelemetry,
+  writeRegisterEvent,
+  readPayload,
+  computeCompositeVehicleData
+} from './utils'
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 stream.initialize()
