@@ -276,6 +276,28 @@ const POLICY_JSON_MISSING_POLICY_ID = {
   ]
 }
 
+const POLICY_WITH_DUPE_RULE: Policy = {
+  policy_id: uuid(),
+  name: 'I am a no good copycat',
+  description: 'LADOT Pilot Speed Limit Limitations',
+  start_date: now(),
+  end_date: null,
+  prev_policies: null,
+  provider_ids: [],
+  rules: [
+    {
+      name: 'Greater LA',
+      rule_id: 'bfd790d3-87d6-41ec-afa0-98fa443ee0d3',
+      rule_type: 'speed',
+      rule_units: 'mph',
+      geographies: [NONEXISTENT_GEOGRAPHY_UUID],
+      statuses: { trip: [] },
+      vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
+      maximum: 25
+    }
+  ]
+}
+
 function makeTelemetry(devices: Device[], timestamp: Timestamp): Telemetry[] {
   let i = 0
   const serviceAreaKeys = Object.keys(serviceAreaMap)
@@ -519,6 +541,7 @@ export {
   POLICY4_JSON,
   POLICY5_JSON,
   POLICY_JSON_MISSING_POLICY_ID,
+  POLICY_WITH_DUPE_RULE,
   POLICY_UUID,
   SUPERSEDING_POLICY_UUID,
   POLICY2_UUID,

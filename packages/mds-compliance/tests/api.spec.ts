@@ -825,7 +825,7 @@ describe('Tests Compliance API:', () => {
 
     it('Historical check reports 5 violations', done => {
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID_4}?end_date=${yesterday + 200}`)
+        .get(`/snapshot/${COUNT_POLICY_UUID_4}?timestamp=${yesterday + 200}`)
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -849,7 +849,7 @@ describe('Tests Compliance API:', () => {
   })
 
   describe('Tests count endpoint', () => {
-    before(done => {
+    before(async () => {
       const devices_a: Device[] = makeDevices(15, now())
       const events_a = makeEventsWithTelemetry(devices_a, now(), CITY_OF_LA, 'trip_start')
       const telemetry_a: Telemetry[] = devices_a.reduce((acc: Telemetry[], device) => {
@@ -868,17 +868,14 @@ describe('Tests Compliance API:', () => {
         events: [...events_a, ...events_b],
         telemetry: [...telemetry_a, ...telemetry_b]
       }
-      Promise.all([db.initialize(), cache.initialize()]).then(() => {
-        Promise.all([cache.seed(seedData), db.seed(seedData)]).then(() => {
-          db.writePolicy(COUNT_POLICY_JSON).then(() => {
-            db.writeGeography({ name: 'la', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY }).then(
-              () => {
-                done()
-              }
-            )
-          })
-        })
-      })
+      await db.initialize()
+      await cache.initialize()
+      await cache.seed(seedData)
+      await db.seed(seedData)
+      await db.writeGeography({ name: 'la', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY })
+      await db.publishGeography({ geography_id: GEOGRAPHY_UUID })
+      await db.writePolicy(COUNT_POLICY_JSON)
+      await db.publishPolicy(COUNT_POLICY_JSON.policy_id)
     })
 
     it('Test count endpoint, expecting events', done => {

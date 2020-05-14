@@ -78,10 +78,12 @@ function api(app: express.Express): express.Express {
 
   app.get(pathsFor('/snapshot/:policy_uuid'), async (req: ComplianceApiRequest, res: ComplianceApiResponse) => {
     const { provider_id } = res.locals
-    const { provider_id: queried_provider_id, end_date: query_end_date } = {
+    const { provider_id: queried_provider_id, timestamp } = {
       ...parseRequest(req).query('provider_id'),
-      ...parseRequest(req, { parser: Number }).query('end_date')
+      ...parseRequest(req, { parser: Number }).query('timestamp')
     }
+
+    const query_date = timestamp || now()
 
     /* istanbul ignore next */
     async function fail(err: Error) {
@@ -95,10 +97,8 @@ function api(app: express.Express): express.Express {
       return res.status(400).send({ err: 'bad_param' })
     }
 
-    const timestamp = query_end_date || now()
-
     try {
-      const all_policies = await db.readActivePolicies(timestamp)
+      const all_policies = await db.readActivePolicies(query_date)
       const policy = compliance_engine.filterPolicies(all_policies).find(p => {
         return p.policy_id === policy_uuid
       })
@@ -131,10 +131,9 @@ function api(app: express.Express): express.Express {
           ])
           const deviceIdSubset = deviceRecords.map((record: { device_id: UUID; provider_id: UUID }) => record.device_id)
           const devices = await cache.readDevices(deviceIdSubset)
-          const events =
-            query_end_date && timestamp < now()
-              ? await db.readHistoricalEvents({ provider_id: target_provider_id, end_date: timestamp })
-              : await cache.readEvents(deviceIdSubset)
+          const events = timestamp
+            ? await db.readHistoricalEvents({ provider_id: target_provider_id, end_date: timestamp })
+            : await cache.readEvents(deviceIdSubset)
 
           const deviceMap = devices.reduce((map: { [d: string]: Device }, device) => {
             return device ? Object.assign(map, { [device.device_id]: device }) : map
@@ -145,7 +144,7 @@ function api(app: express.Express): express.Express {
           if (result === undefined) {
             return res.status(400).send({ err: 'bad_param' })
           }
-          return res.status(200).send({ ...result, timestamp })
+          return res.status(200).send({ ...result, timestamp: query_date })
         }
       } else {
         return res.status(401).send({ err: 'Unauthorized' })
@@ -159,20 +158,18 @@ function api(app: express.Express): express.Express {
   })
 
   app.get(pathsFor('/count/:rule_id'), async (req: ComplianceApiRequest, res: ComplianceApiResponse) => {
-    // /*
-    const { timestamp: query_end_date } = {
+    const { timestamp } = {
       ...parseRequest(req, { parser: Number }).query('timestamp')
     }
-    //* /
+    const query_date = timestamp || now()
     if (!AllowedProviderIDs.includes(res.locals.provider_id)) {
       return res.status(401).send({ result: 'unauthorized access' })
     }
 
-    const timestamp = query_end_date || now()
-
     async function fail(err: Error) {
       logger.error(err.stack || err)
-      if (err.message.includes('invalid rule_id') || err.message.includes('not found in any policy')) {
+      if (err.message.includes('invalid rule_id')) {
+        console.log('err ', err)
         return res.status(404).send(err.message)
       }
       /* istanbul ignore next */
@@ -184,9 +181,13 @@ function api(app: express.Express): express.Express {
     const { rule_id } = req.params
     try {
       const rule = await db.readRule(rule_id)
-      const policies = await db.findPoliciesByRule(rule_id)
-      if (policies.length === 0) {
-        throw new NotFoundError('Rule ID not found in any policy')
+      const policies = await db.readActivePolicies(query_date)
+      const filteredPolicies = policies.filter(policy => {
+        const matches = policy.rules.filter(policy_rule => policy_rule.rule_id === rule_id)
+        return matches.length !== 0
+      })
+      if (filteredPolicies.length === 0) {
+        throw new NotFoundError('invalid rule_id')
       }
       const geography_ids = rule.geographies.reduce((acc: UUID[], geo: UUID) => {
         return [...acc, geo]
@@ -206,13 +207,7 @@ function api(app: express.Express): express.Express {
         return [...acc, getPolygon(geographies, geography.geography_id)]
       }, [])
 
-      // Reading all devices since this is across all providers.
-      const deviceRecords = await db.readDeviceIds()
-      const deviceIDs = deviceRecords.map(recorded_device => recorded_device.device_id)
-      const events =
-        query_end_date && timestamp < now()
-          ? await db.readHistoricalEvents({ end_date: timestamp })
-          : await cache.readEvents(deviceIDs)
+      const events = timestamp ? await db.readHistoricalEvents({ end_date: timestamp }) : await cache.readAllEvents()
 
       // https://stackoverflow.com/a/51577579 to remove nulls in typesafe way
       const filteredVehicleEvents = events.filter(
@@ -232,7 +227,7 @@ function api(app: express.Express): express.Express {
         )
       }, 0)
 
-      return res.status(200).send({ policy: policies[0], count })
+      return res.status(200).send({ policy: policies[0], count, timestamp })
     } catch (err) {
       await fail(err)
     }

@@ -18,9 +18,10 @@ import {
   LA_CITY_BOUNDARY,
   DISTRICT_SEVEN,
   START_ONE_MONTH_AGO,
-  POLICY5_JSON
+  POLICY5_JSON,
+  POLICY_WITH_DUPE_RULE
 } from '@mds-core/mds-test-data'
-import { now, clone, NotFoundError, rangeRandomInt, uuid } from '@mds-core/mds-utils'
+import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
 import MDSDBPostgres from '../index'
 import { dropTables, createTables, updateSchema } from '../migration'
@@ -320,6 +321,8 @@ if (pg_info.database) {
 
       it('can retrieve Policies that were active at a particular date', async () => {
         await MDSDBPostgres.writePolicy(POLICY5_JSON)
+        await MDSDBPostgres.publishPolicy(POLICY2_JSON.policy_id)
+        await MDSDBPostgres.publishPolicy(POLICY5_JSON.policy_id)
         const policies = await MDSDBPostgres.readActivePolicies(START_ONE_MONTH_AGO)
         assert.deepEqual(policies.length, 2)
       })
@@ -332,8 +335,12 @@ if (pg_info.database) {
 
       it('can find Policies by rule id', async () => {
         const rule_id = '7ea0d16e-ad15-4337-9722-9924e3af9146'
-        const policies = await MDSDBPostgres.findPoliciesByRule(rule_id)
+        const policies = await MDSDBPostgres.readPolicies({ rule_id })
         assert(policies[0].rules.map(rule => rule.rule_id).includes(rule_id))
+      })
+
+      it('ensures rules are unique when writing new policy', async () => {
+        await MDSDBPostgres.writePolicy(POLICY_WITH_DUPE_RULE).should.be.rejectedWith(ConflictError)
       })
 
       it('cannot find a nonexistent Policy', async () => {
@@ -343,20 +350,26 @@ if (pg_info.database) {
       it('can tell a Policy is published', async () => {
         const publishedResult = await MDSDBPostgres.isPolicyPublished(POLICY_JSON.policy_id)
         assert.deepEqual(publishedResult, true)
-        const unpublishedResult = await MDSDBPostgres.isPolicyPublished(POLICY2_JSON.policy_id)
+        const unpublishedResult = await MDSDBPostgres.isPolicyPublished(POLICY3_JSON.policy_id)
         assert.deepEqual(unpublishedResult, false)
       })
 
       it('can edit a Policy', async () => {
-        const policy = clone(POLICY2_JSON)
+        const policy = clone(POLICY3_JSON)
         policy.name = 'a shiny new name'
         await MDSDBPostgres.editPolicy(policy)
         const result = await MDSDBPostgres.readPolicies({
-          policy_id: POLICY2_JSON.policy_id,
+          policy_id: POLICY3_JSON.policy_id,
           get_unpublished: true,
           get_published: null
         })
         assert.deepEqual(result[0].name, 'a shiny new name')
+      })
+
+      it('cannot add a rule that already exists in some other policy', async () => {
+        const policy = clone(POLICY3_JSON)
+        policy.rules[0].rule_id = POLICY_JSON.rules[0].rule_id
+        await MDSDBPostgres.editPolicy(policy).should.be.rejectedWith(ConflictError)
       })
 
       it('will not edit or delete a published Policy', async () => {
