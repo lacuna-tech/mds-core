@@ -163,14 +163,13 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies get non-existent device', done => {
+  it.only('verifies get non-existent device', done => {
     request
       .get(`/vehicles/${DEVICE_UUID}`)
       .set('Authorization', AUTH)
       .expect(404)
       .end((err, result) => {
         log('err', err, 'body', result.body)
-        test.string(result.body.error).contains('not_found')
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
