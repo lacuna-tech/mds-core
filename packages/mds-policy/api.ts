@@ -70,6 +70,11 @@ function api(app: express.Express): express.Express {
     const { start_date = now(), end_date = now() } = req.query
     const { scopes } = res.locals
 
+    /*
+      If the client is scoped to read unpublished policies,
+      they are permitted to query for both published and unpublished policies.
+      Otherwise, they can only read published.
+    */
     const { get_published = null, get_unpublished = null } = scopes.includes('policies:read')
       ? parseRequest(req, { parser: x => (x ? JSON.parse(x) : null) }).query('get_published', 'get_unpublished')
       : { get_published: true }
@@ -111,9 +116,11 @@ function api(app: express.Express): express.Express {
     }
 
     try {
-      /* If the client is scoped to read unpublished policies, they are permitted to read-back unpublished policies.
-         Otherwise, they can only read published.
-      */
+      /*
+        If the client is scoped to read unpublished policies,
+        they are permitted to query for both published and unpublished policies.
+        Otherwise, they can only read published.
+     */
       const { get_published = null, get_unpublished = null } = scopes.includes('policies:read')
         ? parseRequest(req, { parser: x => (x ? JSON.parse(x) : null) }).query('get_published', 'get_unpublished')
         : { get_published: true }
