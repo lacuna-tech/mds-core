@@ -98,6 +98,7 @@ function api(app: express.Express): express.Express {
         if (error instanceof DependencyMissingError) {
           return res.status(424).send({ error })
         }
+        /* istanbul ignore next */
         return next(new ServerError(error))
       }
     }
@@ -126,6 +127,7 @@ function api(app: express.Express): express.Express {
         if (error instanceof AlreadyPublishedError) {
           return res.status(409).send({ error })
         }
+        /* istanbul ignore next */
         return next(new ServerError(error))
       }
     }
@@ -179,6 +181,7 @@ function api(app: express.Express): express.Express {
             error
           })
         }
+        /* istanbul ignore next */
         return next(new ServerError(error))
       }
     }
@@ -204,6 +207,7 @@ function api(app: express.Express): express.Express {
         if (error instanceof BadParamsError) {
           return res.status(400).send({ error })
         }
+        /* istanbul ignore next */
         return next(new ServerError(error))
       }
     }
@@ -223,17 +227,19 @@ function api(app: express.Express): express.Express {
             await db.writePolicyMetadata(policy_metadata)
             return res.status(201).send({ version: res.locals.version, policy_metadata })
           } catch (writeErr) {
-            logger.error('failed to write policy metadata', writeErr.stack)
-            return res.status(500).send({ error: new ServerError() })
+            /* istanbul ignore next */
+            return next(new ServerError(writeErr))
           }
         }
+        /* istanbul ignore next */
         return next(new ServerError(updateErr))
       }
     }
   )
 
-  // Global error handling middleware
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  /* eslint-reason global error handling middleware */
+  /* istanbul ignore next */
+  /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
   app.use(async (error: Error, req: ApiRequest, res: ApiResponse) => {
     await logger.error(req.method, req.originalUrl, error)
     return res.status(500).send(error)
