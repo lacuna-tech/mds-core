@@ -17,12 +17,13 @@
 import supertest from 'supertest'
 import test from 'unit.js'
 import { ApiServer } from '@mds-core/mds-api-server'
-import { v4 as uuid } from 'uuid'
-import { JurisdictionService } from '@mds-core/mds-jurisdiction-service'
+import { uuid } from '@mds-core/mds-utils'
+import { JurisdictionServiceProvider } from '@mds-core/mds-jurisdiction-service/service/provider'
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
-import { Jurisdiction } from '@mds-core/mds-types'
+import { JurisdictionDomainModel } from '@mds-core/mds-jurisdiction-service'
+import { ServiceManager } from '@mds-core/mds-service-helpers'
 import { api } from '../api'
-import { JURISDICTION_API_DEFAULT_VERSION } from '../types'
+import { JURISDICTION_API_DEFAULT_VERSION } from '../@types'
 
 const request = supertest(ApiServer(api))
 
@@ -33,8 +34,12 @@ const [JURISDICTION0, JURISDICTION1, JURISDICTION2] = [uuid(), uuid(), uuid()].m
   geography_id: uuid()
 }))
 
-describe('', () => {
-  before(async () => JurisdictionService.initialize())
+const service = ServiceManager.controller(JurisdictionServiceProvider)
+
+describe('Test Jurisdiction API', () => {
+  before(async () => {
+    await service.start()
+  })
 
   it('Create Single Jurisdiction', async () => {
     const result = await request
@@ -48,10 +53,7 @@ describe('', () => {
   })
 
   it('Create Single Jurisdiction (forbidden)', async () => {
-    await request
-      .post('/jurisdictions')
-      .send(JURISDICTION0)
-      .expect(403)
+    await request.post('/jurisdictions').send(JURISDICTION0).expect(403)
   })
 
   it('Create Single Jurisdiction (conflict)', async () => {
@@ -80,8 +82,43 @@ describe('', () => {
     test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test.object(result.body.jurisdictions).hasProperty('length', 2)
     test
-      .value(result.body.jurisdictions.map((jurisdiction: Jurisdiction) => jurisdiction.jurisdiction_id))
+      .value(result.body.jurisdictions.map((jurisdiction: JurisdictionDomainModel) => jurisdiction.jurisdiction_id))
       .is([JURISDICTION1.jurisdiction_id, JURISDICTION2.jurisdiction_id])
+  })
+
+  it('Update Single Jurisdiction (conflict error)', async () => {
+    await request
+      .put(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .send({ ...JURISDICTION1, jurisdiction_id: uuid() })
+      .expect(409)
+  })
+
+  it('Update Single Jurisdiction (validation error)', async () => {
+    await request
+      .put(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .send({ ...JURISDICTION1, timestamp: 0 })
+      .expect(400)
+  })
+
+  it('Update Single Jurisdiction (not found)', async () => {
+    await request
+      .put(`/jurisdictions/${uuid()}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .expect(404)
+  })
+
+  it('Update Single Jurisdiction', async () => {
+    const updated_agency_key = `${JURISDICTION1.agency_key}-updated`
+    const result = await request
+      .put(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .send({ ...JURISDICTION1, agency_key: updated_agency_key })
+      .expect(200)
+    test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
+    test.object(result.body.jurisdiction).hasProperty('jurisdiction_id', JURISDICTION1.jurisdiction_id)
+    test.object(result.body.jurisdiction).hasProperty('agency_key', updated_agency_key)
   })
 
   it('Get One Jurisdiction', async () => {
@@ -91,13 +128,6 @@ describe('', () => {
       .expect(200)
     test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test.object(result.body.jurisdiction).hasProperty('jurisdiction_id', JURISDICTION2.jurisdiction_id)
-  })
-
-  it('Get One Jurisdiction (not found)', async () => {
-    await request
-      .get(`/jurisdictions/${uuid()}`)
-      .set('Authorization', SCOPED_AUTH(['jurisdictions:read']))
-      .expect(404)
   })
 
   it('Get One Jurisdiction (no scope)', async () => {
@@ -128,7 +158,7 @@ describe('', () => {
     test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
     test
       .value(
-        (result.body.jurisdictions as Jurisdiction[])
+        (result.body.jurisdictions as JurisdictionDomainModel[])
           .map(jurisdiction => jurisdiction.jurisdiction_id)
           .filter(jurisdiction_id =>
             [JURISDICTION0, JURISDICTION1, JURISDICTION2]
@@ -149,7 +179,7 @@ describe('', () => {
       .set('Authorization', SCOPED_AUTH(['jurisdictions:read:claim']))
       .expect(200)
     test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
-    test.value((result.body.jurisdictions as Jurisdiction[]).length).is(0)
+    test.value((result.body.jurisdictions as JurisdictionDomainModel[]).length).is(0)
   })
 
   it('Get Multiple Jurisdictions (jurisdictions claim)', async () => {
@@ -158,8 +188,32 @@ describe('', () => {
       .set('Authorization', SCOPED_AUTH(['jurisdictions:read:claim'], JURISDICTION2.agency_key))
       .expect(200)
     test.object(result.body).hasProperty('version', JURISDICTION_API_DEFAULT_VERSION)
-    test.value((result.body.jurisdictions as Jurisdiction[]).length).is(1)
+    test.value((result.body.jurisdictions as JurisdictionDomainModel[]).length).is(1)
   })
 
-  after(async () => JurisdictionService.shutdown())
+  it('Delete One Jurisdiction', async () => {
+    const result = await request
+      .delete(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .expect(200)
+    test.object(result.body).hasProperty('jurisdiction_id', JURISDICTION1.jurisdiction_id)
+  })
+
+  it('Delete One Jurisdiction (not found)', async () => {
+    await request
+      .delete(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:write']))
+      .expect(404)
+  })
+
+  it('Get One Jurisdiction (not found)', async () => {
+    await request
+      .get(`/jurisdictions/${JURISDICTION1.jurisdiction_id}`)
+      .set('Authorization', SCOPED_AUTH(['jurisdictions:read']))
+      .expect(404)
+  })
+
+  after(async () => {
+    await service.stop()
+  })
 })

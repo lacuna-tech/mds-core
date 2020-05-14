@@ -1,33 +1,50 @@
 import morgan from 'morgan'
 import bodyParser from 'body-parser'
 import express from 'express'
-import cors from 'cors'
+import CorsMiddleware from 'cors'
 import logger from '@mds-core/mds-logger'
 import { pathsFor, AuthorizationError } from '@mds-core/mds-utils'
-import { AuthorizationHeaderApiAuthorizer, ApiAuthorizer, AuthorizerClaims } from '@mds-core/mds-api-authorizer'
-import { AccessTokenScope } from '@mds-core/mds-types'
+import {
+  AuthorizationHeaderApiAuthorizer,
+  ApiAuthorizer,
+  AuthorizerClaims,
+  ProviderIdClaim,
+  UserEmailClaim,
+  JurisdictionsClaim
+} from '@mds-core/mds-api-authorizer'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
 
 export type ApiRequest<P extends Params = ParamsDictionary> = express.Request<P>
 
-export interface ApiResponseLocals {
+export type ApiQuery<Q1 extends string, Q2 extends string[] = never> = {
+  query: Partial<
+    {
+      [P in Q1]: string
+    }
+  > &
+    Partial<
+      {
+        [P in Q2[number]]: string | string[]
+      }
+    > & { [x: string]: never }
+}
+
+export interface ApiResponse<L = unknown, B = unknown>
+  extends express.Response<B | { error: unknown } | { errors: unknown[] }> {
+  locals: L
+}
+
+export type ApiClaims<AccessTokenScope extends string> = {
   claims: AuthorizerClaims | null
   scopes: AccessTokenScope[]
 }
 
-export interface ApiResponse<TBody = unknown> extends express.Response {
-  locals: ApiResponseLocals
-  send: (body: TBody | { error: Error }) => this
-}
+export type ApiVersion<TVersion extends string> = { version: TVersion }
 
-export interface ApiVersionedResponseLocals<TVersion extends string> extends ApiResponseLocals {
-  version: TVersion
-}
-
-export interface ApiVersionedResponse<TVersion extends string, TBody = unknown>
-  extends ApiResponse<TBody & { version: TVersion }> {
-  locals: ApiVersionedResponseLocals<TVersion>
-}
+export type ApiVersionedResponse<TVersion extends string, L = unknown, TBody = unknown> = ApiResponse<
+  L & ApiVersion<TVersion>,
+  TBody & ApiVersion<TVersion>
+>
 
 const about = () => {
   const {
@@ -50,9 +67,9 @@ const about = () => {
   }
 }
 
-export const RequestLoggingMiddleware = () =>
+export const RequestLoggingMiddleware = <AccessTokenScope extends string>(): express.RequestHandler =>
   morgan(
-    (tokens, req: ApiRequest, res: ApiResponse) =>
+    (tokens, req: ApiRequest, res: ApiResponse<ApiClaims<AccessTokenScope>>) =>
       [
         ...(res.locals.claims?.provider_id ? [res.locals.claims.provider_id] : []),
         tokens.method(req, res),
@@ -76,15 +93,6 @@ export const RequestLoggingMiddleware = () =>
 
 export const JsonBodyParserMiddleware = (options: bodyParser.OptionsJson) => bodyParser.json(options)
 
-type CorsMiddlewareOptions = { handleCors: boolean }
-export const CorsMiddleware = ({ handleCors = false }: Partial<CorsMiddlewareOptions> = {}) =>
-  handleCors
-    ? cors() // Server handles CORS
-    : (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
-        res.header('Access-Control-Allow-Origin', '*')
-        next()
-      }
-
 export const MaintenanceModeMiddleware = () => (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
   if (process.env.MAINTENANCE) {
     return res.status(503).send(about())
@@ -95,7 +103,11 @@ export const MaintenanceModeMiddleware = () => (req: ApiRequest, res: ApiRespons
 type AuthorizerMiddlewareOptions = { authorizer: ApiAuthorizer }
 export const AuthorizerMiddleware = ({
   authorizer = AuthorizationHeaderApiAuthorizer
-}: Partial<AuthorizerMiddlewareOptions> = {}) => (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
+}: Partial<AuthorizerMiddlewareOptions> = {}) => <AccessTokenScope extends string>(
+  req: ApiRequest,
+  res: ApiResponse<ApiClaims<AccessTokenScope>>,
+  next: express.NextFunction
+) => {
   const claims = authorizer(req)
   res.locals.claims = claims
   res.locals.scopes = claims && claims.scope ? (claims.scope.split(' ') as AccessTokenScope[]) : []
@@ -186,19 +198,25 @@ export const HealthRequestHandler = async (req: ApiRequest, res: ApiResponse) =>
   })
 }
 
-export const HttpServer = (port: string | number, api: express.Express) => {
-  const {
-    npm_package_name,
-    npm_package_version,
-    npm_package_git_commit,
-    HTTP_KEEP_ALIVE_TIMEOUT = 15000,
-    HTTP_HEADERS_TIMEOUT = 20000
-  } = process.env
+const serverVersion = () => {
+  const { npm_package_name, npm_package_version, npm_package_git_commit } = process.env
+  return npm_package_name && npm_package_version
+    ? `${npm_package_name} v${npm_package_version} (${npm_package_git_commit || 'local'})`
+    : 'Server'
+}
 
-  const server = api.listen(Number(port), () => {
+type HttpServerOptions = Partial<{
+  port: string | number
+}>
+
+export const HttpServer = (api: express.Express, options: HttpServerOptions = {}) => {
+  const { HTTP_KEEP_ALIVE_TIMEOUT = 15000, HTTP_HEADERS_TIMEOUT = 20000 } = process.env
+
+  const port = Number(options.port || process.env.PORT || 4000)
+
+  const server = api.listen(port, () => {
     logger.info(
-      `${npm_package_name} v${npm_package_version} (${npm_package_git_commit ??
-        'local'}) running on port ${port}; Timeouts(${HTTP_KEEP_ALIVE_TIMEOUT}/${HTTP_HEADERS_TIMEOUT})`
+      `${serverVersion()} running on port ${port}; Timeouts(${HTTP_KEEP_ALIVE_TIMEOUT}/${HTTP_HEADERS_TIMEOUT})`
     )
   })
 
@@ -209,19 +227,28 @@ export const HttpServer = (port: string | number, api: express.Express) => {
   return server
 }
 
+type CorsMiddlewareOptions = CorsMiddleware.CorsOptions
+
 export const ApiServer = (
   api: (server: express.Express) => express.Express,
-  { handleCors, authorizer }: Partial<CorsMiddlewareOptions & AuthorizerMiddlewareOptions> = {},
+  { authorizer, ...corsOptions }: Partial<AuthorizerMiddlewareOptions & CorsMiddlewareOptions> = {},
   app: express.Express = express()
 ): express.Express => {
+  logger.info(`${serverVersion()} starting`)
+
+  // Log the custom authorization namespace/claims
+  const claims = [ProviderIdClaim, UserEmailClaim, JurisdictionsClaim]
+  claims.forEach(claim => {
+    logger.info(`${serverVersion()} using authorization claim ${claim()}`)
+  })
   // Disable x-powered-by header
   app.disable('x-powered-by')
 
   // Middleware
   app.use(
     RequestLoggingMiddleware(),
+    CorsMiddleware(corsOptions),
     JsonBodyParserMiddleware({ limit: '5mb' }),
-    CorsMiddleware({ handleCors }),
     MaintenanceModeMiddleware(),
     AuthorizerMiddleware({ authorizer })
   )
@@ -233,15 +260,20 @@ export const ApiServer = (
   return api(app)
 }
 
+export type AccessTokenScopeValidator<AccessTokenScope extends string = never> = (
+  scopes: AccessTokenScope[],
+  claims: AuthorizerClaims | null
+) => boolean | Promise<boolean>
+
 /* istanbul ignore next */
-export const checkAccess = (
-  validator: (scopes: AccessTokenScope[], claims: AuthorizerClaims | null) => boolean | Promise<boolean>
+export const checkAccess = <AccessTokenScope extends string = never>(
+  validator: AccessTokenScopeValidator<AccessTokenScope>
 ) =>
   process.env.VERIFY_ACCESS_TOKEN_SCOPE === 'false'
-    ? async (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
+    ? async (req: ApiRequest, res: ApiResponse<ApiClaims<AccessTokenScope>>, next: express.NextFunction) => {
         next() // Bypass
       }
-    : async (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
+    : async (req: ApiRequest, res: ApiResponse<ApiClaims<AccessTokenScope>>, next: express.NextFunction) => {
         const { scopes, claims } = res.locals
         const valid = await validator(scopes, claims)
         return valid

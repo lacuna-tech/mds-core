@@ -15,7 +15,8 @@
  */
 
 import db from '@mds-core/mds-db'
-import cache from '@mds-core/mds-cache'
+import cache from '@mds-core/mds-agency-cache'
+import { Query } from 'express-serve-static-core'
 import {
   Audit,
   AuditEvent,
@@ -33,7 +34,7 @@ import {
   VEHICLE_EVENTS,
   VEHICLE_STATUSES
 } from '@mds-core/mds-types'
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 import { now } from '@mds-core/mds-utils'
 
 export async function deleteAudit(audit_trip_id: UUID): Promise<number> {
@@ -105,7 +106,7 @@ export async function readDevicesByVehicleId(provider_id: UUID, vehicle_id: stri
     )
     const finish = now()
     const timeElapsed = finish - start
-    log.info(`db.readDevicesByVehicleId ${provider_id} ${vehicle_id} time elapsed: ${timeElapsed}ms`)
+    logger.info(`db.readDevicesByVehicleId ${provider_id} ${vehicle_id} time elapsed: ${timeElapsed}ms`)
     return results
   } catch (err) {
     return []
@@ -182,7 +183,7 @@ export async function getVehicle(provider_id: UUID, vehicle_id: string) {
       const deviceStatus = (await cache.readDeviceStatus(device.device_id)) as (VehicleEvent & Device) | null
       if (deviceStatus === null || deviceStatus.event_type === VEHICLE_EVENTS.deregister) {
         const { device_id } = device
-        log.info('Bad vehicle status', { deviceStatus, provider_id, vehicle_id, device_id })
+        logger.info('Bad vehicle status', { deviceStatus, provider_id, vehicle_id, device_id })
         deviceStatusMap.inactive.push(device)
       } else {
         const status = EVENT_STATUS_MAP[deviceStatus.event_type as VEHICLE_EVENT]
@@ -198,10 +199,10 @@ export async function getVehicles(
   skip: number,
   take: number,
   url: string,
-  provider_id: string,
-  reqQuery: { [x: string]: string },
+  reqQuery: Query,
   bbox: BoundingBox,
-  strict = true
+  strict = true,
+  provider_id?: string
 ) {
   function fmt(query: { skip: number; take: number }): string {
     const flat: { [key: string]: number } = { ...reqQuery, ...query }
@@ -225,7 +226,9 @@ export async function getVehicles(
     return [...acc, { ...item, status, updated }]
   }, [])
   const finish = now()
-  log.info(`getVehicles processing ${JSON.stringify(bbox)} provider ${provider_id} time elapsed: ${finish - start}ms`)
+  logger.info(
+    `getVehicles processing ${JSON.stringify(bbox)} provider ${provider_id} time elapsed: ${finish - start}ms`
+  )
 
   const noNext = skip + take >= statusesSuperset.length
   const noPrev = skip === 0 || skip > statusesSuperset.length

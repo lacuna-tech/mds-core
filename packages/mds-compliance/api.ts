@@ -15,9 +15,9 @@
  */
 
 import express from 'express'
-import cache from '@mds-core/mds-cache'
+import cache from '@mds-core/mds-agency-cache'
 import db from '@mds-core/mds-db'
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 import {
   isUUID,
   now,
@@ -31,6 +31,7 @@ import {
 import { Geography, Device, UUID, VehicleEvent } from '@mds-core/mds-types'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, BLUE_SYSTEMS_PROVIDER_ID, providerName } from '@mds-core/mds-providers'
 import { Geometry, FeatureCollection } from 'geojson'
+import { parseRequest } from '@mds-core/mds-api-helpers'
 import * as compliance_engine from './mds-compliance-engine'
 import { ComplianceApiRequest, ComplianceApiResponse } from './types'
 
@@ -46,7 +47,7 @@ function api(app: express.Express): express.Express {
 
           /* istanbul ignore next */
           if (!provider_id) {
-            await log.warn('Missing provider_id in', req.originalUrl)
+            logger.warn('Missing provider_id in', req.originalUrl)
             return res.status(400).send({
               result: 'missing provider_id'
             })
@@ -54,7 +55,7 @@ function api(app: express.Express): express.Express {
 
           /* istanbul ignore next */
           if (!isUUID(provider_id)) {
-            await log.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
+            logger.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
             return res.status(400).send({
               result: `invalid provider_id ${provider_id} is not a UUID`
             })
@@ -63,39 +64,41 @@ function api(app: express.Express): express.Express {
           // stash provider_id
           res.locals.provider_id = provider_id
 
-          log.info(providerName(provider_id), req.method, req.originalUrl)
+          logger.info(providerName(provider_id), req.method, req.originalUrl)
         } else {
           return res.status(401).send('Unauthorized')
         }
       }
     } catch (err) {
       /* istanbul ignore next */
-      await log.error(req.originalUrl, 'request validation fail:', err.stack)
+      logger.error(req.originalUrl, 'request validation fail:', err.stack)
     }
     next()
   })
 
   app.get(pathsFor('/snapshot/:policy_uuid'), async (req: ComplianceApiRequest, res: ComplianceApiResponse) => {
     const { provider_id } = res.locals
-    const { provider_id: queried_provider_id } = req.query
+    const { provider_id: queried_provider_id, end_date: query_end_date } = {
+      ...parseRequest(req).query('provider_id'),
+      ...parseRequest(req, { parser: Number }).query('end_date')
+    }
 
     /* istanbul ignore next */
     async function fail(err: Error) {
-      await log.error(err.stack || err)
+      logger.error(err.stack || err)
       return res.status(500).send(new ServerError())
     }
 
     const { policy_uuid } = req.params
-    const { end_date: query_end_date } = req.query
 
     if (!isUUID(policy_uuid)) {
       return res.status(400).send({ err: 'bad_param' })
     }
     const { start_date, end_date } = query_end_date
-      ? { end_date: parseInt(query_end_date), start_date: parseInt(query_end_date) - days(365) }
+      ? { end_date: query_end_date, start_date: query_end_date - days(365) }
       : { end_date: now() + days(365), start_date: now() - days(365) }
     try {
-      const all_policies = await db.readPolicies({ start_date })
+      const all_policies = await db.readPolicies({ start_date, get_published: null, get_unpublished: null })
       const policy = compliance_engine.filterPolicies(all_policies).find(p => {
         return p.policy_id === policy_uuid
       })
@@ -110,6 +113,7 @@ function api(app: express.Express): express.Express {
           (AllowedProviderIDs.includes(provider_id) &&
             ((policy.provider_ids &&
               policy.provider_ids.length !== 0 &&
+              queried_provider_id &&
               policy.provider_ids.includes(queried_provider_id)) ||
               !policy.provider_ids ||
               policy.provider_ids.length === 0)))
@@ -160,7 +164,7 @@ function api(app: express.Express): express.Express {
     }
 
     async function fail(err: Error) {
-      await log.error(err.stack || err)
+      logger.error(err.stack || err)
       if (err.message.includes('invalid rule_id')) {
         return res.status(404).send(err.message)
       }

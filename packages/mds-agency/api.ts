@@ -16,14 +16,12 @@
 
 import express from 'express'
 
-import log from '@mds-core/mds-logger'
+import logger from '@mds-core/mds-logger'
 import { isProviderId } from '@mds-core/mds-providers'
 import { isUUID, pathsFor } from '@mds-core/mds-utils'
-import { AgencyApiRequest, AgencyApiResponse } from '@mds-core/mds-agency/types'
-import { checkAccess } from '@mds-core/mds-api-server'
+import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
+import { AgencyApiRequest, AgencyApiResponse, AgencyApiAccessTokenScopes } from './types'
 import {
-  getAllServiceAreas,
-  getServiceAreaById,
   registerVehicle,
   getVehicleById,
   getVehiclesByProvider,
@@ -38,6 +36,9 @@ import { readAllVehicleIds } from './agency-candidate-request-handlers'
 import { getCacheInfo, wipeDevice, refreshCache } from './sandbox-admin-request-handlers'
 import { validateDeviceId } from './utils'
 
+const checkAgencyApiAccess = (validator: AccessTokenScopeValidator<AgencyApiAccessTokenScopes>) =>
+  checkAccess(validator)
+
 function api(app: express.Express): express.Express {
   /**
    * Agency-specific middleware to extract provider_id into locals, do some logging, etc.
@@ -50,7 +51,7 @@ function api(app: express.Express): express.Express {
           const { provider_id } = res.locals.claims
 
           if (!isUUID(provider_id)) {
-            await log.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
+            logger.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
             return res.status(400).send({
               result: `invalid provider_id ${provider_id} is not a UUID`
             })
@@ -65,31 +66,19 @@ function api(app: express.Express): express.Express {
           // stash provider_id
           res.locals.provider_id = provider_id
 
-          // log.info(providerName(provider_id), req.method, req.originalUrl)
+          // logger.info(providerName(provider_id), req.method, req.originalUrl)
         } else {
           return res.status(401).send('Unauthorized')
         }
       }
     } catch (err) {
       /* istanbul ignore next */
-      await log.error(req.originalUrl, 'request validation fail:', err.stack)
+      logger.error(req.originalUrl, 'request validation fail:', err.stack)
     }
     next()
   })
 
   // / ////////// gets ////////////////
-
-  /**
-   * Get all service areas
-   * See {@link https://github.com/CityOfLosAngeles/mobility-data-specification/tree/dev/agency#service_areas Service Areas}
-   */
-  app.get(pathsFor('/service_areas'), getAllServiceAreas)
-
-  /**
-   * Get a particular service area
-   * See {@link https://github.com/CityOfLosAngeles/mobility-data-specification/tree/dev/agency#service_areas Service Areas}
-   */
-  app.get(pathsFor('/service_areas/:service_area_id'), getServiceAreaById)
 
   /**
    * Endpoint to register vehicles
@@ -129,7 +118,7 @@ function api(app: express.Express): express.Express {
    */
   app.get(
     pathsFor('/admin/vehicle_ids'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAgencyApiAccess(scopes => scopes.includes('admin:all')),
     readAllVehicleIds
   )
 
@@ -137,27 +126,27 @@ function api(app: express.Express): express.Express {
 
   app.get(
     pathsFor('/admin/cache/info'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAgencyApiAccess(scopes => scopes.includes('admin:all')),
     getCacheInfo
   )
 
   // wipe a device -- sandbox or admin use only
   app.get(
     pathsFor('/admin/wipe/:device_id'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAgencyApiAccess(scopes => scopes.includes('admin:all')),
     validateDeviceId,
     wipeDevice
   )
 
   app.get(
     pathsFor('/admin/cache/refresh'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAgencyApiAccess(scopes => scopes.includes('admin:all')),
     refreshCache
   )
 
   app.post(
     pathsFor('/stops'),
-    checkAccess(scopes => scopes.includes('admin:all')),
+    checkAgencyApiAccess(scopes => scopes.includes('admin:all')),
     registerStop
   )
 

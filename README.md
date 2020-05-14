@@ -16,14 +16,9 @@ Repo for LADOT MDS implementation for contribution to the Open Mobility Foundati
 3. MDS-Compliance [PR](https://github.com/openmobilityfoundation/mobility-data-specification/pull/333)
 4. MDS-Config
 5. MDS-Daily
-6. MDS-Metrics
-7. MDS-Metrics-Sheet
-8. MDS-Policy-Author
-9. MDS-Web-Sockets
-#### Backend Services
-1. MDS-Event-Processor
-2. MDS-Provider-Processor
-3. MDS-Trip-Processor
+6. MDS-Metrics-Sheet
+7. MDS-Policy-Author
+8. MDS-Web-Sockets
 
 ## Installation
 
@@ -194,10 +189,10 @@ Verify:
 In order to build and operate MDS, a number of suporting technologies are leveraged by ensuring they are installed and operational via a one-time `bootstap` process:
 
 ```sh
-% ./bin/mdsctl bootstrap
+% ./bin/mdsctl -p local bootstrap
 ```
 
-The principle tools are: [homebrew](https://brew.sh), [bash-4.x+](https://www.gnu.org/software/bash/), [oq](https://github.com/Blacksmoke16/oq), [jq](https://stedolan.github.io/jq/), [yarn](https://yarnpkg.com/), [nvm](https://github.com/nvm-sh/nvm), [helm-2.14.1](https://helm.sh), [k9s](https://github.com/derailed/k9s), [kubectx](https://github.com/ahmetb/kubectx), [git](https://git-scm.com/), [gcloud](https://cloud.google.com/sdk/) and [awscli](https://aws.amazon.com/cli/). Additionally the following services are provisioned: [istio](https://istio.io) and [nats](https://nats.io).
+The principle tools are: [homebrew](https://brew.sh), [bash-4.x+](https://www.gnu.org/software/bash/), [oq](https://github.com/Blacksmoke16/oq), [jq](https://stedolan.github.io/jq/), [yarn](https://yarnpkg.com/), [nvm](https://github.com/nvm-sh/nvm), [helm-2.14.1](https://helm.sh), [k9s](https://github.com/derailed/k9s), [kubectx](https://github.com/ahmetb/kubectx), [nsc](https://docs.nats.io/nats-tools/nsc), [git](https://git-scm.com/), [gcloud](https://cloud.google.com/sdk/) and [awscli](https://aws.amazon.com/cli/). Additionally the following services are provisioned: [istio](https://istio.io) and [nats](https://nats.io).
 
 Verify:
 
@@ -226,7 +221,7 @@ Verify:
 (tbd: ?best profile?)
 
 ```sh
-% ./bin/mdsctl -p minimal install:mds
+% ./bin/mdsctl -p processors install:mds
 ```
 
 Verify:

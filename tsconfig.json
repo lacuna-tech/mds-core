@@ -1,11 +1,22 @@
 {
-  "extends": "./tsconfig.settings.json",
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
       "@container-images/*": ["container-images/*/index.ts"],
       "@mds-core/*": ["packages/*/index.ts"],
+      "packages/*": ["/dev/null"],
       "*": ["@types/*", "*"]
-    }
+    },
+    "target": "ES2019",
+    "lib": ["ES2020.Promise"],
+    "module": "commonjs",
+    "strict": true,
+    "esModuleInterop": true,
+    "inlineSourceMap": true,
+    "inlineSources": true,
+    "preserveSymlinks": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false
   }
 }

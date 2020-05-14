@@ -30,18 +30,13 @@ import {
   Timestamp,
   Telemetry,
   Stop,
-  Jurisdiction,
   PROPULSION_TYPES,
   VEHICLE_STATUSES,
   Device
 } from '@mds-core/mds-types'
 import * as Joi from '@hapi/joi'
 import joiToJsonSchema from 'joi-to-json-schema'
-import {
-  StringifiedTelemetry,
-  StringifiedEventWithTelemetry,
-  StringifiedCacheReadDeviceResult
-} from '@mds-core/mds-cache/types'
+
 import { ValidationError } from '@mds-core/mds-utils'
 
 export { ValidationError }
@@ -54,30 +49,24 @@ interface ValidatorOptions {
 }
 
 // Convert empty string to undefined so required/optional works as expected
-const stringSchema = Joi.string().empty('')
+export const stringSchema = Joi.string().empty('')
 
 // Don't allow type conversion
-const numberSchema = Joi.number().options({ convert: false })
+export const numberSchema = Joi.number().options({ convert: false })
 
-const uuidSchema = stringSchema.guid()
+export const uuidSchema = stringSchema.guid()
 
-const timestampSchema = numberSchema.min(1420099200000)
+export const timestampSchema = numberSchema.min(1420099200000)
 
-const providerIdSchema = uuidSchema.valid(Object.keys(providers))
+export const providerIdSchema = uuidSchema.valid(Object.keys(providers))
 
 const vehicleIdSchema = stringSchema.max(255)
 
 const telemetrySchema = Joi.object().keys({
   gps: Joi.object()
     .keys({
-      lat: numberSchema
-        .min(-90)
-        .max(90)
-        .required(),
-      lng: numberSchema
-        .min(-180)
-        .max(180)
-        .required(),
+      lat: numberSchema.min(-90).max(90).required(),
+      lng: numberSchema.min(-180).max(180).required(),
       speed: numberSchema.optional(),
       heading: numberSchema.optional(),
       accuracy: numberSchema.optional(),
@@ -95,12 +84,8 @@ const telemetrySchema = Joi.object().keys({
 
 const ruleSchema = Joi.object().keys({
   name: Joi.string().required(),
-  rule_id: Joi.string()
-    .guid()
-    .required(),
-  rule_type: Joi.string()
-    .valid(Object.values(RULE_TYPES))
-    .required(),
+  rule_id: Joi.string().guid().required(),
+  rule_type: Joi.string().valid(Object.values(RULE_TYPES)).required(),
   rule_units: Joi.string().valid(['seconds', 'minutes', 'hours', 'mph', 'kph']),
   geographies: Joi.array().items(Joi.string().guid()),
   statuses: Joi.object()
@@ -127,34 +112,19 @@ const ruleSchema = Joi.object().keys({
 export const policySchema = Joi.object().keys({
   name: Joi.string().required(),
   description: Joi.string().required(),
-  policy_id: Joi.string()
-    .guid()
-    .required(),
-  start_date: Joi.date()
-    .timestamp('javascript')
-    .required(),
-  end_date: Joi.date()
-    .timestamp('javascript')
-    .allow(null),
-  prev_policies: Joi.array()
-    .items(Joi.string().guid())
-    .allow(null),
-  provider_ids: Joi.array()
-    .items(Joi.string().guid())
-    .allow(null),
-  rules: Joi.array()
-    .min(1)
-    .items(ruleSchema)
-    .required()
+  policy_id: Joi.string().guid().required(),
+  start_date: Joi.date().timestamp('javascript').required(),
+  end_date: Joi.date().timestamp('javascript').allow(null),
+  prev_policies: Joi.array().items(Joi.string().guid()).allow(null),
+  provider_ids: Joi.array().items(Joi.string().guid()).allow(null),
+  rules: Joi.array().min(1).items(ruleSchema).required()
 })
 
 const policiesSchema = Joi.array().items(policySchema)
 
 const featureSchema = Joi.object()
   .keys({
-    type: Joi.string()
-      .valid(['Feature'])
-      .required(),
+    type: Joi.string().valid(['Feature']).required(),
     properties: Joi.object().required(),
     geometry: Joi.object().required()
   })
@@ -162,26 +132,17 @@ const featureSchema = Joi.object()
 
 const featureCollectionSchema = Joi.object()
   .keys({
-    type: Joi.string()
-      .valid(['FeatureCollection'])
-      .required(),
-    features: Joi.array()
-      .min(1)
-      .items(featureSchema)
-      .required()
+    type: Joi.string().valid(['FeatureCollection']).required(),
+    features: Joi.array().min(1).items(featureSchema).required()
   })
   .unknown(true) // TODO
 
 export const geographySchema = Joi.object()
   .keys({
-    geography_id: Joi.string()
-      .guid()
-      .required(),
+    geography_id: Joi.string().guid().required(),
     geography_json: featureCollectionSchema,
     read_only: Joi.boolean().allow(null),
-    previous_geography_ids: Joi.array()
-      .items(Joi.string().guid())
-      .allow(null),
+    previous_geography_ids: Joi.array().items(Joi.string().guid()).allow(null),
     name: Joi.string().required()
   })
   .unknown(true)
@@ -245,14 +206,8 @@ const stopSchema = Joi.object().keys({
   short_name: stringSchema.optional(),
   platform_code: stringSchema.optional(),
   geography_id: uuidSchema.optional(),
-  lat: numberSchema
-    .min(-90)
-    .max(90)
-    .required(),
-  lng: numberSchema
-    .min(-180)
-    .max(180)
-    .required(),
+  lat: numberSchema.min(-90).max(90).required(),
+  lng: numberSchema.min(-180).max(180).required(),
   zone_id: uuidSchema.optional(),
   address: stringSchema.optional(),
   post_code: stringSchema.optional(),
@@ -269,22 +224,12 @@ const stopSchema = Joi.object().keys({
   reservation_cost: vehicleTypesCountMapSchema.optional()
 })
 
-const jurisdictionSchema = Joi.object().keys({
-  jurisdiction_id: uuidSchema,
-  agency_key: stringSchema,
-  agency_name: stringSchema,
-  geography_id: uuidSchema,
-  timestamp: timestampSchema
-})
-
 const deviceSchema = Joi.object().keys({
   device_id: uuidSchema.required(),
   provider_id: uuidSchema.required(),
   vehicle_id: stringSchema.required(),
   type: vehicleTypeSchema.required(),
-  propulsion: Joi.array()
-    .items(propulsionTypeSchema)
-    .required(),
+  propulsion: Joi.array().items(propulsionTypeSchema).required(),
   year: numberSchema.optional(),
   mfgr: stringSchema.optional(),
   model: stringSchema.optional(),
@@ -298,7 +243,11 @@ const Format = (property: string, error: Joi.ValidationError): string => {
   return `${[property, ...path].join('.')} ${details.join(' ')}`
 }
 
-const Validate = <T = unknown>(value: unknown, schema: Joi.Schema, options: Partial<ValidatorOptions>): value is T => {
+export const ValidateSchema = <T = unknown>(
+  value: unknown,
+  schema: Joi.Schema,
+  options: Partial<ValidatorOptions> = {}
+): value is T => {
   const { assert = true, required = true, property = 'value', allowUnknown = false } = options
   const { error } = Joi.validate(value, schema, { presence: required ? 'required' : 'optional', allowUnknown })
   if (error && assert) {
@@ -316,7 +265,7 @@ interface NumberValidatorOptions extends ValidatorOptions {
 }
 
 export const isValidNumber = (value: unknown, options: Partial<NumberValidatorOptions> = {}): value is number =>
-  Validate(
+  ValidateSchema(
     value,
     numberSchema
       .min(options.min === undefined ? Number.MIN_SAFE_INTEGER : options.min)
@@ -327,7 +276,7 @@ export const isValidNumber = (value: unknown, options: Partial<NumberValidatorOp
 export const isValidAuditTripId = (
   audit_trip_id: unknown,
   options: Partial<ValidatorOptions> = {}
-): audit_trip_id is UUID => Validate(audit_trip_id, uuidSchema, { property: 'audit_trip_id', ...options })
+): audit_trip_id is UUID => ValidateSchema(audit_trip_id, uuidSchema, { property: 'audit_trip_id', ...options })
 
 interface AuditEventValidatorOptions extends ValidatorOptions {
   accept: AUDIT_EVENT_TYPE[]
@@ -345,67 +294,52 @@ export const isValidStop = (value: unknown): value is Stop => {
 }
 
 export const isValidDeviceId = (value: unknown, options: Partial<ValidatorOptions> = {}): value is UUID =>
-  Validate(value, uuidSchema, { property: 'device_id', ...options })
+  ValidateSchema(value, uuidSchema, { property: 'device_id', ...options })
 
 export const isValidAuditEventType = (
   value: unknown,
   { accept, ...options }: Partial<AuditEventValidatorOptions> = {}
 ): value is AUDIT_EVENT_TYPE =>
-  Validate(value, auditEventTypeSchema(accept), { property: 'audit_event_type', ...options })
+  ValidateSchema(value, auditEventTypeSchema(accept), { property: 'audit_event_type', ...options })
 
 export const isValidTimestamp = (value: unknown, options: Partial<ValidatorOptions> = {}): value is Timestamp =>
-  Validate(value, timestampSchema, { property: 'timestamp', ...options })
+  ValidateSchema(value, timestampSchema, { property: 'timestamp', ...options })
 
 export const isValidProviderId = (value: unknown, options: Partial<ValidatorOptions> = {}): value is UUID =>
-  Validate(value, providerIdSchema, { property: 'provider_id', ...options })
+  ValidateSchema(value, providerIdSchema, { property: 'provider_id', ...options })
 
 export const isValidProviderVehicleId = (value: unknown, options: Partial<ValidatorOptions> = {}): value is string =>
-  Validate(value, vehicleIdSchema, { property: 'provider_vehicle_id', ...options })
+  ValidateSchema(value, vehicleIdSchema, { property: 'provider_vehicle_id', ...options })
 
 export const isValidAuditEventId = (value: unknown, options: Partial<ValidatorOptions> = {}): value is UUID =>
-  Validate(value, uuidSchema, { property: 'audit_event_id', ...options })
+  ValidateSchema(value, uuidSchema, { property: 'audit_event_id', ...options })
 
 export const isValidAuditDeviceId = (value: unknown, options: Partial<ValidatorOptions> = {}): value is UUID =>
-  Validate(value, uuidSchema, { property: 'audit_device_id', ...options })
+  ValidateSchema(value, uuidSchema, { property: 'audit_device_id', ...options })
 
 export const isValidTelemetry = (value: unknown, options: Partial<ValidatorOptions> = {}): value is Telemetry =>
-  Validate(value, telemetrySchema, { property: 'telemetry', ...options })
+  ValidateSchema(value, telemetrySchema, { property: 'telemetry', ...options })
 
 export const isValidDevice = (value: unknown, options: Partial<ValidatorOptions> = {}): value is Device =>
-  Validate(value, deviceSchema, options)
+  ValidateSchema(value, deviceSchema, options)
 
 export const isValidEvent = (value: unknown, options: Partial<ValidatorOptions> = {}): value is VehicleEvent =>
-  Validate(value, eventSchema, options)
+  ValidateSchema(value, eventSchema, options)
 
 export const isValidVehicleEventType = (
   value: unknown,
   options: Partial<ValidatorOptions> = {}
-): value is VEHICLE_EVENT => Validate(value, vehicleEventTypeSchema, { property: 'vehicle_event_type', ...options })
+): value is VEHICLE_EVENT =>
+  ValidateSchema(value, vehicleEventTypeSchema, { property: 'vehicle_event_type', ...options })
 
 export const isValidAuditIssueCode = (value: unknown, options: Partial<ValidatorOptions> = {}): value is string =>
-  Validate(value, auditIssueCodeSchema, { property: 'audit_issue_code', ...options })
+  ValidateSchema(value, auditIssueCodeSchema, { property: 'audit_issue_code', ...options })
 
 export const isValidAuditNote = (value: unknown, options: Partial<ValidatorOptions> = {}): value is string =>
-  Validate(value, auditNoteSchema, { property: 'note', ...options })
+  ValidateSchema(value, auditNoteSchema, { property: 'note', ...options })
 
-const HasPropertyAssertion = <T>(obj: unknown, ...props: (keyof T)[]): obj is T =>
+export const HasPropertyAssertion = <T>(obj: unknown, ...props: (keyof T)[]): obj is T =>
   typeof obj === 'object' && obj !== null && props.every(prop => prop in obj)
-
-export const isStringifiedTelemetry = (telemetry: unknown): telemetry is StringifiedTelemetry =>
-  HasPropertyAssertion<StringifiedTelemetry>(telemetry, 'gps')
-
-export const isStringifiedEventWithTelemetry = (event: unknown): event is StringifiedEventWithTelemetry =>
-  HasPropertyAssertion<StringifiedEventWithTelemetry>(event, 'event_type', 'telemetry')
-
-export const isStringifiedCacheReadDeviceResult = (device: unknown): device is StringifiedCacheReadDeviceResult =>
-  HasPropertyAssertion<StringifiedCacheReadDeviceResult>(device, 'device_id', 'provider_id', 'type', 'propulsion')
-
-export const isValidJurisdiction = (value: unknown, options: Partial<ValidatorOptions> = {}): value is Jurisdiction =>
-  Validate(value, jurisdictionSchema, { property: 'jurisdiction', ...options })
-
-export const validateJurisdiction = (value: unknown, options: Partial<ValidatorOptions> = {}): void => {
-  isValidJurisdiction(value, options)
-}
 
 export function validatePolicies(policies: unknown): policies is Policy[] {
   const { error } = Joi.validate(policies, policiesSchema)
@@ -460,13 +394,13 @@ export function rawValidatePolicy(policy: Policy): Joi.ValidationResult<Policy> 
   return Joi.validate(policy, policySchema)
 }
 
-const validateTripEvent = (event: VehicleEvent) => Validate(event, tripEventSchema, {})
+const validateTripEvent = (event: VehicleEvent) => ValidateSchema(event, tripEventSchema, {})
 
-const validateProviderPickUpEvent = (event: VehicleEvent) => Validate(event, providerPickUpEventSchema, {})
+const validateProviderPickUpEvent = (event: VehicleEvent) => ValidateSchema(event, providerPickUpEventSchema, {})
 
-const validateServiceEndEvent = (event: VehicleEvent) => Validate(event, serviceEndEventSchema, {})
+const validateServiceEndEvent = (event: VehicleEvent) => ValidateSchema(event, serviceEndEventSchema, {})
 
-const validateDeregisterEvent = (event: VehicleEvent) => Validate(event, deregisterEventSchema, {})
+const validateDeregisterEvent = (event: VehicleEvent) => ValidateSchema(event, deregisterEventSchema, {})
 
 export const validateEvent = (event: unknown) => {
   if (isValidEvent(event, { allowUnknown: true })) {
@@ -492,8 +426,10 @@ export const validateEvent = (event: unknown) => {
       return validateDeregisterEvent(event)
     }
 
-    return Validate(event, eventSchema, {})
+    return ValidateSchema(event, eventSchema, {})
   }
 }
 
 export const policySchemaJson = joiToJsonSchema(policySchema)
+
+export const SchemaBuilder = Joi

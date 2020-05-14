@@ -29,44 +29,28 @@ apis:
     pathPrefix: /jurisdiction
     version: ${JURISDICTION_VERSION}
     migration: false
-  mds-metrics:
+  mds-jurisdiction-service:
     enabled: true
-    pathPrefix: /metrics
-    version: ${METRICS_VERSION}
-    migration: false
-  mds-native:
-    enabled: true
-    pathPrefix: /native
-    version: ${NATIVE_VERSION}
+    pathPrefix: /jurisdiction-service
+    version: ${JURISDICTION_SERVICE_VERSION}
     migration: false
   mds-policy-author:
     enabled: true
     pathPrefix: /policy-author
     version: ${POLICY_AUTHOR_VERSION}
     migration: false
-  mds-config:
-    enabled: true
-    pathPrefix: /config
-    version: ${CONFIG_VERSION}
-    migration: false
   mds-web-sockets:
     enabled: true
     pathPrefix: /web-sockets
     version: ${WEB_SOCKETS_VERSION}
     migration: false
-  mds-event-processor:
+  mds-geography:
     enabled: true
-    pathPrefix: /event-processor
-    version: ${EVENT_PROCESSOR_VERSION}
+    pathPrefix: /geography
+    version: ${GEOGRAPHY_VERSION}
     migration: false
-cronjobs:
-  mds-trip-processor:
+  mds-geography-author:
     enabled: true
-    version: ${TRIP_PROCESSOR_VERSION}
+    pathPrefix: /geography-author
+    version: ${GEOGRAPHY_AUTHOR_VERSION}
     migration: false
-    schedule: '0 * * * *'
-  mds-provider-processor:
-    enabled: true
-    version: ${PROVIDER_PROCESSOR_VERSION}
-    migration: false
-    schedule: '0 * * * *'

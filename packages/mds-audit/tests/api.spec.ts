@@ -36,20 +36,20 @@ import {
   VEHICLE_TYPES
 } from '@mds-core/mds-types'
 import { makeEventsWithTelemetry, makeDevices, makeTelemetryInArea, SCOPED_AUTH } from '@mds-core/mds-test-data'
-import { NotFoundError, now, rangeRandomInt } from '@mds-core/mds-utils'
-import cache from '@mds-core/mds-cache'
+import { NotFoundError, now, rangeRandomInt, uuid } from '@mds-core/mds-utils'
+import cache from '@mds-core/mds-agency-cache'
 import test from 'unit.js'
-import { v4 as uuid } from 'uuid'
 import { ApiServer } from '@mds-core/mds-api-server'
 import db from '@mds-core/mds-db'
 import { MOCHA_PROVIDER_ID } from '@mds-core/mds-providers'
 import Sinon from 'sinon'
 import { api } from '../api'
 import * as attachments from '../attachments'
+import { AUDIT_API_DEFAULT_VERSION } from '../types'
 
 const request = supertest(ApiServer(api))
 
-const APP_JSON = 'application/json; charset=utf-8'
+const APP_JSON = 'application/vnd.mds.audit+json; charset=utf-8; version=0.1'
 
 const audit_trip_id = uuid()
 const audit_trip_id_2 = uuid()
@@ -148,6 +148,7 @@ describe('Testing API', () => {
         test.object(result.body).hasProperty('provider_device')
         test.object(result.body.provider_device).hasProperty('vehicle_id')
         test.value(result.body.provider_device.vehicle_id).is(provider_vehicle_id)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         done(err)
       })
   })
@@ -189,7 +190,7 @@ describe('Testing API', () => {
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
-        test.value(result.body).is({})
+        test.value(result.body, { version: AUDIT_API_DEFAULT_VERSION })
         done(err)
       })
   })
@@ -209,6 +210,7 @@ describe('Testing API', () => {
       .expect(403)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         done(err)
       })
   })
@@ -226,7 +228,8 @@ describe('Testing API', () => {
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
-        test.value(result.body).is({})
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
+        test.value(Object.keys(result.body)).is(['version'])
         done(err)
       })
   })
@@ -242,7 +245,8 @@ describe('Testing API', () => {
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
-        test.value(result.body).is({})
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
+        test.value(Object.keys(result.body)).is(['version'])
         done(err)
       })
   })
@@ -258,6 +262,7 @@ describe('Testing API', () => {
       .expect(403)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         done(err)
       })
   })
@@ -275,7 +280,7 @@ describe('Testing API', () => {
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
-        test.value(result.body).is({})
+        test.value(result.body, { version: AUDIT_API_DEFAULT_VERSION })
         done(err)
       })
   })
@@ -294,7 +299,8 @@ describe('Testing API', () => {
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
-        test.value(result.body).is({})
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
+        test.value(result.body, { version: AUDIT_API_DEFAULT_VERSION })
         done(err)
       })
   })
@@ -311,7 +317,8 @@ describe('Testing API', () => {
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
-        test.value(result.body).is({})
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
+        test.value(result.body, { version: AUDIT_API_DEFAULT_VERSION })
         done(err)
       })
   })
@@ -328,6 +335,7 @@ describe('Testing API', () => {
       .expect(403)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         done(err)
       })
   })
@@ -342,6 +350,7 @@ describe('Testing API', () => {
         .expect(404)
         .end((err, result) => {
           test.value(result).hasHeader('content-type', APP_JSON)
+          test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
           done(err)
         })
     })
@@ -354,6 +363,7 @@ describe('Testing API', () => {
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         test.value(result.body.events.length).is(7)
         test.value(result.body.provider_event_type).is(VEHICLE_EVENTS.agency_drop_off)
         test.value(result.body.provider_event_type_reason).is(VEHICLE_REASONS.rebalance)
@@ -371,6 +381,7 @@ describe('Testing API', () => {
       .expect(403)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         done(err)
       })
   })
@@ -382,6 +393,7 @@ describe('Testing API', () => {
       .expect(404)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         done(err)
       })
   })
@@ -393,6 +405,7 @@ describe('Testing API', () => {
       .expect(403)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         done(err)
       })
   })
@@ -419,6 +432,7 @@ describe('Testing API', () => {
         .expect(200)
         .end((err, result) => {
           test.value(result).hasHeader('content-type', APP_JSON)
+          test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
           test.value(result.body.count).is(count)
           test.value(result.body.audits.length).is(count)
           done(err)
@@ -433,6 +447,7 @@ describe('Testing API', () => {
       .expect(403)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         done(err)
       })
   })
@@ -444,6 +459,7 @@ describe('Testing API', () => {
       .expect(404)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         done(err)
       })
   })
@@ -455,7 +471,8 @@ describe('Testing API', () => {
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
-        test.value(result.body).is({})
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
+        test.value(result.body, { version: AUDIT_API_DEFAULT_VERSION })
         done(err)
       })
   })
@@ -475,6 +492,7 @@ describe('Testing API', () => {
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         test.object(result).hasProperty('body')
         test.object(result.body).hasProperty('provider_device')
         test.value(result.body.provider_device).is(null)
@@ -489,6 +507,7 @@ describe('Testing API', () => {
       .expect(200)
       .end((err, result) => {
         test.value(result).hasHeader('content-type', APP_JSON)
+        test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         test.value(result.body.events.length).is(1)
         done(err)
       })
@@ -497,10 +516,7 @@ describe('Testing API', () => {
   const vehicles = [
     provider_vehicle_id, // test-vehicle
     provider_vehicle_id.toUpperCase(), // TEST-VEHICLE
-    provider_vehicle_id
-      .replace('-', '_')
-      .split('')
-      .join('-'), // t-e-s-t-_-v-e-h-i-c-l-e
+    provider_vehicle_id.replace('-', '_').split('').join('-'), // t-e-s-t-_-v-e-h-i-c-l-e
     provider_vehicle_id
       .split('')
       .map((char, index) => (index % 2 ? char.toLowerCase() : char.toUpperCase()))
@@ -522,6 +538,7 @@ describe('Testing API', () => {
         .expect(200)
         .end((err, result) => {
           test.value(result).hasHeader('content-type', APP_JSON)
+          test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
           test.object(result).hasProperty('body')
           test.object(result.body).hasProperty('provider_device')
           test.object(result.body.provider_device).hasProperty('vehicle_id')
@@ -569,6 +586,7 @@ describe('Testing API', () => {
         .expect(200)
         .end((err, result) => {
           test.value(result).hasHeader('content-type', APP_JSON)
+          test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
           test.assert(result.body.vehicles.length === 10)
           result.body.vehicles.forEach((device: Device & { updated?: Timestamp | null; telemetry: Telemetry }) => {
             test.assert(typeof device.telemetry.gps.lat === 'number')
@@ -586,6 +604,7 @@ describe('Testing API', () => {
         .expect(200)
         .end((err, result) => {
           test.value(result).hasHeader('content-type', APP_JSON)
+          test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
           test.object(result).hasProperty('body')
           test.object(result.body).hasProperty('vehicles')
           test.value(result.body.vehicles[0].provider_id).is(devices_a[0].provider_id)
@@ -604,6 +623,7 @@ describe('Testing API', () => {
         .expect(404)
         .end((err, result) => {
           test.value(result).hasHeader('content-type', APP_JSON)
+          test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
           done(err)
         })
     })
@@ -628,6 +648,7 @@ describe('Testing API', () => {
         .expect(200)
         .end((err, result) => {
           test.value(result).hasHeader('content-type', APP_JSON)
+          test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
           test.object(result).hasProperty('body')
           test.object(result.body).hasProperty('vehicles')
           test.value(result.body.vehicles[0].provider_id).is(devices_c[0].provider_id)
@@ -811,7 +832,7 @@ describe('Testing API', () => {
         .set('Authorization', SCOPED_AUTH(['audits:write'], audit_subject_id))
         .expect(200)
         .end((err, result) => {
-          test.value(result.body).is({})
+          test.value(result.body, { version: AUDIT_API_DEFAULT_VERSION })
           done(err)
         })
     })

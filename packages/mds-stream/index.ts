@@ -17,10 +17,7 @@
 import logger from '@mds-core/mds-logger'
 import redis from 'redis'
 import bluebird from 'bluebird'
-import stan from 'node-nats-streaming'
-import { BinaryHTTPEmitter, event as cloudevent } from 'cloudevents-sdk/v1'
 import { Device, VehicleEvent, Telemetry } from '@mds-core/mds-types'
-import { v4 as uuid } from 'uuid'
 import {
   Stream,
   StreamItem,
@@ -30,63 +27,19 @@ import {
   ReadStreamOptions,
   StreamItemID
 } from './types'
+import { AgencyStreamKafka } from './kafka/agency-stream-kafka'
+import { KafkaStreamConsumer, KafkaStreamProducer } from './kafka'
+
+import { NatsStreamConsumer } from './nats/stream-consumer'
+import { NatsStreamProducer } from './nats/stream-producer'
+
+import { AgencyStreamNats } from './nats/agency-stream-nats'
+
+export { KafkaStreamConsumerOptions, KafkaStreamProducerOptions } from './kafka'
+export { StreamConsumer, StreamProducer } from './stream-interface'
 
 const { env } = process
 
-let nats: stan.Stan
-
-let binding: BinaryHTTPEmitter | null = null
-
-const getBinding = () => {
-  if (!binding) {
-    binding = new BinaryHTTPEmitter({
-      method: 'POST',
-      url: env.SINK
-    })
-  }
-  return binding
-}
-
-const getNats = () => {
-  if (!nats) {
-    nats = stan.connect(env.STAN_CLUSTER || 'stan', `mds-agency-${uuid()}`, {
-      url: `nats://${env.NATS}:4222`,
-      userCreds: env.STAN_CREDS,
-      reconnect: true
-    })
-
-    nats.on('error', async message => {
-      await logger.error(message)
-    })
-  }
-
-  return nats
-}
-
-/* Currently unused code, keeping it in the case that we decide to switch back to Knative Eventing */
-async function writeCloudEvent(type: string, data: string) {
-  if (!env.SINK || !env.NATS) {
-    return
-  }
-
-  // fixme: unable to set-and-propgate additional ce headers, eg: ce.addExtension('foo', 'bar')
-  const event = cloudevent()
-    .type(`${env.TENANT_ID || 'mds'}.${type}`)
-    .source(env.NATS)
-    .data(data)
-
-  return getBinding().emit(event)
-}
-
-async function writeNatsEvent(type: string, data: string) {
-  if (env.NATS) {
-    const event = cloudevent()
-      .type(`${env.TENANT_ID || 'mds'}.${type}`)
-      .source(env.NATS)
-      .data(data)
-    getNats().publish(`${env.TENANT_ID || 'mds'}.${type}`, JSON.stringify(event))
-  }
-}
 declare module 'redis' {
   interface RedisClient {
     dbsizeAsync: () => Promise<number>
@@ -153,7 +106,7 @@ async function getClient() {
     logger.info(`connecting to redis on ${host}:${port}`)
     cachedClient = redis.createClient(Number(port), host)
     cachedClient.on('error', async err => {
-      await logger.error(`redis error ${err}`)
+      logger.error(`redis error ${err}`)
     })
     await cachedClient.dbsizeAsync().then(size => logger.info(`redis has ${size} keys`))
   }
@@ -161,11 +114,9 @@ async function getClient() {
 }
 
 async function initialize() {
-  if (env.SINK) {
-    getBinding()
-  } else {
-    await getClient()
-  }
+  await AgencyStreamKafka.initialize()
+  await AgencyStreamNats.initialize()
+  await getClient()
 }
 
 async function reset() {
@@ -182,6 +133,8 @@ async function shutdown() {
     await cachedClient.quit()
     cachedClient = null
   }
+  await AgencyStreamKafka.shutdown()
+  await AgencyStreamNats.shutdown()
 }
 
 async function writeStream(stream: Stream, field: string, value: unknown) {
@@ -199,14 +152,20 @@ async function writeStreamBatch(stream: Stream, field: string, values: unknown[]
 // put basics of vehicle in the cache
 async function writeDevice(device: Device) {
   if (env.NATS) {
-    return writeNatsEvent('device', JSON.stringify(device))
+    await AgencyStreamNats.writeDevice(device)
+  }
+  if (env.KAFKA_HOST) {
+    await AgencyStreamKafka.writeDevice(device)
   }
   return writeStream(DEVICE_INDEX_STREAM, 'data', device)
 }
 
 async function writeEvent(event: VehicleEvent) {
   if (env.NATS) {
-    return writeNatsEvent('event', JSON.stringify(event))
+    await AgencyStreamNats.writeEvent(event)
+  }
+  if (env.KAFKA_HOST) {
+    await AgencyStreamKafka.writeEvent(event)
   }
   return writeStream(DEVICE_RAW_STREAM, 'event', event)
 }
@@ -214,8 +173,10 @@ async function writeEvent(event: VehicleEvent) {
 // put latest locations in the cache
 async function writeTelemetry(telemetry: Telemetry[]) {
   if (env.NATS) {
-    await Promise.all(telemetry.map(item => writeNatsEvent('telemetry', JSON.stringify(item))))
-    return
+    await AgencyStreamNats.writeTelemetry(telemetry)
+  }
+  if (env.KAFKA_HOST) {
+    await AgencyStreamKafka.writeTelemetry(telemetry)
   }
   const start = now()
   await writeStreamBatch(DEVICE_RAW_STREAM, 'telemetry', telemetry)
@@ -318,7 +279,7 @@ async function health() {
   return { using: 'redis', status }
 }
 
-export = {
+export default {
   createStreamGroup,
   getStreamInfo,
   health,
@@ -328,10 +289,13 @@ export = {
   reset,
   shutdown,
   startup,
-  writeCloudEvent,
   writeDevice,
   writeEvent,
   writeStream,
   writeStreamBatch,
-  writeTelemetry
+  writeTelemetry,
+  KafkaStreamConsumer,
+  KafkaStreamProducer,
+  NatsStreamConsumer,
+  NatsStreamProducer
 }
