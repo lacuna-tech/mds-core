@@ -18,7 +18,6 @@ import {
   LA_CITY_BOUNDARY,
   DISTRICT_SEVEN,
   START_ONE_MONTH_AGO,
-  POLICY5_JSON,
   POLICY_WITH_DUPE_RULE,
   PUBLISHED_POLICY
 } from '@mds-core/mds-test-data'
