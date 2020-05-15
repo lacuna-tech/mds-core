@@ -136,26 +136,19 @@ export async function readPolicy(policy_id: UUID): Promise<Policy> {
 }
 
 async function throwIfRulesAlreadyExist(policy: Policy) {
-  const policies: Policy[] = (
-    await Promise.all(
-      policy.rules.map(rule => {
-        return readPolicies({ rule_id: rule.rule_id })
-      })
-    )
-  ).flat()
-  const existingRules = policies
-    .map(p => {
-      // Obviously the policy passed in doesn't need to be examined for pre-existing rules
-      if (p.policy_id === policy.policy_id) {
-        return []
-      }
-      return p.rules
+  const unflattenedPolicies: Policy[][] = await Promise.all(
+    policy.rules.map(rule => {
+      return readPolicies({ rule_id: rule.rule_id })
     })
-    .flat()
+  )
 
-  if (existingRules.length > 0) {
-    throw new ConflictError(`Policies containing rules with an id of ${[existingRules.join(', ')]} already exist`)
-  }
+  unflattenedPolicies.map(policySubArr => {
+    policySubArr.map(p => {
+      if (p.policy_id !== policy.policy_id) {
+        throw new ConflictError(`Policies containing rules with the same id or ids already exist`)
+      }
+    })
+  })
 }
 
 export async function writePolicy(policy: Policy): Promise<Recorded<Policy>> {
