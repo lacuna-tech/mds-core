@@ -140,9 +140,6 @@ lerna run prettier
 MDS can readily be provisioned to a [Kubernetes](https://kubernetes.io) capable cluster, be it a local or remote. The following steps describe how to build, deploy and operate against a local MDS cluster.
 
 #### Prerequisites
-[Librdkafka](https://github.com/edenhill/librdkafka)
-
-Install OpenSSL, follow the instructions [here](https://github.com/Blizzard/node-rdkafka/blob/master/README.md#Requirements) to configure the linker.
 
 Obtain a local working copy of MDS:
 
@@ -192,10 +189,10 @@ Verify:
 In order to build and operate MDS, a number of suporting technologies are leveraged by ensuring they are installed and operational via a one-time `bootstap` process:
 
 ```sh
-% ./bin/mdsctl bootstrap
+% ./bin/mdsctl -p local bootstrap
 ```
 
-The principle tools are: [homebrew](https://brew.sh), [bash-4.x+](https://www.gnu.org/software/bash/), [oq](https://github.com/Blacksmoke16/oq), [jq](https://stedolan.github.io/jq/), [yarn](https://yarnpkg.com/), [nvm](https://github.com/nvm-sh/nvm), [helm-2.14.1](https://helm.sh), [k9s](https://github.com/derailed/k9s), [kubectx](https://github.com/ahmetb/kubectx), [git](https://git-scm.com/), [gcloud](https://cloud.google.com/sdk/) and [awscli](https://aws.amazon.com/cli/). Additionally the following services are provisioned: [istio](https://istio.io) and [nats](https://nats.io).
+The principle tools are: [homebrew](https://brew.sh), [bash-4.x+](https://www.gnu.org/software/bash/), [oq](https://github.com/Blacksmoke16/oq), [jq](https://stedolan.github.io/jq/), [yarn](https://yarnpkg.com/), [nvm](https://github.com/nvm-sh/nvm), [helm-2.14.1](https://helm.sh), [k9s](https://github.com/derailed/k9s), [kubectx](https://github.com/ahmetb/kubectx), [nsc](https://docs.nats.io/nats-tools/nsc), [git](https://git-scm.com/), [gcloud](https://cloud.google.com/sdk/) and [awscli](https://aws.amazon.com/cli/). Additionally the following services are provisioned: [istio](https://istio.io) and [nats](https://nats.io).
 
 Verify:
 
@@ -224,7 +221,7 @@ Verify:
 (tbd: ?best profile?)
 
 ```sh
-% ./bin/mdsctl -p minimal install:mds
+% ./bin/mdsctl -p processors install:mds
 ```
 
 Verify:

@@ -17,7 +17,7 @@
 import test from 'unit.js'
 import assert from 'assert'
 import { VEHICLE_EVENTS, VehicleEvent } from '@mds-core/mds-types'
-import { routeDistance, filterEmptyHelper, isStateTransitionValid, normalizeToArray } from '../utils'
+import { routeDistance, isStateTransitionValid, normalizeToArray, filterDefined } from '../utils'
 import { expectedTransitions } from './state-transition-expected'
 
 const Boston = { lat: 42.360081, lng: -71.058884 }
@@ -43,14 +43,14 @@ describe('Tests Utilities', () => {
   describe('Filter empty', () => {
     it('Filters out null/undefined elements', () => {
       const arr = [1, 2, null, 3, undefined, 4]
-      const actual = arr.filter(filterEmptyHelper<number>())
+      const actual = arr.filter(filterDefined())
       const expected = [1, 2, 3, 4]
       assert.deepStrictEqual(actual, expected)
     })
 
     it('Does not filter 0 or "" (empty string) or [] (empty array)', () => {
       const arr = [1, 2, '', 3, [], 0]
-      const actual = arr.filter(filterEmptyHelper<number | string | Array<unknown>>())
+      const actual = arr.filter(filterDefined())
       const expected = arr
       assert.deepStrictEqual(actual, expected)
     })
@@ -58,18 +58,18 @@ describe('Tests Utilities', () => {
     // Can't seem to get TS to go along with Sinon.spy()
     // See https://sinonjs.org/releases/latest/spies/
 
-    // it('Calls log.warn', () => {
-    //   const spy = Sinon.spy(log.warn)
-    //   const oldLogWarn = log.warn
-    //   log.warn = spy
+    // it('Calls logger.warn', () => {
+    //   const spy = Sinon.spy(logger.warn)
+    //   const oldLogWarn = logger.warn
+    //   logger.warn = spy
 
     //   const arr = [1, 2, null, 3, undefined, 4]
-    //   const actual = arr.filter(filterEmptyHelper<number>())
+    //   const actual = arr.filter(filterDefined())
     //   const expected = [1, 2, 3, 4]
     //   assert.deepStrictEqual(actual, expected)
     //   assert.equal(spy.calledTwice, true)
     //   Sinon.restore()
-    //   log.warn = oldLogWarn
+    //   logger.warn = oldLogWarn
     // })
   })
 

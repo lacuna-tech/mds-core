@@ -15,8 +15,6 @@
  */
 import { FeatureCollection } from 'geojson'
 
-export { AccessTokenScope, AccessTokenScopes, ScopeDescriptions } from './scopes'
-
 export const Enum = <T extends string>(...keys: T[]) =>
   Object.freeze(
     keys.reduce((e, key) => {
@@ -78,25 +76,6 @@ export const VEHICLE_REASONS = Enum(
 )
 export type VEHICLE_REASON = keyof typeof VEHICLE_REASONS
 
-export const PROVIDER_EVENTS = Enum('available', 'reserved', 'unavailable', 'removed')
-export type PROVIDER_EVENT = keyof typeof PROVIDER_EVENTS
-
-export const PROVIDER_REASONS = Enum(
-  'service_start',
-  'user_drop_off',
-  'rebalance_drop_off',
-  'maintenance_drop_off',
-  'agency_drop_off',
-  'user_pick_up',
-  'maintenance',
-  'low_battery',
-  'service_end',
-  'rebalance_pick_up',
-  'maintenance_pick_up',
-  'agency_pick_up'
-)
-export type PROVIDER_REASON = keyof typeof PROVIDER_REASONS
-
 export const AUDIT_EVENT_TYPES = Enum('start', 'note', 'summary', 'issue', 'telemetry', 'end')
 export type AUDIT_EVENT_TYPE = keyof typeof AUDIT_EVENT_TYPES
 
@@ -148,6 +127,12 @@ export type UUID = string
 
 export type Timestamp = number
 export type Stringify<T> = { [P in keyof T]: string }
+export type Nullable<T> = T | null
+export type NullableProperties<T extends object> = {
+  [P in keyof T]-?: T[P] extends null ? T[P] : Nullable<T[P]>
+}
+export type SingleOrArray<T> = T | T[]
+export type Optional<T, P extends keyof T> = Omit<T, P> & Partial<Pick<T, P>>
 
 // Represents a row in the "devices" table
 export interface Device {
@@ -460,10 +445,7 @@ export interface Stop {
   reservation_cost?: Partial<{ [S in VEHICLE_TYPE]: number }> // Cost to reserve a spot per vehicle_type
 }
 
-export interface Jurisdiction {
-  jurisdiction_id: UUID
-  agency_key: string
-  agency_name: string
-  geography_id: UUID
-  timestamp: Timestamp
-}
+// eslint-reason Function and constructor inference must use a single rest parameter of type 'any[]'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+export type AnyFunction<A = any> = (...args: any[]) => A
+export type AnyConstructor<A = object> = new (...args: any[]) => A

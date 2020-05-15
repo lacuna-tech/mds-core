@@ -1,6 +1,6 @@
 import { Timestamp } from '@mds-core/mds-types'
 import moment from 'moment-timezone'
-import { BadParamsError } from './exceptions'
+import { BadParamsError } from './exceptions/exceptions'
 
 export const getCurrentDate = () => {
   return new Date()
@@ -89,7 +89,7 @@ const parseAnchorPoint = (offset: string) => {
     return localTime.startOf('day')
   }
   if (offset === 'now') {
-    return localTime
+    return localTime.startOf('hour')
   }
   if (offset === 'yesterday') {
     return localTime.startOf('day').subtract(1, 'days')

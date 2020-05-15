@@ -2,7 +2,6 @@ import assert from 'assert'
 /* eslint-reason extends object.prototype */
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 import should from 'should'
-
 import { FeatureCollection } from 'geojson'
 import { Telemetry, Recorded, VehicleEvent, Device, VEHICLE_EVENTS, Geography } from '@mds-core/mds-types'
 import {
@@ -10,7 +9,6 @@ import {
   makeDevices,
   makeEventsWithTelemetry,
   makeEvents,
-  makeTrip,
   JUMP_PROVIDER_ID,
   POLICY_JSON,
   POLICY2_JSON,
@@ -20,11 +18,9 @@ import {
   LA_CITY_BOUNDARY,
   DISTRICT_SEVEN
 } from '@mds-core/mds-test-data'
-import { now, clone, NotFoundError } from '@mds-core/mds-utils'
-
+import { now, clone, NotFoundError, rangeRandomInt, uuid } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
 import MDSDBPostgres from '../index'
-
 import { dropTables, createTables, updateSchema } from '../migration'
 import { Trip } from '../types'
 import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
@@ -50,6 +46,42 @@ const DistrictSeven: Geography = {
   name: 'District Seven',
   geography_id: GEOGRAPHY2_UUID,
   geography_json: DISTRICT_SEVEN
+}
+
+function makeTrip(device: Device): Trip {
+  return {
+    provider_id: device.provider_id,
+    provider_name: device.provider_id,
+    device_id: device.device_id,
+    vehicle_id: device.vehicle_id,
+    vehicle_type: device.type,
+    propulsion_type: device.propulsion,
+    provider_trip_id: uuid(),
+    trip_duration: rangeRandomInt(5),
+    trip_distance: rangeRandomInt(5),
+    route: {
+      type: 'FeatureCollection',
+      features: [
+        {
+          type: 'Feature',
+          properties: {
+            timestamp: now()
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: [Math.random() * 10, Math.random() * 10]
+          }
+        }
+      ]
+    },
+    accuracy: Math.random() * 3,
+    trip_start: now() - 1000 * Math.random(),
+    trip_end: now(),
+    parking_verification_url: 'http://iamverified.com',
+    standard_cost: rangeRandomInt(5),
+    actual_cost: rangeRandomInt(5),
+    recorded: now()
+  }
 }
 
 /* You'll need postgres running and the env variable PG_NAME
@@ -257,7 +289,11 @@ if (pg_info.database) {
         await MDSDBPostgres.writePolicy(POLICY_JSON)
         assert(!(await MDSDBPostgres.isPolicyPublished(policy_id)))
         await MDSDBPostgres.deletePolicy(policy_id)
-        const policy_result = await MDSDBPostgres.readPolicies({ policy_id })
+        const policy_result = await MDSDBPostgres.readPolicies({
+          policy_id,
+          get_published: null,
+          get_unpublished: null
+        })
         assert.deepEqual(policy_result, [])
       })
 
@@ -268,14 +304,15 @@ if (pg_info.database) {
         await MDSDBPostgres.writePolicy(POLICY3_JSON)
 
         await MDSDBPostgres.writeGeography(LAGeography)
+        await MDSDBPostgres.publishGeography({ geography_id: LAGeography.geography_id })
         await MDSDBPostgres.publishPolicy(POLICY_JSON.policy_id)
 
         // Read all policies, no matter whether published or not.
         const policies = await MDSDBPostgres.readPolicies()
         assert.deepEqual(policies.length, 3)
-        const unpublishedPolicies = await MDSDBPostgres.readPolicies({ get_unpublished: true })
+        const unpublishedPolicies = await MDSDBPostgres.readPolicies({ get_unpublished: true, get_published: null })
         assert.deepEqual(unpublishedPolicies.length, 2)
-        const publishedPolicies = await MDSDBPostgres.readPolicies({ get_published: true })
+        const publishedPolicies = await MDSDBPostgres.readPolicies({ get_published: true, get_unpublished: null })
         assert.deepEqual(publishedPolicies.length, 1)
       })
 
@@ -300,7 +337,11 @@ if (pg_info.database) {
         const policy = clone(POLICY2_JSON)
         policy.name = 'a shiny new name'
         await MDSDBPostgres.editPolicy(policy)
-        const result = await MDSDBPostgres.readPolicies({ policy_id: POLICY2_JSON.policy_id, get_unpublished: true })
+        const result = await MDSDBPostgres.readPolicies({
+          policy_id: POLICY2_JSON.policy_id,
+          get_unpublished: true,
+          get_published: null
+        })
         assert.deepEqual(result[0].name, 'a shiny new name')
       })
 
@@ -347,7 +388,11 @@ if (pg_info.database) {
 
         const noParamsResult = await MDSDBPostgres.readBulkPolicyMetadata()
         assert.deepEqual(noParamsResult.length, 3)
-        const withStartDateResult = await MDSDBPostgres.readBulkPolicyMetadata({ start_date: now() })
+        const withStartDateResult = await MDSDBPostgres.readBulkPolicyMetadata({
+          start_date: now(),
+          get_published: null,
+          get_unpublished: null
+        })
         assert.deepEqual(withStartDateResult.length, 1)
         assert.deepEqual(withStartDateResult[0].policy_metadata.name, 'policy3_json')
       })
@@ -455,21 +500,19 @@ if (pg_info.database) {
         await MDSDBPostgres.shutdown()
       })
 
-      it('will publish a Geography if a Policy is published', async () => {
+      it('will throw an error if an attempt is made to publish a Policy but the Geography is unpublished', async () => {
         await MDSDBPostgres.writeGeography(LAGeography)
         await MDSDBPostgres.writeGeography(DistrictSeven)
         assert(!(await MDSDBPostgres.isGeographyPublished(DistrictSeven.geography_id)))
         assert(!(await MDSDBPostgres.isGeographyPublished(LAGeography.geography_id)))
-
         await MDSDBPostgres.writePolicy(POLICY3_JSON)
-        await MDSDBPostgres.publishPolicy(POLICY3_JSON.policy_id)
-        assert(await MDSDBPostgres.isGeographyPublished(DistrictSeven.geography_id))
-        assert(await MDSDBPostgres.isGeographyPublished(LAGeography.geography_id))
 
-        const policy = await MDSDBPostgres.readPolicy(POLICY3_JSON.policy_id)
-        const geography = await MDSDBPostgres.readSingleGeography(DistrictSeven.geography_id)
-
-        assert.deepEqual(policy.publish_date, geography.publish_date)
+        await assert.rejects(
+          async () => {
+            await MDSDBPostgres.publishPolicy(POLICY3_JSON.policy_id)
+          },
+          { name: 'DependencyMissingError' }
+        )
       })
 
       it('can find policies using geographies by geography ID', async () => {
@@ -516,9 +559,15 @@ if (pg_info.database) {
       it('can do bulk GeographyMetadata reads', async () => {
         const all = await MDSDBPostgres.readBulkGeographyMetadata()
         assert.deepEqual(all.length, 1)
-        const readOnlyResult = await MDSDBPostgres.readBulkGeographyMetadata({ get_published: true })
+        const readOnlyResult = await MDSDBPostgres.readBulkGeographyMetadata({
+          get_published: true,
+          get_unpublished: false
+        })
         assert.deepEqual(readOnlyResult.length, 0)
-        const notReadOnlyResult = await MDSDBPostgres.readBulkGeographyMetadata({ get_published: false })
+        const notReadOnlyResult = await MDSDBPostgres.readBulkGeographyMetadata({
+          get_published: null,
+          get_unpublished: null
+        })
         assert.deepEqual(notReadOnlyResult.length, 1)
       })
 

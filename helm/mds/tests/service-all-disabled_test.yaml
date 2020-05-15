@@ -19,17 +19,9 @@ tests:
           enabled: false
         mds-jurisdiction:
           enabled: false
-        mds-metrics:
-          enabled: false
-        mds-native:
-          enabled: false
         mds-policy-author:
           enabled: false
-        mds-config:
-          enabled: false
         mds-web-sockets:
-          enabled: false
-        mds-event-processor:
           enabled: false
         mds-geography-author:
           enabled: false

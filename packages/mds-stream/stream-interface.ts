@@ -1,20 +1,26 @@
-import { VehicleEvent, Telemetry, Device } from '@mds-core/mds-types'
+/*
+    Copyright 2019 City of Los Angeles.
 
-export interface StreamWriter {
-  write: (data: object) => void
-  shutdown: () => void
-  initialize: () => void
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+        http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
+ */
+
+export interface StreamProducer<TMessage> {
+  initialize: () => Promise<void>
+  write: (message: TMessage[] | TMessage) => Promise<void>
+  shutdown: () => Promise<void>
 }
 
-export interface StreamReader {
-  shutdown: () => void
-  initialize: () => void
-}
-
-export interface AgencyStream {
-  writeEvent: (event: VehicleEvent) => Promise<void>
-  writeTelemetry: (telemetry: Telemetry[]) => Promise<void[]>
-  writeDevice: (device: Device) => Promise<void>
-  shutdown: () => void
-  initialize: () => void
+export interface StreamConsumer {
+  initialize: () => Promise<void>
+  shutdown: () => Promise<void>
 }
