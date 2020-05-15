@@ -68,8 +68,6 @@ function api(app: express.Express): express.Express {
   app.get(
     pathsFor('/policies'),
     async (req: PolicyApiRequest, res: GetPoliciesResponse, next: express.NextFunction) => {
-      // TODO extract start/end applicability
-      // TODO filter by start/end applicability
       const { start_date = now(), end_date = now() } = req.query
       const { scopes } = res.locals
 
