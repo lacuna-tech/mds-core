@@ -35,11 +35,18 @@ import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, BLUE_SYSTEMS_PROVIDER_ID, provide
 import { Geometry, FeatureCollection } from 'geojson'
 import { parseRequest } from '@mds-core/mds-api-helpers'
 import * as compliance_engine from './mds-compliance-engine'
-import { ComplianceApiRequest, ComplianceApiResponse } from './types'
+import {
+  ComplianceApiRequest,
+  ComplianceApiResponse,
+  ComplianceSnapshotApiResponse,
+  ComplianceCountApiResponse
+} from './types'
+import { ComplianceApiVersionMiddleware } from './middleware'
 
 const AllowedProviderIDs = [TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, BLUE_SYSTEMS_PROVIDER_ID]
 
 function api(app: express.Express): express.Express {
+  app.use(ComplianceApiVersionMiddleware)
   app.use(async (req: ComplianceApiRequest, res: ComplianceApiResponse, next: express.NextFunction) => {
     try {
       // verify presence of provider_id
@@ -76,8 +83,8 @@ function api(app: express.Express): express.Express {
     next()
   })
 
-  app.get(pathsFor('/snapshot/:policy_uuid'), async (req: ComplianceApiRequest, res: ComplianceApiResponse) => {
-    const { provider_id } = res.locals
+  app.get(pathsFor('/snapshot/:policy_uuid'), async (req: ComplianceApiRequest, res: ComplianceSnapshotApiResponse) => {
+    const { provider_id, version } = res.locals
     const { provider_id: queried_provider_id, timestamp } = {
       ...parseRequest(req).query('provider_id'),
       ...parseRequest(req, { parser: Number }).query('timestamp')
@@ -138,9 +145,10 @@ function api(app: express.Express): express.Express {
           const filteredEvents = compliance_engine.filterEvents(events)
           const result = compliance_engine.processPolicy(policy, filteredEvents, geographies, deviceMap)
           if (result === undefined) {
-            return res.status(400).send(new BadParamsError('Unable to process compliance results'))
+            return res.status(400).send({ error: new BadParamsError('Unable to process compliance results') })
           }
-          return res.status(200).send({ ...result, timestamp: query_date })
+
+          return res.status(200).send({ ...result, timestamp: query_date, version })
         }
       } else {
         return res.status(401).send({ error: new AuthorizationError() })
@@ -150,7 +158,7 @@ function api(app: express.Express): express.Express {
     }
   })
 
-  app.get(pathsFor('/count/:rule_id'), async (req: ComplianceApiRequest, res: ComplianceApiResponse) => {
+  app.get(pathsFor('/count/:rule_id'), async (req: ComplianceApiRequest, res: ComplianceCountApiResponse) => {
     const { timestamp } = {
       ...parseRequest(req, { parser: Number }).query('timestamp')
     }
@@ -208,13 +216,14 @@ function api(app: express.Express): express.Express {
         )
       }, 0)
 
-      return res.status(200).send({ policy, count, timestamp })
+      const { version } = res.locals
+      return res.status(200).send({ policy, count, timestamp: query_date, version })
     } catch (error) {
       await logger.error(error.stack)
       if (error instanceof NotFoundError) {
-        return res.status(404).send(error)
+        return res.status(404).send({ error })
       }
-      return res.status(500).send(new ServerError('An internal server error has occurred and been logged'))
+      return res.status(500).send({ error: new ServerError('An internal server error has occurred and been logged') })
     }
   })
   return app

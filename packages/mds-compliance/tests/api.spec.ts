@@ -89,6 +89,7 @@ const COUNT_POLICY_JSON: Policy = {
   description: 'Mobility caps as described in the One-Year Permit',
   policy_id: COUNT_POLICY_UUID,
   start_date: 1558389669540,
+  publish_date: 1558389669540,
   end_date: null,
   prev_policies: null,
   provider_ids: [],
@@ -133,6 +134,7 @@ const COUNT_POLICY_JSON_2: Policy = {
   policy_id: COUNT_POLICY_UUID_2,
   start_date: 1558389669540,
   end_date: null,
+  publish_date: 1558389669540,
   prev_policies: null,
   provider_ids: [],
   rules: [
@@ -174,6 +176,7 @@ const COUNT_POLICY_JSON_4: Policy = {
   name: 'LADOT Mobility Caps',
   description: 'Mobility caps as described in the One-Year Permit',
   policy_id: COUNT_POLICY_UUID_4,
+  publish_date: 1558389669540,
   start_date: 1558389669540,
   end_date: null,
   prev_policies: null,
@@ -240,7 +243,7 @@ const TIME_POLICY_JSON: Policy = {
   ]
 }
 
-const APP_JSON = 'application/json; charset=utf-8'
+const APP_JSON = 'application/vnd.mds.compliance+json; charset=utf-8; version=0.1'
 describe('Tests Compliance API:', () => {
   afterEach(async () => {
     await Promise.all([db.shutdown(), cache.shutdown(), stream.shutdown()])
@@ -270,7 +273,6 @@ describe('Tests Compliance API:', () => {
                 await db.writeGeography(geography)
                 await db.writePolicy(COUNT_POLICY_JSON)
                 await db.publishGeography({ geography_id: geography.geography_id })
-                await db.publishPolicy(COUNT_POLICY_UUID)
                 done()
               })
           })
@@ -330,7 +332,6 @@ describe('Tests Compliance API:', () => {
           await db.writeGeography(geography)
           await db.publishGeography({ geography_id: geography.geography_id })
           await db.writePolicy(COUNT_POLICY_JSON)
-          await db.publishPolicy(COUNT_POLICY_UUID)
           done()
         })
       })
@@ -435,7 +436,6 @@ describe('Tests Compliance API:', () => {
           await db.writeGeography(geography)
           await db.publishGeography({ geography_id: geography.geography_id })
           await db.writePolicy(COUNT_POLICY_JSON)
-          await db.publishPolicy(COUNT_POLICY_UUID)
           done()
         })
       })
@@ -566,7 +566,6 @@ describe('Tests Compliance API:', () => {
           await db.writeGeography(geography)
           await db.publishGeography({ geography_id: geography.geography_id })
           await db.writePolicy(COUNT_POLICY_JSON_2)
-          await db.publishPolicy(COUNT_POLICY_UUID_2)
           done()
         })
       })
@@ -818,7 +817,6 @@ describe('Tests Compliance API:', () => {
           await db.writeGeography({ name: 'la', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY })
           await db.publishGeography({ geography_id: GEOGRAPHY_UUID })
           await db.writePolicy(COUNT_POLICY_JSON_4)
-          await db.publishPolicy(COUNT_POLICY_JSON_4.policy_id)
           done()
         })
       })
@@ -876,7 +874,6 @@ describe('Tests Compliance API:', () => {
       await db.writeGeography({ name: 'la', geography_id: GEOGRAPHY_UUID, geography_json: LA_CITY_BOUNDARY })
       await db.publishGeography({ geography_id: GEOGRAPHY_UUID })
       await db.writePolicy(COUNT_POLICY_JSON)
-      await db.publishPolicy(COUNT_POLICY_JSON.policy_id)
     })
 
     it('Test count endpoint, expecting events', done => {

@@ -19,7 +19,8 @@ import {
   DISTRICT_SEVEN,
   START_ONE_MONTH_AGO,
   POLICY5_JSON,
-  POLICY_WITH_DUPE_RULE
+  POLICY_WITH_DUPE_RULE,
+  PUBLISHED_POLICY
 } from '@mds-core/mds-test-data'
 import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
@@ -320,11 +321,12 @@ if (pg_info.database) {
       })
 
       it('can retrieve Policies that were active at a particular date', async () => {
-        await MDSDBPostgres.writePolicy(POLICY5_JSON)
-        await MDSDBPostgres.publishPolicy(POLICY2_JSON.policy_id)
-        await MDSDBPostgres.publishPolicy(POLICY5_JSON.policy_id)
-        const policies = await MDSDBPostgres.readActivePolicies(START_ONE_MONTH_AGO)
-        assert.deepEqual(policies.length, 2)
+        await MDSDBPostgres.writePolicy(PUBLISHED_POLICY)
+        const monthAgoPolicies = await MDSDBPostgres.readActivePolicies(START_ONE_MONTH_AGO)
+        assert.deepEqual(monthAgoPolicies.length, 1)
+
+        const currentlyActivePolicies = await MDSDBPostgres.readActivePolicies()
+        assert.deepEqual(currentlyActivePolicies.length, 2)
       })
 
       it('can read a single Policy', async () => {

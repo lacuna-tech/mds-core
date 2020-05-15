@@ -77,7 +77,7 @@ export async function readActivePolicies(timestamp: Timestamp = now()): Promise<
   conditions.push(`policy_json->>'start_date' <= ${vals.add(timestamp)}`)
   conditions.push(`(policy_json->>'end_date' >= ${vals.add(timestamp)} OR policy_json->>'end_date' IS NULL)`)
   conditions.push(
-    `(policy_json->>'publish_date' IS NOT NULL AND policy_json->>'publish_date' >= ${vals.add(timestamp)})`
+    `(policy_json->>'publish_date' IS NOT NULL AND policy_json->>'publish_date' <= ${vals.add(timestamp)})`
   )
   const sql = `select * from ${schema.TABLE.policies} WHERE ${conditions.join(' AND ')}`
   const values = vals.values()
