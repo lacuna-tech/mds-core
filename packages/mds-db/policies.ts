@@ -76,7 +76,9 @@ export async function readActivePolicies(timestamp: Timestamp = now()): Promise<
   const vals = new SqlVals()
   conditions.push(`policy_json->>'start_date' <= ${vals.add(timestamp)}`)
   conditions.push(`(policy_json->>'end_date' >= ${vals.add(timestamp)} OR policy_json->>'end_date' IS NULL)`)
-  conditions.push(`policy_json->>'publish_date' IS NOT NULL`)
+  conditions.push(
+    `(policy_json->>'publish_date' IS NOT NULL AND policy_json->>'publish_date' >= ${vals.add(timestamp)})`
+  )
   const sql = `select * from ${schema.TABLE.policies} WHERE ${conditions.join(' AND ')}`
   const values = vals.values()
   const res = await client.query(sql, values)
@@ -134,16 +136,26 @@ export async function readPolicy(policy_id: UUID): Promise<Policy> {
 }
 
 async function throwIfRulesAlreadyExist(policy: Policy) {
-  await Promise.all(
-    policy.rules.map(async rule => {
-      const other_policies = await readPolicies({ rule_id: rule.rule_id })
-      other_policies.map(other_policy => {
-        if (other_policy.policy_id !== policy.policy_id) {
-          throw new ConflictError(`Policy containing with a rule of id ${rule.rule_id} already exists`)
-        }
+  const policies: Policy[] = (
+    await Promise.all(
+      policy.rules.map(rule => {
+        return readPolicies({ rule_id: rule.rule_id })
       })
+    )
+  ).flat()
+  const existingRules = policies
+    .map(p => {
+      // Obviously the policy passed in doesn't need to be examined for pre-existing rules
+      if (p.policy_id === policy.policy_id) {
+        return []
+      }
+      return p.rules
     })
-  )
+    .flat()
+
+  if (existingRules.length > 0) {
+    throw new ConflictError(`Policies containing rules with an id of ${[existingRules.join(', ')]} already exist`)
+  }
 }
 
 export async function writePolicy(policy: Policy): Promise<Recorded<Policy>> {

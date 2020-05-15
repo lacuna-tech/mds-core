@@ -50,13 +50,15 @@ function api(app: express.Express): express.Express {
           /* istanbul ignore next */
           if (!provider_id) {
             logger.warn('Missing provider_id in', req.originalUrl)
-            return res.status(400).send(new BadParamsError('missing provider_id'))
+            return res.status(400).send({ error: new BadParamsError('missing provider_id') })
           }
 
           /* istanbul ignore next */
           if (!isUUID(provider_id)) {
             logger.warn(req.originalUrl, 'invalid provider_id is not a UUID', provider_id)
-            return res.status(400).send(new BadParamsError(`invalid provider_id ${provider_id} is not a UUID`))
+            return res
+              .status(400)
+              .send({ error: new BadParamsError(`invalid provider_id ${provider_id} is not a UUID`) })
           }
 
           // stash provider_id
@@ -64,7 +66,7 @@ function api(app: express.Express): express.Express {
 
           logger.info(providerName(provider_id), req.method, req.originalUrl)
         } else {
-          return res.status(401).send(new AuthorizationError('Unauthorized'))
+          return res.status(401).send({ error: new AuthorizationError('Unauthorized') })
         }
       }
     } catch (err) {
@@ -141,10 +143,10 @@ function api(app: express.Express): express.Express {
           return res.status(200).send({ ...result, timestamp: query_date })
         }
       } else {
-        return res.status(401).send(new AuthorizationError())
+        return res.status(401).send({ error: new AuthorizationError() })
       }
     } catch (err) {
-      return res.status(500).send(new ServerError())
+      return res.status(500).send({ error: new ServerError() })
     }
   })
 
@@ -154,20 +156,20 @@ function api(app: express.Express): express.Express {
     }
     const query_date = timestamp || now()
     if (!AllowedProviderIDs.includes(res.locals.provider_id)) {
-      return res.status(401).send(new AuthorizationError('Unauthorized'))
+      return res.status(401).send({ error: new AuthorizationError('Unauthorized') })
     }
 
     const { rule_id } = req.params
     try {
-      const policies = await db.readActivePolicies(query_date)
-      const filteredPolicies = policies.filter(policy => {
-        const matches = policy.rules.filter(policy_rule => policy_rule.rule_id === rule_id)
+      const activePolicies = await db.readActivePolicies(query_date)
+      const [policy] = activePolicies.filter(activePolicy => {
+        const matches = activePolicy.rules.filter(policy_rule => policy_rule.rule_id === rule_id)
         return matches.length !== 0
       })
-      if (filteredPolicies.length === 0) {
+      if (!policy) {
         throw new NotFoundError('invalid rule_id')
       }
-      const rule = filteredPolicies[0].rules.filter(r => r.rule_id === rule_id)[0]
+      const [rule] = policy.rules.filter(r => r.rule_id === rule_id)
       const geography_ids = rule.geographies.reduce((acc: UUID[], geo: UUID) => {
         return [...acc, geo]
       }, [])
@@ -206,7 +208,7 @@ function api(app: express.Express): express.Express {
         )
       }, 0)
 
-      return res.status(200).send({ policy: policies[0], count, timestamp })
+      return res.status(200).send({ policy, count, timestamp })
     } catch (error) {
       await logger.error(error.stack)
       if (error instanceof NotFoundError) {

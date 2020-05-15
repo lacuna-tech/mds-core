@@ -450,6 +450,7 @@ describe('Tests Compliance API:', () => {
           test.assert.deepEqual(result.body.compliance[0].matches[0].measured, 10)
           test.assert.deepEqual(result.body.total_violations, 5)
           test.object(result.body).hasProperty('timestamp')
+          test.object(result.body).hasProperty('version')
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
