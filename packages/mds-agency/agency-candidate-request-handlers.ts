@@ -10,7 +10,10 @@ export const readAllVehicleIds = async (req: AgencyApiRequest, res: AgencyApiRes
   const { provider_id: query_provider_id } = parseRequest(req).query('provider_id')
 
   if (query_provider_id && !isUUID(query_provider_id)) {
-    return res.status(400).send()
+    return res.status(400).send({
+      error: 'bad_param',
+      error_description: `invalid provider_id ${query_provider_id} is not a UUID`
+    })
   }
 
   logger.info(query_provider_id ? providerName(query_provider_id) : null, 'get /vehicles')
