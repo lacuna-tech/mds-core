@@ -6,13 +6,12 @@
  - [ ] write tests for all new functionality
 
 ## Impacts
-- [ ] Provider
 - [ ] Agency
 - [ ] Audit
-- [ ] Policy
 - [ ] Compliance
 - [ ] Daily
-- [ ] Native
+- [ ] Geography
+- [ ] Geography Author
+- [ ] Jurisdiction
+- [ ] Policy
 - [ ] Policy Author
-
-
