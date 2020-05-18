@@ -50,7 +50,7 @@ const log = console.log.bind(console)
 
 const request = supertest(ApiServer(api))
 
-const APP_JSON = 'application/vnd.mds.policy-author+json; charset=utf-8; version=0.1'
+const APP_JSON = 'application/vnd.mds.policy-author+json; charset=utf-8; version=0.4'
 const EMPTY_SCOPE = SCOPED_AUTH([], '')
 const EVENTS_READ_SCOPE = SCOPED_AUTH(['events:read'])
 const POLICIES_WRITE_SCOPE = SCOPED_AUTH(['policies:write'])
@@ -530,7 +530,7 @@ describe('Tests app', () => {
         .end((err, result) => {
           test.value(result).hasHeader('content-type', APP_JSON)
           test.value(result.body.version).is(POLICY_AUTHOR_API_DEFAULT_VERSION)
-          test.assert(isUUID(result.body.policy.policy_id))
+          test.assert(isUUID(result.body.data.policy.policy_id))
           done(err)
         })
     })

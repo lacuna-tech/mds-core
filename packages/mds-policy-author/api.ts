@@ -66,7 +66,7 @@ function api(app: express.Express): express.Express {
 
       try {
         await db.writePolicy(policy)
-        return res.status(201).send({ version: res.locals.version, policy })
+        return res.status(201).send({ version: res.locals.version, data: { policy } })
       } catch (error) {
         if (error.code === '23505') {
           return res
@@ -86,7 +86,7 @@ function api(app: express.Express): express.Express {
       const { policy_id } = req.params
       try {
         const policy = await db.publishPolicy(policy_id)
-        return res.status(200).send({ version: res.locals.version, policy })
+        return res.status(200).send({ version: res.locals.version, data: { policy } })
       } catch (error) {
         logger.error('failed to publish policy', error.stack)
         if (error instanceof AlreadyPublishedError) {
