@@ -180,10 +180,96 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
         res.setHeader('Content-Type', `${mimeType};version=${MinorVersion(latest)}`)
         return next()
       }
+    } else if (values.length === 0) {
+      /*
+       * If no versions specified by the client,
+       * fall-back to latest internal version supported
+       */
+      res.locals.version = preferred
+      res.setHeader('Content-Type', `${mimeType};version=${MinorVersion(preferred)}`)
+      return next()
     }
 
     // 406 - Not Acceptable
     return res.sendStatus(406)
+  }
+})
+
+export const OptionsRequestHandler = <TVersion extends string>(mimeType: string, versions: readonly TVersion[]) => ({
+  withDefaultVersion: (preferred: TVersion) => async (
+    req: ApiRequest,
+    res: ApiVersionedResponse<TVersion>,
+    next: express.NextFunction
+  ) => {
+    if (req.method === 'OPTIONS') {
+      // Parse the Accept header into a list of values separated by commas
+      const { accept: header } = req.headers
+      const values = header ? header.split(',').map(value => value.trim()) : []
+
+      // Parse the version and q properties from all values matching the specified mime type
+      const accepted = values.reduce<{ version: string; q: number }[] | null>((accept, value) => {
+        const [mime, ...properties] = value.split(';').map(property => property.trim())
+        return mime === mimeType
+          ? (accept ?? []).concat({
+              ...properties.reduce<{ version: string; q: number }>(
+                (info, property) => {
+                  const [key, val] = property.split('=').map(keyvalue => keyvalue.trim())
+                  return {
+                    ...info,
+                    version: key === 'version' ? val : info.version,
+                    q: key === 'q' ? Number(val) : info.q
+                  }
+                },
+                { version: preferred, q: 1.0 }
+              )
+            })
+          : accept
+      }, null) ?? [
+        {
+          version: preferred,
+          q: 1.0
+        }
+      ]
+
+      // Determine if any of the requested versions are supported
+      const supported = accepted
+        .map(info => ({
+          ...info,
+          latest: versions.reduce<TVersion | undefined>((latest, version) => {
+            if (MinorVersion(info.version) === MinorVersion(version)) {
+              if (latest) {
+                return latest > version ? latest : version
+              }
+              return version
+            }
+            return latest
+          }, undefined)
+        }))
+        .filter(info => info.latest !== undefined)
+
+      // Get supported version with highest q value
+      if (supported.length > 0) {
+        const [{ latest }] = supported.sort((a, b) => b.q - a.q)
+        if (latest) {
+          res.locals.version = latest
+          res.setHeader('Content-Type', `${mimeType};version=${MinorVersion(latest)}`)
+          return res.sendStatus(200)
+        }
+      } else if (values.length === 0) {
+        /*
+         * If no versions specified by the client,
+         * fall-back to latest internal version supported
+         */
+        res.locals.version = preferred
+        res.setHeader('Content-Type', `${mimeType};version=${MinorVersion(preferred)}`)
+        return next()
+      }
+
+      // 406 - Not Acceptable
+      return res.sendStatus(406)
+    }
+
+    return next()
   }
 })
 
@@ -249,7 +335,7 @@ export const ApiServer = (
   // Middleware
   app.use(
     RequestLoggingMiddleware(),
-    CorsMiddleware(corsOptions),
+    CorsMiddleware({ preflightContinue: true, ...corsOptions }),
     JsonBodyParserMiddleware({ limit: '5mb' }),
     MaintenanceModeMiddleware(),
     AuthorizerMiddleware({ authorizer })
