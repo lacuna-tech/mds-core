@@ -497,6 +497,7 @@ describe('Tests app', () => {
         .expect(400)
         .end((err, result) => {
           test.assert(result.body.error.name === `ValidationError`)
+          test.assert(result.body.error.reason.includes('publish_date'))
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
@@ -516,6 +517,7 @@ describe('Tests app', () => {
         .expect(400)
         .end((err, result) => {
           test.assert(result.body.error.name === `ValidationError`)
+          test.assert(result.body.error.reason.includes('publish_date'))
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
