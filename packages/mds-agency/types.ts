@@ -1,6 +1,6 @@
 import { UUID, Device, VehicleEvent, Telemetry, Timestamp, Recorded, VEHICLE_STATUS, Stop } from '@mds-core/mds-types'
 import { MultiPolygon } from 'geojson'
-import { ApiRequest, ApiVersionedResponse, ApiClaims } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiClaims, ApiResponse } from '@mds-core/mds-api-server'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
 
 export const AGENCY_API_SUPPORTED_VERSIONS = ['0.4.1'] as const
@@ -11,8 +11,7 @@ export type AgencyApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P
 
 export type AgencyApiAccessTokenScopes = 'admin:all' | 'vehicles:read'
 
-export type AgencyApiResponse<TBody = any> = ApiVersionedResponse<
-  AGENCY_API_SUPPORTED_VERSION,
+export type AgencyApiResponse<TBody = any> = ApiResponse<
   ApiClaims<AgencyApiAccessTokenScopes> & {
     provider_id: UUID
   },
