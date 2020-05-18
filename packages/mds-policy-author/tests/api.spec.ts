@@ -470,7 +470,7 @@ describe('Tests app', () => {
         .set('Authorization', POLICIES_READ_SCOPE)
         .expect(200)
         .end((err, result) => {
-          test.value(result.body.policy_metadata.some_arbitrary_thing, 'beep')
+          test.value(result.body.data.policy_metadata.some_arbitrary_thing, 'beep')
           test.value(result.body.version).is(POLICY_AUTHOR_API_DEFAULT_VERSION)
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
@@ -516,7 +516,7 @@ describe('Tests app', () => {
 
     it('verifies GETting policy metadata with the same params as for bulk policy reads', async () => {
       const result = await request.get(`/policies/meta`).set('Authorization', POLICIES_READ_SCOPE).expect(200)
-      test.assert(result.body.policy_metadata.length === 1)
+      test.assert(result.body.data.policy_metadata.length === 1)
       test.value(result.body.version).is(POLICY_AUTHOR_API_DEFAULT_VERSION)
       test.value(result).hasHeader('content-type', APP_JSON)
     })
