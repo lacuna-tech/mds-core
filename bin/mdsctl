@@ -491,7 +491,8 @@ updateHelmDependencies() {
 installHelm() {
   check ${FUNCNAME[0]}
 
-  helm init --force-upgrade || usage "helm intialization failure"
+  helm init --service-account tiller --override spec.selector.matchLabels.'name'='tiller',spec.selector.matchLabels.'app'='helm' --output yaml | sed 's@apiVersion: extensions/v1beta1@apiVersion: apps/v1@' | kubectl apply -f -
+  # helm init --force-upgrade || usage "helm intialization failure"
   pause 5
 
   for r in "${!helmRepositories[@]}"; do
@@ -535,6 +536,7 @@ installTiller() {
       kubectl patch deploy --namespace kube-system tiller-deploy -p '{"spec":{"template":{"spec":{"serviceAccount":"tiller"}}}}';;
     aws) ;&
     *)
+      helm init --service-account tiller --override spec.selector.matchLabels.'name'='tiller',spec.selector.matchLabels.'app'='helm' --output yaml | sed 's@apiVersion: extensions/v1beta1@apiVersion: apps/v1@' | kubectl apply -f -
       if [ $(kubectl get serviceaccount tiller --namespace kube-system > /dev/null 2>&1; echo $?) == "1" ]; then
         cat << EOF | kubectl create -f -
 apiVersion: v1

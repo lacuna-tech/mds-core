@@ -63,5 +63,8 @@
     "test:eslint": "yarn run:concurrent test:eslint",
     "test:unit": "yarn run:sequential test:unit",
     "values": "bin/mdsctl templateValues"
+  },
+  "dependencies": {
+    "chai": "4.2.0"
   }
 }
