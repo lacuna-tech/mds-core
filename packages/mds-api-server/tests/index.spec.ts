@@ -147,7 +147,7 @@ describe('Testing API Server', () => {
 
   it('verifies version middleware OPTIONS request (version not acceptable)', done => {
     request
-      .get('/api-version-middleware-test')
+      .options('/api-version-middleware-test')
       .set('accept', `${TEST_API_MIME_TYPE};version=0.4;q=.9,${TEST_API_MIME_TYPE};version=0.5;`)
       .expect(406)
       .end((err, result) => {
@@ -158,12 +158,11 @@ describe('Testing API Server', () => {
 
   it('verifies version middleware OPTIONS request (with versions)', done => {
     request
-      .get('/api-version-middleware-test')
+      .options('/api-version-middleware-test')
       .set('accept', `${TEST_API_MIME_TYPE};version=0.2`)
       .expect(200)
       .end((err, result) => {
-        test.value(result.header['content-type']).is(`${TEST_API_MIME_TYPE}; charset=utf-8; version=0.2`)
-        test.value(result.body.version).is(ALTERNATE_TEST_API_VERSION)
+        test.value(result.header['content-type']).is(`${TEST_API_MIME_TYPE};version=0.2`)
         done(err)
       })
   })
