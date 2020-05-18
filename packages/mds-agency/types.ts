@@ -11,18 +11,18 @@ export type AgencyApiRequest<P extends Params = ParamsDictionary> = ApiRequest<P
 
 export type AgencyApiAccessTokenScopes = 'admin:all' | 'vehicles:read'
 
-export type AgencyApiResponse<TBody = any> = ApiResponse<
+export type AgencyApiResponse<TBody = {}> = ApiResponse<
   ApiClaims<AgencyApiAccessTokenScopes> & {
     provider_id: UUID
   },
   TBody
 >
 
-export type AgencyRegisterVehicleResponse = AgencyApiResponse<{}>
+export type AgencyRegisterVehicleResponse = AgencyApiResponse
 
 export type AgencyGetVehicleByIdResponse = AgencyApiResponse<CompositeVehicle>
 export type AgencyGetVehiclesByProviderResponse = AgencyApiResponse<PaginatedVehiclesList>
-export type AgencyUpdateVehicleResponse = AgencyApiResponse<{}>
+export type AgencyUpdateVehicleResponse = AgencyApiResponse
 export type AgencySubmitVehicleEventResponse = AgencyApiResponse<{
   device_id: UUID
   status: VEHICLE_STATUS
