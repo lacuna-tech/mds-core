@@ -36,7 +36,7 @@ import { readAllVehicleIds } from './agency-candidate-request-handlers'
 import { getCacheInfo, wipeDevice, refreshCache } from './sandbox-admin-request-handlers'
 import { validateDeviceId } from './utils'
 
-import { AgencyApiVersionMiddleware, AgencyApiVersionOptionsHandler } from './middleware/agency-api-version'
+import { AgencyApiVersionMiddleware } from './middleware/agency-api-version'
 
 const checkAgencyApiAccess = (validator: AccessTokenScopeValidator<AgencyApiAccessTokenScopes>) =>
   checkAccess(validator)
@@ -45,7 +45,6 @@ function api(app: express.Express): express.Express {
   /**
    * Agency-specific middleware to extract provider_id into locals, do some logging, etc.
    */
-  app.use(AgencyApiVersionOptionsHandler)
   app.use(AgencyApiVersionMiddleware)
 
   app.use(async (req: AgencyApiRequest, res: AgencyApiResponse, next) => {

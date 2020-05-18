@@ -14,15 +14,10 @@
     limitations under the License.
  */
 
-import { ApiVersionMiddleware, OptionsRequestHandler } from '@mds-core/mds-api-server'
+import { ApiVersionMiddleware } from '@mds-core/mds-api-server'
 import { AGENCY_API_SUPPORTED_VERSIONS, AGENCY_API_DEFAULT_VERSION } from '../types'
 
 export const AgencyApiVersionMiddleware = ApiVersionMiddleware(
-  'application/vnd.mds.agency+json',
-  AGENCY_API_SUPPORTED_VERSIONS
-).withDefaultVersion(AGENCY_API_DEFAULT_VERSION)
-
-export const AgencyApiVersionOptionsHandler = OptionsRequestHandler(
   'application/vnd.mds.agency+json',
   AGENCY_API_SUPPORTED_VERSIONS
 ).withDefaultVersion(AGENCY_API_DEFAULT_VERSION)
