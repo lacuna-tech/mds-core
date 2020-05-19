@@ -13,7 +13,7 @@ import { Clients } from './clients'
  * Web Socket Server that autosubscribes to Nats stream and allows socket subscription by entity type
  * @param entityTypes - entity names to support
  */
-export const WebSocketServer = <T extends readonly string[]>(entityTypes?: T) => {
+export const WebSocketServer = async <T extends readonly string[]>(entityTypes?: T) => {
   const supportedEntities = entityTypes || ENTITY_TYPES
   const server = HttpServer(ApiServer(app => app))
 
@@ -101,7 +101,7 @@ export const WebSocketServer = <T extends readonly string[]>(entityTypes?: T) =>
 
   const processor = async (err: Nullable<NatsError>, msg: Msg) => {
     const entity = msg.subject.split('.')?.[1]
-    return pushToClients(entity, JSON.stringify(msg.data))
+    await pushToClients(entity, JSON.stringify(msg.data))
   }
 
   supportedEntities.forEach(async e => {
