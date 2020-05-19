@@ -8,4 +8,4 @@
 *[list of packages]*
 
 ## PR Checklist
-- [ ] Create checklist items to suit your needs or remove
+- [ ] Add or remove checklist items to suit your needs
