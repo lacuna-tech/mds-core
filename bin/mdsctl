@@ -71,7 +71,7 @@ declare -A configs=(
   ["home"]="${MDS_HOME:-$(installDir)}"
   ["os"]="${MDS_OS:-`uname`}"
   ["provider"]="${MDS_PROVIDER:-}"
-  ["nvm-version"]="${MDS_NVM_VERSION:-12.14.1}"
+  ["nvm-version"]="${MDS_NVM_VERSION:-14.2.0}"
   ["workdir"]="/tmp/mds/tools"
   # fixme: consider removing envsubst in favor of sed
   ["brew"]="${MDS_BREW:-oq jq envsubst yarn nvm helm k9s kubectx git aws nsc sops}"
@@ -369,7 +369,7 @@ bootstrap() {
   nvm install ${configs[nvm-version]}
   nvm alias default ${configs[nvm-version]}
 
-  for p in lerna cypress mocha chai mochawesome; do
+  for p in lerna mocha chai mochawesome; do
     yarn ${p} --version > /dev/null 2>&1 || yarn add -W ${p}
   done; unset p
 
@@ -1088,7 +1088,7 @@ testIntegration() {
 
   # todo: provide [ ui | cli ] option
   # yarn cypress open
-  yarn cypress run
+  # yarn cypress run
 }
 
 get() {

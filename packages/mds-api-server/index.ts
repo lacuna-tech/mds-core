@@ -4,7 +4,14 @@ import express from 'express'
 import CorsMiddleware from 'cors'
 import logger from '@mds-core/mds-logger'
 import { pathsFor, AuthorizationError } from '@mds-core/mds-utils'
-import { AuthorizationHeaderApiAuthorizer, ApiAuthorizer, AuthorizerClaims } from '@mds-core/mds-api-authorizer'
+import {
+  AuthorizationHeaderApiAuthorizer,
+  ApiAuthorizer,
+  AuthorizerClaims,
+  ProviderIdClaim,
+  UserEmailClaim,
+  JurisdictionsClaim
+} from '@mds-core/mds-api-authorizer'
 import { Params, ParamsDictionary } from 'express-serve-static-core'
 
 export type ApiRequest<P extends Params = ParamsDictionary> = express.Request<P>
@@ -23,7 +30,9 @@ export type ApiQuery<Q1 extends string, Q2 extends string[] = never> = {
 }
 
 export interface ApiResponse<L = unknown, B = unknown>
-  extends express.Response<B | { error: unknown } | { errors: unknown[] }> {
+  extends express.Response<
+    B | { error: unknown; error_description?: string; error_details?: string[] } | { errors: unknown[] }
+  > {
   locals: L
 }
 
@@ -163,14 +172,39 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
       }))
       .filter(info => info.latest !== undefined)
 
-    // Get supported version with highest q value
-    if (supported.length > 0) {
+    if (req.method === 'OPTIONS') {
+      /* If the incoming request is an OPTIONS request,
+       * immediately respond with the negotiated version.
+       * If the client did not negotiate a valid version, fall-through to a 406 response.
+       */
+      if (supported.length > 0) {
+        const [{ latest }] = supported.sort((a, b) => b.q - a.q)
+        if (latest) {
+          res.locals.version = latest
+          res.setHeader('Content-Type', `${mimeType};version=${MinorVersion(latest)}`)
+          return res.status(200).send()
+        }
+      }
+    } else if (supported.length > 0) {
+      /* If the incoming request is a non-OPTIONS request,
+       * set the negotiated version header, and forward the request to the next handler.
+       * If the client did not negotiate a valid version, fall-through to provide the "preferred" version,
+       * or, if they requested an invalid version, respond with a 406.
+       */
       const [{ latest }] = supported.sort((a, b) => b.q - a.q)
       if (latest) {
         res.locals.version = latest
         res.setHeader('Content-Type', `${mimeType};version=${MinorVersion(latest)}`)
         return next()
       }
+    } else if (values.length === 0) {
+      /*
+       * If no versions specified by the client for a non-OPTIONS request,
+       * fall-back to latest internal version supported
+       */
+      res.locals.version = preferred
+      res.setHeader('Content-Type', `${mimeType};version=${MinorVersion(preferred)}`)
+      return next()
     }
 
     // 406 - Not Acceptable
@@ -220,20 +254,27 @@ export const HttpServer = (api: express.Express, options: HttpServerOptions = {}
   return server
 }
 
-type CorsMiddlewareOptions = CorsMiddleware.CorsOptions
+type CorsMiddlewareOptions = Omit<CorsMiddleware.CorsOptions, 'preflightContinue'>
 
 export const ApiServer = (
   api: (server: express.Express) => express.Express,
   { authorizer, ...corsOptions }: Partial<AuthorizerMiddlewareOptions & CorsMiddlewareOptions> = {},
   app: express.Express = express()
 ): express.Express => {
+  logger.info(`${serverVersion()} starting`)
+
+  // Log the custom authorization namespace/claims
+  const claims = [ProviderIdClaim, UserEmailClaim, JurisdictionsClaim]
+  claims.forEach(claim => {
+    logger.info(`${serverVersion()} using authorization claim ${claim()}`)
+  })
   // Disable x-powered-by header
   app.disable('x-powered-by')
 
   // Middleware
   app.use(
     RequestLoggingMiddleware(),
-    CorsMiddleware(corsOptions),
+    CorsMiddleware({ preflightContinue: true, ...corsOptions }),
     JsonBodyParserMiddleware({ limit: '5mb' }),
     MaintenanceModeMiddleware(),
     AuthorizerMiddleware({ authorizer })

@@ -15,37 +15,27 @@
  */
 
 import { AnyFunction } from '@mds-core/mds-types'
-import { ServiceResponse, ServiceErrorDescriptor } from '../@types'
+import { ServiceResponse, ServiceErrorDescriptor, ServiceErrorDescriptorType } from '../@types'
 
-export const isServiceError = (error: unknown): error is ServiceErrorDescriptor =>
-  (error as ServiceErrorDescriptor).name === '__ServiceErrorDescriptor__'
+export const isServiceError = <E extends string = ServiceErrorDescriptorType>(
+  error: unknown,
+  ...types: E[]
+): error is ServiceErrorDescriptor<E> =>
+  typeof error === 'object' &&
+  error !== null &&
+  (error as ServiceErrorDescriptor<E>).isServiceError === true &&
+  (types.length === 0 || types.includes((error as ServiceErrorDescriptor<E>).type))
 
-/* istanbul ignore next */
-export const handleServiceResponse = <R>(
-  response: ServiceResponse<R>,
-  onerror: (error: ServiceErrorDescriptor) => void,
-  onresult: (result: R) => void
-): ServiceResponse<R> => {
-  if (response.error) {
-    onerror(response.error)
-  } else {
-    onresult(response.result)
-  }
-  return response
-}
+// eslint-reason type inference requires any
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type ServiceResponseMethod<R = any> = AnyFunction<Promise<ServiceResponse<R>>>
 
-export const getServiceResult = async <R>(request: Promise<ServiceResponse<R>>): Promise<R> => {
-  const response = await request
+export const UnwrapServiceResult = <M extends ServiceResponseMethod>(method: M) => async (
+  ...args: Parameters<M>
+): Promise<ReturnType<M> extends Promise<ServiceResponse<infer R>> ? R : never> => {
+  const response = await method(...args)
   if (response.error) {
     throw response.error
   }
   return response.result
 }
-
-// eslint-reason type inference requires any
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyServiceResponseMethod = AnyFunction<Promise<ServiceResponse<any>>>
-
-export const UnwrapServiceResult = <M extends AnyServiceResponseMethod>(method: M) => async (
-  ...args: Parameters<M>
-): Promise<ReturnType<M> extends Promise<ServiceResponse<infer R>> ? R : unknown> => getServiceResult(method(...args))
