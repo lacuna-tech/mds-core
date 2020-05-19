@@ -1,2 +1,2 @@
-export const EntityTypes = ['event', 'telemetry'] as const
-export type EntityType = typeof EntityTypes[number]
+export const ENTITY_TYPES = ['event', 'telemetry'] as const
+export type ENTITY_TYPE = typeof ENTITY_TYPES[number]

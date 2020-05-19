@@ -6,14 +6,14 @@ import { setWsHeartbeat } from 'ws-heartbeat/server'
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { initializeNatsSubscriber } from '@mds-core/mds-stream/nats/nats'
 import { Clients } from './clients'
-import { EntityTypes } from './types'
+import { ENTITY_TYPES } from './types'
 
 /**
- * Web Socket Server that pas
- * @param entityTypes - entities to pass on to clients
+ * Web Socket Server that autosubscribes to Nats stream and allows socket subscription by entity type
+ * @param entityTypes - entity names to support
  */
 export const WebSocketServer = <T extends readonly string[]>(entityTypes?: T) => {
-  const supportedEntities = entityTypes || EntityTypes
+  const supportedEntities = entityTypes || ENTITY_TYPES
   const server = HttpServer(ApiServer(app => app))
 
   logger.info('Creating WS server')
@@ -33,7 +33,7 @@ export const WebSocketServer = <T extends readonly string[]>(entityTypes?: T) =>
   const clients = new Clients(supportedEntities)
 
   function isSupported(entity: string) {
-    return supportedEntities.findIndex(e => e === entity) > -1
+    return supportedEntities.some(e => e === entity)
   }
 
   function pushToClients(entity: string, message: string) {
