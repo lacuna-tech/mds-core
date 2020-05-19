@@ -101,11 +101,7 @@ export const WebSocketServer = <T extends readonly string[]>(entityTypes?: T) =>
 
   const processor = async (err: Nullable<NatsError>, msg: Msg) => {
     const entity = msg.subject.split('.')?.[1]
-    if (isSupported(entity)) {
-      await pushToClients(entity, JSON.stringify(msg.data))
-      return
-    }
-    logger.error(`Unprocessable entity of type: ${entity} and data: ${JSON.stringify(msg.data)}`)
+    return pushToClients(entity, JSON.stringify(msg.data))
   }
 
   supportedEntities.forEach(async e => {
