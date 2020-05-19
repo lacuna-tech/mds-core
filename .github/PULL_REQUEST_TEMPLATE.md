@@ -2,7 +2,8 @@
 *[description/approach]*
 
 ## Resolves:
-- [ ] gitmoji + ticket `🐛 JRA-834 fixes bug in the tubes`
+- [ ] 🐛 JRA-834 fixes bug
+- [ ] ✨ JRA-756 implements new feature
 
 ## Impacts:
 *[list of packages]*
