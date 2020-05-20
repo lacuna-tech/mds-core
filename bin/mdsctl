@@ -491,7 +491,8 @@ updateHelmDependencies() {
 installHelm() {
   check ${FUNCNAME[0]}
 
-  helm init --force-upgrade || usage "helm intialization failure"
+  helm init --service-account tiller --override spec.selector.matchLabels.'name'='tiller',spec.selector.matchLabels.'app'='helm' --output yaml | sed 's@apiVersion: extensions/v1beta1@apiVersion: apps/v1@' | kubectl apply -f -
+#  helm init --force-upgrade || usage "helm intialization failure"
   pause 5
 
   for r in "${!helmRepositories[@]}"; do
