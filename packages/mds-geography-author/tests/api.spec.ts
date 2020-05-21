@@ -41,12 +41,9 @@ import {
 import { api } from '../api'
 import { GEOGRAPHY_AUTHOR_API_DEFAULT_VERSION } from '../types'
 
-/* eslint-disable-next-line no-console */
-const log = console.log.bind(console)
-
 const request = supertest(ApiServer(api))
 
-const APP_JSON = 'application/vnd.mds.geography-author+json; charset=utf-8; version=0.1'
+const APP_JSON = 'application/vnd.mds.geography-author+json; charset=utf-8; version=0.4'
 const EMPTY_SCOPE = SCOPED_AUTH([], '')
 const EVENTS_READ_SCOPE = SCOPED_AUTH(['events:read'])
 const GEOGRAPHIES_WRITE_SCOPE = SCOPED_AUTH(['geographies:write'])
@@ -103,8 +100,6 @@ describe('Tests app', () => {
         .send(geography)
         .expect(201)
         .end((err, result) => {
-          const body = result.body
-          log('create one geo response:', body)
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
@@ -231,8 +226,8 @@ describe('Tests app', () => {
         .expect(200)
       test.value(result).hasHeader('content-type', APP_JSON)
       test.assert(result.body.version === GEOGRAPHY_AUTHOR_API_DEFAULT_VERSION)
-      test.assert(result.body.geography.geography_id === GEOGRAPHY2_UUID)
-      test.assert(result.body.geography.publish_date)
+      test.assert(result.body.data.geography.geography_id === GEOGRAPHY2_UUID)
+      test.assert(result.body.data.geography.publish_date)
     })
 
     it('cannot publish a geography (wrong auth)', async () => {
@@ -380,7 +375,7 @@ describe('Tests app', () => {
         .get(`/geographies/meta`)
         .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
         .expect(200)
-      test.assert(result.body.geography_metadata.length === 2)
+      test.assert(result.body.data.geography_metadata.length === 2)
       test.assert(result.body.version === GEOGRAPHY_AUTHOR_API_DEFAULT_VERSION)
       test.value(result).hasHeader('content-type', APP_JSON)
     })
@@ -390,7 +385,7 @@ describe('Tests app', () => {
         .get(`/geographies/meta?get_published=true`)
         .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
         .expect(200)
-      test.assert(result.body.geography_metadata.length === 1)
+      test.assert(result.body.data.geography_metadata.length === 1)
       test.assert(result.body.version === GEOGRAPHY_AUTHOR_API_DEFAULT_VERSION)
       test.value(result).hasHeader('content-type', APP_JSON)
     })
@@ -400,7 +395,7 @@ describe('Tests app', () => {
         .get(`/geographies/meta?get_unpublished=true`)
         .set('Authorization', GEOGRAPHIES_READ_UNPUBLISHED_SCOPE)
         .expect(200)
-      test.assert(result.body.geography_metadata.length === 1)
+      test.assert(result.body.data.geography_metadata.length === 1)
       test.assert(result.body.version === GEOGRAPHY_AUTHOR_API_DEFAULT_VERSION)
       test.value(result).hasHeader('content-type', APP_JSON)
     })
@@ -410,7 +405,7 @@ describe('Tests app', () => {
         .get(`/geographies/meta`)
         .set('Authorization', GEOGRAPHIES_BOTH_READ_SCOPES)
         .expect(200)
-      test.assert(result.body.geography_metadata.length === 2)
+      test.assert(result.body.data.geography_metadata.length === 2)
       test.assert(result.body.version === GEOGRAPHY_AUTHOR_API_DEFAULT_VERSION)
       test.value(result).hasHeader('content-type', APP_JSON)
     })
@@ -420,7 +415,7 @@ describe('Tests app', () => {
         .get(`/geographies/meta?get_published=true`)
         .set('Authorization', GEOGRAPHIES_BOTH_READ_SCOPES)
         .expect(200)
-      test.assert(result.body.geography_metadata.length === 1)
+      test.assert(result.body.data.geography_metadata.length === 1)
       test.assert(result.body.version === GEOGRAPHY_AUTHOR_API_DEFAULT_VERSION)
       test.value(result).hasHeader('content-type', APP_JSON)
     })
@@ -431,7 +426,7 @@ describe('Tests app', () => {
         .set('Authorization', GEOGRAPHIES_READ_PUBLISHED_SCOPE)
         .expect(200)
       test.assert(result.body.version === GEOGRAPHY_AUTHOR_API_DEFAULT_VERSION)
-      test.assert(result.body.geography_metadata.length === 1)
+      test.assert(result.body.data.geography_metadata.length === 1)
       test.value(result).hasHeader('content-type', APP_JSON)
     })
 
@@ -478,6 +473,46 @@ describe('Tests app', () => {
         .expect(404)
         .end((err, result) => {
           test.assert(result.body.error.name === `NotFoundError`)
+          test.value(result).hasHeader('content-type', APP_JSON)
+          done(err)
+        })
+    })
+
+    it('verifies cannot PUT geography with a publish_date', done => {
+      const geography = {
+        name: 'foo',
+        geography_id: GEOGRAPHY_UUID,
+        publish_date: 1589817834000,
+        geography_json: LA_CITY_BOUNDARY
+      }
+      request
+        .put(`/geographies/${geography.geography_id}`)
+        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
+        .send(geography)
+        .expect(400)
+        .end((err, result) => {
+          test.assert(result.body.error.name === `ValidationError`)
+          test.assert(result.body.error.reason.includes('publish_date'))
+          test.value(result).hasHeader('content-type', APP_JSON)
+          done(err)
+        })
+    })
+
+    it('verifies cannot POST geography with a publish_date', done => {
+      const geography = {
+        name: 'foo',
+        geography_id: GEOGRAPHY_UUID,
+        publish_date: 1589817834000,
+        geography_json: LA_CITY_BOUNDARY
+      }
+      request
+        .post(`/geographies`)
+        .set('Authorization', GEOGRAPHIES_WRITE_SCOPE)
+        .send(geography)
+        .expect(400)
+        .end((err, result) => {
+          test.assert(result.body.error.name === `ValidationError`)
+          test.assert(result.body.error.reason.includes('publish_date'))
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })

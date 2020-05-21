@@ -39,7 +39,8 @@ import {
   POLICY2_UUID,
   GEOGRAPHY_UUID,
   LA_CITY_BOUNDARY,
-  SCOPED_AUTH
+  SCOPED_AUTH,
+  PUBLISHED_POLICY
 } from '@mds-core/mds-test-data'
 import { api } from '../api'
 import { POLICY_AUTHOR_API_DEFAULT_VERSION } from '../types'
@@ -49,7 +50,7 @@ const log = console.log.bind(console)
 
 const request = supertest(ApiServer(api))
 
-const APP_JSON = 'application/vnd.mds.policy-author+json; charset=utf-8; version=0.1'
+const APP_JSON = 'application/vnd.mds.policy-author+json; charset=utf-8; version=0.4'
 const EMPTY_SCOPE = SCOPED_AUTH([], '')
 const EVENTS_READ_SCOPE = SCOPED_AUTH(['events:read'])
 const POLICIES_WRITE_SCOPE = SCOPED_AUTH(['policies:write'])
@@ -469,7 +470,7 @@ describe('Tests app', () => {
         .set('Authorization', POLICIES_READ_SCOPE)
         .expect(200)
         .end((err, result) => {
-          test.value(result.body.policy_metadata.some_arbitrary_thing, 'beep')
+          test.value(result.body.data.policy_metadata.some_arbitrary_thing, 'beep')
           test.value(result.body.version).is(POLICY_AUTHOR_API_DEFAULT_VERSION)
           test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
@@ -515,7 +516,7 @@ describe('Tests app', () => {
 
     it('verifies GETting policy metadata with the same params as for bulk policy reads', async () => {
       const result = await request.get(`/policies/meta`).set('Authorization', POLICIES_READ_SCOPE).expect(200)
-      test.assert(result.body.policy_metadata.length === 1)
+      test.assert(result.body.data.policy_metadata.length === 1)
       test.value(result.body.version).is(POLICY_AUTHOR_API_DEFAULT_VERSION)
       test.value(result).hasHeader('content-type', APP_JSON)
     })
@@ -529,7 +530,35 @@ describe('Tests app', () => {
         .end((err, result) => {
           test.value(result).hasHeader('content-type', APP_JSON)
           test.value(result.body.version).is(POLICY_AUTHOR_API_DEFAULT_VERSION)
-          test.assert(isUUID(result.body.policy.policy_id))
+          test.assert(isUUID(result.body.data.policy.policy_id))
+          done(err)
+        })
+    })
+
+    it('Cannot PUT a policy with publish_date set', done => {
+      request
+        .put(`/policies/${PUBLISHED_POLICY.policy_id}`)
+        .set('Authorization', POLICIES_WRITE_SCOPE)
+        .send(PUBLISHED_POLICY)
+        .expect(400)
+        .end((err, result) => {
+          test.assert(result.body.error.name === `ValidationError`)
+          test.assert(result.body.error.reason.includes('publish_date'))
+          test.value(result).hasHeader('content-type', APP_JSON)
+          done(err)
+        })
+    })
+
+    it('Cannot POST a policy with publish_date set', done => {
+      request
+        .post(`/policies`)
+        .set('Authorization', POLICIES_WRITE_SCOPE)
+        .send(PUBLISHED_POLICY)
+        .expect(400)
+        .end((err, result) => {
+          test.assert(result.body.error.name === `ValidationError`)
+          test.assert(result.body.error.reason.includes('publish_date'))
+          test.value(result).hasHeader('content-type', APP_JSON)
           done(err)
         })
     })

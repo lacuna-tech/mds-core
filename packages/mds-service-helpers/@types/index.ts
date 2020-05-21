@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 /*
     Copyright 2019-2020 City of Los Angeles.
 
@@ -17,15 +16,24 @@
 
 import { AnyFunction } from '@mds-core/mds-types'
 
-export interface ServiceErrorDescriptor {
-  name: '__ServiceErrorDescriptor__'
-  type: 'ServiceException' | 'NotFoundError' | 'ConflictError' | 'ValidationError'
+export const ServiceErrorDescriptorTypes = [
+  'ServiceException',
+  'NotFoundError',
+  'ConflictError',
+  'ValidationError'
+] as const
+
+export type ServiceErrorDescriptorType = typeof ServiceErrorDescriptorTypes[number]
+
+export type ServiceErrorDescriptor<E extends string> = Readonly<{
+  isServiceError: true
+  type: E
   message: string
   details?: string
-}
+}>
 
-export interface ServiceErrorType {
-  error: ServiceErrorDescriptor
+export interface ServiceErrorType<E extends string = ServiceErrorDescriptorType> {
+  error: ServiceErrorDescriptor<E>
 }
 
 export interface ServiceResultType<R> {
@@ -41,7 +49,9 @@ export type ServiceClient<I> = {
 
 export type ServiceProvider<I> = {
   [P in keyof I]: I[P] extends AnyFunction<infer R> ? (...args: Parameters<I[P]>) => Promise<ServiceResponse<R>> : never
-} & {
-  initialize: () => Promise<void>
-  shutdown: () => Promise<void>
+}
+
+export interface ProcessController {
+  start: () => Promise<void>
+  stop: () => Promise<void>
 }
