@@ -19,7 +19,9 @@ import {
   DISTRICT_SEVEN,
   START_ONE_MONTH_AGO,
   POLICY_WITH_DUPE_RULE,
-  PUBLISHED_POLICY
+  PUBLISHED_POLICY,
+  PUBLISH_DATE_VALIDATION_JSON,
+  START_ONE_MONTH_FROM_NOW
 } from '@mds-core/mds-test-data'
 import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
@@ -288,8 +290,8 @@ if (pg_info.database) {
       })
 
       it('can delete an unpublished Policy', async () => {
-        const { policy_id } = POLICY_JSON
-        await MDSDBPostgres.writePolicy(POLICY_JSON)
+        const { policy_id } = POLICY2_JSON
+        await MDSDBPostgres.writePolicy(POLICY2_JSON)
         assert(!(await MDSDBPostgres.isPolicyPublished(policy_id)))
         await MDSDBPostgres.deletePolicy(policy_id)
         const policy_result = await MDSDBPostgres.readPolicies({
@@ -301,14 +303,14 @@ if (pg_info.database) {
       })
 
       it('can write, read, and publish a Policy', async () => {
-        await MDSDBPostgres.initialize()
+        await MDSDBPostgres.writeGeography(LAGeography)
+        await MDSDBPostgres.publishGeography({ geography_id: LAGeography.geography_id })
+        // This one already has a publish_date. Not quite kosher, but publishing it the normal way through using
+        // .publishPolicy would require setting a future start_date, which means it wouldn't qualify as an active
+        // policy during future tests.
         await MDSDBPostgres.writePolicy(POLICY_JSON)
         await MDSDBPostgres.writePolicy(POLICY2_JSON)
         await MDSDBPostgres.writePolicy(POLICY3_JSON)
-
-        await MDSDBPostgres.writeGeography(LAGeography)
-        await MDSDBPostgres.publishGeography({ geography_id: LAGeography.geography_id })
-        await MDSDBPostgres.publishPolicy(POLICY_JSON.policy_id)
 
         // Read all policies, no matter whether published or not.
         const policies = await MDSDBPostgres.readPolicies()
@@ -371,6 +373,15 @@ if (pg_info.database) {
         const policy = clone(POLICY3_JSON)
         policy.rules[0].rule_id = POLICY_JSON.rules[0].rule_id
         await MDSDBPostgres.editPolicy(policy).should.be.rejectedWith(ConflictError)
+      })
+
+      it('ensures the publish_date >= start_date', async () => {
+        await MDSDBPostgres.writePolicy(PUBLISH_DATE_VALIDATION_JSON)
+        await MDSDBPostgres.publishPolicy(PUBLISH_DATE_VALIDATION_JSON.policy_id).should.be.rejectedWith(ConflictError)
+        const validPolicy = clone(PUBLISH_DATE_VALIDATION_JSON)
+        validPolicy.start_date = START_ONE_MONTH_FROM_NOW
+        await MDSDBPostgres.editPolicy(validPolicy)
+        await MDSDBPostgres.publishPolicy(validPolicy.policy_id).should.not.rejected()
       })
 
       it('will not edit or delete a published Policy', async () => {

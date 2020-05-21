@@ -219,6 +219,9 @@ export async function publishPolicy(policy_id: UUID) {
     }
 
     const publish_date = now()
+    if (!policy.start_date || policy.start_date < publish_date) {
+      throw new ConflictError('publish_date must be before start_date')
+    }
 
     const geographies: UUID[] = []
     policy.rules.forEach(rule => {
