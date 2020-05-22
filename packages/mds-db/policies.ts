@@ -206,7 +206,7 @@ export async function deletePolicy(policy_id: UUID) {
   return policy_id
 }
 
-export async function publishPolicy(policy_id: UUID) {
+export async function publishPolicy(policy_id: UUID, publish_date = now()) {
   try {
     const client = await getWriteableClient()
     if (await isPolicyPublished(policy_id)) {
@@ -218,7 +218,6 @@ export async function publishPolicy(policy_id: UUID) {
       throw new NotFoundError('cannot publish nonexistent policy')
     }
 
-    const publish_date = now()
     if (!policy.start_date || policy.start_date < publish_date) {
       throw new ConflictError('publish_date must be before start_date')
     }

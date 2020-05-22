@@ -24,7 +24,7 @@ import {
   START_ONE_MONTH_FROM_NOW,
   DELETEABLE_POLICY
 } from '@mds-core/mds-test-data'
-import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError } from '@mds-core/mds-utils'
+import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError, yesterday } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
 import MDSDBPostgres from '../index'
 import { dropTables, createTables, updateSchema } from '../migration'
@@ -32,6 +32,9 @@ import { Trip } from '../types'
 import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
 
 const { env } = process
+const ACTIVE_POLICY_JSON = clone(POLICY_JSON)
+ACTIVE_POLICY_JSON.publish_date = yesterday()
+ACTIVE_POLICY_JSON.start_date = yesterday()
 
 const pg_info: PGInfo = {
   database: env.PG_NAME,
@@ -309,7 +312,7 @@ if (pg_info.database) {
         // This one already has a publish_date. Not quite kosher, but publishing it the normal way through using
         // .publishPolicy would require setting a future start_date, which means it wouldn't qualify as an active
         // policy during future tests.
-        await MDSDBPostgres.writePolicy(POLICY_JSON)
+        await MDSDBPostgres.writePolicy(ACTIVE_POLICY_JSON)
         await MDSDBPostgres.writePolicy(POLICY2_JSON)
         await MDSDBPostgres.writePolicy(POLICY3_JSON)
 
@@ -332,9 +335,9 @@ if (pg_info.database) {
       })
 
       it('can read a single Policy', async () => {
-        const policy = await MDSDBPostgres.readPolicy(POLICY_JSON.policy_id)
-        assert.deepEqual(policy.policy_id, POLICY_JSON.policy_id)
-        assert.deepEqual(policy.name, POLICY_JSON.name)
+        const policy = await MDSDBPostgres.readPolicy(ACTIVE_POLICY_JSON.policy_id)
+        assert.deepEqual(policy.policy_id, ACTIVE_POLICY_JSON.policy_id)
+        assert.deepEqual(policy.name, ACTIVE_POLICY_JSON.name)
       })
 
       it('can find Policies by rule id', async () => {
@@ -352,7 +355,7 @@ if (pg_info.database) {
       })
 
       it('can tell a Policy is published', async () => {
-        const publishedResult = await MDSDBPostgres.isPolicyPublished(POLICY_JSON.policy_id)
+        const publishedResult = await MDSDBPostgres.isPolicyPublished(ACTIVE_POLICY_JSON.policy_id)
         assert.deepEqual(publishedResult, true)
         const unpublishedResult = await MDSDBPostgres.isPolicyPublished(POLICY3_JSON.policy_id)
         assert.deepEqual(unpublishedResult, false)
@@ -372,7 +375,7 @@ if (pg_info.database) {
 
       it('cannot add a rule that already exists in some other policy', async () => {
         const policy = clone(POLICY3_JSON)
-        policy.rules[0].rule_id = POLICY_JSON.rules[0].rule_id
+        policy.rules[0].rule_id = ACTIVE_POLICY_JSON.rules[0].rule_id
         await MDSDBPostgres.editPolicy(policy).should.be.rejectedWith(ConflictError)
       })
 
@@ -386,7 +389,7 @@ if (pg_info.database) {
       })
 
       it('will not edit or delete a published Policy', async () => {
-        const publishedPolicy = clone(POLICY_JSON)
+        const publishedPolicy = clone(ACTIVE_POLICY_JSON)
         publishedPolicy.name = 'a shiny new name'
         await MDSDBPostgres.editPolicy(publishedPolicy).should.be.rejected()
         await MDSDBPostgres.deletePolicy(publishedPolicy.policy_id).should.be.rejected()
@@ -409,12 +412,12 @@ if (pg_info.database) {
       })
 
       it('.readBulkPolicyMetadata', async () => {
-        await MDSDBPostgres.writePolicy(POLICY_JSON)
+        await MDSDBPostgres.writePolicy(ACTIVE_POLICY_JSON)
         await MDSDBPostgres.writePolicy(POLICY2_JSON)
         await MDSDBPostgres.writePolicy(POLICY3_JSON)
 
         await MDSDBPostgres.writePolicyMetadata({
-          policy_id: POLICY_JSON.policy_id,
+          policy_id: ACTIVE_POLICY_JSON.policy_id,
           policy_metadata: { name: 'policy_json' }
         })
         await MDSDBPostgres.writePolicyMetadata({

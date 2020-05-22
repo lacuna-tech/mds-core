@@ -83,15 +83,17 @@ const JUMP_TEST_DEVICE_1: Device = {
 }
 
 const START_YESTERDAY = now() - (now() % days(1))
+const START_TOMORROW = now() + (now() % days(1))
+const START_NOW = now()
 
 const POLICY_JSON: Policy = {
   // TODO guts
   name: 'Policy 1',
   description: 'Mobility caps as described in the One-Year Permit',
   policy_id: POLICY_UUID,
-  start_date: now(),
+  start_date: START_TOMORROW,
   end_date: null,
-  publish_date: now(),
+  publish_date: START_NOW,
   prev_policies: null,
   provider_ids: [],
   rules: [
