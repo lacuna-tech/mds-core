@@ -25,8 +25,7 @@ import {
   DEVICE_INDEX_STREAM,
   DEVICE_RAW_STREAM,
   ReadStreamOptions,
-  StreamItemID,
-  WriteStream
+  StreamItemID
 } from './types'
 import { AgencyStreamKafka } from './kafka/agency-stream-kafka'
 import { KafkaStreamConsumer, KafkaStreamProducer } from './kafka'
