@@ -945,7 +945,8 @@ installNats() {
 
   [[ "$(helm list --short ${configs[namespace-nats]}-nats-server)" = "${configs[namespace-nats]}-nats-server" ]] || {
     systemAccount=$(nsc describe account --name SYS | grep "Account ID" | awk '{print $5}')
-    operatorJwt=$(< $(nscHome)/KO/KO.jwt)
+# fixme: renable when installing secure nats
+#    operatorJwt=$(< $(nscHome)/KO/KO.jwt)
 
     helm install ${configs[home]}/helm/nats-server --name ${configs[namespace-nats]}-nats-server \
       ${configs[namespace-nats]:+--namespace ${configs[namespace-nats]}} \
@@ -956,7 +957,8 @@ installNats() {
       ${configs[sets]:+$(helmOptions set ${configs[sets]})} \
       ${configs[sets-nats]:+$(helmOptions set ${configs[sets-nats]})} \
       $(helmOptions set systemAccount=${systemAccount}) \
-      $(helmOptions set operatorJwt=${operatorJwt}) \
+# fixme: renable when installing secure nats
+#      $(helmOptions set operatorJwt=${operatorJwt}) \
       ${configs[setfiles]:+$(helmOptions set-file ${configs[setfiles]})} \
       ${configs[setfiles-nats]:+$(helmOptions set-file ${configs[setfiles-nats]})} \
       ${configs[dryrun]:+--dry-run --debug}
