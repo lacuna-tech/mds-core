@@ -21,7 +21,8 @@ import {
   POLICY_WITH_DUPE_RULE,
   PUBLISHED_POLICY,
   PUBLISH_DATE_VALIDATION_JSON,
-  START_ONE_MONTH_FROM_NOW
+  START_ONE_MONTH_FROM_NOW,
+  DELETEABLE_POLICY
 } from '@mds-core/mds-test-data'
 import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
@@ -290,8 +291,8 @@ if (pg_info.database) {
       })
 
       it('can delete an unpublished Policy', async () => {
-        const { policy_id } = POLICY2_JSON
-        await MDSDBPostgres.writePolicy(POLICY2_JSON)
+        const { policy_id } = DELETEABLE_POLICY
+        await MDSDBPostgres.writePolicy(DELETEABLE_POLICY)
         assert(!(await MDSDBPostgres.isPolicyPublished(policy_id)))
         await MDSDBPostgres.deletePolicy(policy_id)
         const policy_result = await MDSDBPostgres.readPolicies({

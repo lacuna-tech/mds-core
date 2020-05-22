@@ -344,6 +344,28 @@ const PUBLISHED_POLICY: Policy = {
   ]
 }
 
+const DELETEABLE_POLICY: Policy = {
+  policy_id: '55396abd-e32b-4370-ac02-7f3294eef49e',
+  name: 'I am published but do not do much',
+  description: 'LADOT Pilot Speed Limit Limitations',
+  start_date: START_ONE_MONTH_AGO,
+  end_date: null,
+  prev_policies: null,
+  provider_ids: [],
+  rules: [
+    {
+      name: 'Greater LA',
+      rule_id: uuid(),
+      rule_type: 'speed',
+      rule_units: 'mph',
+      geographies: [GEOGRAPHY_UUID],
+      statuses: { trip: [] },
+      vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
+      maximum: 25
+    }
+  ]
+}
+
 function makeTelemetry(devices: Device[], timestamp: Timestamp): Telemetry[] {
   let i = 0
   const serviceAreaKeys = Object.keys(serviceAreaMap)
@@ -591,6 +613,7 @@ export {
   PUBLISH_DATE_VALIDATION_JSON,
   POLICY_UUID,
   PUBLISHED_POLICY,
+  DELETEABLE_POLICY,
   SUPERSEDING_POLICY_UUID,
   POLICY2_UUID,
   POLICY3_UUID,
