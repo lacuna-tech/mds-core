@@ -25,8 +25,7 @@ import {
   DEVICE_INDEX_STREAM,
   DEVICE_RAW_STREAM,
   ReadStreamOptions,
-  StreamItemID,
-  WriteStream
+  StreamItemID
 } from './types'
 import { AgencyStreamKafka } from './kafka/agency-stream-kafka'
 import { KafkaStreamConsumer, KafkaStreamProducer } from './kafka'
@@ -39,8 +38,6 @@ import { mockStream } from './test-utils'
 
 export { KafkaStreamConsumerOptions, KafkaStreamProducerOptions } from './kafka'
 export { StreamConsumer, StreamProducer } from './stream-interface'
-
-export { WriteStream }
 
 const { env } = process
 

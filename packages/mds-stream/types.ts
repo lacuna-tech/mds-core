@@ -29,9 +29,3 @@ export type StreamItemType = string
 export type StreamItemData = string
 export type StreamItem = [StreamItemID, [StreamItemType, StreamItemData]]
 export type ReadStreamResult = [Stream, StreamItem[]]
-
-export interface WriteStream<T> {
-  write: (payload: T) => Promise<void>
-  shutdown: () => Promise<void>
-  initialize: () => Promise<void>
-}

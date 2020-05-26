@@ -1,13 +1,13 @@
 import Sinon from 'sinon'
-import { WriteStream } from './types'
+import { StreamProducer } from './stream-interface'
 
 type SinonMockedStream<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key in keyof WriteStream<T>]: Sinon.SinonSpy<any[], any>
+  [key in keyof StreamProducer<T>]: Sinon.SinonSpy<any[], any>
 }
 
 export const mockStream = <T>(
-  stream: WriteStream<T>,
+  stream: StreamProducer<T>,
   overrides?: Partial<SinonMockedStream<T>>
 ): SinonMockedStream<T> => {
   const mockedMethods: SinonMockedStream<T> = {
@@ -18,7 +18,7 @@ export const mockStream = <T>(
   }
 
   Object.entries(mockedMethods).forEach(([key, val]) => {
-    Sinon.replace(stream, key as keyof WriteStream<T>, val)
+    Sinon.replace(stream, key as keyof StreamProducer<T>, val)
   })
 
   return mockedMethods

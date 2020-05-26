@@ -1,13 +1,14 @@
 import Sinon from 'sinon'
 import assert from 'assert'
-import stream, { WriteStream } from '..'
 import { mockStream } from '../test-utils'
+import { StreamProducer } from '../stream-interface'
+import { KafkaStreamProducer } from '../kafka'
 
 type FakeStreamPayload = 'foo'
 
 describe('Mock stream API', () => {
   it('Mocks successfully', async () => {
-    const fakeStream: WriteStream<FakeStreamPayload> = stream.KafkaStreamProducer<FakeStreamPayload>('fake-stream')
+    const fakeStream: StreamProducer<FakeStreamPayload> = KafkaStreamProducer<FakeStreamPayload>('fake-stream')
     const { initialize, write, shutdown } = mockStream(fakeStream)
 
     await fakeStream.initialize()
@@ -21,7 +22,7 @@ describe('Mock stream API', () => {
   })
 
   it('Mocks with overrides successfully', async () => {
-    const fakeStream: WriteStream<FakeStreamPayload> = stream.KafkaStreamProducer<FakeStreamPayload>('fake-stream')
+    const fakeStream: StreamProducer<FakeStreamPayload> = KafkaStreamProducer<FakeStreamPayload>('fake-stream')
     const overrideMocks = {
       initialize: Sinon.fake.resolves(undefined),
       shutdown: Sinon.fake.resolves(undefined),
