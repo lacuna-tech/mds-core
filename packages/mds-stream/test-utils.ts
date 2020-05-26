@@ -1,14 +1,25 @@
 import Sinon from 'sinon'
 import { WriteStream } from './types'
 
-export const mockStream = <T>(stream: WriteStream<T>) => {
-  const initialize = Sinon.fake.resolves(undefined)
-  const shutdown = Sinon.fake.resolves(undefined)
-  const write = Sinon.fake.resolves(undefined)
+type SinonMockedStream<T> = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [key in keyof WriteStream<T>]: Sinon.SinonSpy<any[], any>
+}
 
-  Sinon.replace(stream, 'initialize', initialize)
-  Sinon.replace(stream, 'shutdown', shutdown)
-  Sinon.replace(stream, 'write', write)
+export const mockStream = <T>(
+  stream: WriteStream<T>,
+  overrides?: Partial<SinonMockedStream<T>>
+): SinonMockedStream<T> => {
+  const mockedMethods: SinonMockedStream<T> = {
+    initialize: Sinon.fake.resolves(undefined),
+    shutdown: Sinon.fake.resolves(undefined),
+    write: Sinon.fake.resolves(undefined),
+    ...overrides
+  }
 
-  return { initialize, shutdown, write }
+  Object.entries(mockedMethods).forEach(([key, val]) => {
+    Sinon.replace(stream, key as keyof WriteStream<T>, val)
+  })
+
+  return mockedMethods
 }
