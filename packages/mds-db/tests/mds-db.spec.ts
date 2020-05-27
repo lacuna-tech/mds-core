@@ -32,9 +32,7 @@ import { Trip } from '../types'
 import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
 
 const { env } = process
-const ACTIVE_POLICY_JSON = clone(POLICY_JSON)
-ACTIVE_POLICY_JSON.publish_date = yesterday()
-ACTIVE_POLICY_JSON.start_date = yesterday()
+const ACTIVE_POLICY_JSON = { ...POLICY_JSON, publish_date: yesterday(), start_date: yesterday() }
 
 const pg_info: PGInfo = {
   database: env.PG_NAME,
@@ -323,6 +321,10 @@ if (pg_info.database) {
         assert.deepEqual(unpublishedPolicies.length, 2)
         const publishedPolicies = await MDSDBPostgres.readPolicies({ get_published: true, get_unpublished: null })
         assert.deepEqual(publishedPolicies.length, 1)
+      })
+
+      it('throws a ConflictError when writing a policy that already exists', async () => {
+        await MDSDBPostgres.writePolicy(ACTIVE_POLICY_JSON).should.be.rejectedWith(ConflictError)
       })
 
       it('can retrieve Policies that were active at a particular date', async () => {

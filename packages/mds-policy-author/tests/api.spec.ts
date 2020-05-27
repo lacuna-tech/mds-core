@@ -393,6 +393,15 @@ describe('Tests app', () => {
         })
     })
 
+    it('cannot publish a policy if the start_date would precede the publish_date', async () => {
+      await db.writePolicy(POLICY2_JSON)
+      const result = await request
+        .post(`/policies/${POLICY2_JSON.policy_id}/publish`)
+        .set('Authorization', POLICIES_PUBLISH_SCOPE)
+        .expect(409)
+      test.value(result.body.error.reason, 'Policies cannot be published after their start_date')
+    })
+
     it('cannot GET policy metadata (no entries exist)', done => {
       request
         .get(`/policies/meta`)
