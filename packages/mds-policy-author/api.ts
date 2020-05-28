@@ -101,7 +101,7 @@ function api(app: express.Express): express.Express {
             return res.status(409).send({ error })
           }
           default: {
-            return res.status(500).send({ error })
+            return next(new ServerError(error))
           }
         }
       }
