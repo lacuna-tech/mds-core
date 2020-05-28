@@ -86,7 +86,6 @@ function api(app: express.Express): express.Express {
         return res.status(200).send({ version: res.locals.version, data: { policy } })
       } catch (error) {
         logger.error('failed to publish policy', error.stack)
-        logger.error('typeof', error.constructor.name)
         switch (error.constructor.name) {
           case 'AlreadyPublishedError': {
             return res.status(409).send({ error })
