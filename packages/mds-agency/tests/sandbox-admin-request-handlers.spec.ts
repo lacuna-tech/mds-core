@@ -3,6 +3,7 @@ import assert from 'assert'
 import { uuid } from '@mds-core/mds-utils'
 import cache from '@mds-core/mds-agency-cache'
 import db from '@mds-core/mds-db'
+import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { AgencyApiRequest, AgencyApiResponse } from '../types'
 import { getCacheInfo, wipeDevice, refreshCache } from '../sandbox-admin-request-handlers'
 import * as utils from '../utils'
@@ -54,7 +55,7 @@ describe('Sandbox admin request handlers', () => {
           params: { device_id },
           query: { cached: false },
           get: Sinon.fake.returns('foo') as any
-        } as unknown) as AgencyApiRequest<{ device_id: string }>,
+        } as unknown) as AgencyApiRequest & ApiRequestParams<'device_id'>,
         res
       )
       assert.equal(statusHandler.calledWith(500), true)
@@ -77,7 +78,7 @@ describe('Sandbox admin request handlers', () => {
           params: { device_id },
           query: { cached: false },
           get: Sinon.fake.returns('foo') as any
-        } as unknown) as AgencyApiRequest<{ device_id: string }>,
+        } as unknown) as AgencyApiRequest & ApiRequestParams<'device_id'>,
         res
       )
       assert.equal(statusHandler.calledWith(200), true)
@@ -102,7 +103,7 @@ describe('Sandbox admin request handlers', () => {
           params: { device_id },
           query: { cached: false },
           get: Sinon.fake.returns('foo') as any
-        } as unknown) as AgencyApiRequest<{ device_id: string }>,
+        } as unknown) as AgencyApiRequest & ApiRequestParams<'device_id'>,
         res
       )
       assert.equal(statusHandler.calledWith(200), true)
@@ -126,7 +127,7 @@ describe('Sandbox admin request handlers', () => {
           params: { device_id },
           query: { cached: false },
           get: Sinon.fake.returns('foo') as any
-        } as unknown) as AgencyApiRequest<{ device_id: string }>,
+        } as unknown) as AgencyApiRequest & ApiRequestParams<'device_id'>,
         res
       )
       assert.equal(statusHandler.calledWith(500), true)

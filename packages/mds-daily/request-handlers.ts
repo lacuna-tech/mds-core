@@ -11,6 +11,7 @@ import {
   TripsStats,
   Device
 } from '@mds-core/mds-types'
+import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { DailyApiRequest, DailyApiResponse, ProviderInfo } from './types'
 import {
   getTimeSinceLastEvent,
@@ -38,7 +39,7 @@ const SERVER_ERROR = {
 
 type Item = Pick<Device, 'provider_id' | 'device_id'>
 
-export async function getRawTripData(req: DailyApiRequest, res: DailyApiResponse) {
+export async function getRawTripData(req: DailyApiRequest & ApiRequestParams<'trip_id'>, res: DailyApiResponse) {
   try {
     const start = now()
     const { trip_id } = req.params

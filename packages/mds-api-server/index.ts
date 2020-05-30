@@ -12,27 +12,41 @@ import {
   UserEmailClaim,
   JurisdictionsClaim
 } from '@mds-core/mds-api-authorizer'
-import { Params, ParamsDictionary } from 'express-serve-static-core'
 
-export type ApiRequest<P extends Params = ParamsDictionary> = express.Request<P>
+export type ApiRequest<B = {}> = express.Request<{}, unknown, B, {}>
 
-export type ApiQuery<Q1 extends string, Q2 extends string[] = never> = {
-  query: Partial<
-    {
-      [P in Q1]: string
-    }
-  > &
-    Partial<
-      {
-        [P in Q2[number]]: string | string[]
-      }
-    > & { [x: string]: never }
+/**
+ * Type of request route/path parameters (req.params)
+ * R: Required route parameter(s)
+ * O: Optional route parameter(s)
+ */
+export type ApiRequestParams<R extends string, O extends string = never> = {
+  params: { [P in R]: string } & Partial<{ [P in O]: string }>
 }
 
-export interface ApiResponse<L = unknown, B = unknown>
-  extends express.Response<
+/**
+ * Type of request query parameters (res.query)
+ * S: (Single) Query parameter expected to appear at most once
+ * M: (Multiple) Query parameter that can appear 0 or more times
+ */
+export type ApiRequestQuery<S extends string, M extends string[] = never> = {
+  query: Partial<{ [P in Exclude<S, M[number]>]: string }> & Partial<{ [P in M[number]]: string | string[] }>
+}
+
+/**
+ * B: Type of response body (res.send)
+ */
+export type ApiResponse<B = {}> = Omit<
+  express.Response<
     B | { error: unknown; error_description?: string; error_details?: string[] } | { errors: unknown[] }
-  > {
+  >,
+  'locals'
+> & { locals: {} }
+
+/**
+ * L: Type of response locals (res.locals)
+ */
+export type ApiResponseLocals<L> = {
   locals: L
 }
 
@@ -43,10 +57,8 @@ export type ApiClaims<AccessTokenScope extends string> = {
 
 export type ApiVersion<TVersion extends string> = { version: TVersion }
 
-export type ApiVersionedResponse<TVersion extends string, L = unknown, TBody = unknown> = ApiResponse<
-  L & ApiVersion<TVersion>,
-  TBody & ApiVersion<TVersion>
->
+export type ApiVersionedResponse<TVersion extends string, B = {}> = ApiResponse<B & ApiVersion<TVersion>> &
+  ApiResponseLocals<ApiVersion<TVersion>>
 
 const about = () => {
   const {
@@ -71,7 +83,7 @@ const about = () => {
 
 export const RequestLoggingMiddleware = <AccessTokenScope extends string>(): express.RequestHandler =>
   morgan(
-    (tokens, req: ApiRequest, res: ApiResponse<ApiClaims<AccessTokenScope>>) =>
+    (tokens, req: ApiRequest, res: ApiResponse & ApiResponseLocals<ApiClaims<AccessTokenScope>>) =>
       [
         ...(res.locals.claims?.provider_id ? [res.locals.claims.provider_id] : []),
         tokens.method(req, res),
@@ -107,7 +119,7 @@ export const AuthorizerMiddleware = ({
   authorizer = AuthorizationHeaderApiAuthorizer
 }: Partial<AuthorizerMiddlewareOptions> = {}) => <AccessTokenScope extends string>(
   req: ApiRequest,
-  res: ApiResponse<ApiClaims<AccessTokenScope>>,
+  res: ApiResponse & ApiResponseLocals<ApiClaims<AccessTokenScope>>,
   next: express.NextFunction
 ) => {
   const claims = authorizer(req)
@@ -300,7 +312,11 @@ export const checkAccess = <AccessTokenScope extends string = never>(
     ? async (req: ApiRequest, res: ApiResponse<ApiClaims<AccessTokenScope>>, next: express.NextFunction) => {
         next() // Bypass
       }
-    : async (req: ApiRequest, res: ApiResponse<ApiClaims<AccessTokenScope>>, next: express.NextFunction) => {
+    : async (
+        req: ApiRequest,
+        res: ApiResponse & ApiResponseLocals<ApiClaims<AccessTokenScope>>,
+        next: express.NextFunction
+      ) => {
         const { scopes, claims } = res.locals
         const valid = await validator(scopes, claims)
         return valid

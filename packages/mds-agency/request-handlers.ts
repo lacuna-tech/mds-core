@@ -15,10 +15,12 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_EVENT,
   VEHICLE_REASON,
-  UUID
+  UUID,
+  Stop
 } from '@mds-core/mds-types'
 import urls from 'url'
 import { parseRequest } from '@mds-core/mds-api-helpers'
+import { ApiRequestParams } from '@mds-core/mds-api-server'
 import {
   AgencyApiRequest,
   AgencyRegisterVehicleResponse,
@@ -47,7 +49,7 @@ import {
 stream.initialize()
 const agencyServerError = { error: 'server_error', error_description: 'Unknown server error' }
 
-export const registerVehicle = async (req: AgencyApiRequest, res: AgencyRegisterVehicleResponse) => {
+export const registerVehicle = async (req: AgencyApiRequest<Device>, res: AgencyRegisterVehicleResponse) => {
   const { body } = req
   const recorded = now()
 
@@ -112,7 +114,10 @@ export const registerVehicle = async (req: AgencyApiRequest, res: AgencyRegister
   }
 }
 
-export const getVehicleById = async (req: AgencyApiRequest, res: AgencyGetVehicleByIdResponse) => {
+export const getVehicleById = async (
+  req: AgencyApiRequest & ApiRequestParams<'device_id'>,
+  res: AgencyGetVehicleByIdResponse
+) => {
   const { device_id } = req.params
 
   const { provider_id } = res.locals.scopes.includes('vehicles:read')
@@ -176,7 +181,10 @@ export async function updateVehicleFail(
   }
 }
 
-export const updateVehicle = async (req: AgencyApiRequest, res: AgencyUpdateVehicleResponse) => {
+export const updateVehicle = async (
+  req: AgencyApiRequest<Device> & ApiRequestParams<'device_id'>,
+  res: AgencyUpdateVehicleResponse
+) => {
   const { device_id } = req.params
 
   const { vehicle_id } = req.body
@@ -206,7 +214,10 @@ export const updateVehicle = async (req: AgencyApiRequest, res: AgencyUpdateVehi
   }
 }
 
-export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencySubmitVehicleEventResponse) => {
+export const submitVehicleEvent = async (
+  req: AgencyApiRequest<VehicleEvent> & ApiRequestParams<'device_id'>,
+  res: AgencySubmitVehicleEventResponse
+) => {
   const { device_id } = req.params
 
   const { provider_id } = res.locals
@@ -218,7 +229,7 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencySubmi
     device_id: req.params.device_id,
     provider_id: res.locals.provider_id,
     event_type: lower(req.body.event_type) as VEHICLE_EVENT,
-    event_type_reason: lower(req.body.event_type_reason) as VEHICLE_REASON,
+    event_type_reason: req.body.event_type_reason ? (lower(req.body.event_type_reason) as VEHICLE_REASON) : undefined,
     telemetry: req.body.telemetry ? { ...req.body.telemetry, provider_id: res.locals.provider_id } : null,
     timestamp: req.body.timestamp,
     trip_id: req.body.trip_id,
@@ -324,7 +335,10 @@ export const submitVehicleEvent = async (req: AgencyApiRequest, res: AgencySubmi
   }
 }
 
-export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencySubmitVehicleTelemetryResponse) => {
+export const submitVehicleTelemetry = async (
+  req: AgencyApiRequest<{ data: Telemetry[] }>,
+  res: AgencySubmitVehicleTelemetryResponse
+) => {
   const start = Date.now()
 
   const { data } = req.body
@@ -436,7 +450,7 @@ export const submitVehicleTelemetry = async (req: AgencyApiRequest, res: AgencyS
   }
 }
 
-export const registerStop = async (req: AgencyApiRequest, res: AgencyRegisterStopResponse) => {
+export const registerStop = async (req: AgencyApiRequest<Stop>, res: AgencyRegisterStopResponse) => {
   const stop = req.body
 
   try {
@@ -452,7 +466,7 @@ export const registerStop = async (req: AgencyApiRequest, res: AgencyRegisterSto
   }
 }
 
-export const readStop = async (req: AgencyApiRequest, res: AgencyReadStopResponse) => {
+export const readStop = async (req: AgencyApiRequest & ApiRequestParams<'stop_id'>, res: AgencyReadStopResponse) => {
   const { stop_id } = req.params
   try {
     const recorded_stop = await db.readStop(stop_id)

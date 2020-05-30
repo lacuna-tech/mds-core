@@ -14,14 +14,14 @@
     limitations under the License.
  */
 
-import { ApiRequest, ApiVersionedResponse, ApiClaims } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiVersionedResponse, ApiClaims, ApiResponseLocals } from '@mds-core/mds-api-server'
 import { GeographyMetadata, Geography, UUID } from '@mds-core/mds-types'
 
 export const GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSIONS = ['0.4.1'] as const
 export type GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSION = typeof GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSIONS[number]
 export const [GEOGRAPHY_AUTHOR_API_DEFAULT_VERSION] = GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSIONS
 
-export type GeographyAuthorApiRequest = ApiRequest
+export type GeographyAuthorApiRequest<B = {}> = ApiRequest<B>
 
 export type GeographyAuthorApiAccessTokenScopes =
   | 'geographies:read'
@@ -30,11 +30,8 @@ export type GeographyAuthorApiAccessTokenScopes =
   | 'geographies:write'
   | 'geographies:publish'
 
-export type GeographyAuthorApiResponse<TBody extends {}> = ApiVersionedResponse<
-  GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSION,
-  ApiClaims<GeographyAuthorApiAccessTokenScopes>,
-  TBody
->
+export type GeographyAuthorApiResponse<B = {}> = ApiVersionedResponse<GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSION, B> &
+  ApiResponseLocals<ApiClaims<GeographyAuthorApiAccessTokenScopes>>
 
 export type GetGeographyMetadatumResponse = GeographyAuthorApiResponse<{
   data: { geography_metadata: GeographyMetadata }

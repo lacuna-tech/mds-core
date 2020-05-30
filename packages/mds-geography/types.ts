@@ -14,25 +14,22 @@
     limitations under the License.
  */
 
-import { ApiRequest, ApiVersionedResponse, ApiClaims } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiVersionedResponse, ApiClaims, ApiResponseLocals } from '@mds-core/mds-api-server'
 import { Geography, GeographySummary } from '@mds-core/mds-types'
 
 export const GEOGRAPHY_API_SUPPORTED_VERSIONS = ['0.4.1'] as const
 export type GEOGRAPHY_API_SUPPORTED_VERSION = typeof GEOGRAPHY_API_SUPPORTED_VERSIONS[number]
 export const [GEOGRAPHY_API_DEFAULT_VERSION] = GEOGRAPHY_API_SUPPORTED_VERSIONS
 
-export type GeographyApiRequest = ApiRequest
+export type GeographyApiRequest<B = {}> = ApiRequest<B>
 
 export type GeographyApiAccessTokenScopes =
   | 'geographies:read'
   | 'geographies:read:unpublished'
   | 'geographies:read:published'
 
-export type GeographyApiResponse<TBody extends {}> = ApiVersionedResponse<
-  GEOGRAPHY_API_SUPPORTED_VERSION,
-  ApiClaims<GeographyApiAccessTokenScopes>,
-  TBody
->
+export type GeographyApiResponse<B = {}> = ApiVersionedResponse<GEOGRAPHY_API_SUPPORTED_VERSION, B> &
+  ApiResponseLocals<ApiClaims<GeographyApiAccessTokenScopes>>
 
 export type GetGeographyResponse = GeographyApiResponse<{
   data: { geographies: Geography[] | GeographySummary[] } | { geography: Geography | GeographySummary }
