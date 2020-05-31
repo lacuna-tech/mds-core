@@ -55,10 +55,10 @@ export type ApiClaims<AccessTokenScope extends string> = {
   scopes: AccessTokenScope[]
 }
 
-export type ApiVersion<TVersion extends string> = { version: TVersion }
+export type ApiVersion<V extends string> = { version: V }
 
-export type ApiVersionedResponse<TVersion extends string, B = {}> = ApiResponse<B & ApiVersion<TVersion>> &
-  ApiResponseLocals<ApiVersion<TVersion>>
+export type ApiVersionedResponse<V extends string, B = {}> = ApiResponse<B & ApiVersion<V>> &
+  ApiResponseLocals<ApiVersion<V>>
 
 const about = () => {
   const {
@@ -133,10 +133,10 @@ const MinorVersion = (version: string) => {
   return `${major}.${minor}`
 }
 
-export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, versions: readonly TVersion[]) => ({
-  withDefaultVersion: (preferred: TVersion) => async (
+export const ApiVersionMiddleware = <V extends string>(mimeType: string, versions: readonly V[]) => ({
+  withDefaultVersion: (preferred: V) => async (
     req: ApiRequest,
-    res: ApiVersionedResponse<TVersion>,
+    res: ApiVersionedResponse<V>,
     next: express.NextFunction
   ) => {
     // Parse the Accept header into a list of values separated by commas
@@ -172,7 +172,7 @@ export const ApiVersionMiddleware = <TVersion extends string>(mimeType: string, 
     const supported = accepted
       .map(info => ({
         ...info,
-        latest: versions.reduce<TVersion | undefined>((latest, version) => {
+        latest: versions.reduce<V | undefined>((latest, version) => {
           if (MinorVersion(info.version) === MinorVersion(version)) {
             if (latest) {
               return latest > version ? latest : version
