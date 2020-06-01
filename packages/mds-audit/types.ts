@@ -95,12 +95,9 @@ export type AuditApiGetTripsRequest = AuditApiRequest &
 
 export type AuditApiGetTripRequest = AuditApiTripRequest & ApiRequestQuery<'event_viewport_adjustment'>
 
-export interface AuditApiGetVehicleRequest extends AuditApiRequest {
-  params: {
-    provider_id: UUID
-    vin: string
-  }
-}
+export type AuditApiGetVehicleRequest = AuditApiRequest &
+  ApiRequestParams<'provider_id' | 'vin'> &
+  ApiRequestQuery<'strict' | 'bbox' | 'provider_id'>
 
 export type AuditApiAccessTokenScopes = 'audits:write' | 'audits:read' | 'audits:delete' | 'audits:vehicles:read'
 
