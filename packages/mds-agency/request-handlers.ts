@@ -23,6 +23,7 @@ import {
   AgencyApiRequest,
   AgencyApiRegisterVehicleResponse,
   AgencyAipGetVehicleByIdResponse,
+  AgencyApiGetVehiclesByProviderRequest,
   AgencyApiGetVehiclesByProviderResponse,
   AgencyApiUpdateVehicleResponse,
   AgencyApiSubmitVehicleEventResponse,
@@ -136,7 +137,10 @@ export const getVehicleById = async (req: AgencyApiGetVehicleByIdRequest, res: A
   res.status(200).send({ ...compositeData })
 }
 
-export const getVehiclesByProvider = async (req: AgencyApiRequest, res: AgencyApiGetVehiclesByProviderResponse) => {
+export const getVehiclesByProvider = async (
+  req: AgencyApiGetVehiclesByProviderRequest,
+  res: AgencyApiGetVehiclesByProviderResponse
+) => {
   const PAGE_SIZE = 1000
 
   const { skip = 0, take = PAGE_SIZE } = parseRequest(req, { parser: Number }).query('skip', 'take')

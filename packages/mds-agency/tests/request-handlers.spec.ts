@@ -10,7 +10,9 @@ import {
   AgencyApiResponse,
   AgencyApiGetVehiclesByProviderResponse,
   AgencyApiGetVehicleByIdRequest,
-  AgencyApiUpdateVehicleRequest
+  AgencyApiUpdateVehicleRequest,
+  AgencyApiRegisterVehicleRequest,
+  AgencyApiGetVehiclesByProviderRequest
 } from '../types'
 import {
   registerVehicle,
@@ -57,7 +59,7 @@ describe('Agency API request handlers', () => {
       } as any)
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
-      await registerVehicle({ body } as AgencyApiRequest<Device>, res)
+      await registerVehicle({ body } as AgencyApiRegisterVehicleRequest, res)
       assert.equal(statusHandler.calledWith(400), true)
       assert.equal(sendHandler.called, true)
       Sinon.restore()
@@ -74,7 +76,7 @@ describe('Agency API request handlers', () => {
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
       Sinon.replace(db, 'writeDevice', Sinon.fake.rejects('fake-rejects-db'))
-      await registerVehicle({ body } as AgencyApiRequest<Device>, res)
+      await registerVehicle({ body } as AgencyApiRegisterVehicleRequest, res)
       assert.equal(statusHandler.calledWith(500), true)
       assert.equal(sendHandler.called, true)
       Sinon.restore()
@@ -91,7 +93,7 @@ describe('Agency API request handlers', () => {
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
       Sinon.replace(db, 'writeDevice', Sinon.fake.rejects('fake-rejects-other'))
-      await registerVehicle({ body } as AgencyApiRequest<Device>, res)
+      await registerVehicle({ body } as AgencyApiRegisterVehicleRequest, res)
       assert.equal(statusHandler.calledWith(500), true)
       assert.equal(sendHandler.called, true)
       Sinon.restore()
@@ -108,7 +110,7 @@ describe('Agency API request handlers', () => {
       res.status = statusHandler
       res.locals = getLocals(provider_id) as any
       Sinon.replace(db, 'writeDevice', Sinon.fake.rejects('fake-rejects-duplicate'))
-      await registerVehicle({ body } as AgencyApiRequest<Device>, res)
+      await registerVehicle({ body } as AgencyApiRegisterVehicleRequest, res)
       assert.equal(statusHandler.calledWith(409), true)
       assert.equal(sendHandler.called, true)
       Sinon.restore()
@@ -128,7 +130,7 @@ describe('Agency API request handlers', () => {
       Sinon.replace(cache, 'writeDevice', Sinon.fake.resolves('it-worked'))
       Sinon.replace(stream, 'writeDevice', Sinon.fake.resolves('it-worked'))
       Sinon.replace(utils, 'writeRegisterEvent', Sinon.fake.resolves('it-worked'))
-      await registerVehicle({ body } as AgencyApiRequest<Device>, res)
+      await registerVehicle({ body } as AgencyApiRegisterVehicleRequest, res)
       assert.equal(statusHandler.calledWith(201), true)
       assert.equal(sendHandler.called, true)
       Sinon.restore()
@@ -148,7 +150,7 @@ describe('Agency API request handlers', () => {
       Sinon.replace(cache, 'writeDevice', Sinon.fake.rejects('it-broke'))
       Sinon.replace(stream, 'writeDevice', Sinon.fake.resolves('it-worked'))
       Sinon.replace(utils, 'writeRegisterEvent', Sinon.fake.resolves('it-worked'))
-      await registerVehicle({ body } as AgencyApiRequest<Device>, res)
+      await registerVehicle({ body } as AgencyApiRegisterVehicleRequest, res)
       assert.equal(statusHandler.calledWith(201), true)
       assert.equal(sendHandler.called, true)
       Sinon.restore()
@@ -231,7 +233,7 @@ describe('Agency API request handlers', () => {
           params: { device_id },
           query: { cached: false },
           get: Sinon.fake.returns('foo') as any
-        } as unknown) as AgencyApiRequest,
+        } as unknown) as AgencyApiGetVehiclesByProviderRequest,
         res
       )
       assert.equal(statusHandler.calledWith(500), true)
@@ -257,7 +259,7 @@ describe('Agency API request handlers', () => {
           params: { device_id },
           query: { cached: false },
           get: Sinon.fake.returns('foo') as any
-        } as unknown) as AgencyApiRequest,
+        } as unknown) as AgencyApiGetVehiclesByProviderRequest,
         res
       )
       assert.equal(statusHandler.calledWith(200), true)

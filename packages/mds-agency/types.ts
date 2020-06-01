@@ -10,6 +10,7 @@ export type AgencyApiRequest<B = {}> = ApiRequest<B>
 
 export type AgencyApiRegisterVehicleRequest = AgencyApiRequest<Device>
 export type AgencyApiGetVehicleByIdRequest = AgencyApiRequest & ApiRequestParams<'device_id'>
+export type AgencyApiGetVehiclesByProviderRequest = AgencyApiRequest
 export type AgencyApiUpdateVehicleRequest = AgencyApiRequest<Device> & ApiRequestParams<'device_id'>
 export type AgencyApiSubmitVehicleEventRequest = AgencyApiRequest<VehicleEvent> & ApiRequestParams<'device_id'>
 export type AgencyApiSubmitVehicleTelemetryRequest = AgencyApiRequest<{ data: Telemetry[] }>
