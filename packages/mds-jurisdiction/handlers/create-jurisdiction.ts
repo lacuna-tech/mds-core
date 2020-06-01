@@ -22,16 +22,22 @@ import {
 import { isServiceError } from '@mds-core/mds-service-helpers'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../@types'
 
+export type JurisdictionApiCreateJurisdictionRequest = JurisdictionApiRequest<
+  CreateJurisdictionDomainModel | CreateJurisdictionDomainModel[]
+>
+
+export type JurisdictionApiCreateJurisdictionResponse = JurisdictionApiResponse<
+  | {
+      jurisdiction: JurisdictionDomainModel
+    }
+  | {
+      jurisdictions: JurisdictionDomainModel[]
+    }
+>
+
 export const CreateJurisdictionHandler = async (
-  req: JurisdictionApiRequest<CreateJurisdictionDomainModel | CreateJurisdictionDomainModel[]>,
-  res: JurisdictionApiResponse<
-    | {
-        jurisdiction: JurisdictionDomainModel
-      }
-    | {
-        jurisdictions: JurisdictionDomainModel[]
-      }
-  >
+  req: JurisdictionApiCreateJurisdictionRequest,
+  res: JurisdictionApiCreateJurisdictionResponse
 ) => {
   try {
     const jurisdictions = await JurisdictionServiceClient.createJurisdictions(

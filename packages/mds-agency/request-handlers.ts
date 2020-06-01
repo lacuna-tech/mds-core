@@ -15,23 +15,28 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_EVENT,
   VEHICLE_REASON,
-  UUID,
-  Stop
+  UUID
 } from '@mds-core/mds-types'
 import urls from 'url'
 import { parseRequest } from '@mds-core/mds-api-helpers'
-import { ApiRequestParams } from '@mds-core/mds-api-server'
 import {
   AgencyApiRequest,
-  AgencyRegisterVehicleResponse,
-  AgencyGetVehicleByIdResponse,
-  AgencyGetVehiclesByProviderResponse,
-  AgencyUpdateVehicleResponse,
-  AgencySubmitVehicleEventResponse,
-  AgencySubmitVehicleTelemetryResponse,
-  AgencyRegisterStopResponse,
-  AgencyReadStopsResponse,
-  AgencyReadStopResponse
+  AgencyApiRegisterVehicleResponse,
+  AgencyAipGetVehicleByIdResponse,
+  AgencyApiGetVehiclesByProviderResponse,
+  AgencyApiUpdateVehicleResponse,
+  AgencyApiSubmitVehicleEventResponse,
+  AgencyApiSubmitVehicleTelemetryResponse,
+  AgencyApiRegisterStopResponse,
+  AgencyApiReadStopsResponse,
+  AgencyApiReadStopResponse,
+  AgencyApiGetVehicleByIdRequest,
+  AgencyApiUpdateVehicleRequest,
+  AgencyApiSubmitVehicleEventRequest,
+  AgencyApiSubmitVehicleTelemetryRequest,
+  AgencyApiRegisterStopRequest,
+  AgencyApiReadStopRequest,
+  AgencyApiRegisterVehicleRequest
 } from './types'
 import {
   badDevice,
@@ -49,7 +54,7 @@ import {
 stream.initialize()
 const agencyServerError = { error: 'server_error', error_description: 'Unknown server error' }
 
-export const registerVehicle = async (req: AgencyApiRequest<Device>, res: AgencyRegisterVehicleResponse) => {
+export const registerVehicle = async (req: AgencyApiRegisterVehicleRequest, res: AgencyApiRegisterVehicleResponse) => {
   const { body } = req
   const recorded = now()
 
@@ -114,10 +119,7 @@ export const registerVehicle = async (req: AgencyApiRequest<Device>, res: Agency
   }
 }
 
-export const getVehicleById = async (
-  req: AgencyApiRequest & ApiRequestParams<'device_id'>,
-  res: AgencyGetVehicleByIdResponse
-) => {
+export const getVehicleById = async (req: AgencyApiGetVehicleByIdRequest, res: AgencyAipGetVehicleByIdResponse) => {
   const { device_id } = req.params
 
   const { provider_id } = res.locals.scopes.includes('vehicles:read')
@@ -134,7 +136,7 @@ export const getVehicleById = async (
   res.status(200).send({ ...compositeData })
 }
 
-export const getVehiclesByProvider = async (req: AgencyApiRequest, res: AgencyGetVehiclesByProviderResponse) => {
+export const getVehiclesByProvider = async (req: AgencyApiRequest, res: AgencyApiGetVehiclesByProviderResponse) => {
   const PAGE_SIZE = 1000
 
   const { skip = 0, take = PAGE_SIZE } = parseRequest(req, { parser: Number }).query('skip', 'take')
@@ -161,7 +163,7 @@ export const getVehiclesByProvider = async (req: AgencyApiRequest, res: AgencyGe
 
 export async function updateVehicleFail(
   req: AgencyApiRequest,
-  res: AgencyUpdateVehicleResponse,
+  res: AgencyApiUpdateVehicleResponse,
   provider_id: UUID,
   device_id: UUID,
   err: Error | string
@@ -181,10 +183,7 @@ export async function updateVehicleFail(
   }
 }
 
-export const updateVehicle = async (
-  req: AgencyApiRequest<Device> & ApiRequestParams<'device_id'>,
-  res: AgencyUpdateVehicleResponse
-) => {
+export const updateVehicle = async (req: AgencyApiUpdateVehicleRequest, res: AgencyApiUpdateVehicleResponse) => {
   const { device_id } = req.params
 
   const { vehicle_id } = req.body
@@ -215,8 +214,8 @@ export const updateVehicle = async (
 }
 
 export const submitVehicleEvent = async (
-  req: AgencyApiRequest<VehicleEvent> & ApiRequestParams<'device_id'>,
-  res: AgencySubmitVehicleEventResponse
+  req: AgencyApiSubmitVehicleEventRequest,
+  res: AgencyApiSubmitVehicleEventResponse
 ) => {
   const { device_id } = req.params
 
@@ -336,8 +335,8 @@ export const submitVehicleEvent = async (
 }
 
 export const submitVehicleTelemetry = async (
-  req: AgencyApiRequest<{ data: Telemetry[] }>,
-  res: AgencySubmitVehicleTelemetryResponse
+  req: AgencyApiSubmitVehicleTelemetryRequest,
+  res: AgencyApiSubmitVehicleTelemetryResponse
 ) => {
   const start = Date.now()
 
@@ -450,7 +449,7 @@ export const submitVehicleTelemetry = async (
   }
 }
 
-export const registerStop = async (req: AgencyApiRequest<Stop>, res: AgencyRegisterStopResponse) => {
+export const registerStop = async (req: AgencyApiRegisterStopRequest, res: AgencyApiRegisterStopResponse) => {
   const stop = req.body
 
   try {
@@ -466,7 +465,7 @@ export const registerStop = async (req: AgencyApiRequest<Stop>, res: AgencyRegis
   }
 }
 
-export const readStop = async (req: AgencyApiRequest & ApiRequestParams<'stop_id'>, res: AgencyReadStopResponse) => {
+export const readStop = async (req: AgencyApiReadStopRequest, res: AgencyApiReadStopResponse) => {
   const { stop_id } = req.params
   try {
     const recorded_stop = await db.readStop(stop_id)
@@ -480,7 +479,7 @@ export const readStop = async (req: AgencyApiRequest & ApiRequestParams<'stop_id
   }
 }
 
-export const readStops = async (req: AgencyApiRequest, res: AgencyReadStopsResponse) => {
+export const readStops = async (req: AgencyApiRequest, res: AgencyApiReadStopsResponse) => {
   try {
     const stops = await db.readStops()
 

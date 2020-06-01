@@ -22,9 +22,15 @@ import { ApiRequestQuery, ApiRequestParams } from '@mds-core/mds-api-server'
 import { JurisdictionApiResponse, JurisdictionApiRequest } from '../@types'
 import { HasJurisdictionClaim } from './utils'
 
+export type JurisdictionApiGetJurisdictionRequest = JurisdictionApiRequest &
+  ApiRequestParams<'jurisdiction_id'> &
+  ApiRequestQuery<'effective'>
+
+export type JurisdictionApiGetJurisdictionResponse = JurisdictionApiResponse<{ jurisdiction: JurisdictionDomainModel }>
+
 export const GetJurisdictionHandler = async (
-  req: JurisdictionApiRequest & ApiRequestParams<'jurisdiction_id'> & ApiRequestQuery<'effective'>,
-  res: JurisdictionApiResponse<{ jurisdiction: JurisdictionDomainModel }>
+  req: JurisdictionApiGetJurisdictionRequest,
+  res: JurisdictionApiGetJurisdictionResponse
 ) => {
   try {
     const { jurisdiction_id } = req.params

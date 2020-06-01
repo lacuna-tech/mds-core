@@ -14,7 +14,14 @@
     limitations under the License.
  */
 
-import { ApiRequest, ApiVersionedResponse, ApiClaims, ApiResponseLocals } from '@mds-core/mds-api-server'
+import {
+  ApiRequest,
+  ApiVersionedResponse,
+  ApiClaims,
+  ApiResponseLocals,
+  ApiRequestQuery,
+  ApiRequestParams
+} from '@mds-core/mds-api-server'
 import { GeographyMetadata, Geography, UUID } from '@mds-core/mds-types'
 
 export const GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSIONS = ['0.4.1'] as const
@@ -30,23 +37,39 @@ export type GeographyAuthorApiAccessTokenScopes =
   | 'geographies:write'
   | 'geographies:publish'
 
+export type GeographyAuthorApiGetGeographyMetadataRequest = GeographyAuthorApiRequest &
+  ApiRequestQuery<'get_published' | 'get_unpublished'>
+
+export type GeographyAuthorApiPostGeographyRequest = GeographyAuthorApiRequest<Geography>
+
+export type GeographyAuthorApiPutGeographyRequest = GeographyAuthorApiRequest<Geography>
+
+export type GeographyAuthorApiDeleteGeographyRequest = GeographyAuthorApiRequest & ApiRequestParams<'geography_id'>
+
+export type GeographyAuthorApiGetGeographyMetadatumRequest = GeographyAuthorApiRequest &
+  ApiRequestParams<'geography_id'>
+
+export type GeographyAuthorApiPutGeographyMetadataRequest = GeographyAuthorApiRequest<GeographyMetadata>
+
+export type GeographyAuthorApiPublishGeographyRequest = GeographyAuthorApiRequest & ApiRequestParams<'geography_id'>
+
 export type GeographyAuthorApiResponse<B = {}> = ApiVersionedResponse<GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSION, B> &
   ApiResponseLocals<ApiClaims<GeographyAuthorApiAccessTokenScopes>>
 
-export type GetGeographyMetadatumResponse = GeographyAuthorApiResponse<{
+export type GeographyAuthorApiGetGeographyMetadatumResponse = GeographyAuthorApiResponse<{
   data: { geography_metadata: GeographyMetadata }
 }>
 
-export type GetGeographyMetadataResponse = GeographyAuthorApiResponse<{
+export type GeographyAuthorApiGetGeographyMetadataResponse = GeographyAuthorApiResponse<{
   data: { geography_metadata: GeographyMetadata[] }
 }>
 
-export type PostGeographyResponse = GeographyAuthorApiResponse<{ data: { geography: Geography } }>
+export type GeographyAuthorApiPostGeographyResponse = GeographyAuthorApiResponse<{ data: { geography: Geography } }>
 
-export type PutGeographyResponse = GeographyAuthorApiResponse<{ data: { geography: Geography } }>
-export type PublishGeographyResponse = GeographyAuthorApiResponse<{ data: { geography: Geography } }>
-export type PutGeographyMetadataResponse = GeographyAuthorApiResponse<{
+export type GeographyAuthorApiPutGeographyResponse = GeographyAuthorApiResponse<{ data: { geography: Geography } }>
+export type GeographyAuthorApiPublishGeographyResponse = GeographyAuthorApiResponse<{ data: { geography: Geography } }>
+export type GeographyAuthorApiPutGeographyMetadataResponse = GeographyAuthorApiResponse<{
   data: { geography_metadata: GeographyMetadata }
 }>
 
-export type DeleteGeographyResponse = GeographyAuthorApiResponse<{ data: { geography_id: UUID } }>
+export type GeographyAuthorApiDeleteGeographyResponse = GeographyAuthorApiResponse<{ data: { geography_id: UUID } }>

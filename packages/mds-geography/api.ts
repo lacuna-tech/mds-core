@@ -4,20 +4,14 @@ import db from '@mds-core/mds-db'
 import { pathsFor, ServerError, NotFoundError, InsufficientPermissionsError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 
-import {
-  checkAccess,
-  AccessTokenScopeValidator,
-  ApiResponse,
-  ApiRequest,
-  ApiRequestParams,
-  ApiRequestQuery
-} from '@mds-core/mds-api-server'
+import { checkAccess, AccessTokenScopeValidator, ApiResponse, ApiRequest } from '@mds-core/mds-api-server'
 import { GeographyApiVersionMiddleware } from './middleware'
 import {
   GeographyApiAccessTokenScopes,
-  GeographyApiRequest,
-  GetGeographyResponse,
-  GetGeographiesResponse
+  GeographyApiGetGeographyResponse,
+  GeographyApiGetGeographiesResponse,
+  GeographyApiGetGeographyRequest,
+  GeographyApiGetGeographiesRequest
 } from './types'
 
 const checkGeographyApiAccess = (validator: AccessTokenScopeValidator<GeographyApiAccessTokenScopes>) =>
@@ -31,11 +25,7 @@ function api(app: express.Express): express.Express {
     checkGeographyApiAccess(scopes => {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
-    async (
-      req: GeographyApiRequest & ApiRequestParams<'geography_id'>,
-      res: GetGeographyResponse,
-      next: express.NextFunction
-    ) => {
+    async (req: GeographyApiGetGeographyRequest, res: GeographyApiGetGeographyResponse, next: express.NextFunction) => {
       const { geography_id } = req.params
       try {
         const geography = await db.readSingleGeography(geography_id)
@@ -64,8 +54,8 @@ function api(app: express.Express): express.Express {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (
-      req: GeographyApiRequest & ApiRequestQuery<'summary' | 'get_published' | 'get_unpublished'>,
-      res: GetGeographiesResponse,
+      req: GeographyApiGetGeographiesRequest,
+      res: GeographyApiGetGeographiesResponse,
       next: express.NextFunction
     ) => {
       const summary = req.query.summary === 'true'

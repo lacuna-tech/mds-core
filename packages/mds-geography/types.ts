@@ -14,7 +14,14 @@
     limitations under the License.
  */
 
-import { ApiRequest, ApiVersionedResponse, ApiClaims, ApiResponseLocals } from '@mds-core/mds-api-server'
+import {
+  ApiRequest,
+  ApiVersionedResponse,
+  ApiClaims,
+  ApiResponseLocals,
+  ApiRequestParams,
+  ApiRequestQuery
+} from '@mds-core/mds-api-server'
 import { Geography, GeographySummary } from '@mds-core/mds-types'
 
 export const GEOGRAPHY_API_SUPPORTED_VERSIONS = ['0.4.1'] as const
@@ -22,6 +29,11 @@ export type GEOGRAPHY_API_SUPPORTED_VERSION = typeof GEOGRAPHY_API_SUPPORTED_VER
 export const [GEOGRAPHY_API_DEFAULT_VERSION] = GEOGRAPHY_API_SUPPORTED_VERSIONS
 
 export type GeographyApiRequest<B = {}> = ApiRequest<B>
+
+export type GeographyApiGetGeographyRequest = GeographyApiRequest & ApiRequestParams<'geography_id'>
+
+export type GeographyApiGetGeographiesRequest = GeographyApiRequest &
+  ApiRequestQuery<'summary' | 'get_published' | 'get_unpublished'>
 
 export type GeographyApiAccessTokenScopes =
   | 'geographies:read'
@@ -31,10 +43,10 @@ export type GeographyApiAccessTokenScopes =
 export type GeographyApiResponse<B = {}> = ApiVersionedResponse<GEOGRAPHY_API_SUPPORTED_VERSION, B> &
   ApiResponseLocals<ApiClaims<GeographyApiAccessTokenScopes>>
 
-export type GetGeographyResponse = GeographyApiResponse<{
+export type GeographyApiGetGeographyResponse = GeographyApiResponse<{
   data: { geographies: Geography[] | GeographySummary[] } | { geography: Geography | GeographySummary }
 }>
 
-export type GetGeographiesResponse = GeographyApiResponse<{
+export type GeographyApiGetGeographiesResponse = GeographyApiResponse<{
   data: { geographies: Geography[] | GeographySummary[] }
 }>

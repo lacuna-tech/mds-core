@@ -31,26 +31,24 @@ import db from '@mds-core/mds-db'
 import { policyValidationDetails } from '@mds-core/mds-schema-validators'
 import logger from '@mds-core/mds-logger'
 
-import {
-  checkAccess,
-  AccessTokenScopeValidator,
-  ApiRequest,
-  ApiResponse,
-  ApiRequestParams,
-  ApiRequestQuery
-} from '@mds-core/mds-api-server'
-import { Policy, PolicyMetadata } from '@mds-core/mds-types'
+import { checkAccess, AccessTokenScopeValidator, ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
 import { PolicyAuthorApiVersionMiddleware } from './middleware/policy-author-api-version'
 import {
-  PolicyAuthorApiRequest,
-  PostPolicyResponse,
-  EditPolicyResponse,
-  DeletePolicyResponse,
+  PolicyAuthorApiPostPolicyResponse,
+  PolicyAuthorApiEditPolicyResponse,
+  PolicyAuthorApiDeletePolicyResponse,
   PolicyAuthorApiAccessTokenScopes,
-  PublishPolicyResponse,
-  EditPolicyMetadataResponse,
-  GetPolicyMetadatumResponse,
-  GetPolicyMetadataResponse
+  PolicyAuthorApiPublishPolicyResponse,
+  PolicyAuthorApiEditPolicyMetadataResponse,
+  PolicyAuthorApiGetPolicyMetadatumResponse,
+  PolicyAuthorApiGetPolicyMetadataResponse,
+  PolicyAuthorApiPostPolicyRequest,
+  PolicyAuthorApiPublishPolicyRequest,
+  PolicyAuthorApiEditPolicyRequest,
+  PolicyAuthorApiDeletePolicyRequest,
+  PolicyAuthorApiGetPolicyMetadataRequest,
+  PolicyAuthorApiGetPolicyMetadatumRequest,
+  PolicyAuthorApiEditPolicyMetadataRequest
 } from './types'
 
 const checkPolicyAuthorApiAccess = (validator: AccessTokenScopeValidator<PolicyAuthorApiAccessTokenScopes>) =>
@@ -62,7 +60,11 @@ function api(app: express.Express): express.Express {
   app.post(
     pathsFor('/policies'),
     checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:write')),
-    async (req: PolicyAuthorApiRequest<Policy>, res: PostPolicyResponse, next: express.NextFunction) => {
+    async (
+      req: PolicyAuthorApiPostPolicyRequest,
+      res: PolicyAuthorApiPostPolicyResponse,
+      next: express.NextFunction
+    ) => {
       const policy = { policy_id: uuid(), ...req.body }
 
       const details = policyValidationDetails(policy)
@@ -88,8 +90,8 @@ function api(app: express.Express): express.Express {
     pathsFor('/policies/:policy_id/publish'),
     checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:publish')),
     async (
-      req: PolicyAuthorApiRequest & ApiRequestParams<'policy_id'>,
-      res: PublishPolicyResponse,
+      req: PolicyAuthorApiPublishPolicyRequest,
+      res: PolicyAuthorApiPublishPolicyResponse,
       next: express.NextFunction
     ) => {
       const { policy_id } = req.params
@@ -122,7 +124,11 @@ function api(app: express.Express): express.Express {
   app.put(
     pathsFor('/policies/:policy_id'),
     checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:write')),
-    async (req: PolicyAuthorApiRequest<Policy>, res: EditPolicyResponse, next: express.NextFunction) => {
+    async (
+      req: PolicyAuthorApiEditPolicyRequest,
+      res: PolicyAuthorApiEditPolicyResponse,
+      next: express.NextFunction
+    ) => {
       const policy = req.body
 
       const details = policyValidationDetails(policy)
@@ -152,8 +158,8 @@ function api(app: express.Express): express.Express {
     pathsFor('/policies/:policy_id'),
     checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:delete')),
     async (
-      req: PolicyAuthorApiRequest & ApiRequestParams<'policy_id'>,
-      res: DeletePolicyResponse,
+      req: PolicyAuthorApiDeletePolicyRequest,
+      res: PolicyAuthorApiDeletePolicyResponse,
       next: express.NextFunction
     ) => {
       const { policy_id } = req.params
@@ -174,8 +180,8 @@ function api(app: express.Express): express.Express {
     pathsFor('/policies/meta/'),
     checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:read')),
     async (
-      req: PolicyAuthorApiRequest & ApiRequestQuery<'get_published' | 'get_unpublished'>,
-      res: GetPolicyMetadataResponse,
+      req: PolicyAuthorApiGetPolicyMetadataRequest,
+      res: PolicyAuthorApiGetPolicyMetadataResponse,
       next: express.NextFunction
     ) => {
       const { get_published, get_unpublished } = req.query
@@ -214,8 +220,8 @@ function api(app: express.Express): express.Express {
     pathsFor('/policies/:policy_id/meta'),
     checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:read')),
     async (
-      req: PolicyAuthorApiRequest & ApiRequestParams<'policy_id'>,
-      res: GetPolicyMetadatumResponse,
+      req: PolicyAuthorApiGetPolicyMetadatumRequest,
+      res: PolicyAuthorApiGetPolicyMetadatumResponse,
       next: express.NextFunction
     ) => {
       const { policy_id } = req.params
@@ -244,8 +250,8 @@ function api(app: express.Express): express.Express {
     pathsFor('/policies/:policy_id/meta'),
     checkPolicyAuthorApiAccess(scopes => scopes.includes('policies:write')),
     async (
-      req: PolicyAuthorApiRequest<PolicyMetadata>,
-      res: EditPolicyMetadataResponse,
+      req: PolicyAuthorApiEditPolicyMetadataRequest,
+      res: PolicyAuthorApiEditPolicyMetadataResponse,
       next: express.NextFunction
     ) => {
       const policy_metadata = req.body

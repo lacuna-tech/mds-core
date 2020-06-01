@@ -15,25 +15,24 @@ import {
 import { geographyValidationDetails } from '@mds-core/mds-schema-validators'
 import logger from '@mds-core/mds-logger'
 
-import {
-  checkAccess,
-  AccessTokenScopeValidator,
-  ApiResponse,
-  ApiRequest,
-  ApiRequestQuery,
-  ApiRequestParams
-} from '@mds-core/mds-api-server'
-import { Geography, GeographyMetadata } from '@mds-core/mds-types'
+import { checkAccess, AccessTokenScopeValidator, ApiResponse, ApiRequest } from '@mds-core/mds-api-server'
 import { GeographyAuthorApiVersionMiddleware } from './middleware'
 import {
-  GeographyAuthorApiRequest,
   GeographyAuthorApiAccessTokenScopes,
-  GetGeographyMetadatumResponse,
-  DeleteGeographyResponse,
-  PostGeographyResponse,
-  PutGeographyResponse,
-  PutGeographyMetadataResponse,
-  GetGeographyMetadataResponse
+  GeographyAuthorApiGetGeographyMetadatumResponse,
+  GeographyAuthorApiDeleteGeographyResponse,
+  GeographyAuthorApiPostGeographyResponse,
+  GeographyAuthorApiPutGeographyResponse,
+  GeographyAuthorApiPutGeographyMetadataResponse,
+  GeographyAuthorApiGetGeographyMetadataResponse,
+  GeographyAuthorApiGetGeographyMetadataRequest,
+  GeographyAuthorApiPostGeographyRequest,
+  GeographyAuthorApiPutGeographyRequest,
+  GeographyAuthorApiDeleteGeographyRequest,
+  GeographyAuthorApiGetGeographyMetadatumRequest,
+  GeographyAuthorApiPutGeographyMetadataRequest,
+  GeographyAuthorApiPublishGeographyRequest,
+  GeographyAuthorApiPublishGeographyResponse
 } from './types'
 
 const checkGeographyAuthorApiAccess = (validator: AccessTokenScopeValidator<GeographyAuthorApiAccessTokenScopes>) =>
@@ -48,8 +47,8 @@ function api(app: express.Express): express.Express {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (
-      req: GeographyAuthorApiRequest & ApiRequestQuery<'get_published' | 'get_unpublished'>,
-      res: GetGeographyMetadataResponse,
+      req: GeographyAuthorApiGetGeographyMetadataRequest,
+      res: GeographyAuthorApiGetGeographyMetadataResponse,
       next: express.NextFunction
     ) => {
       const { scopes } = res.locals
@@ -104,7 +103,11 @@ function api(app: express.Express): express.Express {
   app.post(
     pathsFor('/geographies/'),
     checkGeographyAuthorApiAccess(scopes => scopes.includes('geographies:write')),
-    async (req: GeographyAuthorApiRequest<Geography>, res: PostGeographyResponse, next: express.NextFunction) => {
+    async (
+      req: GeographyAuthorApiPostGeographyRequest,
+      res: GeographyAuthorApiPostGeographyResponse,
+      next: express.NextFunction
+    ) => {
       const geography = req.body
 
       try {
@@ -133,7 +136,11 @@ function api(app: express.Express): express.Express {
   app.put(
     pathsFor('/geographies/:geography_id'),
     checkGeographyAuthorApiAccess(scopes => scopes.includes('geographies:write')),
-    async (req: GeographyAuthorApiRequest<Geography>, res: PutGeographyResponse, next: express.NextFunction) => {
+    async (
+      req: GeographyAuthorApiPutGeographyRequest,
+      res: GeographyAuthorApiPutGeographyResponse,
+      next: express.NextFunction
+    ) => {
       const geography = req.body
       try {
         const details = geographyValidationDetails(geography)
@@ -159,8 +166,8 @@ function api(app: express.Express): express.Express {
     pathsFor('/geographies/:geography_id'),
     checkGeographyAuthorApiAccess(scopes => scopes.includes('geographies:write')),
     async (
-      req: GeographyAuthorApiRequest & ApiRequestParams<'geography_id'>,
-      res: DeleteGeographyResponse,
+      req: GeographyAuthorApiDeleteGeographyRequest,
+      res: GeographyAuthorApiDeleteGeographyResponse,
       next: express.NextFunction
     ) => {
       const { geography_id } = req.params
@@ -202,8 +209,8 @@ function api(app: express.Express): express.Express {
       return scopes.includes('geographies:read:published') || scopes.includes('geographies:read:unpublished')
     }),
     async (
-      req: GeographyAuthorApiRequest & ApiRequestParams<'geography_id'>,
-      res: GetGeographyMetadatumResponse,
+      req: GeographyAuthorApiGetGeographyMetadatumRequest,
+      res: GeographyAuthorApiGetGeographyMetadatumResponse,
       next: express.NextFunction
     ) => {
       const { geography_id } = req.params
@@ -231,8 +238,8 @@ function api(app: express.Express): express.Express {
     pathsFor('/geographies/:geography_id/meta'),
     checkGeographyAuthorApiAccess(scopes => scopes.includes('geographies:write')),
     async (
-      req: GeographyAuthorApiRequest<GeographyMetadata>,
-      res: PutGeographyMetadataResponse,
+      req: GeographyAuthorApiPutGeographyMetadataRequest,
+      res: GeographyAuthorApiPutGeographyMetadataResponse,
       next: express.NextFunction
     ) => {
       const geography_metadata = req.body
@@ -262,8 +269,8 @@ function api(app: express.Express): express.Express {
     pathsFor('/geographies/:geography_id/publish'),
     checkGeographyAuthorApiAccess(scopes => scopes.includes('geographies:publish')),
     async (
-      req: GeographyAuthorApiRequest & ApiRequestParams<'geography_id'>,
-      res: PutGeographyResponse,
+      req: GeographyAuthorApiPublishGeographyRequest,
+      res: GeographyAuthorApiPublishGeographyResponse,
       next: express.NextFunction
     ) => {
       const { geography_id } = req.params

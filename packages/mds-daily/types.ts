@@ -1,8 +1,10 @@
 import { UUID } from '@mds-core/mds-types'
 import { MultiPolygon } from 'geojson'
-import { ApiRequest, ApiResponse, ApiResponseLocals, ApiClaims } from '@mds-core/mds-api-server'
+import { ApiRequest, ApiResponse, ApiResponseLocals, ApiClaims, ApiRequestParams } from '@mds-core/mds-api-server'
 
 export type DailyApiRequest<B = {}> = ApiRequest<B>
+
+export type DailyApiGetRawTripDataRequest = DailyApiRequest & ApiRequestParams<'trip_id'>
 
 export type DailyApiAccessTokenScopes = 'admin:all'
 

@@ -19,9 +19,15 @@ import { isServiceError } from '@mds-core/mds-service-helpers'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../@types'
 
+export type JurisdictionApiDeleteJurisdictionRequest = JurisdictionApiRequest & ApiRequestParams<'jurisdiction_id'>
+
+export type JurisdictionApiDeleteJurisdictionResponse = JurisdictionApiResponse<
+  Pick<JurisdictionDomainModel, 'jurisdiction_id'>
+>
+
 export const DeleteJurisdictionHandler = async (
-  req: JurisdictionApiRequest & ApiRequestParams<'jurisdiction_id'>,
-  res: JurisdictionApiResponse<Pick<JurisdictionDomainModel, 'jurisdiction_id'>>
+  req: JurisdictionApiDeleteJurisdictionRequest,
+  res: JurisdictionApiDeleteJurisdictionResponse
 ) => {
   const { jurisdiction_id } = req.params
   try {

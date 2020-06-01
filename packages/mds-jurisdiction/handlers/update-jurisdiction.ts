@@ -23,9 +23,16 @@ import { isServiceError } from '@mds-core/mds-service-helpers'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../@types'
 
+export type JurisdictionApiUpdateJurisdictionRequest = JurisdictionApiRequest<UpdateJurisdictionDomainModel> &
+  ApiRequestParams<'jurisdiction_id'>
+
+export type JurisdictionApiUpdateJurisdictionResponse = JurisdictionApiResponse<{
+  jurisdiction: JurisdictionDomainModel
+}>
+
 export const UpdateJurisdictionHandler = async (
-  req: JurisdictionApiRequest<UpdateJurisdictionDomainModel> & ApiRequestParams<'jurisdiction_id'>,
-  res: JurisdictionApiResponse<{ jurisdiction: JurisdictionDomainModel }>
+  req: JurisdictionApiUpdateJurisdictionRequest,
+  res: JurisdictionApiUpdateJurisdictionResponse
 ) => {
   try {
     const { jurisdiction_id } = req.params
