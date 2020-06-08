@@ -1,0 +1,19 @@
+# !! File must end with empty line !!
+dependencies:
+  - name: redis
+    version: 10.5.7
+    repository: alias:stable
+    condition: redis.internal
+  - name: postgresql
+    version: 8.6.4
+    repository: alias:stable
+    condition: postgresql.internal
+  - name: kafka
+    version: 10.3.3
+    repository: alias:bitnami
+    condition: kafka.internal
+  - name: nats
+    version: 4.3.13
+    repository: alias:bitnami
+    condition: nats.internal
+
