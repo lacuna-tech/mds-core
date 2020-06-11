@@ -119,7 +119,6 @@ function api(app: express.Express): express.Express {
           /* If the client is one of the allowed providers, they can query for an arbitrary provider's vehicles. Otherwise, they may
            only see compliance results for their own devices.
            */
-          // what if queried_provider_id isn't there though?
           const target_provider_id = AllowedProviderIDs.includes(provider_id) ? queried_provider_id : provider_id
           if (
             // Check to see if the policy for which a snapshot is desired has been superseded or not.
