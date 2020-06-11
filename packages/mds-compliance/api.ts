@@ -45,7 +45,7 @@ import {
 } from './types'
 import { ComplianceApiVersionMiddleware } from './middleware'
 import { AllowedProviderIDs } from './constants'
-import { clientCanViewPolicyCompliance } from './helpers'
+import { clientCanViewPolicyCompliance, feedInputsToComplianceEngine } from './helpers'
 
 function api(app: express.Express): express.Express {
   app.use(ComplianceApiVersionMiddleware)
@@ -119,6 +119,7 @@ function api(app: express.Express): express.Express {
           /* If the client is one of the allowed providers, they can query for an arbitrary provider's vehicles. Otherwise, they may
            only see compliance results for their own devices.
            */
+          // what if queried_provider_id isn't there though?
           const target_provider_id = AllowedProviderIDs.includes(provider_id) ? queried_provider_id : provider_id
           if (
             // Check to see if the policy for which a snapshot is desired has been superseded or not.
@@ -127,25 +128,7 @@ function api(app: express.Express): express.Express {
               .map(p => p.policy_id)
               .includes(policy.policy_id)
           ) {
-            const [geographies, deviceRecords] = await Promise.all([
-              db.readGeographies() as Promise<Geography[]>,
-              db.readDeviceIds(target_provider_id)
-            ])
-            const deviceIdSubset = deviceRecords.map(
-              (record: { device_id: UUID; provider_id: UUID }) => record.device_id
-            )
-            const devices = await cache.readDevices(deviceIdSubset)
-            // If a timestamp was supplied, the data we want is probably old enough it's going to be in the db
-            const events = timestamp
-              ? await db.readHistoricalEvents({ provider_id: target_provider_id, end_date: timestamp })
-              : await cache.readEvents(deviceIdSubset)
-
-            const deviceMap = devices.reduce((map: { [d: string]: Device }, device) => {
-              return device ? Object.assign(map, { [device.device_id]: device }) : map
-            }, {})
-
-            const filteredEvents = compliance_engine.getRecentEvents(events)
-            const result = compliance_engine.processPolicy(policy, filteredEvents, geographies, deviceMap)
+            const result = await feedInputsToComplianceEngine(policy, target_provider_id, timestamp)
             if (result === undefined) {
               return res.status(400).send({ error: new BadParamsError('Unable to process compliance results') })
             }
