@@ -31,11 +31,7 @@ export function clientCanViewPolicyCompliance(
   )
 }
 
-export async function feedInputsToComplianceEngine(
-  policy: Policy,
-  provider_id: string | undefined,
-  timestamp: Timestamp | undefined
-) {
+export async function getComplianceInputs(provider_id: string | undefined, timestamp: Timestamp | undefined) {
   const [geographies, deviceRecords] = await Promise.all([
     db.readGeographies() as Promise<Geography[]>,
     db.readDeviceIds(provider_id)
@@ -52,5 +48,5 @@ export async function feedInputsToComplianceEngine(
   }, {})
 
   const filteredEvents = compliance_engine.getRecentEvents(events)
-  return compliance_engine.processPolicy(policy, filteredEvents, geographies, deviceMap)
+  return { filteredEvents, geographies, deviceMap }
 }

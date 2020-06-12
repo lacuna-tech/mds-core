@@ -45,7 +45,7 @@ import {
 } from './types'
 import { ComplianceApiVersionMiddleware } from './middleware'
 import { AllowedProviderIDs } from './constants'
-import { clientCanViewPolicyCompliance, feedInputsToComplianceEngine } from './helpers'
+import { clientCanViewPolicyCompliance, getComplianceInputs } from './helpers'
 
 function api(app: express.Express): express.Express {
   app.use(ComplianceApiVersionMiddleware)
@@ -127,7 +127,8 @@ function api(app: express.Express): express.Express {
               .map(p => p.policy_id)
               .includes(policy.policy_id)
           ) {
-            const result = await feedInputsToComplianceEngine(policy, target_provider_id, timestamp)
+            const { filteredEvents, geographies, deviceMap } = await getComplianceInputs(target_provider_id, timestamp)
+            const result = compliance_engine.processPolicy(policy, filteredEvents, geographies, deviceMap)
             if (result === undefined) {
               return res.status(400).send({ error: new BadParamsError('Unable to process compliance results') })
             }
