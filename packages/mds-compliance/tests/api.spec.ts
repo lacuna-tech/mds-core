@@ -449,7 +449,7 @@ describe('Tests Compliance API:', () => {
     })
 
     it('Verifies violation of count compliance (over) and filters results by provider_id', async () => {
-      // Admins should be able to see everything
+      // Admins should be able to see violations across all providers
       const adminResult = await request
         .get(`/snapshot/${COUNT_POLICY_UUID}`)
         .set('Authorization', ADMIN_AUTH)
