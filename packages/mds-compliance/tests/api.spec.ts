@@ -43,6 +43,7 @@ const agency_request = supertest(ApiServer(agency))
 
 const PROVIDER_SCOPES = 'admin:all'
 const TEST2_PROVIDER_AUTH = `basic ${Buffer.from(`${TEST2_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
+const JUMP_PROVIDER_AUTH = `basic ${Buffer.from(`${JUMP_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
 const MOCHA_PROVIDER_AUTH = `basic ${Buffer.from(`${MOCHA_PROVIDER_ID}|${PROVIDER_SCOPES}`).toString('base64')}`
 const TRIP_UUID = '1f981864-cc17-40cf-aea3-70fd985e2ea7'
 const DEVICE_UUID = 'ec551174-f324-4251-bfed-28d9f3f473fc'
@@ -448,6 +449,7 @@ describe('Tests Compliance API:', () => {
     })
 
     it('Verifies violation of count compliance (over) and filters results by provider_id', async () => {
+      // Admins should be able to see everything
       const adminResult = await request
         .get(`/snapshot/${COUNT_POLICY_UUID}`)
         .set('Authorization', ADMIN_AUTH)
@@ -458,6 +460,8 @@ describe('Tests Compliance API:', () => {
       test.object(adminResult.body).hasProperty('version')
       test.value(adminResult).hasHeader('content-type', APP_JSON)
 
+      // Admins should be able to query for a specific provider's compliance results
+      // and only see the number of violations for that provider
       const provider1Result = await request
         .get(`/snapshot/${COUNT_POLICY_UUID}?provider_id=${TEST1_PROVIDER_ID}`)
         .set('Authorization', ADMIN_AUTH)
@@ -468,9 +472,10 @@ describe('Tests Compliance API:', () => {
       test.object(provider1Result.body).hasProperty('version')
       test.value(provider1Result).hasHeader('content-type', APP_JSON)
 
+      // If a policy applies to every provider, a provider will see only its own compliance results.
       const jumpResult = await request
-        .get(`/snapshot/${COUNT_POLICY_UUID}?provider_id=${JUMP_PROVIDER_ID}`)
-        .set('Authorization', ADMIN_AUTH)
+        .get(`/snapshot/${COUNT_POLICY_UUID}`)
+        .set('Authorization', JUMP_PROVIDER_AUTH)
         .expect(200)
       test.assert.deepEqual(jumpResult.body.compliance[0].matches[0].measured, 10)
       test.assert.deepEqual(jumpResult.body.total_violations, 5)

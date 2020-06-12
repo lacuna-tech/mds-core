@@ -30,7 +30,7 @@ import {
   BadParamsError,
   AuthorizationError
 } from '@mds-core/mds-utils'
-import { Geography, Device, UUID, VehicleEvent } from '@mds-core/mds-types'
+import { Geography, UUID, VehicleEvent } from '@mds-core/mds-types'
 import { providerName } from '@mds-core/mds-providers'
 import { Geometry, FeatureCollection } from 'geojson'
 import { parseRequest } from '@mds-core/mds-api-helpers'
