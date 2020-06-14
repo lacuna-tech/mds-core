@@ -639,7 +639,9 @@ function api(app: express.Express): express.Express {
         const provider_id = scopes.includes('audits:read') ? queried_provider_id : res.locals.claims?.provider_id
 
         if (provider_id === null) {
-          /* Something went terribly wrong (replace this with something meaningful before un-drafting) */
+          /* This should never happen -- a client with just the audits:read:provider scope
+           * should *always* have a provider_id claim in their token.
+           */
           return res.status(500).send({ error: 'internal_server_error' })
         }
 
