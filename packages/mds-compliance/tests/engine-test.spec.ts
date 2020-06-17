@@ -249,7 +249,7 @@ describe('Tests Compliance Engine', () => {
 
   it('Verifies time compliance violation', done => {
     const devices = makeDevices(400, now())
-    const events = makeEventsWithTelemetry(devices, now() - 10000000, CITY_OF_LA, 'trip_end')
+    const events = makeEventsWithTelemetry(devices, now() - 21 * 60 * 1000, CITY_OF_LA, 'trip_end')
     test.assert.doesNotThrow(() => validatePolicies(policies))
     test.assert.doesNotThrow(() => validateGeographies(geographies))
     test.assert.doesNotThrow(() => validateEvents(events))

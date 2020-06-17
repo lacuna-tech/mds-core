@@ -243,7 +243,7 @@ const TIME_POLICY_JSON: Policy = {
       geographies: [GEOGRAPHY_UUID],
       statuses: { available: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
-      maximum: 7200
+      maximum: 20
     }
   ]
 }
@@ -526,7 +526,7 @@ describe('Tests Compliance API:', () => {
   describe('Time Violation Test: ', () => {
     before(done => {
       const devices: Device[] = makeDevices(15, now())
-      const events = makeEventsWithTelemetry(devices, now() - 1000000, CITY_OF_LA, 'trip_end')
+      const events = makeEventsWithTelemetry(devices, now() - 21 * 60 * 1000, CITY_OF_LA, 'trip_end')
       const telemetry: Telemetry[] = []
       devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
