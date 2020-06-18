@@ -14,6 +14,8 @@
     limitations under the License.
  */
 
+import logger from '@mds-core/mds-logger'
+
 export const getKafkaBrokers = () => {
   const {
     env: { KAFKA_HOST }
@@ -21,5 +23,6 @@ export const getKafkaBrokers = () => {
 
   if (KAFKA_HOST) return [KAFKA_HOST]
 
+  logger.warn('KAFKA_HOST is undefined, skipping initialization.')
   return null
 }
