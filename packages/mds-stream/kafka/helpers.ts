@@ -16,7 +16,10 @@
 
 export const getKafkaBrokers = () => {
   const {
-    env: { KAFKA_HOST = 'localhost:9092' }
+    env: { KAFKA_HOST }
   } = process
-  return [KAFKA_HOST]
+
+  if (KAFKA_HOST) return [KAFKA_HOST]
+
+  return null
 }
