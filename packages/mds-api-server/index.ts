@@ -12,6 +12,9 @@ import {
   UserEmailClaim,
   JurisdictionsClaim
 } from '@mds-core/mds-api-authorizer'
+import promBundle from 'express-prom-bundle'
+
+const metricsMiddleware = promBundle({includeMethod: true, includePath: true, includeUp: true})
 
 export type ApiRequest<B = {}> = express.Request<{}, unknown, B, {}>
 
@@ -274,6 +277,7 @@ export const ApiServer = (
 
   // Middleware
   app.use(
+    metricsMiddleware,
     RequestLoggingMiddleware(),
     CorsMiddleware({ preflightContinue: true, ...corsOptions }),
     JsonBodyParserMiddleware({ limit: '5mb' }),

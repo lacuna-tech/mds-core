@@ -2361,6 +2361,11 @@ bindings@^1.5.0:
   dependencies:
     file-uri-to-path "1.0.0"
 
+bintrees@1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/bintrees/-/bintrees-1.0.1.tgz#0e655c9b9c2435eaab68bf4027226d2b55a34524"
+  integrity sha1-DmVcm5wkNeqraL9AJyJtK1WjRSQ=
+
 bl@^4.0.1:
   version "4.0.2"
   resolved "https://registry.yarnpkg.com/bl/-/bl-4.0.2.tgz#52b71e9088515d0606d9dd9cc7aa48dc1f98e73a"
@@ -4305,6 +4310,14 @@ expand-tilde@^2.0.0, expand-tilde@^2.0.2:
   integrity sha1-l+gBqgUt8CRU3kawK/YhZCzchQI=
   dependencies:
     homedir-polyfill "^1.0.1"
+
+express-prom-bundle@6.0.0:
+  version "6.0.0"
+  resolved "https://registry.yarnpkg.com/express-prom-bundle/-/express-prom-bundle-6.0.0.tgz#e1aff1bddcd4f01359478e150dffd4e6214b88d7"
+  integrity sha512-wRq1yIfMo7oo6lbX38A+g93h/rxSaGk4DkvzIlnF9QGQVBuKmjm/Bkkztu6R6KrMHSuMKWNIrZbZKreuZdEV6w==
+  dependencies:
+    on-finished "^2.3.0"
+    url-value-parser "^2.0.0"
 
 express@4.17.1:
   version "4.17.1"
@@ -8189,6 +8202,13 @@ progress@^2.0.0:
   resolved "https://registry.yarnpkg.com/progress/-/progress-2.0.3.tgz#7e8cf8d8f5b8f239c1bc68beb4eb78567d572ef8"
   integrity sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==
 
+prom-client@12.0.0:
+  version "12.0.0"
+  resolved "https://registry.yarnpkg.com/prom-client/-/prom-client-12.0.0.tgz#9689379b19bd3f6ab88a9866124db9da3d76c6ed"
+  integrity sha512-JbzzHnw0VDwCvoqf8y1WDtq4wSBAbthMB1pcVI/0lzdqHGJI3KBJDXle70XK+c7Iv93Gihqo0a5LlOn+g8+DrQ==
+  dependencies:
+    tdigest "^0.1.1"
+
 promise-inflight@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/promise-inflight/-/promise-inflight-1.0.1.tgz#98472870bf228132fcbdd868129bad12c3c029e3"
@@ -9790,6 +9810,13 @@ tcomb@^3.0.0, tcomb@^3.2.17:
   resolved "https://registry.yarnpkg.com/tcomb/-/tcomb-3.2.29.tgz#32404fe9456d90c2cf4798682d37439f1ccc386c"
   integrity sha512-di2Hd1DB2Zfw6StGv861JoAF5h/uQVu/QJp2g8KVbtfKnoHdBQl5M32YWq6mnSYBQ1vFFrns5B1haWJL7rKaOQ==
 
+tdigest@^0.1.1:
+  version "0.1.1"
+  resolved "https://registry.yarnpkg.com/tdigest/-/tdigest-0.1.1.tgz#2e3cb2c39ea449e55d1e6cd91117accca4588021"
+  integrity sha1-Ljyyw56kSeVdHmzZEReszKRYgCE=
+  dependencies:
+    bintrees "1.0.1"
+
 temp-dir@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/temp-dir/-/temp-dir-1.0.0.tgz#0a7c0ea26d3a39afa7e0ebea9c1fc0bc4daa011d"
@@ -10333,6 +10360,11 @@ url-parse-lax@^3.0.0:
   integrity sha1-FrXK/Afb42dsGxmZF3gj1lA6yww=
   dependencies:
     prepend-http "^2.0.0"
+
+url-value-parser@^2.0.0:
+  version "2.0.1"
+  resolved "https://registry.yarnpkg.com/url-value-parser/-/url-value-parser-2.0.1.tgz#c8179a095ab9ec1f5aa17ca36af5af396b4e95ed"
+  integrity sha512-bexECeREBIueboLGM3Y1WaAzQkIn+Tca/Xjmjmfd0S/hFHSCEoFkNh0/D0l9G4K74MkEP/lLFRlYnxX3d68Qgw==
 
 url@0.10.3:
   version "0.10.3"
