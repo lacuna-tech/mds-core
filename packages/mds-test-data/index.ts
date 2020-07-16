@@ -74,8 +74,8 @@ const JUMP_TEST_DEVICE_1: Device = {
   provider_id: JUMP_PROVIDER_ID,
   device_id: 'e9edbe74-f7be-48e0-a63a-92f4bc1af5ed',
   vehicle_id: '1230987',
-  type: VEHICLE_TYPES.scooter,
-  propulsion: [PROPULSION_TYPES.electric],
+  vehicle_type: VEHICLE_TYPES.scooter,
+  propulsion_types: [PROPULSION_TYPES.electric],
   year: 2018,
   mfgr: 'Schwinn',
   model: 'whoknows',
@@ -102,7 +102,7 @@ const POLICY_JSON: Policy = {
       rule_id: '7ea0d16e-ad15-4337-9722-9924e3af9146',
       name: 'Greater LA',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { available: [], unavailable: [], reserved: [], trip: [] },
+      states: { available: [], removed: [], reserved: [], on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 3000,
       minimum: 500
@@ -125,7 +125,7 @@ const SUPERSEDING_POLICY_JSON: Policy = {
       rule_id: 'f518e886-ec06-4eb9-ad19-d91d34ee73d3',
       name: 'Greater LA',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { available: [], unavailable: [], reserved: [], trip: [] },
+      states: { available: [], removed: [], reserved: [], on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 1000,
       minimum: 500
@@ -153,7 +153,7 @@ const POLICY2_JSON: Policy = {
       rule_type: 'time',
       rule_units: 'minutes',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { available: [], reserved: [] },
+      states: { available: [], reserved: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 7200
     },
@@ -163,7 +163,7 @@ const POLICY2_JSON: Policy = {
       rule_type: 'time',
       rule_units: 'minutes',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { unavailable: [], trip: [] },
+      states: { removed: [], on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 720
     }
@@ -189,7 +189,7 @@ const POLICY3_JSON: Policy = {
       rule_type: 'speed',
       rule_units: 'mph',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { trip: [] },
+      states: { on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 15
     },
@@ -199,7 +199,7 @@ const POLICY3_JSON: Policy = {
       rule_id: 'dff14dd1-603e-43d1-b0cf-5d4fe21d8628',
       rule_type: 'speed',
       rule_units: 'mph',
-      statuses: { trip: [] },
+      states: { on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       days: ['sat', 'sun'],
       start_time: '12:00',
@@ -229,7 +229,7 @@ const POLICY4_JSON: Policy = {
       rule_type: 'speed',
       rule_units: 'mph',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { trip: [] },
+      states: { on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 25
     }
@@ -251,7 +251,7 @@ const POLICY5_JSON: Policy = {
       rule_type: 'speed',
       rule_units: 'mph',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { trip: [] },
+      states: { on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 25
     }
@@ -273,7 +273,7 @@ const PUBLISH_DATE_VALIDATION_JSON: Policy = {
       rule_type: 'speed',
       rule_units: 'mph',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { trip: [] },
+      states: { on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 25
     }
@@ -294,7 +294,7 @@ const POLICY_JSON_MISSING_POLICY_ID = {
       rule_type: 'speed',
       rule_units: 'mph',
       geographies: [NONEXISTENT_GEOGRAPHY_UUID],
-      statuses: { trip: [] },
+      states: { on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 25
     }
@@ -316,7 +316,7 @@ const POLICY_WITH_DUPE_RULE: Policy = {
       rule_type: 'speed',
       rule_units: 'mph',
       geographies: [NONEXISTENT_GEOGRAPHY_UUID],
-      statuses: { trip: [] },
+      states: { on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 25
     }
@@ -339,7 +339,7 @@ const PUBLISHED_POLICY: Policy = {
       rule_type: 'speed',
       rule_units: 'mph',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { trip: [] },
+      states: { on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 25
     }
@@ -361,7 +361,7 @@ const DELETEABLE_POLICY: Policy = {
       rule_type: 'speed',
       rule_units: 'mph',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { trip: [] },
+      states: { on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 25
     }
@@ -495,7 +495,7 @@ function makeTelemetryStream(origin: Telemetry, steps: number) {
   return stream
 }
 
-function makeEvents(devices: Device[], timestamp: Timestamp, event_type = VEHICLE_EVENTS.deregister): VehicleEvent[] {
+function makeEvents(devices: Device[], timestamp: Timestamp, event_type = VEHICLE_EVENTS.trip_start): VehicleEvent[] {
   if (!event_type) {
     throw new Error('empty event_type')
   }
@@ -540,33 +540,33 @@ function makeDevices(count: number, timestamp: Timestamp, provider_id = TEST1_PR
     // make a rando vehicle
     const device_id = uuid()
     const coin = rangeRandomInt(2)
-    let type
-    let propulsion: PROPULSION_TYPE[]
+    let vehicle_type
+    let propulsion_types: PROPULSION_TYPE[]
     switch (provider_id) {
       case LIME_PROVIDER_ID:
       case JUMP_PROVIDER_ID:
-        type = [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter][coin]
-        if (type === VEHICLE_TYPES.bicycle) {
-          propulsion = [[PROPULSION_TYPES.human, PROPULSION_TYPES.electric], [PROPULSION_TYPES.human]][
+        vehicle_type = [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter][coin]
+        if (vehicle_type === VEHICLE_TYPES.bicycle) {
+          propulsion_types = [[PROPULSION_TYPES.human, PROPULSION_TYPES.electric], [PROPULSION_TYPES.human]][
             coin
           ] as PROPULSION_TYPE[]
         } else {
-          propulsion = [PROPULSION_TYPES.electric]
+          propulsion_types = [PROPULSION_TYPES.electric]
         }
         break
       case BIRD_PROVIDER_ID:
-        type = VEHICLE_TYPES.scooter
-        propulsion = [PROPULSION_TYPES.electric]
+        vehicle_type = VEHICLE_TYPES.scooter
+        propulsion_types = [PROPULSION_TYPES.electric]
         break
       default:
-        type = VEHICLE_TYPES.bicycle
-        propulsion = [PROPULSION_TYPES.human]
+        vehicle_type = VEHICLE_TYPES.bicycle
+        propulsion_types = [PROPULSION_TYPES.human]
         break
     }
     let mfgr
     let model
     const year = rangeRandomInt(2016, 2020)
-    switch (type) {
+    switch (vehicle_type) {
       case VEHICLE_TYPES.scooter:
         mfgr = 'Xiaomi'
         model = 'M365'
@@ -576,14 +576,14 @@ function makeDevices(count: number, timestamp: Timestamp, provider_id = TEST1_PR
         model = 'Mantaray'
         break
       default:
-        throw new Error(`unknown type: ${type}`)
+        throw new Error(`unknown type: ${vehicle_type}`)
     }
     const device = {
       device_id,
       provider_id,
       vehicle_id: `test-vin-${Math.round(Math.random() * 1000000)}`,
-      type,
-      propulsion,
+      vehicle_type,
+      propulsion_types,
       year,
       mfgr,
       model,

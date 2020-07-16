@@ -29,8 +29,8 @@ import {
   EVENT_STATES_MAP,
   VEHICLE_STATE,
   BBox,
-  VEHICLE_EVENT,
-  SingleOrArray
+  SingleOrArray,
+  VEHICLE_STATES
 } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
@@ -488,13 +488,14 @@ function isInsideBoundingBox(telemetry: Telemetry | undefined | null, bbox: Boun
   return false
 }
 
-function isStateTransitionValid(
-  eventA: VehicleEvent & { event_type: VEHICLE_EVENT },
-  eventB: VehicleEvent & { event_type: VEHICLE_EVENT }
-) {
-  const currState = EVENT_STATES_MAP[eventA.event_type]
-  const nextState = getNextState(currState, eventB.event_type)
-  return nextState !== undefined
+function isStateTransitionValid(eventA: VehicleEvent, eventB: VehicleEvent) {
+  const currStates = EVENT_STATES_MAP[eventA.event_type]
+  const nextStates = currStates
+    .map(currState => {
+      getNextState(currState, eventB.event_type)
+    })
+    .filter(states => states !== undefined)
+  return nextStates.length > 0
 }
 
 function getPolygon(geographies: Geography[], geography: string): Geometry | FeatureCollection {
@@ -508,6 +509,28 @@ function getPolygon(geographies: Geography[], geography: string): Geometry | Fea
 }
 
 function isInStatesOrEvents(rule: Rule, event: VehicleEvent): boolean {
+  const { states } = rule
+  // If no states are specified, then the rule applies to all VehicleStates.
+  if (states === null || states === undefined) {
+    return true
+  }
+  const possibleStates = EVENT_STATES_MAP[event.event_type]
+  const ruleStates = Object.keys(states) as VEHICLE_STATE[]
+  // Create a Set containing the states from rule.states, and also the array of possible states
+  // that this event_type can transition to. If the size of the union of these two arrays is
+  // equal to the length of each array added together, there is no intersection.
+  const unionSet = new Set([...possibleStates, ...ruleStates])
+  if (unionSet.size < possibleStates.length + ruleStates.length) {
+    return true
+  }
+
+  const overlap = []
+  ruleStates.forEach(state => {
+    if (possibleStates.includes(state)) {
+    }
+  })
+
+  /*
   const status = rule.states ? rule.states[EVENT_STATES_MAP[event.event_type] as VEHICLE_STATE] : null
   return status !== null
     ? rule.states !== null &&
@@ -515,6 +538,7 @@ function isInStatesOrEvents(rule: Rule, event: VehicleEvent): boolean {
         status !== undefined &&
         (status.length === 0 || (status as string[]).includes(event.event_type))
     : true
+    */
 }
 
 function routeDistance(coordinates: { lat: number; lng: number }[]): number {

@@ -130,7 +130,39 @@ export type AUDIT_EVENT_TYPE = keyof typeof AUDIT_EVENT_TYPES
 //   deregister: VEHICLE_STATES.inactive
 // }
 
-export const EVENT_STATES_MAP: { [P in VEHICLE_EVENT]: VEHICLE_STATE } = {
+export const EVENT_STATES_MAP: { [P in VEHICLE_EVENT]: Array<VEHICLE_STATE> } = {
+  agency_drop_off: [VEHICLE_STATES.available],
+  agency_pick_up: [VEHICLE_STATES.removed],
+  battery_charged: [VEHICLE_STATES.available],
+  battery_low: [VEHICLE_STATES.non_operational],
+  comms_lost: [VEHICLE_STATES.on_trip, VEHICLE_STATES.unknown],
+  comms_restored: [
+    VEHICLE_STATES.available,
+    VEHICLE_STATES.non_operational,
+    VEHICLE_STATES.reserved,
+    VEHICLE_STATES.on_trip,
+    VEHICLE_STATES.elsewhere
+  ],
+  compliance_pick_up: [VEHICLE_STATES.removed],
+  decommissioned: [VEHICLE_STATES.removed],
+  maintenance: [VEHICLE_STATES.available, VEHICLE_STATES.non_operational],
+  maintenance_pick_up: [VEHICLE_STATES.removed],
+  missing: [VEHICLE_STATES.unknown],
+  off_hours: [VEHICLE_STATES.non_operational],
+  on_hours: [VEHICLE_STATES.available],
+  provider_drop_off: [VEHICLE_STATES.available],
+  rebalance_pick_up: [VEHICLE_STATES.removed],
+  reservation_cancel: [VEHICLE_STATES.available],
+  reservation_start: [VEHICLE_STATES.reserved],
+  system_resume: [VEHICLE_STATES.available],
+  system_suspend: [VEHICLE_STATES.non_operational],
+  trip_cancel: [VEHICLE_STATES.available],
+  trip_end: [VEHICLE_STATES.available],
+  trip_enter_jurisdiction: [VEHICLE_STATES.on_trip],
+  trip_leave_jurisdiction: [VEHICLE_STATES.elsewhere],
+  trip_start: [VEHICLE_STATES.on_trip],
+  unspecified: [VEHICLE_STATES.available, VEHICLE_STATES.non_operational, VEHICLE_STATES.removed]
+  /*
   battery_charged: VEHICLE_STATES.available,
   on_hours: VEHICLE_STATES.available,
   provider_drop_off: VEHICLE_STATES.available,
@@ -156,6 +188,7 @@ export const EVENT_STATES_MAP: { [P in VEHICLE_EVENT]: VEHICLE_STATE } = {
   decommissioned: VEHICLE_STATES.removed,
   missing: VEHICLE_STATES.unknown,
   comms_lost: VEHICLE_STATES.unknown
+  */
 }
 
 const StatusEventMap = <T extends { [S in VEHICLE_STATE]: Partial<typeof VEHICLE_EVENTS> }>(map: T) => map
