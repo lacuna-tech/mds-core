@@ -404,12 +404,17 @@ export interface PolicyMessage {
 //   messages?: PolicyMessage
 //   value_url?: URL | null
 // }
+
+// This gets you a type where the keys must be VEHICLE_STATES, such as 'available',
+// and the values are an array of events.
+export type ApplicableStateEventCombos = { [S in VEHICLE_STATE]: (keyof typeof STATE_EVENT_MAP[S])[] | [] }
+
 interface BaseRule<RuleType = 'count' | 'speed' | 'time'> {
   // TODO 'rate'
   name: string
   rule_id: UUID
   geographies: UUID[]
-  states: Partial<{ [S in VEHICLE_STATE]: (keyof typeof STATE_EVENT_MAP[S])[] | [] }> | null
+  states: Partial<ApplicableStateEventCombos> | null
   rule_type: RuleType
   vehicle_types?: VEHICLE_TYPE[] | null
   maximum?: number | null

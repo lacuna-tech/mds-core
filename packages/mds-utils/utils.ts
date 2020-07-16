@@ -30,7 +30,9 @@ import {
   VEHICLE_STATE,
   BBox,
   SingleOrArray,
-  VEHICLE_STATES
+  VEHICLE_STATES,
+  ApplicableStateEventCombos,
+  VEHICLE_EVENT
 } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
@@ -514,21 +516,19 @@ function isInStatesOrEvents(rule: Rule, event: VehicleEvent): boolean {
   if (states === null || states === undefined) {
     return true
   }
-  const possibleStates = EVENT_STATES_MAP[event.event_type]
-  const ruleStates = Object.keys(states) as VEHICLE_STATE[]
-  // Create a Set containing the states from rule.states, and also the array of possible states
-  // that this event_type can transition to. If the size of the union of these two arrays is
-  // equal to the length of each array added together, there is no intersection.
-  const unionSet = new Set([...possibleStates, ...ruleStates])
-  if (unionSet.size < possibleStates.length + ruleStates.length) {
-    return true
-  }
-
-  const overlap = []
-  ruleStates.forEach(state => {
-    if (possibleStates.includes(state)) {
+  const possibleStates: VEHICLE_STATE[] = EVENT_STATES_MAP[event.event_type][('available', 'unknown')].forEach(
+    state => {
+      const s = states[state]
+      if (s) {
+        const x = s.reduce((acc: number, possibleEvent) => {
+          if (possibleEvent === event.event_type) {
+            return acc + 1
+          }
+          return acc
+        }, 0)
+      }
     }
-  })
+  )
 
   /*
   const status = rule.states ? rule.states[EVENT_STATES_MAP[event.event_type] as VEHICLE_STATE] : null
