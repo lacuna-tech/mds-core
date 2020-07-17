@@ -29,10 +29,7 @@ import {
   EVENT_STATES_MAP,
   VEHICLE_STATE,
   BBox,
-  SingleOrArray,
-  VEHICLE_STATES,
-  ApplicableStateEventCombos,
-  VEHICLE_EVENT
+  SingleOrArray
 } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'

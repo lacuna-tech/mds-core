@@ -16,10 +16,9 @@
 
 import test from 'unit.js'
 import assert from 'assert'
-import { VEHICLE_EVENTS, VehicleEvent, EVENT_STATES_MAP } from '@mds-core/mds-types'
+import { VEHICLE_EVENTS, VehicleEvent } from '@mds-core/mds-types'
 import { routeDistance, isStateTransitionValid, normalizeToArray, filterDefined } from '../utils'
 import { expectedTransitions } from './state-transition-expected'
-import { getNextStates } from '../state-machine'
 
 const Boston = { lat: 42.360081, lng: -71.058884 }
 const LosAngeles = { lat: 34.052235, lng: -118.243683 }
