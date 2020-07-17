@@ -516,29 +516,22 @@ function isInStatesOrEvents(rule: Rule, event: VehicleEvent): boolean {
   if (states === null || states === undefined) {
     return true
   }
-  const possibleStates: VEHICLE_STATE[] = EVENT_STATES_MAP[event.event_type][('available', 'unknown')].forEach(
-    state => {
-      const s = states[state]
-      if (s) {
-        const x = s.reduce((acc: number, possibleEvent) => {
-          if (possibleEvent === event.event_type) {
-            return acc + 1
-          }
-          return acc
-        }, 0)
-      }
-    }
-  )
 
-  /*
-  const status = rule.states ? rule.states[EVENT_STATES_MAP[event.event_type] as VEHICLE_STATE] : null
-  return status !== null
-    ? rule.states !== null &&
-        Object.keys(rule.states).includes(EVENT_STATES_MAP[event.event_type]) &&
-        status !== undefined &&
-        (status.length === 0 || (status as string[]).includes(event.event_type))
-    : true
-    */
+  // States that it is possible to transition into with event.event_type
+  const possibleStates: string[] = EVENT_STATES_MAP[event.event_type]
+  const result = possibleStates.reduce((acc, state) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const matchingState: any = states[state as VEHICLE_STATE]
+    // If there's a match between the event_type's transitionable events, and the
+    // rule doesn't specify any events, or if there is a match between the rule and the specified
+    // events, the rule matches this event. e.g. if the rule says { `available`: [`comms_lost`]} or
+    // { `available`: [] }, it would match an event with event_type `comm_lost`.
+    if (matchingState !== undefined && (matchingState.length === 0 || matchingState.includes(event.event_type))) {
+      return acc + 1
+    }
+    return acc
+  }, 0)
+  return result > 0
 }
 
 function routeDistance(coordinates: { lat: number; lng: number }[]): number {
