@@ -38,7 +38,7 @@ import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
 
 import { isArray } from 'util'
-import { getNextState } from './state-machine'
+import { getNextStates } from './state-machine'
 import { parseRelative, getCurrentDate } from './date-time-utils'
 
 const RADIUS = 30.48 // 100 feet, in meters
@@ -494,7 +494,7 @@ function isStateTransitionValid(eventA: VehicleEvent, eventB: VehicleEvent) {
   const currStates = EVENT_STATES_MAP[eventA.event_type]
   const nextStates = currStates
     .map(currState => {
-      getNextState(currState, eventB.event_type)
+      getNextStates(currState, eventB.event_type)
     })
     .filter(states => states !== undefined)
   return nextStates.length > 0
@@ -655,6 +655,7 @@ export {
   head,
   tail,
   isStateTransitionValid,
+  getNextStates,
   pointInGeometry,
   getPolygon,
   isInStatesOrEvents,

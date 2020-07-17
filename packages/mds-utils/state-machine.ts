@@ -86,7 +86,7 @@ const stateTransitionDict: {
   }
 }
 
-const getNextState = (currStatus: VEHICLE_STATE, nextEvent: VEHICLE_EVENT): Array<VEHICLE_STATE> | undefined => {
+const getNextStates = (currStatus: VEHICLE_STATE, nextEvent: VEHICLE_EVENT): Array<VEHICLE_STATE> | undefined => {
   return stateTransitionDict[currStatus]?.[nextEvent]
 }
 
@@ -116,4 +116,4 @@ const generateGraph = () => {
   return `digraph G {\n${graphEntries.join('\n')}\n}`
 }
 
-export { stateTransitionDict, getNextState, generateGraph }
+export { stateTransitionDict, getNextStates, generateGraph }

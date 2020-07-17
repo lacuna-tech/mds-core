@@ -1,8 +1,8 @@
 import { VEHICLE_EVENT } from '@mds-core/mds-types'
 
 const AVAILABLE_STATE_EDGES = {
-  agency_drop_off: false,
-  agency_pick_up: true,
+  agency_drop_off: true,
+  agency_pick_up: false,
   battery_charged: false,
   battery_low: true,
   comms_lost: true,
