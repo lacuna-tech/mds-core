@@ -130,12 +130,13 @@ export type AUDIT_EVENT_TYPE = keyof typeof AUDIT_EVENT_TYPES
 //   deregister: VEHICLE_STATES.inactive
 // }
 
+// States you transition into based on event_type
 export const EVENT_STATES_MAP: { [P in VEHICLE_EVENT]: Array<VEHICLE_STATE> } = {
   agency_drop_off: [VEHICLE_STATES.available],
   agency_pick_up: [VEHICLE_STATES.removed],
   battery_charged: [VEHICLE_STATES.available],
   battery_low: [VEHICLE_STATES.non_operational],
-  comms_lost: [VEHICLE_STATES.on_trip, VEHICLE_STATES.unknown],
+  comms_lost: [VEHICLE_STATES.unknown],
   comms_restored: [
     VEHICLE_STATES.available,
     VEHICLE_STATES.non_operational,

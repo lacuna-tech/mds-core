@@ -1,5 +1,15 @@
-import { VEHICLE_STATES, VEHICLE_EVENTS, VEHICLE_STATE, VEHICLE_EVENT } from '@mds-core/mds-types'
+import {
+  VEHICLE_STATES,
+  VEHICLE_EVENTS,
+  VEHICLE_STATE,
+  VEHICLE_EVENT,
+  EVENT_STATES_MAP,
+  VehicleEvent
+} from '@mds-core/mds-types'
 
+/* Start with a state, then there's a list of valid event_types by which one
+ * may transition out, then possible states for each event_type
+ */
 const stateTransitionDict: {
   [S in VEHICLE_STATE]: Partial<
     {
@@ -87,7 +97,31 @@ const stateTransitionDict: {
 }
 
 const getNextStates = (currStatus: VEHICLE_STATE, nextEvent: VEHICLE_EVENT): Array<VEHICLE_STATE> | undefined => {
+  console.log('getNextStates', 'currStatus: ', currStatus, 'nextEvent: ', nextEvent)
+  console.log(stateTransitionDict[currStatus])
+  console.log(stateTransitionDict[currStatus]?.[nextEvent])
   return stateTransitionDict[currStatus]?.[nextEvent]
+}
+
+function isStateTransitionValid(eventA: VehicleEvent, eventB: VehicleEvent) {
+  const currStates = EVENT_STATES_MAP[eventA.event_type]
+  console.log('currStates: ', currStates)
+  console.log('')
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const allNextStates: any = currStates.reduce((acc, currState) => {
+    console.log('currState: ', currState)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // See if it's possible to transition to any states using eventB's event_type
+    const nextStates: any = getNextStates(currState, eventB.event_type)
+    console.log('nextStates: ', nextStates)
+    if (nextStates) {
+      return acc.concat(nextStates)
+    }
+    return acc
+  }, [])
+  console.log('')
+  console.log('allNextStates: ', allNextStates)
+  return allNextStates.length > 0
 }
 
 const generateTransitionLabel = (
@@ -116,4 +150,4 @@ const generateGraph = () => {
   return `digraph G {\n${graphEntries.join('\n')}\n}`
 }
 
-export { stateTransitionDict, getNextStates, generateGraph }
+export { isStateTransitionValid, stateTransitionDict, getNextStates, generateGraph }

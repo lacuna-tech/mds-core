@@ -16,7 +16,7 @@
 
 import test from 'unit.js'
 import assert from 'assert'
-import { VEHICLE_EVENTS, VehicleEvent } from '@mds-core/mds-types'
+import { VEHICLE_EVENTS, VehicleEvent, EVENT_STATES_MAP } from '@mds-core/mds-types'
 import { routeDistance, isStateTransitionValid, normalizeToArray, filterDefined } from '../utils'
 import { expectedTransitions } from './state-transition-expected'
 import { getNextStates } from '../state-machine'
@@ -86,7 +86,7 @@ describe('Tests Utilities', () => {
     })
   })
 
-  describe.only('State machine', () => {
+  describe('State machine', () => {
     it('Tests state transitions', () => {
       const events = Object.keys(VEHICLE_EVENTS)
       for (const event_type_A of events) {
@@ -95,8 +95,7 @@ describe('Tests Utilities', () => {
           const eventB = { event_type: event_type_B } as VehicleEvent
           const actual = isStateTransitionValid(eventA, eventB)
           const transitionKey = `${eventA.event_type}, ${eventB.event_type}`
-          console.log(actual, expectedTransitions[eventA.event_type][eventB.event_type], transitionKey)
-          // assert.strictEqual(actual, expectedTransitions[eventA.event_type][eventB.event_type], transitionKey)
+          assert.strictEqual(actual, expectedTransitions[eventA.event_type][eventB.event_type], transitionKey)
         }
       }
     })

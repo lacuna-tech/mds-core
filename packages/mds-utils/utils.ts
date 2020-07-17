@@ -38,7 +38,7 @@ import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
 
 import { isArray } from 'util'
-import { getNextStates } from './state-machine'
+import { getNextStates, isStateTransitionValid } from './state-machine'
 import { parseRelative, getCurrentDate } from './date-time-utils'
 
 const RADIUS = 30.48 // 100 feet, in meters
@@ -488,16 +488,6 @@ function isInsideBoundingBox(telemetry: Telemetry | undefined | null, bbox: Boun
     return latMin <= lat && lat <= latMax && lngMin <= lng && lng <= lngMax
   }
   return false
-}
-
-function isStateTransitionValid(eventA: VehicleEvent, eventB: VehicleEvent) {
-  const currStates = EVENT_STATES_MAP[eventA.event_type]
-  const nextStates = currStates
-    .map(currState => {
-      getNextStates(currState, eventB.event_type)
-    })
-    .filter(states => states !== undefined)
-  return nextStates.length > 0
 }
 
 function getPolygon(geographies: Geography[], geography: string): Geometry | FeatureCollection {
