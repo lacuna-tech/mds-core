@@ -163,33 +163,6 @@ export const EVENT_STATES_MAP: { [P in VEHICLE_EVENT]: Array<VEHICLE_STATE> } = 
   trip_leave_jurisdiction: [VEHICLE_STATES.elsewhere],
   trip_start: [VEHICLE_STATES.on_trip],
   unspecified: [VEHICLE_STATES.available, VEHICLE_STATES.non_operational, VEHICLE_STATES.removed]
-  /*
-  battery_charged: VEHICLE_STATES.available,
-  on_hours: VEHICLE_STATES.available,
-  provider_drop_off: VEHICLE_STATES.available,
-  agency_drop_off: VEHICLE_STATES.available,
-  maintenance: VEHICLE_STATES.available,
-  trip_end: VEHICLE_STATES.available,
-  reservation_cancel: VEHICLE_STATES.available,
-  trip_cancel: VEHICLE_STATES.available,
-  system_resume: VEHICLE_STATES.available,
-  comms_restored: VEHICLE_STATES.available,
-  unspecified: VEHICLE_STATES.unknown, // FIXME not sure this is correct
-  reservation_start: VEHICLE_STATES.reserved,
-  trip_start: VEHICLE_STATES.on_trip,
-  trip_enter_jurisdiction: VEHICLE_STATES.on_trip,
-  trip_leave_jurisdiction: VEHICLE_STATES.elsewhere,
-  battery_low: VEHICLE_STATES.non_operational,
-  off_hours: VEHICLE_STATES.non_operational,
-  system_suspend: VEHICLE_STATES.non_operational,
-  rebalance_pick_up: VEHICLE_STATES.removed,
-  maintenance_pick_up: VEHICLE_STATES.removed,
-  agency_pick_up: VEHICLE_STATES.removed,
-  compliance_pick_up: VEHICLE_STATES.removed,
-  decommissioned: VEHICLE_STATES.removed,
-  missing: VEHICLE_STATES.unknown,
-  comms_lost: VEHICLE_STATES.unknown
-  */
 }
 
 const StatusEventMap = <T extends { [S in VEHICLE_STATE]: Partial<typeof VEHICLE_EVENTS> }>(map: T) => map
