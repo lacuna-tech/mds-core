@@ -13,7 +13,7 @@ import {
 const stateTransitionDict: {
   [S in VEHICLE_STATE]: Partial<
     {
-      [E in VEHICLE_EVENT]: Array<VEHICLE_STATE>
+      [E in VEHICLE_EVENT]: VEHICLE_STATE[]
     }
   >
 } = {
@@ -100,19 +100,29 @@ const getNextStates = (currStatus: VEHICLE_STATE, nextEvent: VEHICLE_EVENT): Arr
   return stateTransitionDict[currStatus]?.[nextEvent]
 }
 
-function isStateTransitionValid(eventA: VehicleEvent, eventB: VehicleEvent) {
-  const currStates = EVENT_STATES_MAP[eventA.event_type]
+function isEventSequenceValidHelper(eventTypeA: VEHICLE_EVENT, eventTypeB: VEHICLE_EVENT) {
+  const currStates = EVENT_STATES_MAP[eventTypeA]
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const allNextStates: any = currStates.reduce((acc, currState) => {
+  for (const currState of currStates) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // See if it's possible to transition to any states using eventB's event_type
-    const nextStates: any = getNextStates(currState, eventB.event_type)
+    const nextStates: any = getNextStates(currState, eventTypeB)
     if (nextStates) {
-      return acc.concat(nextStates)
+      return true
     }
-    return acc
-  }, [])
-  return allNextStates.length > 0
+  }
+  return false
+}
+
+function isEventSequenceValid(eventA: VehicleEvent, eventB: VehicleEvent) {
+  for (const eventTypeA of eventA.event_types) {
+    for (const eventTypeB of eventB.event_types) {
+      if (isEventSequenceValidHelper(eventTypeA, eventTypeB)) {
+        return true
+      }
+    }
+  }
+  return false
 }
 
 const generateTransitionLabel = (
@@ -141,4 +151,4 @@ const generateGraph = () => {
   return `digraph G {\n${graphEntries.join('\n')}\n}`
 }
 
-export { isStateTransitionValid, stateTransitionDict, getNextStates, generateGraph }
+export { isEventSequenceValid, stateTransitionDict, getNextStates, generateGraph }

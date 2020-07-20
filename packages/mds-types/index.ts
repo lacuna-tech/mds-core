@@ -131,7 +131,7 @@ export type AUDIT_EVENT_TYPE = keyof typeof AUDIT_EVENT_TYPES
 // }
 
 // States you transition into based on event_type
-export const EVENT_STATES_MAP: { [P in VEHICLE_EVENT]: Array<VEHICLE_STATE> } = {
+export const EVENT_STATES_MAP: { [P in VEHICLE_EVENT]: VEHICLE_STATE[] } = {
   agency_drop_off: [VEHICLE_STATES.available],
   agency_pick_up: [VEHICLE_STATES.removed],
   battery_charged: [VEHICLE_STATES.available],
@@ -254,12 +254,11 @@ export interface VehicleEvent {
   timestamp: Timestamp
   timestamp_long?: string | null
   delta?: Timestamp | null
-  event_type: VEHICLE_EVENT
+  event_types: VEHICLE_EVENT[]
   // event_type_reason?: VEHICLE_REASON | null
   telemetry_timestamp?: Timestamp | null
   telemetry?: Telemetry | null
   trip_id?: UUID | null
-  service_area_id?: UUID | null
   recorded: Timestamp
 }
 

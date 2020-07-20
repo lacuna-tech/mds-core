@@ -35,7 +35,7 @@ import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
 
 import { isArray } from 'util'
-import { getNextStates, isStateTransitionValid } from './state-machine'
+import { getNextStates, isEventSequenceValid } from './state-machine'
 import { parseRelative, getCurrentDate } from './date-time-utils'
 
 const RADIUS = 30.48 // 100 feet, in meters
@@ -497,6 +497,12 @@ function getPolygon(geographies: Geography[], geography: string): Geometry | Fea
   return res.geography_json
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function areThereCommonElements(arr1: any[], arr2: any[]) {
+  const set = new Set([...arr1, ...arr2])
+  return set.size !== arr1.length + arr2.length
+}
+
 function isInStatesOrEvents(rule: Rule, event: VehicleEvent): boolean {
   const { states } = rule
   // If no states are specified, then the rule applies to all VehicleStates.
@@ -505,7 +511,9 @@ function isInStatesOrEvents(rule: Rule, event: VehicleEvent): boolean {
   }
 
   // States that it is possible to transition into with event.event_type
-  const possibleStates: string[] = EVENT_STATES_MAP[event.event_type]
+  const possibleStates: VEHICLE_STATE[] = event.event_types.reduce((acc: VEHICLE_STATE[], event_type) => {
+    return acc.concat(EVENT_STATES_MAP[event_type])
+  }, [])
   const result = possibleStates.reduce((acc, state) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const matchingState: any = states[state as VEHICLE_STATE]
@@ -513,7 +521,10 @@ function isInStatesOrEvents(rule: Rule, event: VehicleEvent): boolean {
     // rule doesn't specify any events, or if there is a match between the rule and the specified
     // events, the rule matches this event. e.g. if the rule says { `available`: [`comms_lost`]} or
     // { `available`: [] }, it would match an event with event_type `comm_lost`.
-    if (matchingState !== undefined && (matchingState.length === 0 || matchingState.includes(event.event_type))) {
+    if (
+      matchingState !== undefined &&
+      (matchingState.length === 0 || areThereCommonElements(matchingState, event.event_types))
+    ) {
       return acc + 1
     }
     return acc
@@ -641,7 +652,7 @@ export {
   isInsideBoundingBox,
   head,
   tail,
-  isStateTransitionValid,
+  isEventSequenceValid,
   getNextStates,
   pointInGeometry,
   getPolygon,
