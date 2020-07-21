@@ -12,9 +12,8 @@ import {
   UserEmailClaim,
   JurisdictionsClaim
 } from '@mds-core/mds-api-authorizer'
-import promBundle from 'express-prom-bundle'
-
-const metricsMiddleware = promBundle({includeMethod: true, includePath: true, includeUp: true})
+import prometheus from 'express-prom-bundle'
+import compression from 'compression'
 
 export type ApiRequest<B = {}> = express.Request<{}, unknown, B, {}>
 
@@ -86,6 +85,17 @@ const health = () => {
     memory: process.memoryUsage()
   }
 }
+
+const PrometheusMiddlware = (options: prometheus.Opts = {}) =>
+  prometheus({
+    metricsPath: '/prometheus',
+    includeMethod: true,
+    includePath: true,
+    includeUp: true,
+    ...options
+  })
+
+const CompressionMiddleware = (options?: compression.CompressionOptions) => compression(options)
 
 export const RequestLoggingMiddleware = <AccessTokenScope extends string>(): express.RequestHandler =>
   morgan<ApiRequest, ApiResponse & ApiResponseLocals<ApiClaims<AccessTokenScope>>>(
@@ -277,7 +287,8 @@ export const ApiServer = (
 
   // Middleware
   app.use(
-    metricsMiddleware,
+    PrometheusMiddlware(),
+    CompressionMiddleware(),
     RequestLoggingMiddleware(),
     CorsMiddleware({ preflightContinue: true, ...corsOptions }),
     JsonBodyParserMiddleware({ limit: '5mb' }),
