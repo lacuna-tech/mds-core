@@ -87,7 +87,7 @@ const health = () => {
   }
 }
 
-const PrometheusMiddlware = (options?: prometheus.Opts) =>
+const PrometheusMiddleware = (options?: prometheus.Opts) =>
   prometheus({
     metricsPath: '/prometheus',
     includeMethod: true,
@@ -288,7 +288,7 @@ export const ApiServer = (
 
   // Middleware
   app.use(
-    PrometheusMiddlware({ promRegistry: new promClient.Registry() }),
+    PrometheusMiddleware({ promRegistry: new promClient.Registry() }),
     CompressionMiddleware(),
     RequestLoggingMiddleware(),
     CorsMiddleware({ preflightContinue: true, ...corsOptions }),
