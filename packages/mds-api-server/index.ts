@@ -93,6 +93,7 @@ const PrometheusMiddleware = (options?: prometheus.Opts) =>
     includeMethod: true,
     includePath: true,
     includeUp: true,
+    promRegistry: new promClient.Registry(),
     ...options
   })
 
@@ -288,7 +289,7 @@ export const ApiServer = (
 
   // Middleware
   app.use(
-    PrometheusMiddleware({ promRegistry: new promClient.Registry() }),
+    PrometheusMiddleware(),
     CompressionMiddleware(),
     RequestLoggingMiddleware(),
     CorsMiddleware({ preflightContinue: true, ...corsOptions }),
