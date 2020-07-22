@@ -167,20 +167,7 @@ export const EVENT_STATES_MAP: { [P in VEHICLE_EVENT]: VEHICLE_STATE[] } = {
 
 const StatusEventMap = <T extends { [S in VEHICLE_STATE]: Partial<typeof VEHICLE_EVENTS> }>(map: T) => map
 
-// export const STATUS_EVENT_MAP = StatusEventMap({
-//   available: Enum(
-//     VEHICLE_EVENTS.service_start: ,
-//     VEHICLE_EVENTS.provider_drop_off,
-//     VEHICLE_EVENTS.cancel_reservation,
-//     VEHICLE_EVENTS.agency_drop_off
-//   ),
-//   reserved: Enum(VEHICLE_EVENTS.reserve),
-//   unavailable: Enum(VEHICLE_EVENTS.service_end, VEHICLE_EVENTS.trip_end),
-//   trip: Enum(VEHICLE_EVENTS.trip_start, VEHICLE_EVENTS.trip_enter),
-//   elsewhere: Enum(VEHICLE_EVENTS.trip_leave),
-//   removed: Enum(VEHICLE_EVENTS.register, VEHICLE_EVENTS.provider_pick_up, VEHICLE_EVENTS.agency_pick_up),
-//   inactive: Enum(VEHICLE_EVENTS.deregister)
-// })
+// Given a state, list the valid events that can take a vehicle out of that state
 export const STATE_EVENT_MAP = StatusEventMap({
   available: Enum(
     VEHICLE_EVENTS.battery_charged,
@@ -380,14 +367,14 @@ export interface PolicyMessage {
 
 // This gets you a type where the keys must be VEHICLE_STATES, such as 'available',
 // and the values are an array of events.
-export type ApplicableStateEventCombos = { [S in VEHICLE_STATE]: (keyof typeof STATE_EVENT_MAP[S])[] | [] }
+export type StatesToEvents = { [S in VEHICLE_STATE]: (keyof typeof STATE_EVENT_MAP[S])[] | [] }
 
 interface BaseRule<RuleType = 'count' | 'speed' | 'time'> {
   // TODO 'rate'
   name: string
   rule_id: UUID
   geographies: UUID[]
-  states: Partial<ApplicableStateEventCombos> | null
+  states: Partial<StatesToEvents> | null
   rule_type: RuleType
   vehicle_types?: VEHICLE_TYPE[] | null
   maximum?: number | null

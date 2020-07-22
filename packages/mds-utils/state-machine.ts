@@ -4,7 +4,8 @@ import {
   VEHICLE_STATE,
   VEHICLE_EVENT,
   EVENT_STATES_MAP,
-  VehicleEvent
+  VehicleEvent,
+  STATE_EVENT_MAP
 } from '@mds-core/mds-types'
 
 /* Start with a state, then there's a list of valid event_types by which one
@@ -96,7 +97,7 @@ const stateTransitionDict: {
   }
 }
 
-const getNextStates = (currStatus: VEHICLE_STATE, nextEvent: VEHICLE_EVENT): Array<VEHICLE_STATE> | undefined => {
+const getNextStates = (currStatus: VEHICLE_STATE, nextEvent: VEHICLE_EVENT): VEHICLE_STATE[] | undefined => {
   return stateTransitionDict[currStatus]?.[nextEvent]
 }
 
@@ -106,7 +107,7 @@ function isEventSequenceValidHelper(eventTypeA: VEHICLE_EVENT, eventTypeB: VEHIC
   for (const currState of currStates) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     // See if it's possible to transition to any states using eventB's event_type
-    const nextStates: any = getNextStates(currState, eventTypeB)
+    const nextStates: VEHICLE_STATE[] | undefined = getNextStates(currState, eventTypeB)
     if (nextStates) {
       return true
     }
@@ -124,7 +125,6 @@ function isEventSequenceValid(eventA: VehicleEvent, eventB: VehicleEvent) {
   }
   return false
 }
-
 const generateTransitionLabel = (status: VEHICLE_STATE, nextStatus: VEHICLE_STATE, transitionEvent: VEHICLE_EVENT) => {
   return `${status} -> ${nextStatus} [ label = ${transitionEvent} ]`
 }

@@ -497,8 +497,7 @@ function getPolygon(geographies: Geography[], geography: string): Geometry | Fea
   return res.geography_json
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function areThereCommonElements(arr1: any[], arr2: any[]) {
+function areThereCommonElements<T>(arr1: T[], arr2: T[]) {
   const set = new Set([...arr1, ...arr2])
   return set.size !== arr1.length + arr2.length
 }
@@ -514,16 +513,20 @@ function isInStatesOrEvents(rule: Rule, event: VehicleEvent): boolean {
   const possibleStates: VEHICLE_STATE[] = event.event_types.reduce((acc: VEHICLE_STATE[], event_type) => {
     return acc.concat(EVENT_STATES_MAP[event_type])
   }, [])
+  // The last element, assuming the provider didn't make a mistake, should be equivalent
+  // to the state of the event.
+  possibleStates.pop()
   const result = possibleStates.reduce((acc, state) => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const matchingState: any = states[state as VEHICLE_STATE]
-    // If there's a match between the event_type's transitionable events, and the
-    // rule doesn't specify any events, or if there is a match between the rule and the specified
-    // events, the rule matches this event. e.g. if the rule says { `available`: [`comms_lost`]} or
-    // { `available`: [] }, it would match an event with event_type `comm_lost`.
+    const matchableEvents: any = states[state as VEHICLE_STATE]
+    /* If there's a match between the event_type's transitionable events, and the
+     rule doesn't specify any events, or if there is a match between the rule and the specified
+     events, the rule matches this event. e.g. if the rule says { `available`: [`comms_lost`]} or
+     { `available`: [] }, it would match an event with event_type `comm_lost`.
+    */
     if (
-      matchingState !== undefined &&
-      (matchingState.length === 0 || areThereCommonElements(matchingState, event.event_types))
+      matchableEvents !== undefined &&
+      (matchableEvents.length === 0 || areThereCommonElements(matchableEvents, event.event_types))
     ) {
       return acc + 1
     }
