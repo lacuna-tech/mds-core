@@ -125,12 +125,8 @@ function isEventSequenceValid(eventA: VehicleEvent, eventB: VehicleEvent) {
   return false
 }
 
-const generateTransitionLabel = (
-  status: VEHICLE_STATE,
-  nextStatus: Array<VEHICLE_STATE>,
-  transitionEvent: VEHICLE_EVENT
-) => {
-  return `${status} -> ${nextStatus.join(', ')} [ label = ${transitionEvent} ]`
+const generateTransitionLabel = (status: VEHICLE_STATE, nextStatus: VEHICLE_STATE, transitionEvent: VEHICLE_EVENT) => {
+  return `${status} -> ${nextStatus} [ label = ${transitionEvent} ]`
 }
 
 // Punch this output into http://www.webgraphviz.com/
@@ -141,9 +137,11 @@ const generateGraph = () => {
     const eventTransitions: VEHICLE_EVENT[] = Object.keys(stateTransitionDict[status]) as VEHICLE_EVENT[]
     for (const event of eventTransitions) {
       if (event) {
-        const nextStatus: Array<VEHICLE_STATE> | undefined = stateTransitionDict[status][event]
-        if (nextStatus) {
-          graphEntries.push(`\t${generateTransitionLabel(status, nextStatus, event)}`)
+        const nextStatuses: Array<VEHICLE_STATE> | undefined = stateTransitionDict[status][event]
+        if (nextStatuses) {
+          for (const nextStatus of nextStatuses) {
+            graphEntries.push(`\t${generateTransitionLabel(status, nextStatus, event)}`)
+          }
         }
       }
     }
