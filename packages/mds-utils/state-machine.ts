@@ -4,7 +4,8 @@ import {
   VEHICLE_STATE,
   VEHICLE_EVENT,
   EVENT_STATES_MAP,
-  VehicleEvent
+  VehicleEvent,
+  STATE_EVENT_MAP
 } from '@mds-core/mds-types'
 
 /* Start with a state, then there's a list of valid event_types by which one
@@ -100,30 +101,28 @@ const getNextStates = (currStatus: VEHICLE_STATE, nextEvent: VEHICLE_EVENT): VEH
   return stateTransitionDict[currStatus]?.[nextEvent]
 }
 
-function isEventSequenceValidHelper(eventTypeA: VEHICLE_EVENT, eventTypeB: VEHICLE_EVENT) {
-  const currStates = EVENT_STATES_MAP[eventTypeA]
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  for (const currState of currStates) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    // See if it's possible to transition to any states using eventB's event_type
-    const nextStates: VEHICLE_STATE[] | undefined = getNextStates(currState, eventTypeB)
-    if (nextStates) {
-      return true
+function getValidStateEventMappings(states: VEHICLE_STATE[], event: VEHICLE_EVENT) {
+  return states.reduce((acc: VEHICLE_STATE[], state) => {
+    if (Object.keys(STATE_EVENT_MAP[state]).includes(event)) {
+      acc.push(state)
     }
-  }
-  return false
+    return acc
+  }, [])
 }
 
 function isEventSequenceValid(eventA: VehicleEvent, eventB: VehicleEvent) {
-  for (const eventTypeA of eventA.event_types) {
-    for (const eventTypeB of eventB.event_types) {
-      if (isEventSequenceValidHelper(eventTypeA, eventTypeB)) {
-        return true
-      }
+  let prevStates: VEHICLE_STATE[] = [eventA.vehicle_state]
+  for (const eventTypeB of eventB.event_types) {
+    const validStateEventMappings = getValidStateEventMappings(prevStates, eventTypeB)
+    if (validStateEventMappings.length > 0) {
+      prevStates = EVENT_STATES_MAP[eventTypeB]
+    } else {
+      return false
     }
   }
-  return false
+  return prevStates.includes(eventB.vehicle_state)
 }
+
 const generateTransitionLabel = (status: VEHICLE_STATE, nextStatus: VEHICLE_STATE, transitionEvent: VEHICLE_EVENT) => {
   return `${status} -> ${nextStatus} [ label = ${transitionEvent} ]`
 }

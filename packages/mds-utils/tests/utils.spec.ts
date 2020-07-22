@@ -16,7 +16,14 @@
 
 import test from 'unit.js'
 import assert from 'assert'
-import { VEHICLE_EVENTS, VehicleEvent } from '@mds-core/mds-types'
+import {
+  VEHICLE_EVENTS,
+  VehicleEvent,
+  EVENT_STATES_MAP,
+  VEHICLE_EVENT,
+  VEHICLE_STATES,
+  VEHICLE_STATE
+} from '@mds-core/mds-types'
 import { routeDistance, isEventSequenceValid, normalizeToArray, filterDefined } from '../utils'
 import { expectedTransitions } from './state-transition-expected'
 
@@ -87,16 +94,20 @@ describe('Tests Utilities', () => {
 
   describe('State machine', () => {
     it('Tests state transitions', () => {
-      const events = Object.keys(VEHICLE_EVENTS)
+      const events = Object.keys(VEHICLE_EVENTS) as VEHICLE_EVENT[]
+      const states = Object.keys(VEHICLE_STATES) as VEHICLE_STATE[]
       for (const event_type_A of events) {
-        for (const event_type_B of events) {
-          const eventA = { event_types: [event_type_A] } as VehicleEvent
-          const eventB = { event_types: [event_type_B] } as VehicleEvent
-          const actual = isEventSequenceValid(eventA, eventB)
-          const { 0: eventTypeA } = eventA.event_types
-          const { 0: eventTypeB } = eventB.event_types
-          const transitionKey = `${eventTypeA}, ${eventTypeB}`
-          assert.strictEqual(actual, expectedTransitions[eventTypeA][eventTypeB], transitionKey)
+        const eventAStates = EVENT_STATES_MAP[event_type_A]
+        for (const eventAState of eventAStates) {
+          const eventA = { vehicle_state: eventAState, event_types: [event_type_A] } as VehicleEvent
+          for (const event_type_B of events) {
+            for (const state of states) {
+              const eventB = { vehicle_state: state, event_types: [event_type_B] } as VehicleEvent
+              const actual = isEventSequenceValid(eventA, eventB)
+              const transitionKey = `${event_type_A}, ${event_type_B}`
+              assert.strictEqual(actual, expectedTransitions[event_type_A][event_type_B], transitionKey)
+            }
+          }
         }
       }
     })
