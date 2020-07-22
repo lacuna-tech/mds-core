@@ -87,7 +87,7 @@ const health = () => {
 }
 
 const PrometheusMiddlware = prometheus({
-  metricsPath: '/prometheus',
+  metricsPath: pathPrefix('/prometheus'),
   includeMethod: true,
   includePath: true,
   includeUp: true
