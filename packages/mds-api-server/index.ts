@@ -14,6 +14,7 @@ import {
 } from '@mds-core/mds-api-authorizer'
 import prometheus from 'express-prom-bundle'
 import compression from 'compression'
+import promClient from 'prom-client'
 
 export type ApiRequest<B = {}> = express.Request<{}, unknown, B, {}>
 
@@ -86,12 +87,14 @@ const health = () => {
   }
 }
 
-const PrometheusMiddlware = prometheus({
-  metricsPath: pathPrefix('/prometheus'),
-  includeMethod: true,
-  includePath: true,
-  includeUp: true
-})
+const PrometheusMiddlware = (options?: prometheus.Opts) =>
+  prometheus({
+    metricsPath: '/prometheus',
+    includeMethod: true,
+    includePath: true,
+    includeUp: true,
+    ...options
+  })
 
 const CompressionMiddleware = (options?: compression.CompressionOptions) => compression(options)
 
@@ -285,7 +288,7 @@ export const ApiServer = (
 
   // Middleware
   app.use(
-    PrometheusMiddlware,
+    PrometheusMiddlware({ promRegistry: new promClient.Registry() }),
     CompressionMiddleware(),
     RequestLoggingMiddleware(),
     CorsMiddleware({ preflightContinue: true, ...corsOptions }),
