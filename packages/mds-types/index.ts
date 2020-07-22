@@ -228,7 +228,6 @@ export interface Device {
   mfgr?: string | null
   model?: string | null
   recorded: Timestamp
-  status?: VEHICLE_STATE | null
 }
 
 export type DeviceID = Pick<Device, 'provider_id' | 'device_id'>
@@ -246,6 +245,7 @@ export interface VehicleEvent {
   telemetry_timestamp?: Timestamp | null
   telemetry?: Telemetry | null
   trip_id?: UUID | null
+  vehicle_state: VEHICLE_STATE
   recorded: Timestamp
 }
 

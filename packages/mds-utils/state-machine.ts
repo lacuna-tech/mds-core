@@ -4,8 +4,7 @@ import {
   VEHICLE_STATE,
   VEHICLE_EVENT,
   EVENT_STATES_MAP,
-  VehicleEvent,
-  STATE_EVENT_MAP
+  VehicleEvent
 } from '@mds-core/mds-types'
 
 /* Start with a state, then there's a list of valid event_types by which one
