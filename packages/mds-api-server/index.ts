@@ -86,14 +86,12 @@ const health = () => {
   }
 }
 
-const PrometheusMiddlware = (options: prometheus.Opts = {}) =>
-  prometheus({
-    metricsPath: '/prometheus',
-    includeMethod: true,
-    includePath: true,
-    includeUp: true,
-    ...options
-  })
+const PrometheusMiddlware = prometheus({
+  metricsPath: '/prometheus',
+  includeMethod: true,
+  includePath: true,
+  includeUp: true
+})
 
 const CompressionMiddleware = (options?: compression.CompressionOptions) => compression(options)
 
@@ -287,7 +285,7 @@ export const ApiServer = (
 
   // Middleware
   app.use(
-    PrometheusMiddlware(),
+    PrometheusMiddlware,
     CompressionMiddleware(),
     RequestLoggingMiddleware(),
     CorsMiddleware({ preflightContinue: true, ...corsOptions }),
