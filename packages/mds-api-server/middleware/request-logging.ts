@@ -25,9 +25,8 @@ export const RequestLoggingMiddleware = <AccessTokenScope extends string>(
     },
     {
       skip: (req, res) => {
-        // By default only log 400/500 errors
-        const { API_REQUEST_LOG_LEVEL = 0 } = process.env
-        return res.statusCode < Number(API_REQUEST_LOG_LEVEL)
+        const { REQUEST_LOGGING_LEVEL = 0 } = process.env
+        return res.statusCode < Number(REQUEST_LOGGING_LEVEL)
       },
       // Use logger, but remove extra line feed added by morgan stream option
       stream: { write: msg => logger.info(msg.slice(0, -1)) }
