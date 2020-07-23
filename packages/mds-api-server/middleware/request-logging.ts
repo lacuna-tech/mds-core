@@ -19,7 +19,9 @@ export const RequestLoggingMiddleware = <AccessTokenScope extends string>(
         '-',
         tokens['response-time'](req, res),
         'ms'
-      ].join(' ')
+      ]
+        .filter((token): token is string => token !== undefined)
+        .join(' ')
     },
     {
       skip: (req, res) => {
