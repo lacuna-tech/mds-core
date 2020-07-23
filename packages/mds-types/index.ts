@@ -167,32 +167,42 @@ export const EVENT_STATES_MAP: { [P in VEHICLE_EVENT]: VEHICLE_STATE[] } = {
 
 const StatusEventMap = <T extends { [S in VEHICLE_STATE]: Partial<typeof VEHICLE_EVENTS> }>(map: T) => map
 
-// Given a state, list the valid events that can take a vehicle out of that state
+// Given a state, list the valid entry events
 export const STATE_EVENT_MAP = StatusEventMap({
   available: Enum(
     VEHICLE_EVENTS.battery_charged,
     VEHICLE_EVENTS.on_hours,
     VEHICLE_EVENTS.provider_drop_off,
     VEHICLE_EVENTS.agency_drop_off,
-    VEHICLE_EVENTS.reservation_cancel,
-    VEHICLE_EVENTS.maintenance_pick_up,
+    VEHICLE_EVENTS.maintenance,
     VEHICLE_EVENTS.trip_end,
-    VEHICLE_EVENTS.comms_restored,
+    VEHICLE_EVENTS.reservation_cancel,
+    VEHICLE_EVENTS.trip_cancel,
     VEHICLE_EVENTS.system_resume,
-    VEHICLE_EVENTS.agency_drop_off
+    VEHICLE_EVENTS.maintenance_pick_up,
+    VEHICLE_EVENTS.comms_restored,
+    VEHICLE_EVENTS.unspecified
   ),
-  reserved: Enum(VEHICLE_EVENTS.reservation_start),
-  non_operational: Enum(VEHICLE_EVENTS.off_hours, VEHICLE_EVENTS.battery_low, VEHICLE_EVENTS.system_suspend),
-  on_trip: Enum(VEHICLE_EVENTS.trip_start, VEHICLE_EVENTS.trip_enter_jurisdiction),
-  elsewhere: Enum(VEHICLE_EVENTS.trip_leave_jurisdiction),
+  reserved: Enum(VEHICLE_EVENTS.reservation_start, VEHICLE_EVENTS.comms_restored),
+  non_operational: Enum(
+    VEHICLE_EVENTS.battery_low,
+    VEHICLE_EVENTS.maintenance,
+    VEHICLE_EVENTS.off_hours,
+    VEHICLE_EVENTS.system_suspend,
+    VEHICLE_EVENTS.unspecified,
+    VEHICLE_EVENTS.comms_restored
+  ),
+  on_trip: Enum(VEHICLE_EVENTS.trip_start, VEHICLE_EVENTS.trip_enter_jurisdiction, VEHICLE_EVENTS.comms_restored),
+  elsewhere: Enum(VEHICLE_EVENTS.trip_leave_jurisdiction, VEHICLE_EVENTS.comms_restored),
   removed: Enum(
     VEHICLE_EVENTS.maintenance_pick_up,
     VEHICLE_EVENTS.rebalance_pick_up,
     VEHICLE_EVENTS.compliance_pick_up,
     VEHICLE_EVENTS.agency_pick_up,
-    VEHICLE_EVENTS.decommissioned
+    VEHICLE_EVENTS.decommissioned,
+    VEHICLE_EVENTS.unspecified
   ),
-  unknown: Enum(VEHICLE_EVENTS.comms_lost, VEHICLE_EVENTS.missing) // TODO 1.0
+  unknown: Enum(VEHICLE_EVENTS.comms_lost, VEHICLE_EVENTS.missing)
 })
 
 export const DAYS_OF_WEEK = Enum('sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat')
@@ -228,6 +238,7 @@ export interface Device {
   mfgr?: string | null
   model?: string | null
   recorded: Timestamp
+  status?: VEHICLE_STATE | null
 }
 
 export type DeviceID = Pick<Device, 'provider_id' | 'device_id'>

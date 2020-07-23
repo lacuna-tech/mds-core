@@ -101,21 +101,53 @@ const getNextStates = (currStatus: VEHICLE_STATE, nextEvent: VEHICLE_EVENT): VEH
   return stateTransitionDict[currStatus]?.[nextEvent]
 }
 
-function getValidStateEventMappings(states: VEHICLE_STATE[], event: VEHICLE_EVENT) {
+// Filter for all states that have this event as a valid exiting event
+function getValidExitableStates(states: VEHICLE_STATE[], event: VEHICLE_EVENT) {
   return states.reduce((acc: VEHICLE_STATE[], state) => {
-    if (Object.keys(STATE_EVENT_MAP[state]).includes(event)) {
+    if (Object.keys(stateTransitionDict[state]).includes(event)) {
       acc.push(state)
     }
     return acc
   }, [])
 }
 
+function isEventValid(event: VehicleEvent) {
+  const { event_types } = event
+  const finalEventType: VEHICLE_EVENT = event_types[event_types.length - 1]
+  return EVENT_STATES_MAP[finalEventType].includes(event.vehicle_state as VEHICLE_STATE)
+}
+
 function isEventSequenceValid(eventA: VehicleEvent, eventB: VehicleEvent) {
+  /*  if (!(isEventValid(eventA) && isEventValid(eventB))) {
+    return false
+  }
+  */
   let prevStates: VEHICLE_STATE[] = [eventA.vehicle_state]
+  console.log('prevStates: ', prevStates)
   for (const eventTypeB of eventB.event_types) {
-    const validStateEventMappings = getValidStateEventMappings(prevStates, eventTypeB)
-    if (validStateEventMappings.length > 0) {
-      prevStates = EVENT_STATES_MAP[eventTypeB]
+    console.log('eventTypeB: ', eventTypeB)
+    const validExitStates = getValidExitableStates(prevStates, eventTypeB)
+    console.log('validExitStates: ', validExitStates)
+    if (validExitStates.length > 0) {
+      const arr: VEHICLE_STATE[] = []
+      const nextStates = validExitStates.reduce((acc: VEHICLE_STATE[], nextState) => {
+        const possibleNextStates = getNextStates(nextState, eventTypeB)
+        console.log('possibleNextStates: ', possibleNextStates)
+        if (possibleNextStates) {
+          console.log('concatting', possibleNextStates)
+          acc.concat(possibleNextStates)
+          arr.concat(possibleNextStates)
+          console.log(acc, arr)
+        }
+        return acc
+      }, [])
+      console.log('arr: ', arr)
+      console.log('nextStates: ', nextStates)
+      if (nextStates) {
+        prevStates = nextStates
+      } else {
+        return false
+      }
     } else {
       return false
     }
@@ -147,4 +179,4 @@ const generateGraph = () => {
   return `digraph G {\n${graphEntries.join('\n')}\n}`
 }
 
-export { isEventSequenceValid, stateTransitionDict, getNextStates, generateGraph }
+export { getValidExitableStates, isEventValid, isEventSequenceValid, stateTransitionDict, getNextStates, generateGraph }

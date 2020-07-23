@@ -22,10 +22,12 @@ import {
   EVENT_STATES_MAP,
   VEHICLE_EVENT,
   VEHICLE_STATES,
-  VEHICLE_STATE
+  VEHICLE_STATE,
+  STATE_EVENT_MAP
 } from '@mds-core/mds-types'
 import { routeDistance, isEventSequenceValid, normalizeToArray, filterDefined } from '../utils'
 import { expectedTransitions } from './state-transition-expected'
+import { stateTransitionDict } from '../state-machine'
 
 const Boston = { lat: 42.360081, lng: -71.058884 }
 const LosAngeles = { lat: 34.052235, lng: -118.243683 }
@@ -97,15 +99,17 @@ describe('Tests Utilities', () => {
       const events = Object.keys(VEHICLE_EVENTS) as VEHICLE_EVENT[]
       const states = Object.keys(VEHICLE_STATES) as VEHICLE_STATE[]
       for (const event_type_A of events) {
-        const eventAStates = EVENT_STATES_MAP[event_type_A]
-        for (const eventAState of eventAStates) {
+        for (const eventAState of states) {
           const eventA = { vehicle_state: eventAState, event_types: [event_type_A] } as VehicleEvent
           for (const event_type_B of events) {
-            for (const state of states) {
-              const eventB = { vehicle_state: state, event_types: [event_type_B] } as VehicleEvent
+            for (const eventBState of states) {
+              const eventB = { vehicle_state: eventBState, event_types: [event_type_B] } as VehicleEvent
               const actual = isEventSequenceValid(eventA, eventB)
-              const transitionKey = `${event_type_A}, ${event_type_B}`
-              assert.strictEqual(actual, expectedTransitions[event_type_A][event_type_B], transitionKey)
+              const transitionKey = `{ state A: ${eventAState}, event_type A: ${event_type_A} }, { state B: ${eventBState}, event_type ${event_type_B} }`
+              const stateTransitionValidity = !!stateTransitionDict[eventAState][event_type_B]?.includes(eventBState)
+              console.log('actual: ', actual, 'stateTransitionValidity: ', stateTransitionValidity)
+
+              assert.strictEqual(actual, stateTransitionValidity, transitionKey)
             }
           }
         }
