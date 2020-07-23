@@ -4,8 +4,7 @@ import {
   VEHICLE_STATE,
   VEHICLE_EVENT,
   EVENT_STATES_MAP,
-  VehicleEvent,
-  STATE_EVENT_MAP
+  VehicleEvent
 } from '@mds-core/mds-types'
 
 /* Start with a state, then there's a list of valid event_types by which one
@@ -114,35 +113,22 @@ function getValidExitableStates(states: VEHICLE_STATE[], event: VEHICLE_EVENT) {
 function isEventValid(event: VehicleEvent) {
   const { event_types } = event
   const finalEventType: VEHICLE_EVENT = event_types[event_types.length - 1]
-  return EVENT_STATES_MAP[finalEventType].includes(event.vehicle_state as VEHICLE_STATE)
+  return !!EVENT_STATES_MAP[finalEventType].includes(event.vehicle_state as VEHICLE_STATE)
 }
 
 function isEventSequenceValid(eventA: VehicleEvent, eventB: VehicleEvent) {
-  /*  if (!(isEventValid(eventA) && isEventValid(eventB))) {
-    return false
-  }
-  */
   let prevStates: VEHICLE_STATE[] = [eventA.vehicle_state]
-  console.log('prevStates: ', prevStates)
   for (const eventTypeB of eventB.event_types) {
-    console.log('eventTypeB: ', eventTypeB)
     const validExitStates = getValidExitableStates(prevStates, eventTypeB)
-    console.log('validExitStates: ', validExitStates)
     if (validExitStates.length > 0) {
-      const arr: VEHICLE_STATE[] = []
-      const nextStates = validExitStates.reduce((acc: VEHICLE_STATE[], nextState) => {
+      let arr: VEHICLE_STATE[] = []
+      validExitStates.map(nextState => {
         const possibleNextStates = getNextStates(nextState, eventTypeB)
-        console.log('possibleNextStates: ', possibleNextStates)
         if (possibleNextStates) {
-          console.log('concatting', possibleNextStates)
-          acc.concat(possibleNextStates)
-          arr.concat(possibleNextStates)
-          console.log(acc, arr)
+          arr = arr.concat(possibleNextStates)
         }
-        return acc
-      }, [])
-      console.log('arr: ', arr)
-      console.log('nextStates: ', nextStates)
+      })
+      const nextStates = arr
       if (nextStates) {
         prevStates = nextStates
       } else {
