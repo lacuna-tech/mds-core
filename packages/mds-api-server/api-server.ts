@@ -40,13 +40,13 @@ export const ApiServer = (
 
   // Middleware
   app.use(
-    PrometheusMiddleware(options.prometheus),
     CompressionMiddleware(options.compression),
     RequestLoggingMiddleware(options.requestLogging),
     CorsMiddleware(options.cors),
     JsonBodyParserMiddleware(options.jsonBodyParser),
     MaintenanceModeMiddleware(options.maintenanceMode),
-    AuthorizationMiddleware(options.authorization)
+    AuthorizationMiddleware(options.authorization),
+    PrometheusMiddleware(options.prometheus)
   )
 
   // Health Route
