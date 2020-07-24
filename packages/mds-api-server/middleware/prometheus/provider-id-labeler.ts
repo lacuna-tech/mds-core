@@ -1,4 +1,5 @@
 import type { Labels as PrometheusLabels } from 'express-prom-bundle'
+import { PrometheusLabeler } from './@types'
 import { ApiRequest, ApiResponse, ApiResponseLocals, ApiClaims } from '../../@types'
 
 const providerIdLabelTransformer = <AccessTokenScope extends string>(
@@ -12,7 +13,7 @@ const providerIdLabelTransformer = <AccessTokenScope extends string>(
   return labels
 }
 
-export const ProviderIdLabeler = {
+export const ProviderIdLabeler: PrometheusLabeler = {
   label: 'provider_id',
   base: null,
   transformer: providerIdLabelTransformer

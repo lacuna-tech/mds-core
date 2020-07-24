@@ -3,12 +3,7 @@ import prometheus from 'express-prom-bundle'
 import promClient from 'prom-client'
 import { ProviderIdLabeler } from './provider-id-labeler'
 import { ApiRequest, ApiResponse, ApiResponseLocals, ApiClaims } from '../../@types'
-
-type PrometheusLabeler = {
-  label: string
-  base: string | number | null
-  transformer: TransformLabelsFn
-}
+import { PrometheusLabeler } from './@types'
 
 const PrometheusLabelTransformers = <AccessTokenScope extends string>(...labelers: TransformLabelsFn[]) => {
   return (
