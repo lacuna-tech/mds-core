@@ -252,7 +252,6 @@ export interface VehicleEvent {
   timestamp_long?: string | null
   delta?: Timestamp | null
   event_types: VEHICLE_EVENT[]
-  // event_type_reason?: VEHICLE_REASON | null
   telemetry_timestamp?: Timestamp | null
   telemetry?: Telemetry | null
   trip_id?: UUID | null

@@ -101,35 +101,34 @@ const getNextStates = (currStatus: VEHICLE_STATE, nextEvent: VEHICLE_EVENT): VEH
 }
 
 // Filter for all states that have this event as a valid exiting event
-function getValidExitableStates(states: VEHICLE_STATE[], event: VEHICLE_EVENT) {
-  return states.reduce((acc: VEHICLE_STATE[], state) => {
-    if (Object.keys(stateTransitionDict[state]).includes(event)) {
-      acc.push(state)
-    }
-    return acc
-  }, [])
+function getValidPreviousStates(
+  event: VEHICLE_EVENT,
+  states: VEHICLE_STATE[] = Object.keys(VEHICLE_STATES) as VEHICLE_STATE[]
+) {
+  return states.filter(state => {
+    return Object.keys(stateTransitionDict[state]).includes(event)
+  })
 }
 
 function isEventValid(event: VehicleEvent) {
   const { event_types } = event
   const finalEventType: VEHICLE_EVENT = event_types[event_types.length - 1]
-  return !!EVENT_STATES_MAP[finalEventType].includes(event.vehicle_state as VEHICLE_STATE)
+  return EVENT_STATES_MAP[finalEventType].includes(event.vehicle_state as VEHICLE_STATE)
 }
 
 function isEventSequenceValid(eventA: VehicleEvent, eventB: VehicleEvent) {
   let prevStates: VEHICLE_STATE[] = [eventA.vehicle_state]
   for (const eventTypeB of eventB.event_types) {
-    const validExitStates = getValidExitableStates(prevStates, eventTypeB)
-    if (validExitStates.length > 0) {
-      let arr: VEHICLE_STATE[] = []
-      validExitStates.map(nextState => {
-        const possibleNextStates = getNextStates(nextState, eventTypeB)
+    const validPreviousStates = getValidPreviousStates(eventTypeB, prevStates)
+    if (validPreviousStates.length > 0) {
+      const nextStates = validPreviousStates.reduce((acc: VEHICLE_STATE[], state) => {
+        const possibleNextStates = getNextStates(state, eventTypeB)
         if (possibleNextStates) {
-          arr = arr.concat(possibleNextStates)
+          return [...acc, ...possibleNextStates]
         }
-      })
-      const nextStates = arr
-      if (nextStates) {
+        return acc
+      }, [])
+      if (nextStates.length > 0) {
         prevStates = nextStates
       } else {
         return false
