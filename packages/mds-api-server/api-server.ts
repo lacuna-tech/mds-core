@@ -45,9 +45,14 @@ export const ApiServer = (
     CorsMiddleware(options.cors),
     JsonBodyParserMiddleware(options.jsonBodyParser),
     MaintenanceModeMiddleware(options.maintenanceMode),
-    AuthorizationMiddleware(options.authorization),
-    PrometheusMiddleware(options.prometheus)
+    AuthorizationMiddleware(options.authorization)
   )
+
+  /* Prometheus Middleware
+   * Placed after the other middleware so it can label metrics with additional
+   * properties added by the other middleware.
+   */
+  app.use(PrometheusMiddleware(options.prometheus))
 
   // Health Route
   app.get(pathPrefix('/health'), HealthRequestHandler)
