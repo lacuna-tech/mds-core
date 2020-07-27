@@ -11,6 +11,7 @@ import { RequestLoggingMiddlewareOptions, RequestLoggingMiddleware } from './mid
 import { PrometheusMiddlewareOptions, PrometheusMiddleware } from './middleware/prometheus'
 import { serverVersion } from './utils'
 import { HealthRequestHandler } from './handlers/health'
+import { HttpContextMiddleware, RequestIdMiddleware } from './middleware/http-context'
 
 export interface ApiServerOptions {
   authorization: AuthorizationMiddlewareOptions
@@ -53,6 +54,14 @@ export const ApiServer = (
    * properties added by the other middleware.
    */
   app.use(PrometheusMiddleware(options.prometheus))
+
+  /* HTTP Context Middleware
+   * Placed after the other middleware to avoid causing collisions
+   * see express-http-context's README for more information
+   */
+  app.use(HttpContextMiddleware())
+
+  app.use(RequestIdMiddleware())
 
   // Health Route
   app.get(pathPrefix('/health'), HealthRequestHandler)
