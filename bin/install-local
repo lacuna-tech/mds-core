@@ -1,0 +1,13 @@
+#!/bin/bash
+
+set -e
+set -u
+set -o pipefail
+
+# helm/tiller
+
+# istio install
+
+# label namespace
+
+# helm install
