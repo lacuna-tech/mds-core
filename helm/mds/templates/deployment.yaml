@@ -34,22 +34,20 @@ spec:
         {{- if $.Values.registry }}
         imagePullPolicy: IfNotPresent
         {{- end }}
+        {{- if (eq $api.version "latest") }}
+        imagePullPolicy: Never
+        {{- end }}
         resources:
           limits:
-            cpu: {{ $api.resourcesLimitsCpu | default ($.Values.resourcesLimitsCpu | default "500m") }}
-            memory: {{ $api.resourcesLimitsMemory | default ($.Values.resourcesLimitsMemory | default "512Mi") }}
+            cpu: {{ $api.resourcesLimitsCpu | default "1000m" }}
+            memory: {{ $api.resourcesLimitsMemory | default "1024Mi" }}
           requests:
-            cpu: {{ $api.resourcesRequestsCpu | default ($.Values.resourcesRequestsCpu | default "50m") }}
-            memory: {{ $api.resourcesRequestsMemory | default ($.Values.resourcesRequestsMemory | default "128Mi") }}
+            cpu: {{ $api.resourcesRequestsCpu | default "5m" }}
+            memory: {{ $api.resourcesRequestsMemory | default "64Mi" }}
         ports:
         - containerPort: 4000
           name: user-port
           protocol: TCP
-        volumeMounts:
-        {{- if and $.Values.nats.enabled $.Values.nats.credentials }}
-        - name: creds-volume
-          mountPath: /var/run/nats/secrets
-        {{- end }}
         env:
           - name: PORT
             value: "4000"
@@ -110,15 +108,6 @@ spec:
           {{- else }}
             value: {{ $.Release.Namespace }}
           {{- end }}
-          {{- if $.Values.slack.channel }}
-          - name: SLACK_CHANNEL
-            value: {{ $.Values.slack.channel }}
-          - name: SLACK_TOKEN
-            valueFrom:
-              secretKeyRef:
-                name: mds-secrets
-                key: slack-token
-          {{- end }}
           {{- if $api.env }}
 {{ toYaml $api.env | indent 10 }}
           {{- end }}
@@ -136,9 +125,6 @@ metadata:
   name: mds-secrets
   namespace: {{ $.Release.Namespace }}
 data:
-  {{- if .Values.slack.channel }}
-  slack-token: {{ .Values.slack.token | b64enc }}
-  {{- end }}
   {{- if .Values.postgresql.password }}
   postgresql-password: {{ .Values.postgresql.password | b64enc }}
   {{- end }}
