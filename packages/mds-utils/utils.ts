@@ -594,28 +594,25 @@ export const isTArray = <T>(arr: unknown, isT: (t: unknown) => t is T): arr is T
   return false
 }
 
-export const isStringArray = (arr: unknown) => isTArray<string>(arr, isString)
+export const isStringArray = (arr: unknown): arr is string[] => isTArray<string>(arr, isString)
 
 const parseObjectProperties = <T = string>(
   obj: { [k: string]: unknown },
   { parser }: ParseObjectPropertiesOptions<T> = {}
 ) => {
   return {
-    keys: <TKey extends string>(first: TKey, ...rest: TKey[]): Partial<{ [P in TKey]: T }> =>
+    keys: <TKey extends string>(first: TKey, ...rest: TKey[]) =>
       [first, ...rest]
         .map(key => ({ key, value: obj[key] }))
-        .filter(
-          (param): param is { key: TKey; value: string | string[] } =>
-            typeof param.value === 'string' || isStringArray(param.value)
-        )
-        .reduce(
-          (params, { key, value }) => ({
-            ...params,
-            /* eslint-disable-next-line no-nested-ternary */
-            [key]: parser ? (isArray(value) ? value.map(parser) : parser(value)) : value
-          }),
-          {}
-        )
+        .reduce((params, { key, value }) => {
+          if (typeof value === 'string') {
+            return { ...params, [key]: parser ? [parser(value)] : [value] }
+          }
+          if (isStringArray(value)) {
+            return { ...params, [key]: parser ? value.map(parser) : value }
+          }
+          return { ...params, [key]: [] }
+        }, {}) as { [P in TKey]: (T | undefined)[] }
   }
 }
 
