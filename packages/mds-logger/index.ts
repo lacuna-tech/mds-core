@@ -33,7 +33,7 @@ const log = (level: LogLevel, ...args: unknown[]): string[] => {
     const ISOTimestamp = new Date(timestamp).toISOString()
     const requestId = httpContext.get('x-request-id')
 
-    logger[level](level.toUpperCase(), ISOTimestamp, timestamp, requestId,...redacted)
+    logger[level](level.toUpperCase(), ISOTimestamp, timestamp, ...(requestId ? [requestId] : []), ...redacted)
   }
   return redacted
 }

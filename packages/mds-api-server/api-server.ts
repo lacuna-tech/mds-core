@@ -49,18 +49,17 @@ export const ApiServer = (
     AuthorizationMiddleware(options.authorization)
   )
 
-  /* Prometheus Middleware
+  /** Prometheus Middleware
    * Placed after the other middleware so it can label metrics with additional
    * properties added by the other middleware.
    */
   app.use(PrometheusMiddleware(options.prometheus))
 
-  /* HTTP Context Middleware
+  /** HTTP Context Middleware
    * Placed after the other middleware to avoid causing collisions
    * see express-http-context's README for more information
    */
   app.use(HttpContextMiddleware())
-
   app.use(RequestIdMiddleware())
 
   // Health Route
