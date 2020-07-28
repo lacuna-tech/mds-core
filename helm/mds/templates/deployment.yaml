@@ -68,7 +68,7 @@ spec:
                 key: postgresql-password
           - name: PG_HOST
           {{- if $.Values.postgresql.internal }}
-            value: {{ $.Release.Name }}-postgresql.{{ $.Release.Namespace }}.svc.cluster.local
+            value: {{ $.Release.Name }}-postgresql
           {{- else }}
             value: {{ $.Values.postgresql.host }}
           {{- end }}
@@ -86,18 +86,22 @@ spec:
           {{- end }}
           - name: REDIS_HOST
           {{- if $.Values.redis.internal }}
-            value: {{ $.Release.Name }}-redis-master.{{ $.Release.Namespace }}.svc.cluster.local
+            value: {{ $.Release.Name }}-redis-master
           {{- else }}
             value: {{ $.Values.redis.host }}
           {{- end }}
           - name: REDIS_PORT
             value: {{ $.Values.redis.port | quote }}
-          {{- if $.Values.nats.enabled }}
           - name: NATS
+          {{- if $.Values.nats.internal }}
+            value: {{ $.Release.Name }}-nats-client
+          {{- else }}
             value: {{ $.Values.nats.host }}
           {{- end }}
-          {{- if $.Values.kafka.enabled }}
           - name: KAFKA_HOST
+          {{- if $.Values.kafka.internal }}
+            value: {{ $.Release.Name }}-kafka:{{ $.Values.kafka.port }}
+          {{- else }}
             value: {{ $.Values.kafka.host }}:{{ $.Values.kafka.port }}
           {{- end }}
           - name: TENANT_ID
