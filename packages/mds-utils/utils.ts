@@ -35,7 +35,7 @@ import {
 import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
 
-import { isArray } from 'util'
+import { isArray, isString } from 'util'
 import { getNextState } from './state-machine'
 import { parseRelative, getCurrentDate } from './date-time-utils'
 
@@ -587,6 +587,15 @@ export type ParseObjectPropertiesOptions<T> = Partial<{
   parser: (value: string) => T
 }>
 
+export const isTArray = <T>(arr: unknown, isT: (t: unknown) => t is T): arr is T[] => {
+  if (arr instanceof Array) {
+    return arr.filter(t => isT(t)).length === arr.length
+  }
+  return false
+}
+
+export const isStringArray = (arr: unknown) => isTArray<string>(arr, isString)
+
 const parseObjectProperties = <T = string>(
   obj: { [k: string]: unknown },
   { parser }: ParseObjectPropertiesOptions<T> = {}
@@ -595,8 +604,18 @@ const parseObjectProperties = <T = string>(
     keys: <TKey extends string>(first: TKey, ...rest: TKey[]): Partial<{ [P in TKey]: T }> =>
       [first, ...rest]
         .map(key => ({ key, value: obj[key] }))
-        .filter((param): param is { key: TKey; value: string } => typeof param.value === 'string')
-        .reduce((params, { key, value }) => ({ ...params, [key]: parser ? parser(value) : value }), {})
+        .filter(
+          (param): param is { key: TKey; value: string | string[] } =>
+            typeof param.value === 'string' || isStringArray(param.value)
+        )
+        .reduce(
+          (params, { key, value }) => ({
+            ...params,
+            /* eslint-disable-next-line no-nested-ternary */
+            [key]: parser ? (isArray(value) ? value.map(parser) : parser(value)) : value
+          }),
+          {}
+        )
   }
 }
 
