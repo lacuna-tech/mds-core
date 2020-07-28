@@ -5,10 +5,15 @@ set -u
 set -o pipefail
 
 BASE_DIR=$(dirname $0)/..
-
+NODE_ENV=${NODE_ENV:-""}
 
 buildImage() {
-  docker build -t ${1}$(getBranchSuffix)$(getCommitHash) .
+  if [[ "$NODE_ENV" == "development" ]]; then
+    image_name=$(echo $1 | cut -f1 -d":")
+    docker build -t ${image_name}:latest .
+  else
+    docker build -t ${1}$(getBranchSuffix)$(getCommitHash) .
+  fi
 }
 
 getBranchSuffix() {
