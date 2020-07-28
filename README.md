@@ -164,11 +164,11 @@ lerna run prettier
 * Select any one of the files in a package's test folder
 * Press `F5`
 
-### Kubernetes
+## Local Kubernetes Install
 
 MDS can readily be provisioned to a [Kubernetes](https://kubernetes.io) capable cluster, be it a local or remote. The following steps describe how to build, deploy and operate against a local MDS cluster.
 
-#### Prerequisites
+### Prerequisites
 
 Obtain a local working copy of MDS:
 
@@ -177,6 +177,7 @@ git clone https://github.com/lacuna-tech/mds-core
 cd mds-core
 ```
 
+#### Docker/Kubernetes
 OSX (Linux and Windows tbd)
 
 Install [Docker Desktop](https://download.docker.com/mac/stable/Docker.dmg):
@@ -191,7 +192,7 @@ Start Docker-Desktop:
 open /Applications/Docker.app
 ```
 
-Lastly, configure Kubernetes:
+Configure Kubernetes in Docker:
 
 ```txt
 select the 'Preferences' option
@@ -209,9 +210,12 @@ Verify:
 
 ```sh
 which kubectl
-kubectl config set-context docker-desktop
+kubectl config use-context docker-desktop
 kubectl cluster-info
 ```
+
+#### Install Istio
+TBD
 
 #### Build : compile source into deployable images
 
@@ -219,9 +223,10 @@ This will run the build, create the docker container images, and generate a mani
 
 ```sh
 yarn clean
-yarn image
-yarn values
+NODE_ENV=development yarn image
 ```
+
+note that setting `NODE_ENV=development` will enable images to be built with the `:latest` tag instead of a specific version-branch-commit tag.
 
 Verify:
 
@@ -232,7 +237,7 @@ docker images --filter reference='mds-*'
 #### Run : install MDS
 
 ```sh
-helm install --name mds --values ./dist/values.yaml ./helm/mds
+helm install --name mds ./helm/mds
 ```
 
 Verify:
