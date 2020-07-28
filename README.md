@@ -214,19 +214,44 @@ kubectl config use-context docker-desktop
 kubectl cluster-info
 ```
 
+#### Install Helm/Tiller
+This implementation of MDS uses a Helm v2 chart for installation.  Helm can be installed to your local system with Homebrew (MacOS), or by downloading the correct executable for your system from https://github.com/helm/helm/releases/tag/v2.16.9
+
+Once you have the `helm` executable on your local system, you can set up the k8s side with the following commands:
+
+```sh
+kubectl -n kube-system create serviceaccount tiller
+kubectl create clusterrolebinding tiller \
+        --serviceaccount kube-system:tiller \
+        --clusterrole cluster-admin
+helm init --serviceaccount tiller --history-max 20
+```
+
+WARNING: This will give helm full permissions to your entire kubernetes cluster.  This should only be used on local systems or private clusters with fully-trusted users.  DO NOT USE IN PRODUCTION
+
 #### Install Istio
-TBD
 
-#### Build : compile source into deployable images
+Istio is a service mesh for Kubernetes.  This MDS implementation uses Istio for its built-in handling of JWT authentication, advanced HTTP routing, and (optionally) mTLS.
 
-This will run the build, create the docker container images, and generate a manifest of the build output for use with Helm.
+
+```sh
+curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.6 sh -
+cd istio-1.4.6
+helm install --name istio-init --namespace istio-system ./install/kubernetes/helm/istio-init
+helm install --name istio --namespace istio-system ./install/kubernetes/helm/istio \
+        --values ./install/kubernetes/helm/istio/values-istio-demo.yaml
+```
+
+#### Build source into deployable images
+
+This will run the build, and create the docker container images.
 
 ```sh
 yarn clean
 NODE_ENV=development yarn image
 ```
 
-note that setting `NODE_ENV=development` will enable images to be built with the `:latest` tag instead of a specific version-branch-commit tag.
+note that setting `NODE_ENV=development` will enable images to be built with the `:latest` tag instead of a specific version-branch-commit tag.  If you choose not to use this, the images will be built with tags matching the format `:version-branch-commit`.  You can generate a manifest with these image tags by running `yarn values`.  This manifest can be included in a helm install with the switch `--values dist/values.yaml`.
 
 Verify:
 
@@ -237,6 +262,7 @@ docker images --filter reference='mds-*'
 #### Run : install MDS
 
 ```sh
+kubectl label namespace default istio-injection=enabled
 helm install --name mds ./helm/mds
 ```
 
@@ -265,12 +291,6 @@ yarn start
 ```
 5. This session is now safe to close, and you can reattach with the `okteto.${SERVICE_NAME}` ssh profile automatically added for you using the VSCode `Remote - SSH` package.
 6. When you're completely done with your session, run `> Okteto Down` from the VSCode command palette, or `okteto down` from terminal to revert the changes made by Okteto, and return your service to its previous deployment.
-
-#### MDS Operations
-
-MDS operates atop the following services: [Kubernetes](https://kubernetes.io), [Istio](https://istio.io), [NATS](https://nats.io), [PostgreSQL](https://www.postgresql.org) and [Redis](https://redis.io).
-
-(tbd)
 
 #### Additional Considerations
 
