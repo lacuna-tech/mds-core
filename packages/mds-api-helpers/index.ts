@@ -15,7 +15,12 @@
  */
 
 import urls from 'url'
-import { parseObjectProperties, ParseObjectPropertiesOptions } from '@mds-core/mds-utils'
+import {
+  parseObjectPropertiesList,
+  ParseObjectPropertiesOptionsList,
+  parseObjectPropertiesSingle,
+  ParseObjectPropertiesOptionsSingle
+} from '@mds-core/mds-utils'
 import { ApiRequest } from '@mds-core/mds-api-server'
 
 interface PagingParams {
@@ -44,18 +49,21 @@ export const asJsonApiLinks = (req: ApiRequest, skip: number, take: number, coun
   return undefined
 }
 
-export const parseRequest = <T = string>(req: ApiRequest, options?: ParseObjectPropertiesOptions<T>) => {
-  const { keys: query } = parseObjectProperties<T>(req.query, options)
-  const { keys: params } = parseObjectProperties<T>(req.params, options)
+export const parseRequestSingle = <T = string>(req: ApiRequest, options?: ParseObjectPropertiesOptionsSingle<T>) => {
+  const { keys: query } = parseObjectPropertiesSingle<T>(req.query, options)
+  const { keys: params } = parseObjectPropertiesSingle<T>(req.params, options)
+  return { params, query }
+}
+
+export const parseRequestList = <T = string>(req: ApiRequest, options?: ParseObjectPropertiesOptionsList<T>) => {
+  const { keys: query } = parseObjectPropertiesList<T>(req.query, options)
+  const { keys: params } = parseObjectPropertiesList<T>(req.params, options)
   return { params, query }
 }
 
 export const parsePagingQueryParams = (req: ApiRequest) => {
   const [DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE] = [100, 1000]
-  const {
-    skip: [skip = 0],
-    take: [take = DEFAULT_PAGE_SIZE]
-  } = parseRequest(req, { parser: { fn: Number } }).query('skip', 'take')
+  const { skip = 0, take = DEFAULT_PAGE_SIZE } = parseRequestSingle(req, { parser: Number }).query('skip', 'take')
   return {
     skip: Number.isNaN(skip) ? 0 : Math.max(0, skip),
     take: Number.isNaN(take) ? DEFAULT_PAGE_SIZE : Math.min(take, MAX_PAGE_SIZE)

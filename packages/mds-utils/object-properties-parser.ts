@@ -5,24 +5,19 @@ import { isStringArray } from './utils'
  * - { fn: String }
  * - { fn: JSON.parse, type: 'string' }
  */
-export type SingleParser<T> = {
-  fn: (value: string) => T
-  type?: 'single'
-}
+export type SingleParser<T> = (value: string) => T
 
-/** A multi-value (array) parser. Useful for more complex transformations, e.g.:
+/** A multi-value (array) parser. Useful for complex transformations, e.g.:
  * - Input cleansing: { fn: (xs) => { xs.map(Number).filter(x => x > 0) }, type: 'array' }
  */
-export type ArrayParser<T> = {
-  fn: (value: string[]) => T[]
-  type: 'array'
-}
+export type ArrayParser<T> = (value: string[]) => T[]
 
-/* For use with the parseObjectProperties method */
-export type ObjectParser<T> = SingleParser<T> | ArrayParser<T>
+export type ParseObjectPropertiesOptionsSingle<T> = Partial<{
+  parser: SingleParser<T>
+}>
 
-export type ParseObjectPropertiesOptions<T> = Partial<{
-  parser: ObjectParser<T>
+export type ParseObjectPropertiesOptionsList<T> = Partial<{
+  parser: ArrayParser<T>
 }>
 
 /**
@@ -33,9 +28,9 @@ export type ParseObjectPropertiesOptions<T> = Partial<{
  * @param obj - The object to parse
  * @param options - Defines the object parser options.
  */
-export const parseObjectProperties = <T = string>(
+export const parseObjectPropertiesSingle = <T = string>(
   obj: { [k: string]: unknown },
-  { parser }: ParseObjectPropertiesOptions<T> = {}
+  { parser }: ParseObjectPropertiesOptionsSingle<T> = {}
 ) => {
   return {
     keys: <TKey extends string>(first: TKey, ...rest: TKey[]) =>
@@ -43,26 +38,53 @@ export const parseObjectProperties = <T = string>(
         .map(key => ({ key, value: obj[key] }))
         .reduce((params, { key, value }) => {
           if (typeof value === 'string') {
-            /* If parser type set to 'single' or not set, we assume use of the single parser */
-            if (parser?.type === 'single' || (parser && parser.type === undefined)) {
-              return { ...params, [key]: [parser.fn(value)] }
+            if (parser) {
+              return { ...params, [key]: parser(value) }
             }
-            if (parser?.type === 'array') {
-              return { ...params, [key]: parser.fn([value]) }
+            return { ...params, [key]: value }
+          }
+          if (isStringArray(value)) {
+            const [firstVal] = value
+            if (parser) {
+              return { ...params, [key]: parser(firstVal) }
+            }
+            return { ...params, key: value }
+          }
+          return { ...params, [key]: undefined }
+        }, {}) as { [P in TKey]: T | undefined }
+  }
+}
+
+/**
+ * Takes a given object, and applies transformations in a type-safe way.
+ * Intended primarily for use with Express Query/Param objects, to allow
+ * easy transformation and usage via destructuring in API code.
+ * @constructor
+ * @param obj - The object to parse
+ * @param options - Defines the object parser options.
+ */
+export const parseObjectPropertiesList = <T = string>(
+  obj: { [k: string]: unknown },
+  { parser }: ParseObjectPropertiesOptionsList<T> = {}
+) => {
+  return {
+    keys: <TKey extends string>(first: TKey, ...rest: TKey[]) =>
+      [first, ...rest]
+        .map(key => ({ key, value: obj[key] }))
+        .reduce((params, { key, value }) => {
+          if (typeof value === 'string') {
+            if (parser) {
+              return { ...params, [key]: parser([value]) }
             }
             return { ...params, [key]: [value] }
           }
           if (isStringArray(value)) {
-            /* If parser type set to 'single' or not set, we assume use of the single parser */
-            if (parser?.type === 'single' || (parser && parser.type === undefined)) {
-              return { ...params, [key]: value.map(parser.fn) }
-            }
-            if (parser?.type === 'array') {
-              return { ...params, [key]: parser.fn(value) }
+            if (parser) {
+              return { ...params, [key]: parser(value) }
             }
             return { ...params, key: value }
           }
-          return { ...params, [key]: [] }
-        }, {}) as { [P in TKey]: (T | undefined)[] }
+          return { ...params, [key]: undefined }
+        }, {}) as { [P in TKey]: T[] | undefined }
   }
 }

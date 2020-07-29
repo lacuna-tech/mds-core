@@ -2,7 +2,7 @@ import logger from '@mds-core/mds-logger'
 import cache from '@mds-core/mds-agency-cache'
 import db from '@mds-core/mds-db'
 import { ServerError } from '@mds-core/mds-utils'
-import { parseRequest } from '@mds-core/mds-api-helpers'
+import { parseRequestSingle } from '@mds-core/mds-api-helpers'
 import { ApiRequestParams, ApiRequestQuery } from '@mds-core/mds-api-server'
 import { AgencyApiRequest, AgencyApiResponse } from './types'
 import { refresh } from './utils'
@@ -46,10 +46,7 @@ export type AgencyApiRefreshCacheRequest = AgencyApiRequest & ApiRequestQuery<'s
 
 export const refreshCache = async (req: AgencyApiRefreshCacheRequest, res: AgencyApiResponse) => {
   // wipe the cache and rebuild from db
-  const {
-    skip: [skip = 0],
-    take: [take = 10000000000]
-  } = parseRequest(req, { parser: { fn: Number } }).query('skip', 'take')
+  const { skip = 0, take = 10000000000 } = parseRequestSingle(req, { parser: Number }).query('skip', 'take')
 
   try {
     const rows = await db.readDeviceIds()

@@ -33,7 +33,7 @@ import {
 import { Geography, UUID, VehicleEvent } from '@mds-core/mds-types'
 import { providerName } from '@mds-core/mds-providers'
 import { Geometry, FeatureCollection } from 'geojson'
-import { parseRequest } from '@mds-core/mds-api-helpers'
+import { parseRequestSingle } from '@mds-core/mds-api-helpers'
 import * as compliance_engine from './mds-compliance-engine'
 import {
   ComplianceApiRequest,
@@ -89,12 +89,9 @@ function api(app: express.Express): express.Express {
     pathPrefix('/snapshot/:policy_uuid'),
     async (req: ComplianceApiSnapshotRequest, res: ComplianceApiSnapshotResponse) => {
       const { provider_id, version } = res.locals
-      const {
-        provider_id: [queried_provider_id],
-        timestamp: [timestamp]
-      } = {
-        ...parseRequest(req).query('provider_id'),
-        ...parseRequest(req, { parser: { fn: Number } }).query('timestamp')
+      const { provider_id: queried_provider_id, timestamp } = {
+        ...parseRequestSingle(req).query('provider_id'),
+        ...parseRequestSingle(req, { parser: Number }).query('timestamp')
       }
 
       // default to now() if no timestamp supplied
@@ -148,10 +145,8 @@ function api(app: express.Express): express.Express {
   )
 
   app.get(pathPrefix('/count/:rule_id'), async (req: ComplianceApiCountRequest, res: ComplianceApiCountResponse) => {
-    const {
-      timestamp: [timestamp]
-    } = {
-      ...parseRequest(req, { parser: { fn: Number } }).query('timestamp')
+    const { timestamp } = {
+      ...parseRequestSingle(req, { parser: Number }).query('timestamp')
     }
     const query_date = timestamp || now()
     if (!AllowedProviderIDs.includes(res.locals.provider_id)) {

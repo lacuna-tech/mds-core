@@ -2,14 +2,12 @@ import logger from '@mds-core/mds-logger'
 import { isUUID } from '@mds-core/mds-utils'
 import db from '@mds-core/mds-db'
 import { providerName } from '@mds-core/mds-providers'
-import { parseRequest } from '@mds-core/mds-api-helpers'
+import { parseRequestSingle } from '@mds-core/mds-api-helpers'
 import { AgencyApiRequest, AgencyApiResponse } from './types'
 
 export const readAllVehicleIds = async (req: AgencyApiRequest, res: AgencyApiResponse) => {
   // read all the devices
-  const {
-    provider_id: [query_provider_id]
-  } = parseRequest(req).query('provider_id')
+  const { provider_id: query_provider_id } = parseRequestSingle(req).query('provider_id')
 
   if (query_provider_id && !isUUID(query_provider_id)) {
     return res.status(400).send({

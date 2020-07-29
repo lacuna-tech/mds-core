@@ -17,7 +17,7 @@
 import { JurisdictionServiceClient, JurisdictionDomainModel } from '@mds-core/mds-jurisdiction-service'
 import { AuthorizationError } from '@mds-core/mds-utils'
 import { isServiceError } from '@mds-core/mds-service-helpers'
-import { parseRequest } from '@mds-core/mds-api-helpers'
+import { parseRequestSingle } from '@mds-core/mds-api-helpers'
 import { ApiRequestQuery, ApiRequestParams } from '@mds-core/mds-api-server'
 import { JurisdictionApiResponse, JurisdictionApiRequest } from '../@types'
 import { HasJurisdictionClaim } from './utils'
@@ -34,9 +34,7 @@ export const GetJurisdictionHandler = async (
 ) => {
   try {
     const { jurisdiction_id } = req.params
-    const {
-      effective: [effective]
-    } = parseRequest(req, { parser: { fn: Number } }).query('effective')
+    const { effective } = parseRequestSingle(req, { parser: Number }).query('effective')
     const jurisdiction = await JurisdictionServiceClient.getJurisdiction(jurisdiction_id, { effective })
     const { version } = res.locals
     return HasJurisdictionClaim(res)(jurisdiction)
