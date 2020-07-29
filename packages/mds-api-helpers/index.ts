@@ -55,7 +55,7 @@ export const parsePagingQueryParams = (req: ApiRequest) => {
   const {
     skip: [skip = 0],
     take: [take = DEFAULT_PAGE_SIZE]
-  } = parseRequest(req, { parser: Number }).query('skip', 'take')
+  } = parseRequest(req, { parser: { fn: Number } }).query('skip', 'take')
   return {
     skip: Number.isNaN(skip) ? 0 : Math.max(0, skip),
     take: Number.isNaN(take) ? DEFAULT_PAGE_SIZE : Math.min(take, MAX_PAGE_SIZE)

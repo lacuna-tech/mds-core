@@ -94,7 +94,7 @@ function api(app: express.Express): express.Express {
         timestamp: [timestamp]
       } = {
         ...parseRequest(req).query('provider_id'),
-        ...parseRequest(req, { parser: Number }).query('timestamp')
+        ...parseRequest(req, { parser: { fn: Number } }).query('timestamp')
       }
 
       // default to now() if no timestamp supplied
@@ -151,7 +151,7 @@ function api(app: express.Express): express.Express {
     const {
       timestamp: [timestamp]
     } = {
-      ...parseRequest(req, { parser: Number }).query('timestamp')
+      ...parseRequest(req, { parser: { fn: Number } }).query('timestamp')
     }
     const query_date = timestamp || now()
     if (!AllowedProviderIDs.includes(res.locals.provider_id)) {

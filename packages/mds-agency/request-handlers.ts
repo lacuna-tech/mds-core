@@ -148,7 +148,7 @@ export const getVehiclesByProvider = async (
   const {
     skip: [skip = 0],
     take: [take = PAGE_SIZE]
-  } = parseRequest(req, { parser: Number }).query('skip', 'take')
+  } = parseRequest(req, { parser: { fn: Number } }).query('skip', 'take')
 
   const url = urls.format({
     protocol: req.get('x-forwarded-proto') || req.protocol,

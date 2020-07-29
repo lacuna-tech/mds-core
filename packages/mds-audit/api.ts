@@ -531,7 +531,7 @@ function api(app: express.Express): express.Express {
             const {
               event_viewport_adjustment: [event_viewport_adjustment = seconds(30)]
             } = parseRequest(req, {
-              parser: x => seconds(Number(x))
+              parser: { fn: (x: string) => seconds(Number(x)) }
             }).query('event_viewport_adjustment')
 
             const start_time = audit_start && audit_start - event_viewport_adjustment
@@ -650,7 +650,7 @@ function api(app: express.Express): express.Express {
         const {
           start_time: [start_time],
           end_time: [end_time]
-        } = parseRequest(req, { parser: Number }).query('start_time', 'end_time')
+        } = parseRequest(req, { parser: { fn: Number } }).query('start_time', 'end_time')
         const query = {
           start_time,
           end_time,
@@ -701,7 +701,7 @@ function api(app: express.Express): express.Express {
         bbox: [bbox],
         provider_id: [provider_id]
       } = {
-        ...parseRequest(req, { parser: JSON.parse }).query('strict', 'bbox'),
+        ...parseRequest(req, { parser: { fn: JSON.parse } }).query('strict', 'bbox'),
         ...parseRequest(req).query('provider_id')
       }
 

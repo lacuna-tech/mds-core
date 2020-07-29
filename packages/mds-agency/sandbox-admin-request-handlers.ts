@@ -49,7 +49,7 @@ export const refreshCache = async (req: AgencyApiRefreshCacheRequest, res: Agenc
   const {
     skip: [skip = 0],
     take: [take = 10000000000]
-  } = parseRequest(req, { parser: Number }).query('skip', 'take')
+  } = parseRequest(req, { parser: { fn: Number } }).query('skip', 'take')
 
   try {
     const rows = await db.readDeviceIds()
