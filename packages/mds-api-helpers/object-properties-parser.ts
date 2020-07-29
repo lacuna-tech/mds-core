@@ -1,4 +1,4 @@
-import { isStringArray } from './utils'
+import { isStringArray } from '@mds-core/mds-utils'
 
 /** A single-value (string) parser. Useful for standard transformations, e.g.:
  * - { fn: Number }
