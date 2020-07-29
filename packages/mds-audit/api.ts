@@ -54,7 +54,7 @@ import {
   TelemetryData,
   VEHICLE_EVENT
 } from '@mds-core/mds-types'
-import { parsePagingQueryParams, asJsonApiLinks, parseRequestSingle } from '@mds-core/mds-api-helpers'
+import { parsePagingQueryParams, asJsonApiLinks, parseRequest } from '@mds-core/mds-api-helpers'
 import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import {
   AuditApiAuditEndRequest,
@@ -528,9 +528,9 @@ function api(app: express.Express): express.Express {
                 }
               }, {})
 
-            const { event_viewport_adjustment = seconds(30) } = parseRequestSingle(req, {
-              parser: x => seconds(Number(x))
-            }).query('event_viewport_adjustment')
+            const { event_viewport_adjustment = seconds(30) } = parseRequest(req)
+              .single({ parser: x => seconds(Number(x)) })
+              .query('event_viewport_adjustment')
 
             const start_time = audit_start && audit_start - event_viewport_adjustment
             const end_time = (end => end && end + event_viewport_adjustment)(audit_end || last_event)
@@ -630,9 +630,9 @@ function api(app: express.Express): express.Express {
         const { scopes } = res.locals
         const { skip, take } = parsePagingQueryParams(req)
 
-        const { provider_id: queried_provider_id, provider_vehicle_id, audit_subject_id } = parseRequestSingle(
-          req
-        ).query('provider_id', 'provider_vehicle_id', 'audit_subject_id')
+        const { provider_id: queried_provider_id, provider_vehicle_id, audit_subject_id } = parseRequest(req)
+          .single()
+          .query('provider_id', 'provider_vehicle_id', 'audit_subject_id')
 
         const provider_id = scopes.includes('audits:read') ? queried_provider_id : res.locals.claims?.provider_id
 
@@ -643,7 +643,7 @@ function api(app: express.Express): express.Express {
           return res.status(500).send({ error: 'internal_server_error' })
         }
 
-        const { start_time, end_time } = parseRequestSingle(req, { parser: Number }).query('start_time', 'end_time')
+        const { start_time, end_time } = parseRequest(req).single({ parser: Number }).query('start_time', 'end_time')
         const query = {
           start_time,
           end_time,
@@ -690,8 +690,8 @@ function api(app: express.Express): express.Express {
     async (req: AuditApiGetVehicleRequest, res: GetAuditVehiclesResponse) => {
       const { skip, take } = { skip: 0, take: 10000 }
       const { strict = true, bbox, provider_id } = {
-        ...parseRequestSingle(req, { parser: JSON.parse }).query('strict', 'bbox'),
-        ...parseRequestSingle(req).query('provider_id')
+        ...parseRequest(req).single({ parser: JSON.parse }).query('strict', 'bbox'),
+        ...parseRequest(req).single().query('provider_id')
       }
 
       const url = urls.format({

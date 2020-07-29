@@ -10,14 +10,19 @@ export type SingleParser<T> = (value: string) => T
 /** A multi-value (array) parser. Useful for complex transformations, e.g.:
  * - Input cleansing: { fn: (xs) => { xs.map(Number).filter(x => x > 0) }, type: 'array' }
  */
-export type ArrayParser<T> = (value: string[]) => T[]
+export type ListParser<T> = (value: string[]) => T[]
 
 export type ParseObjectPropertiesOptionsSingle<T> = Partial<{
   parser: SingleParser<T>
 }>
 
 export type ParseObjectPropertiesOptionsList<T> = Partial<{
-  parser: ArrayParser<T>
+  parser: ListParser<T>
+}>
+
+export type ParseObjectPropertiesOptions<T> = Partial<{
+  singleParser: SingleParser<T>
+  listParser: ListParser<T>
 }>
 
 /**

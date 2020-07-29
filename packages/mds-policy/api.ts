@@ -20,7 +20,7 @@ import { Policy, UUID } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import { now, pathPrefix, NotFoundError, isUUID, BadParamsError, ServerError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
-import { parseRequestSingle } from '@mds-core/mds-api-helpers'
+import { parseRequest } from '@mds-core/mds-api-helpers'
 import { ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
 import { policySchemaJson } from '@mds-core/mds-schema-validators'
 import {
@@ -86,7 +86,7 @@ function api(app: express.Express): express.Express {
           Otherwise, they can only read published.
         */
         const { get_published = null, get_unpublished = null } = scopes.includes('policies:read')
-          ? parseRequestSingle(req, { parser: JSON.parse }).query('get_published', 'get_unpublished')
+          ? parseRequest(req).single({ parser: JSON.parse }).query('get_published', 'get_unpublished')
           : { get_published: true }
 
         if (start_date > end_date) {
@@ -140,7 +140,7 @@ function api(app: express.Express): express.Express {
           Otherwise, they can only read published.
         */
         const { get_published = null, get_unpublished = null } = scopes.includes('policies:read')
-          ? parseRequestSingle(req, { parser: JSON.parse }).query('get_published', 'get_unpublished')
+          ? parseRequest(req).single({ parser: JSON.parse }).query('get_published', 'get_unpublished')
           : { get_published: true }
 
         const policies = await db.readPolicies({ policy_id, get_published, get_unpublished })

@@ -18,9 +18,9 @@ import urls from 'url'
 import { ApiRequest } from '@mds-core/mds-api-server'
 import {
   parseObjectPropertiesList,
-  ParseObjectPropertiesOptionsList,
   parseObjectPropertiesSingle,
-  ParseObjectPropertiesOptionsSingle
+  ParseObjectPropertiesOptionsSingle,
+  ParseObjectPropertiesOptionsList
 } from './object-properties-parser'
 
 interface PagingParams {
@@ -49,21 +49,21 @@ export const asJsonApiLinks = (req: ApiRequest, skip: number, take: number, coun
   return undefined
 }
 
-export const parseRequestSingle = <T = string>(req: ApiRequest, options?: ParseObjectPropertiesOptionsSingle<T>) => {
-  const { keys: query } = parseObjectPropertiesSingle<T>(req.query, options)
-  const { keys: params } = parseObjectPropertiesSingle<T>(req.params, options)
-  return { params, query }
-}
-
-export const parseRequestList = <T = string>(req: ApiRequest, options?: ParseObjectPropertiesOptionsList<T>) => {
-  const { keys: query } = parseObjectPropertiesList<T>(req.query, options)
-  const { keys: params } = parseObjectPropertiesList<T>(req.params, options)
-  return { params, query }
+export const parseRequest = (req: ApiRequest) => {
+  const single = <T = string>(options?: ParseObjectPropertiesOptionsSingle<T>) => ({
+    query: parseObjectPropertiesSingle<T>(req.query, options).keys,
+    params: parseObjectPropertiesSingle<T>(req.params, options).keys
+  })
+  const list = <T = string>(options?: ParseObjectPropertiesOptionsList<T>) => ({
+    query: parseObjectPropertiesList<T>(req.query, options).keys,
+    params: parseObjectPropertiesList<T>(req.params, options).keys
+  })
+  return { single, list }
 }
 
 export const parsePagingQueryParams = (req: ApiRequest) => {
   const [DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE] = [100, 1000]
-  const { skip = 0, take = DEFAULT_PAGE_SIZE } = parseRequestSingle(req, { parser: Number }).query('skip', 'take')
+  const { skip = 0, take = DEFAULT_PAGE_SIZE } = parseRequest(req).single({ parser: Number }).query('skip', 'take')
   return {
     skip: Number.isNaN(skip) ? 0 : Math.max(0, skip),
     take: Number.isNaN(take) ? DEFAULT_PAGE_SIZE : Math.min(take, MAX_PAGE_SIZE)
