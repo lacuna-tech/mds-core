@@ -15,13 +15,13 @@
  */
 
 import urls from 'url'
+import { ApiRequest } from '@mds-core/mds-api-server'
 import {
   parseObjectPropertiesList,
   ParseObjectPropertiesOptionsList,
   parseObjectPropertiesSingle,
   ParseObjectPropertiesOptionsSingle
-} from '@mds-core/mds-utils'
-import { ApiRequest } from '@mds-core/mds-api-server'
+} from './object-properties-parser'
 
 interface PagingParams {
   skip: number
