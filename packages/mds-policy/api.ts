@@ -89,10 +89,7 @@ function api(app: express.Express): express.Express {
           get_published: [get_published = null],
           get_unpublished: [get_unpublished = null]
         } = scopes.includes('policies:read')
-          ? parseRequest(req, { parser: { fn: (x: string) => (x ? JSON.parse(x) : null) } }).query(
-              'get_published',
-              'get_unpublished'
-            )
+          ? parseRequest(req, { parser: { fn: JSON.parse } }).query('get_published', 'get_unpublished')
           : { get_published: [true], get_unpublished: [] }
 
         if (start_date > end_date) {
@@ -149,10 +146,7 @@ function api(app: express.Express): express.Express {
           get_published: [get_published = null],
           get_unpublished: [get_unpublished = null]
         } = scopes.includes('policies:read')
-          ? parseRequest(req, { parser: { fn: (x: string) => (x ? JSON.parse(x) : null) } }).query(
-              'get_published',
-              'get_unpublished'
-            )
+          ? parseRequest(req, { parser: { fn: JSON.parse } }).query('get_published', 'get_unpublished')
           : { get_published: [true], get_unpublished: [] }
 
         const policies = await db.readPolicies({ policy_id, get_published, get_unpublished })
