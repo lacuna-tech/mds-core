@@ -241,7 +241,7 @@ helm install --name istio --namespace istio-system ./install/kubernetes/helm/ist
         --values ./install/kubernetes/helm/istio/values-istio-demo.yaml
 ```
 
-#### Build source into deployable images
+### Build source into deployable images
 
 This will run the build, and create the docker container images.
 
@@ -258,11 +258,12 @@ Verify:
 docker images --filter reference='mds-*'
 ```
 
-#### Run : install MDS
+### Install MDS
 
 ```sh
-kubectl label namespace default istio-injection=enabled
-helm install --name mds ./helm/mds
+kubectl create namespace mds
+kubectl label namespace mds istio-injection=enabled
+helm install --name mds --namespace mds ./helm/mds
 ```
 
 Verify:
