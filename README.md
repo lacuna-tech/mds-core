@@ -233,7 +233,6 @@ WARNING: This will give helm full permissions to your entire kubernetes cluster.
 
 Istio is a service mesh for Kubernetes.  This MDS implementation uses Istio for its built-in handling of JWT authentication, advanced HTTP routing, and (optionally) mTLS.
 
-
 ```sh
 curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.6 sh -
 cd istio-1.4.6
