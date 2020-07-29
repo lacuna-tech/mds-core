@@ -1,14 +1,14 @@
 import { isStringArray } from '@mds-core/mds-utils'
 
 /** A single-value (string) parser. Useful for standard transformations, e.g.:
- * - { fn: Number }
- * - { fn: String }
- * - { fn: JSON.parse, type: 'string' }
+ * - Number
+ * - String
+ * - JSON.parse
  */
 export type SingleParser<T> = (value: string) => T
 
 /** A multi-value (array) parser. Useful for complex transformations, e.g.:
- * - Input cleansing: { fn: (xs) => { xs.map(Number).filter(x => x > 0) }, type: 'array' }
+ * - Input cleansing: (xs) => { xs.map(Number).filter(x => x > 0) }
  */
 export type ListParser<T> = (value: string[]) => T[]
 

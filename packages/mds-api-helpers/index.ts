@@ -49,6 +49,16 @@ export const asJsonApiLinks = (req: ApiRequest, skip: number, take: number, coun
   return undefined
 }
 
+/** parseRequest
+ * Takes an API request, and returns two clients:
+ * - single: takes an optional parser that applies to a single value,
+ * and will return single values, e.g. string, number.
+ * Example usage: parseRequest(req).single({ parser: Number }).query('skip', 'take')
+ *
+ * - list: takes an optional parser that applies to a list of values,
+ * and will return a list of values, e.g. string[], number[], Foo[].
+ * Example usage: parseRequest(req).list({ parser: xs => { xs.filter(isUUID) }}).query('provider_id')
+ */
 export const parseRequest = (req: ApiRequest) => {
   const single = <T = string>(options?: ParseObjectPropertiesOptionsSingle<T>) => ({
     query: parseObjectPropertiesSingle<T>(req.query, options).keys,
