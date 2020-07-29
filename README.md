@@ -222,7 +222,7 @@ Once you have the `helm` executable on your local system, you can set up the k8s
 ```sh
 kubectl -n kube-system create serviceaccount tiller
 kubectl create clusterrolebinding tiller \
-        --serviceaccount kube-system:tiller \
+        --service-account kube-system:tiller \
         --clusterrole cluster-admin
 helm init --serviceaccount tiller --history-max 20
 ```
