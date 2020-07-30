@@ -224,7 +224,7 @@ kubectl -n kube-system create serviceaccount tiller
 kubectl create clusterrolebinding tiller \
         --service-account kube-system:tiller \
         --clusterrole cluster-admin
-helm init --serviceaccount tiller --history-max 20
+helm init --service-account tiller --history-max 20
 ```
 
 WARNING: This will give helm full permissions to your entire kubernetes cluster.  This should only be used on local systems or private clusters with fully-trusted users.  DO NOT USE IN PRODUCTION
@@ -263,6 +263,9 @@ docker images --filter reference='mds-*'
 ```sh
 kubectl create namespace mds
 kubectl label namespace mds istio-injection=enabled
+cd helm/mds
+helm dep up 
+cd ..
 helm install --name mds --namespace mds ./helm/mds
 ```
 
