@@ -124,7 +124,7 @@ export const getVehicleById = async (req: AgencyApiGetVehicleByIdRequest, res: A
   const { device_id } = req.params
 
   const { provider_id } = res.locals.scopes.includes('vehicles:read')
-    ? parseRequest(req).query('provider_id')
+    ? parseRequest(req).single().query('provider_id')
     : res.locals
 
   const payload = await readPayload(device_id)
@@ -143,7 +143,7 @@ export const getVehiclesByProvider = async (
 ) => {
   const PAGE_SIZE = 1000
 
-  const { skip = 0, take = PAGE_SIZE } = parseRequest(req, { parser: Number }).query('skip', 'take')
+  const { skip = 0, take = PAGE_SIZE } = parseRequest(req).single({ parser: Number }).query('skip', 'take')
 
   const url = urls.format({
     protocol: req.get('x-forwarded-proto') || req.protocol,
@@ -153,7 +153,7 @@ export const getVehiclesByProvider = async (
 
   // TODO: Replace with express middleware
   const { provider_id } = res.locals.scopes.includes('vehicles:read')
-    ? parseRequest(req).query('provider_id')
+    ? parseRequest(req).single().query('provider_id')
     : res.locals
 
   try {

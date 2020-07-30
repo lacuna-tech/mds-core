@@ -35,7 +35,7 @@ import {
 import logger from '@mds-core/mds-logger'
 import { MultiPolygon, Polygon, FeatureCollection, Geometry, Feature } from 'geojson'
 
-import { isArray } from 'util'
+import { isArray, isString } from 'util'
 import { getNextState } from './state-machine'
 import { parseRelative, getCurrentDate } from './date-time-utils'
 
@@ -583,22 +583,14 @@ const getEnvVar = <TProps extends { [name: string]: string }>(props: TProps): TP
     }
   }, {} as TProps)
 
-export type ParseObjectPropertiesOptions<T> = Partial<{
-  parser: (value: string) => T
-}>
-
-const parseObjectProperties = <T = string>(
-  obj: { [k: string]: unknown },
-  { parser }: ParseObjectPropertiesOptions<T> = {}
-) => {
-  return {
-    keys: <TKey extends string>(first: TKey, ...rest: TKey[]): Partial<{ [P in TKey]: T }> =>
-      [first, ...rest]
-        .map(key => ({ key, value: obj[key] }))
-        .filter((param): param is { key: TKey; value: string } => typeof param.value === 'string')
-        .reduce((params, { key, value }) => ({ ...params, [key]: parser ? parser(value) : value }), {})
+export const isTArray = <T>(arr: unknown, isT: (t: unknown) => t is T): arr is T[] => {
+  if (arr instanceof Array) {
+    return arr.filter(t => isT(t)).length === arr.length
   }
+  return false
 }
+
+export const isStringArray = (arr: unknown): arr is string[] => isTArray<string>(arr, isString)
 
 const asArray = <T>(value: SingleOrArray<T>): T[] => (Array.isArray(value) ? value : [value])
 
@@ -649,7 +641,6 @@ export {
   parseRelative,
   getCurrentDate,
   getEnvVar,
-  parseObjectProperties,
   asArray,
   pluralize,
   filterDefined
