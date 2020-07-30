@@ -59,17 +59,16 @@ export const asJsonApiLinks = (req: ApiRequest, skip: number, take: number, coun
  * @example parseRequest(req).single({ parser: Number }).query('skip', 'take')
  * @example parseRequest(req).list({ parser: xs => { xs.filter(isUUID) }}).query('provider_id')
  */
-export const parseRequest = (req: ApiRequest) => {
-  const single = <T = string>(options?: ParseObjectPropertiesOptionsSingle<T>) => ({
+export const parseRequest = (req: ApiRequest) => ({
+  single: <T = string>(options?: ParseObjectPropertiesOptionsSingle<T>) => ({
     query: parseObjectPropertiesSingle<T>(req.query, options).keys,
     params: parseObjectPropertiesSingle<T>(req.params, options).keys
-  })
-  const list = <T = string>(options?: ParseObjectPropertiesOptionsList<T>) => ({
+  }),
+  list: <T = string>(options?: ParseObjectPropertiesOptionsList<T>) => ({
     query: parseObjectPropertiesList<T>(req.query, options).keys,
     params: parseObjectPropertiesList<T>(req.params, options).keys
   })
-  return { single, list }
-}
+})
 
 export const parsePagingQueryParams = (req: ApiRequest) => {
   const [DEFAULT_PAGE_SIZE, MAX_PAGE_SIZE] = [100, 1000]
