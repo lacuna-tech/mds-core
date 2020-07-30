@@ -1,5 +1,6 @@
 import httpContext from 'express-http-context'
 import express from 'express'
+import log from '@mds-core/mds-logger'
 import { ApiRequest, ApiResponse } from '../@types'
 
 /**
@@ -7,7 +8,12 @@ import { ApiRequest, ApiResponse } from '../@types'
  * and includes it in contextual logs for a given request.
  */
 const RequestIdMiddleware = (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
-  httpContext.set('x-request-id', req.get('x-request-id'))
+  const xRequestId = req.get('x-request-id')
+  if (xRequestId) {
+    httpContext.set('x-request-id', xRequestId)
+  } else {
+    log.warn('X-Request-Id is not set! If you expect it, please check your ingress gateway configuration.')
+  }
   return next()
 }
 
