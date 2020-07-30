@@ -5,9 +5,12 @@ set -u
 set -o pipefail
 
 # helm/tiller
+function install_helm_tiller {
+}
 
 # istio install
+function install_istio {
+}
 
-# label namespace
-
-# helm install
+function install_mds {
+}
