@@ -247,6 +247,7 @@ const TABLE_KEY: { [T in TABLE_NAME]: COLUMN_NAME[] } = {
   [TABLE.audits]: [COLUMN.audit_trip_id],
   [TABLE.devices]: [COLUMN.device_id],
   [TABLE.events]: [COLUMN.device_id, COLUMN.timestamp],
+  [TABLE.events04]: [COLUMN.device_id, COLUMN.timestamp],
   [TABLE.geographies]: [COLUMN.geography_id],
   [TABLE.geography_metadata]: [COLUMN.geography_id],
   [TABLE.migrations]: [COLUMN.migration],
