@@ -61,8 +61,8 @@ function makeTrip(device: Device): Trip {
     provider_name: device.provider_id,
     device_id: device.device_id,
     vehicle_id: device.vehicle_id,
-    vehicle_type: device.type,
-    propulsion_type: device.propulsion,
+    vehicle_type: device.vehicle_type,
+    propulsion_types: device.propulsion_types,
     provider_trip_id: uuid(),
     trip_duration: rangeRandomInt(5),
     trip_distance: rangeRandomInt(5),
@@ -100,20 +100,18 @@ async function seedDB() {
   await MDSDBPostgres.initialize()
   const devices: Device[] = makeDevices(9, startTime, JUMP_PROVIDER_ID) as Device[]
   devices.push(JUMP_TEST_DEVICE_1 as Device)
-  const deregisterEvents: VehicleEvent[] = makeEventsWithTelemetry(
-    devices.slice(0, 9),
-    startTime + 10,
-    shapeUUID,
-    VEHICLE_EVENTS.decommissioned
-  )
-  const tripEndEvent: VehicleEvent[] = makeEventsWithTelemetry(
-    devices.slice(9, 10),
-    startTime + 10,
-    shapeUUID,
-    'trip_end'
-  )
+  const decommissionEvents: VehicleEvent[] = makeEventsWithTelemetry(devices.slice(0, 9), startTime + 10, shapeUUID, {
+    event_types: ['decommissioned'],
+    vehicle_state: 'removed',
+    speed: rangeRandomInt(0, 10)
+  })
+  const tripEndEvent: VehicleEvent[] = makeEventsWithTelemetry(devices.slice(9, 10), startTime + 10, shapeUUID, {
+    event_types: ['decommissioned'],
+    vehicle_state: 'removed',
+    speed: rangeRandomInt(0, 10)
+  })
   const telemetry: Telemetry[] = []
-  const events: VehicleEvent[] = deregisterEvents.concat(tripEndEvent)
+  const events: VehicleEvent[] = decommissionEvents.concat(tripEndEvent)
   events.map(event => {
     if (event.telemetry) {
       telemetry.push(event.telemetry)
@@ -227,7 +225,7 @@ if (pg_info.database) {
         const firstResult = result[0]
         assert(firstResult.provider_id)
         assert(firstResult.device_id)
-        assert(firstResult.event_type)
+        assert(firstResult.event_types)
         assert(firstResult.recorded)
         assert(firstResult.timestamp)
       })

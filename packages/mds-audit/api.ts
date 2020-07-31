@@ -18,7 +18,7 @@ import db from '@mds-core/mds-db'
 import express from 'express'
 import {
   uuid,
-  pathsFor,
+  pathPrefix,
   seconds,
   AuthorizationError,
   ConflictError,
@@ -158,7 +158,7 @@ function api(app: express.Express): express.Express {
   /**
    * Audit middleware to load the audit into locals using the audit_trip_id
    */
-  app.use(pathsFor('/trips/:audit_trip_id'), async (req: AuditApiTripRequest, res: AuditApiResponse, next) => {
+  app.use(pathPrefix('/trips/:audit_trip_id'), async (req: AuditApiTripRequest, res: AuditApiResponse, next) => {
     try {
       const { audit_trip_id } = req.params
       if (isValidAuditTripId(audit_trip_id)) {
@@ -184,7 +184,7 @@ function api(app: express.Express): express.Express {
    * @param {UUID} audit_trip_id unique ID of this audit record (client-generated)
    */
   app.post(
-    pathsFor('/trips/:audit_trip_id/start'),
+    pathPrefix('/trips/:audit_trip_id/start'),
     checkAuditApiAccess(scopes => scopes.includes('audits:write')),
     async (req: AuditApiAuditStartRequest, res: PostAuditTripStartResponse) => {
       try {
@@ -269,7 +269,7 @@ function api(app: express.Express): express.Express {
    * @param {string} device_id device_id
    */
   app.post(
-    pathsFor('/trips/:audit_trip_id/vehicle/event'),
+    pathPrefix('/trips/:audit_trip_id/vehicle/event'),
     checkAuditApiAccess(scopes => scopes.includes('audits:write')),
     async (req: AuditApiVehicleEventRequest, res: PostAuditTripVehicleEventResponse) => {
       try {
@@ -319,7 +319,7 @@ function api(app: express.Express): express.Express {
    * @param {UUID} audit_trip_id unique ID of this audit record (client-generated)
    */
   app.post(
-    pathsFor('/trips/:audit_trip_id/vehicle/telemetry'),
+    pathPrefix('/trips/:audit_trip_id/vehicle/telemetry'),
     checkAuditApiAccess(scopes => scopes.includes('audits:write')),
     async (req: AuditApiVehicleTelemetryRequest, res: PostAuditTripTelemetryResponse) => {
       try {
@@ -365,7 +365,7 @@ function api(app: express.Express): express.Express {
    * @param {UUID} audit_trip_id unique ID of this audit record (client-generated)
    */
   app.post(
-    [...pathsFor('/trips/:audit_trip_id/note'), ...pathsFor('/trips/:audit_trip_id/event')],
+    [pathPrefix('/trips/:audit_trip_id/note'), pathPrefix('/trips/:audit_trip_id/event')],
     checkAuditApiAccess(scopes => scopes.includes('audits:write')),
     async (req: AuditApiAuditNoteRequest, res: PostAuditTripNoteResponse | PostAuditTripEventResponse) => {
       try {
@@ -431,7 +431,7 @@ function api(app: express.Express): express.Express {
    * @param {UUID} audit_trip_id unique ID of this audit record (client-generated)
    */
   app.post(
-    pathsFor('/trips/:audit_trip_id/end'),
+    pathPrefix('/trips/:audit_trip_id/end'),
     checkAuditApiAccess(scopes => scopes.includes('audits:write')),
     async (req: AuditApiAuditEndRequest, res: PostAuditTripEndResponse) => {
       try {
@@ -480,7 +480,7 @@ function api(app: express.Express): express.Express {
    * @param {UUID} audit_trip_id unique ID of this audit record (client-generated)
    */
   app.get(
-    pathsFor('/trips/:audit_trip_id'),
+    pathPrefix('/trips/:audit_trip_id'),
     checkAuditApiAccess(scopes => scopes.includes('audits:read')),
     async (req: AuditApiGetTripRequest, res: GetAuditTripDetailsResponse) => {
       try {
@@ -528,9 +528,9 @@ function api(app: express.Express): express.Express {
                 }
               }, {})
 
-            const { event_viewport_adjustment = seconds(30) } = parseRequest(req, {
-              parser: x => seconds(Number(x))
-            }).query('event_viewport_adjustment')
+            const { event_viewport_adjustment = seconds(30) } = parseRequest(req)
+              .single({ parser: x => seconds(Number(x)) })
+              .query('event_viewport_adjustment')
 
             const start_time = audit_start && audit_start - event_viewport_adjustment
             const end_time = (end => end && end + event_viewport_adjustment)(audit_end || last_event)
@@ -593,7 +593,7 @@ function api(app: express.Express): express.Express {
   )
 
   app.delete(
-    pathsFor('/trips/:audit_trip_id'),
+    pathPrefix('/trips/:audit_trip_id'),
     checkAuditApiAccess(scopes => scopes.includes('audits:delete')),
     async (req: AuditApiTripRequest, res: DeleteAuditTripResponse) => {
       try {
@@ -622,18 +622,16 @@ function api(app: express.Express): express.Express {
    * read back multiple audit records
    */
   app.get(
-    pathsFor('/trips'),
+    pathPrefix('/trips'),
     checkAuditApiAccess(scopes => scopes.includes('audits:read') || scopes.includes('audits:read:provider')),
     async (req: AuditApiGetTripsRequest, res: GetAuditTripsDetailsResponse) => {
       try {
         const { scopes } = res.locals
         const { skip, take } = parsePagingQueryParams(req)
 
-        const { provider_id: queried_provider_id, provider_vehicle_id, audit_subject_id } = parseRequest(req).query(
-          'provider_id',
-          'provider_vehicle_id',
-          'audit_subject_id'
-        )
+        const { provider_id: queried_provider_id, provider_vehicle_id, audit_subject_id } = parseRequest(req)
+          .single()
+          .query('provider_id', 'provider_vehicle_id', 'audit_subject_id')
 
         const provider_id = scopes.includes('audits:read') ? queried_provider_id : res.locals.claims?.provider_id
 
@@ -644,8 +642,10 @@ function api(app: express.Express): express.Express {
           return res.status(500).send({ error: 'internal_server_error' })
         }
 
+        const { start_time, end_time } = parseRequest(req).single({ parser: Number }).query('start_time', 'end_time')
         const query = {
-          ...parseRequest(req, { parser: Number }).query('start_time', 'end_time'),
+          start_time,
+          end_time,
           skip,
           take,
           provider_id,
@@ -684,13 +684,13 @@ function api(app: express.Express): express.Express {
    * read back cached vehicle information for vehicles in bbox
    */
   app.get(
-    pathsFor('/vehicles'),
+    pathPrefix('/vehicles'),
     checkAuditApiAccess(scopes => scopes.includes('audits:vehicles:read')),
     async (req: AuditApiGetVehicleRequest, res: GetAuditVehiclesResponse) => {
       const { skip, take } = { skip: 0, take: 10000 }
       const { strict = true, bbox, provider_id } = {
-        ...parseRequest(req, { parser: JSON.parse }).query('strict', 'bbox'),
-        ...parseRequest(req).query('provider_id')
+        ...parseRequest(req).single({ parser: JSON.parse }).query('strict', 'bbox'),
+        ...parseRequest(req).single().query('provider_id')
       }
 
       const url = urls.format({
@@ -715,7 +715,7 @@ function api(app: express.Express): express.Express {
    * read back cached information for a single vehicle
    */
   app.get(
-    pathsFor('/vehicles/:provider_id/vin/:vin'),
+    pathPrefix('/vehicles/:provider_id/vin/:vin'),
     async (req: AuditApiGetVehicleRequest, res: GetVehicleByVinResponse) => {
       const { provider_id, vin } = req.params
       try {
@@ -738,7 +738,7 @@ function api(app: express.Express): express.Express {
    * attach media to an audit, uploaded as multipart/form-data
    */
   app.post(
-    pathsFor('/trips/:audit_trip_id/attach/:mimetype'),
+    pathPrefix('/trips/:audit_trip_id/attach/:mimetype'),
     multipartFormUpload,
     async (req, res: PostAuditAttachmentResponse) => {
       const { audit, audit_trip_id } = res.locals
@@ -772,7 +772,7 @@ function api(app: express.Express): express.Express {
   /**
    * delete media from an audit
    */
-  app.delete(pathsFor('/trips/:audit_trip_id/attachment/:attachment_id'), async (req, res) => {
+  app.delete(pathPrefix('/trips/:audit_trip_id/attachment/:attachment_id'), async (req, res) => {
     const { audit_trip_id, attachment_id } = req.params
     try {
       await deleteAuditAttachment(audit_trip_id, attachment_id)

@@ -20,7 +20,7 @@ import cache from '@mds-core/mds-agency-cache'
 import db from '@mds-core/mds-db'
 import stream from '@mds-core/mds-stream'
 import supertest from 'supertest'
-import { now, uuid, minutes } from '@mds-core/mds-utils'
+import { now, uuid, minutes, pathPrefix, rangeRandomInt } from '@mds-core/mds-utils'
 import {
   Telemetry,
   Device,
@@ -100,7 +100,7 @@ const COUNT_POLICY_JSON: Policy = {
       rule_id: '47c8c7d4-14b5-43a3-b9a5-a32ecc2fb2c6',
       rule_type: RULE_TYPES.count,
       geographies: [GEOGRAPHY_UUID],
-      statuses: { available: [], unavailable: [], reserved: [], trip: [] },
+      states: { available: [], non_operational: [], reserved: [], on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 10,
       minimum: 5
@@ -123,7 +123,7 @@ const SCOPED_COUNT_POLICY_JSON = {
       rule_id: '47c8c7d4-14b5-43a3-b9a5-a32ecc2fb2c6',
       rule_type: RULE_TYPES.count,
       geographies: [GEOGRAPHY_UUID],
-      statuses: { available: [], unavailable: [], reserved: [], trip: [] },
+      states: { available: [], non_operational: [], reserved: [], on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 10,
       minimum: 5
@@ -145,7 +145,7 @@ const COUNT_POLICY_JSON_2: Policy = {
       rule_id: '405b959e-4377-4a31-8b34-a9a4771125fc',
       rule_type: RULE_TYPES.count,
       geographies: ['ff822e26-a70c-4721-ac32-2f6734beff9b'],
-      statuses: { available: [], unavailable: [], reserved: [], trip: [] },
+      states: { available: [], non_operational: [], reserved: [], on_trip: [] },
       days: ['sat', 'sun'],
       maximum: 0,
       minimum: 0
@@ -168,7 +168,7 @@ const COUNT_POLICY_JSON_3: Policy = {
       rule_id: '04dc545b-41d8-401d-89bd-bfac9247b555',
       rule_type: RULE_TYPES.count,
       geographies: [GEOGRAPHY_UUID],
-      statuses: { available: ['service_start'], unavailable: [], reserved: [], trip: [] },
+      states: { available: ['on_hours'], non_operational: [], reserved: [], on_trip: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 10
     }
@@ -190,7 +190,7 @@ const COUNT_POLICY_JSON_4: Policy = {
       rule_id: '04dc545b-41d8-401d-89bd-bfac9247b555',
       rule_type: RULE_TYPES.count,
       geographies: [GEOGRAPHY_UUID],
-      statuses: { trip: [] },
+      states: { on_trip: [] },
       vehicle_types: ['bicycle', 'scooter'],
       maximum: 10
     }
@@ -204,8 +204,8 @@ const COUNT_POLICY_JSON_5: Policy = {
       name: 'Prohibited Dockless Zones',
       maximum: 0,
       rule_id: '8ad39dc3-005b-4348-9d61-c830c54c161b',
-      statuses: {
-        trip: [],
+      states: {
+        on_trip: [],
         reserved: [],
         available: []
       },
@@ -241,7 +241,7 @@ const TIME_POLICY_JSON: Policy = {
       rule_type: RULE_TYPES.time,
       rule_units: 'minutes',
       geographies: [GEOGRAPHY_UUID],
-      statuses: { available: [] },
+      states: { available: [] },
       vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
       maximum: 20
     }
@@ -258,7 +258,7 @@ describe('Tests Compliance API:', () => {
     beforeEach(done => {
       Promise.all([db.initialize(), cache.initialize()]).then(() => {
         agency_request
-          .post('/vehicles')
+          .post(pathPrefix('/vehicles'))
           .set('Authorization', ADMIN_AUTH)
           .send(TEST_VEHICLE)
           .expect(201)
@@ -290,7 +290,7 @@ describe('Tests Compliance API:', () => {
 
     it('Verifies initial policy hit OK', done => {
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -301,7 +301,7 @@ describe('Tests Compliance API:', () => {
 
     it('Verifies cannot query invalid policy_id', done => {
       request
-        .get(`/snapshot/potato`)
+        .get(pathPrefix(`/snapshot/potato`))
         .set('Authorization', ADMIN_AUTH)
         .expect(400)
         .end((err, result) => {
@@ -312,7 +312,7 @@ describe('Tests Compliance API:', () => {
 
     it('Verifies cannot query valid UUID, but invalid policy_id', done => {
       request
-        .get(`/snapshot/f4a07b35-98dd-4234-93c7-199ea54083c3`)
+        .get(pathPrefix(`/snapshot/f4a07b35-98dd-4234-93c7-199ea54083c3`))
         .set('Authorization', ADMIN_AUTH)
         .expect(404)
         .end((err, result) => {
@@ -325,7 +325,11 @@ describe('Tests Compliance API:', () => {
   describe('Count Compliant Test: ', () => {
     before(done => {
       const devices: Device[] = makeDevices(7, now())
-      const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, 'trip_end')
+      const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, {
+        event_types: ['trip_end'],
+        vehicle_state: 'available',
+        speed: rangeRandomInt(10)
+      })
       const telemetry: Telemetry[] = []
       devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
@@ -344,7 +348,7 @@ describe('Tests Compliance API:', () => {
 
     it('Verifies count in compliance', done => {
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -371,12 +375,12 @@ describe('Tests Compliance API:', () => {
   //       telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
   //     })
   //     request
-  //       .get('/test/initialize')
+  //       .get(pathPrefix('/test/initialize'))
   //       .set('Authorization', ADMIN_AUTH)
   //       .expect(200)
   //       .end(() => {
   //         provider_request
-  //           .post('/test/seed')
+  //           .post(pathPrefix('/test/seed'))
   //           .set('Authorization', PROVIDER_AUTH)
   //           .send({ devices, events, telemetry })
   //           .expect(201)
@@ -404,7 +408,7 @@ describe('Tests Compliance API:', () => {
 
   //   it('Verifies violation of count compliance (under)', done => {
   //     request
-  //       .get(`/snapshot/${COUNT_POLICY_UUID}`)
+  //       .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID}`))
   //       .set('Authorization', ADMIN_AUTH)
   //       .expect(200)
   //       .end((err, result) => {
@@ -418,7 +422,7 @@ describe('Tests Compliance API:', () => {
 
   //   afterEach(done => {
   //     agency_request
-  //       .get('/test/shutdown')
+  //       .get(pathPrefix('/test/shutdown'))
   //       .set('Authorization', ADMIN_AUTH)
   //       .expect(200)
   //       .end(err => {
@@ -431,7 +435,11 @@ describe('Tests Compliance API:', () => {
       const devicesOfProvider1: Device[] = makeDevices(15, now())
       const devicesOfProvider2: Device[] = makeDevices(15, now(), JUMP_PROVIDER_ID)
       const devices = [...devicesOfProvider1, ...devicesOfProvider2]
-      const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, 'trip_end')
+      const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, {
+        event_types: ['trip_end'],
+        vehicle_state: 'available',
+        speed: rangeRandomInt(10)
+      })
       const telemetry: Telemetry[] = []
       devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
@@ -451,7 +459,7 @@ describe('Tests Compliance API:', () => {
     it('Verifies violation of count compliance (over) and filters results by provider_id', async () => {
       // Admins should be able to see violations across all providers
       const adminResult = await request
-        .get(`/snapshot/${COUNT_POLICY_UUID}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
       test.assert.deepEqual(adminResult.body.compliance[0].matches[0].measured, 10)
@@ -463,7 +471,7 @@ describe('Tests Compliance API:', () => {
       // Admins should be able to query for a specific provider's compliance results
       // and only see the number of violations for that provider
       const provider1Result = await request
-        .get(`/snapshot/${COUNT_POLICY_UUID}?provider_id=${TEST1_PROVIDER_ID}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID}?provider_id=${TEST1_PROVIDER_ID}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
       test.assert.deepEqual(provider1Result.body.compliance[0].matches[0].measured, 10)
@@ -474,7 +482,7 @@ describe('Tests Compliance API:', () => {
 
       // If a policy applies to every provider, a provider will see only its own compliance results.
       const jumpResult = await request
-        .get(`/snapshot/${COUNT_POLICY_UUID}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID}`))
         .set('Authorization', JUMP_PROVIDER_AUTH)
         .expect(200)
       test.assert.deepEqual(jumpResult.body.compliance[0].matches[0].measured, 10)
@@ -489,7 +497,11 @@ describe('Tests Compliance API:', () => {
   describe('Time Compliant Test: ', () => {
     before(done => {
       const devices: Device[] = makeDevices(15, now())
-      const events = makeEventsWithTelemetry(devices, now() - 10, CITY_OF_LA, 'trip_end')
+      const events = makeEventsWithTelemetry(devices, now() - 10, CITY_OF_LA, {
+        event_types: ['trip_end'],
+        vehicle_state: 'available',
+        speed: rangeRandomInt(10)
+      })
       const telemetry: Telemetry[] = []
       devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
@@ -508,7 +520,7 @@ describe('Tests Compliance API:', () => {
 
     it('Verifies OK time compliance', done => {
       request
-        .get(`/snapshot/${TIME_POLICY_UUID}`)
+        .get(pathPrefix(`/snapshot/${TIME_POLICY_UUID}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -526,7 +538,11 @@ describe('Tests Compliance API:', () => {
   describe('Time Violation Test: ', () => {
     before(done => {
       const devices: Device[] = makeDevices(15, now())
-      const events = makeEventsWithTelemetry(devices, now() - minutes(21), CITY_OF_LA, 'trip_end')
+      const events = makeEventsWithTelemetry(devices, now() - minutes(21), CITY_OF_LA, {
+        event_types: ['trip_end'],
+        vehicle_state: 'available',
+        speed: rangeRandomInt(10)
+      })
       const telemetry: Telemetry[] = []
       devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
@@ -545,7 +561,7 @@ describe('Tests Compliance API:', () => {
 
     it('Verifies violation of time compliance', done => {
       request
-        .get(`/snapshot/${TIME_POLICY_UUID}`)
+        .get(pathPrefix(`/snapshot/${TIME_POLICY_UUID}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -564,7 +580,7 @@ describe('Tests Compliance API:', () => {
     it('Checks for a valid UUID, but not present in db', done => {
       Promise.all([db.initialize(), cache.initialize()]).then(async () => {
         request
-          .get(`/snapshot/${TIME_POLICY_UUID}`)
+          .get(pathPrefix(`/snapshot/${TIME_POLICY_UUID}`))
           .set('Authorization', ADMIN_AUTH)
           .expect(404)
           .end(err => {
@@ -577,7 +593,11 @@ describe('Tests Compliance API:', () => {
   describe('Verifies day-based bans work properly', () => {
     before(done => {
       const devices: Device[] = makeDevices(15, now())
-      const events = makeEventsWithTelemetry(devices, now() - 10, LA_BEACH, 'trip_end')
+      const events = makeEventsWithTelemetry(devices, now() - 10, LA_BEACH, {
+        event_types: ['trip_end'],
+        vehicle_state: 'available',
+        speed: rangeRandomInt(10)
+      })
       const telemetry: Telemetry[] = []
       devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), LA_BEACH, 10))
@@ -597,7 +617,7 @@ describe('Tests Compliance API:', () => {
     it('Verifies on a tuesday that vehicles are allowed', done => {
       MockDate.set('2019-05-21T20:00:00.000Z')
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID_2}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID_2}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -610,7 +630,7 @@ describe('Tests Compliance API:', () => {
     it('Verifies on a saturday that vehicles are not allowed', done => {
       MockDate.set('2019-05-25T20:00:00.000Z')
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID_2}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID_2}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -629,7 +649,11 @@ describe('Tests Compliance API:', () => {
   describe('Particular Event Violation: ', () => {
     before(done => {
       const devices: Device[] = makeDevices(15, now())
-      const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, 'service_start')
+      const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, {
+        event_types: ['on_hours'],
+        vehicle_state: 'available',
+        speed: 0
+      })
       const telemetry: Telemetry[] = []
       devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
@@ -648,7 +672,7 @@ describe('Tests Compliance API:', () => {
 
     it('Verifies violation for particular event', done => {
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID_3}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID_3}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -667,7 +691,11 @@ describe('Tests Compliance API:', () => {
   describe('Particular Event Compliance: ', () => {
     before(done => {
       const devices: Device[] = makeDevices(15, now())
-      const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, 'trip_end')
+      const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, {
+        event_types: ['trip_end'],
+        vehicle_state: 'available',
+        speed: rangeRandomInt(10)
+      })
       const telemetry: Telemetry[] = []
       devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
@@ -686,7 +714,7 @@ describe('Tests Compliance API:', () => {
 
     it('Verifies compliance for particular event', done => {
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID_3}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID_3}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -734,7 +762,7 @@ describe('Tests Compliance API:', () => {
             rule_id: '7a043ac8-03cd-4b0d-9588-d0af24f82832',
             rule_type: RULE_TYPES.count,
             geographies: veniceSpecOpsPointIds,
-            statuses: { available: ['provider_drop_off'] },
+            states: { available: ['provider_drop_off'] },
             vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter]
           },
           {
@@ -742,7 +770,7 @@ describe('Tests Compliance API:', () => {
             rule_id: '596d7fe1-53fd-4ea4-8ba7-33f5ea8d98a6',
             rule_type: RULE_TYPES.count,
             geographies: ['e0e4a085-7a50-43e0-afa4-6792ca897c5a'],
-            statuses: { available: ['provider_drop_off'] },
+            states: { available: ['provider_drop_off'] },
             vehicle_types: [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter],
             maximum: 0
           }
@@ -766,7 +794,13 @@ describe('Tests Compliance API:', () => {
       let iter = 0
       const events_a: VehicleEvent[] = veniceSpecOps.features.reduce((acc: VehicleEvent[], feature: Feature) => {
         if (feature.geometry.type === 'Point') {
-          acc.push(...makeEventsWithTelemetry([devices_a[iter++]], now() - 10, feature.geometry, 'provider_drop_off'))
+          acc.push(
+            ...makeEventsWithTelemetry([devices_a[iter++]], now() - 10, feature.geometry, {
+              event_types: ['provider_drop_off'],
+              vehicle_state: 'available',
+              speed: 0
+            })
+          )
         }
         return acc
       }, [])
@@ -776,7 +810,11 @@ describe('Tests Compliance API:', () => {
         devices_b,
         now() - 10,
         TEST_ZONE_NO_VALID_DROP_OFF_POINTS,
-        'provider_drop_off'
+        {
+          event_types: ['provider_drop_off'],
+          vehicle_state: 'available',
+          speed: 0
+        }
       )
       Promise.all([db.initialize(), cache.initialize()]).then(async () => {
         const seedData: { devices: Device[]; events: VehicleEvent[]; telemetry: Telemetry[] } = {
@@ -797,7 +835,7 @@ describe('Tests Compliance API:', () => {
 
     it('Verify 22 vehicles are matched within the first rule (inside of allowed zones), and 10 in the second (because they have not been previously matched).', done => {
       request
-        .get(`/snapshot/${VENICE_POLICY_UUID}`)
+        .get(pathPrefix(`/snapshot/${VENICE_POLICY_UUID}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -814,14 +852,22 @@ describe('Tests Compliance API:', () => {
     before(done => {
       // Generate old events
       const devices: Device[] = makeDevices(15, yesterday)
-      const events_a = makeEventsWithTelemetry(devices, yesterday, CITY_OF_LA, 'trip_start')
+      const events_a = makeEventsWithTelemetry(devices, yesterday, CITY_OF_LA, {
+        event_types: ['trip_start'],
+        vehicle_state: 'on_trip',
+        speed: rangeRandomInt(0, 10)
+      })
       const telemetry_a: Telemetry[] = []
       devices.forEach(device => {
         telemetry_a.push(makeTelemetryInArea(device, yesterday, CITY_OF_LA, 10))
       })
 
       // Generate new events
-      const events_b = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, 'provider_drop_off')
+      const events_b = makeEventsWithTelemetry(devices, now(), CITY_OF_LA, {
+        event_types: ['provider_drop_off'],
+        vehicle_state: 'available',
+        speed: 0
+      })
       const telemetry_b: Telemetry[] = []
       devices.forEach(device => {
         telemetry_a.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
@@ -845,7 +891,7 @@ describe('Tests Compliance API:', () => {
 
     it('Historical check reports 5 violations', done => {
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID_4}?timestamp=${yesterday + 200}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID_4}?timestamp=${yesterday + 200}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -857,7 +903,7 @@ describe('Tests Compliance API:', () => {
 
     it('Current check reports 0 violations', done => {
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID_4}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID_4}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -871,13 +917,21 @@ describe('Tests Compliance API:', () => {
   describe('Tests count endpoint', () => {
     before(async () => {
       const devices_a: Device[] = makeDevices(15, now())
-      const events_a = makeEventsWithTelemetry(devices_a, now(), CITY_OF_LA, 'trip_start')
+      const events_a = makeEventsWithTelemetry(devices_a, now(), CITY_OF_LA, {
+        event_types: ['trip_start'],
+        vehicle_state: 'on_trip',
+        speed: 0
+      })
       const telemetry_a: Telemetry[] = devices_a.reduce((acc: Telemetry[], device) => {
         return [...acc, makeTelemetryInArea(device, now(), CITY_OF_LA, 10)]
       }, [])
 
       const devices_b: Device[] = makeDevices(15, now())
-      const events_b = makeEventsWithTelemetry(devices_b, now(), CITY_OF_LA, 'provider_drop_off')
+      const events_b = makeEventsWithTelemetry(devices_b, now(), CITY_OF_LA, {
+        event_types: ['provider_drop_off'],
+        vehicle_state: 'available',
+        speed: 0
+      })
       const telemetry_b: Telemetry[] = devices_b.reduce((acc: Telemetry[], device) => {
         return [...acc, makeTelemetryInArea(device, now(), CITY_OF_LA, 10)]
       }, [])
@@ -899,7 +953,7 @@ describe('Tests Compliance API:', () => {
 
     it('Test count endpoint, expecting events', done => {
       request
-        .get(`/count/47c8c7d4-14b5-43a3-b9a5-a32ecc2fb2c6`)
+        .get(pathPrefix(`/count/47c8c7d4-14b5-43a3-b9a5-a32ecc2fb2c6`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -912,7 +966,7 @@ describe('Tests Compliance API:', () => {
 
     it('Test count endpoint, expecting no events', done => {
       request
-        .get(`/count/47c8c7d4-14b5-43a3-b9a5-a32ecc2fb2c6?timestamp=${START_ONE_MONTH_AGO}`)
+        .get(pathPrefix(`/count/47c8c7d4-14b5-43a3-b9a5-a32ecc2fb2c6?timestamp=${START_ONE_MONTH_AGO}`))
         .set('Authorization', ADMIN_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -924,7 +978,7 @@ describe('Tests Compliance API:', () => {
 
     it('Test count endpoint failure with bad rule_id', done => {
       request
-        .get(`/count/33ca0ee8-e74b-419d-88d3-aaaf05ac0509`)
+        .get(pathPrefix(`/count/33ca0ee8-e74b-419d-88d3-aaaf05ac0509`))
         .set('Authorization', ADMIN_AUTH)
         .expect(404)
         .end(err => {
@@ -936,7 +990,11 @@ describe('Tests Compliance API:', () => {
   describe('Count Compliant Test: ', () => {
     before(async () => {
       const devices: Device[] = makeDevices(7, now(), MOCHA_PROVIDER_ID)
-      const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, 'trip_end')
+      const events = makeEventsWithTelemetry(devices, now() - 100000, CITY_OF_LA, {
+        event_types: ['trip_end'],
+        vehicle_state: 'available',
+        speed: 0
+      })
       const telemetry: Telemetry[] = []
       devices.forEach(device => {
         telemetry.push(makeTelemetryInArea(device, now(), CITY_OF_LA, 10))
@@ -954,7 +1012,7 @@ describe('Tests Compliance API:', () => {
 
     it("Verifies scoped provider can access policy's compliance", done => {
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID}`))
         .set('Authorization', TEST2_PROVIDER_AUTH)
         .expect(200)
         .end((err, result) => {
@@ -966,7 +1024,7 @@ describe('Tests Compliance API:', () => {
 
     it("Verifies non-scoped provider cannot access policy's compliance", done => {
       request
-        .get(`/snapshot/${COUNT_POLICY_UUID}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_UUID}`))
         .set('Authorization', MOCHA_PROVIDER_AUTH)
         .expect(401)
         .end((err, result) => {
@@ -989,7 +1047,11 @@ describe('Tests Compliance API:', () => {
       }
 
       const devices: Device[] = makeDevices(15, now())
-      const events = makeEventsWithTelemetry(devices, now() - 10, LA_BEACH, 'trip_start')
+      const events = makeEventsWithTelemetry(devices, now() - 10, LA_BEACH, {
+        event_types: ['trip_start'],
+        vehicle_state: 'on_trip',
+        speed: 0
+      })
 
       const seedData = { devices, events, telemetry: [] }
 
@@ -1002,7 +1064,7 @@ describe('Tests Compliance API:', () => {
 
     it('Verifies max 0 single rule policy operates as expected', done => {
       request
-        .get(`/snapshot/${COUNT_POLICY_JSON_5.policy_id}`)
+        .get(pathPrefix(`/snapshot/${COUNT_POLICY_JSON_5.policy_id}`))
         .set('Authorization', TEST2_PROVIDER_AUTH)
         .expect(200)
         .end((err, result) => {

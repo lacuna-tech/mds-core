@@ -29,13 +29,11 @@ import {
   TelemetryData,
   WithGpsProperty,
   BoundingBox,
-  EVENT_STATES_MAP,
-  VEHICLE_EVENT,
   VEHICLE_EVENTS,
   VEHICLE_STATES
 } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
-import { now } from '@mds-core/mds-utils'
+import { now, tail } from '@mds-core/mds-utils'
 
 export async function deleteAudit(audit_trip_id: UUID): Promise<number> {
   const result: number = await db.deleteAudit(audit_trip_id)
@@ -181,14 +179,14 @@ export async function getVehicle(provider_id: UUID, vehicle_id: string) {
   await Promise.all(
     devices.map(async device => {
       const deviceStatus = (await cache.readDeviceStatus(device.device_id)) as (VehicleEvent & Device) | null
-      if (deviceStatus === null || deviceStatus.event_type === VEHICLE_EVENTS.decommissioned) {
+      if (deviceStatus === null || tail(deviceStatus.event_types) === VEHICLE_EVENTS.decommissioned) {
         const { device_id } = device
         logger.info('Bad vehicle status', { deviceStatus, provider_id, vehicle_id, device_id })
         deviceStatusMap.inactive.push(device)
       } else {
-        const status = EVENT_STATES_MAP[deviceStatus.event_type as VEHICLE_EVENT]
+        const state = deviceStatus.vehicle_state
         const updated = deviceStatus.timestamp
-        deviceStatusMap.active.push({ ...device, ...deviceStatus, status, updated })
+        deviceStatusMap.active.push({ ...device, ...deviceStatus, state, updated })
       }
     })
   )
@@ -215,13 +213,11 @@ export async function getVehicles(
 
   const start = now()
   const statusesSuperset = ((await cache.readDevicesStatus({ bbox, strict })) as (VehicleEvent & Device)[]).filter(
-    status =>
-      EVENT_STATES_MAP[status.event_type as VEHICLE_EVENT] !== VEHICLE_STATES.removed &&
-      (!provider_id || status.provider_id === provider_id)
+    status => status.vehicle_state !== VEHICLE_STATES.removed && (!provider_id || status.provider_id === provider_id)
   )
   const statusesSubset = statusesSuperset.slice(skip, skip + take)
   const devices = statusesSubset.reduce((acc: (VehicleEvent & Device)[], item) => {
-    const status = EVENT_STATES_MAP[item.event_type as VEHICLE_EVENT]
+    const status = item.vehicle_state
     const updated = item.timestamp
     return [...acc, { ...item, status, updated }]
   }, [])

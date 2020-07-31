@@ -90,7 +90,7 @@ export type TelemetryResult =
     >[]
 
 export type CompositeVehicle = Partial<
-  Device & { prev_event?: string; updated?: Timestamp; gps?: Recorded<Telemetry>['gps'] }
+  Device & { prev_events?: string[]; updated?: Timestamp; gps?: Recorded<Telemetry>['gps'] }
 >
 
 export type PaginatedVehiclesList = {

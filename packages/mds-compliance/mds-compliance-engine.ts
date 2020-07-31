@@ -73,7 +73,7 @@ function isRuleActive(rule: Rule): boolean {
 }
 
 function isInVehicleTypes(rule: Rule, device: Device): boolean {
-  return !rule.vehicle_types || (rule.vehicle_types && rule.vehicle_types.includes(device.type))
+  return !rule.vehicle_types || (rule.vehicle_types && rule.vehicle_types.includes(device.vehicle_type))
 }
 
 function getViolationsArray(map: { [key: string]: MatchedVehiclePlusRule }) {

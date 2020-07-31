@@ -18,10 +18,11 @@ import express, { NextFunction } from 'express'
 // import { isProviderId, providerName } from '@mds-core/mds-providers'
 import { Policy, UUID } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
-import { now, pathsFor, NotFoundError, isUUID, BadParamsError, ServerError } from '@mds-core/mds-utils'
+import { now, pathPrefix, NotFoundError, isUUID, BadParamsError, ServerError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { parseRequest } from '@mds-core/mds-api-helpers'
 import { ApiRequest, ApiResponse } from '@mds-core/mds-api-server'
+import { policySchemaJson } from '@mds-core/mds-schema-validators'
 import {
   PolicyApiRequest,
   PolicyApiResponse,
@@ -73,7 +74,7 @@ function api(app: express.Express): express.Express {
   })
 
   app.get(
-    pathsFor('/policies'),
+    pathPrefix('/policies'),
     async (req: PolicyApiGetPoliciesRequest, res: PolicyApiGetPoliciesResponse, next: express.NextFunction) => {
       const { start_date = now(), end_date = now() } = req.query
       const { scopes } = res.locals
@@ -85,7 +86,7 @@ function api(app: express.Express): express.Express {
           Otherwise, they can only read published.
         */
         const { get_published = null, get_unpublished = null } = scopes.includes('policies:read')
-          ? parseRequest(req, { parser: x => (x ? JSON.parse(x) : null) }).query('get_published', 'get_unpublished')
+          ? parseRequest(req).single({ parser: JSON.parse }).query('get_published', 'get_unpublished')
           : { get_published: true }
 
         if (start_date > end_date) {
@@ -123,7 +124,7 @@ function api(app: express.Express): express.Express {
   )
 
   app.get(
-    pathsFor('/policies/:policy_id'),
+    pathPrefix('/policies/:policy_id'),
     async (req: PolicyApiGetPolicyRequest, res: PolicyApiGetPolicyResponse, next: express.NextFunction) => {
       const { policy_id } = req.params
       const { scopes } = res.locals
@@ -139,7 +140,7 @@ function api(app: express.Express): express.Express {
           Otherwise, they can only read published.
         */
         const { get_published = null, get_unpublished = null } = scopes.includes('policies:read')
-          ? parseRequest(req, { parser: x => (x ? JSON.parse(x) : null) }).query('get_published', 'get_unpublished')
+          ? parseRequest(req).single({ parser: JSON.parse }).query('get_published', 'get_unpublished')
           : { get_published: true }
 
         const policies = await db.readPolicies({ policy_id, get_published, get_unpublished })
@@ -162,6 +163,10 @@ function api(app: express.Express): express.Express {
       }
     }
   )
+
+  app.get(pathPrefix('/schema/policy'), (req, res) => {
+    res.status(200).send(policySchemaJson)
+  })
 
   /* eslint-reason global error handling middleware */
   /* istanbul ignore next */

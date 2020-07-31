@@ -25,7 +25,8 @@ import {
   Timestamp,
   Telemetry,
   VehicleEvent,
-  Policy
+  Policy,
+  VEHICLE_STATE
 } from '@mds-core/mds-types'
 import { Geometry } from 'geojson'
 
@@ -495,16 +496,22 @@ function makeTelemetryStream(origin: Telemetry, steps: number) {
   return stream
 }
 
-function makeEvents(devices: Device[], timestamp: Timestamp, event_type = VEHICLE_EVENTS.trip_start): VehicleEvent[] {
-  if (!event_type) {
-    throw new Error('empty event_type')
-  }
+function makeEvents(
+  devices: Device[],
+  timestamp: Timestamp,
+  makeEventsOptions: {
+    event_types: VEHICLE_EVENT[]
+    vehicle_state: VEHICLE_STATE
+  } = { event_types: [VEHICLE_EVENTS.trip_start], vehicle_state: 'on_trip' }
+): VehicleEvent[] {
+  const { event_types, vehicle_state } = makeEventsOptions
 
   return devices.map(device => {
     return {
       device_id: device.device_id,
       provider_id: device.provider_id,
-      event_type: event_type as VEHICLE_EVENT,
+      event_types,
+      vehicle_state,
       timestamp,
       recorded: now()
     }
@@ -515,17 +522,20 @@ function makeEventsWithTelemetry(
   devices: Device[],
   timestamp: Timestamp,
   area: UUID | Geometry,
-  event_type: null | string = null,
-  speed = rangeRandomInt(10)
+  makeEventsWithTelemetryOptions: { event_types: VEHICLE_EVENT[]; vehicle_state: VEHICLE_STATE; speed: number } = {
+    event_types: ['trip_start'],
+    vehicle_state: 'on_trip',
+    speed: rangeRandomInt(10)
+  }
 ): VehicleEvent[] {
+  const { event_types, vehicle_state, speed } = makeEventsWithTelemetryOptions
+
   return devices.map(device => {
-    const vehicleEventsKeys = Object.keys(VEHICLE_EVENTS)
     return {
       device_id: device.device_id,
       provider_id: device.provider_id,
-      event_type: event_type
-        ? (event_type as VEHICLE_EVENT)
-        : (vehicleEventsKeys[rangeRandomInt(vehicleEventsKeys.length)] as VEHICLE_EVENT),
+      event_types,
+      vehicle_state,
       telemetry: makeTelemetryInArea(device, timestamp, area, speed),
       timestamp,
       recorded: timestamp

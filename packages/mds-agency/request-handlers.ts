@@ -13,7 +13,8 @@ import {
   DeviceID,
   VEHICLE_STATES,
   VEHICLE_EVENT,
-  UUID
+  UUID,
+  VEHICLE_STATE
 } from '@mds-core/mds-types'
 import urls from 'url'
 import { parseRequest } from '@mds-core/mds-api-helpers'
@@ -132,7 +133,7 @@ export const getVehicleById = async (req: AgencyApiGetVehicleByIdRequest, res: A
   const { device_id } = req.params
 
   const { provider_id } = res.locals.scopes.includes('vehicles:read')
-    ? parseRequest(req).query('provider_id')
+    ? parseRequest(req).single().query('provider_id')
     : res.locals
 
   const payload = await readPayload(device_id)
@@ -151,7 +152,7 @@ export const getVehiclesByProvider = async (
 ) => {
   const PAGE_SIZE = 1000
 
-  const { skip = 0, take = PAGE_SIZE } = parseRequest(req, { parser: Number }).query('skip', 'take')
+  const { skip = 0, take = PAGE_SIZE } = parseRequest(req).single({ parser: Number }).query('skip', 'take')
 
   const url = urls.format({
     protocol: req.get('x-forwarded-proto') || req.protocol,
@@ -161,7 +162,7 @@ export const getVehiclesByProvider = async (
 
   // TODO: Replace with express middleware
   const { provider_id } = res.locals.scopes.includes('vehicles:read')
-    ? parseRequest(req).query('provider_id')
+    ? parseRequest(req).single().query('provider_id')
     : res.locals
 
   try {
@@ -239,15 +240,13 @@ export const submitVehicleEvent = async (
   const event: VehicleEvent = {
     device_id: req.params.device_id,
     provider_id: res.locals.provider_id,
-    event_types: req.body.event_types.map(et => lower(et)) as VEHICLE_EVENT[],
-    vehicle_state: req.body.vehicle_state,
-    // event_type_reason: req.body.event_type_reason ? (lower(req.body.event_type_reason) as VEHICLE_REASON) : undefined,
+    event_types: req.body.event_types.map(lower) as VEHICLE_EVENT[],
+    vehicle_state: req.body.vehicle_state as VEHICLE_STATE,
     telemetry: req.body.telemetry ? { ...req.body.telemetry, provider_id: res.locals.provider_id } : null,
     timestamp: req.body.timestamp,
     trip_id: req.body.trip_id,
     recorded,
-    telemetry_timestamp: undefined, // added for diagnostic purposes
-    service_area_id: null // added for diagnostic purposes
+    telemetry_timestamp: undefined // added for diagnostic purposes
   }
 
   try {
@@ -318,7 +317,7 @@ export const submitVehicleEvent = async (
     // TODO unify with fail() above
     if (failure) {
       logger.info(name, 'event failure', failure, event)
-      return res.status(400).send(failure)
+      return res.status(400).send(failure as any)
     }
 
     const { telemetry } = event

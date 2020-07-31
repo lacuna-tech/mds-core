@@ -1,7 +1,7 @@
 import express from 'express'
 import { Query } from 'express-serve-static-core'
 
-import { isUUID, isPct, isTimestamp, isFloat, isInsideBoundingBox } from '@mds-core/mds-utils'
+import { isUUID, isPct, isTimestamp, isFloat, isInsideBoundingBox, areThereCommonElements } from '@mds-core/mds-utils'
 import stream from '@mds-core/mds-stream'
 import {
   UUID,
@@ -13,10 +13,8 @@ import {
   VEHICLE_EVENTS,
   VEHICLE_TYPES,
   VEHICLE_STATES,
-  // VEHICLE_REASONS,
   PROPULSION_TYPES,
-  BoundingBox,
-  VEHICLE_STATE
+  BoundingBox
 } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import logger from '@mds-core/mds-logger'
@@ -284,21 +282,17 @@ export async function badEvent(event: VehicleEvent) {
     }
   }
 
-  for (const event_type of event.event_types) {
-    if (!isEnum(VEHICLE_EVENTS, event_type)) {
-      // FIXME probably should look at all? does that exist?
-      return {
-        error: 'bad_param',
-        error_description: `invalid event_type ${event_type}`
-      }
+  if (event.event_types.length === 0) {
+    return {
+      error: 'bad_param',
+      error_description: 'empty event_types array'
     }
   }
-  // if (event.event_type_reason && !isEnum(VEHICLE_REASONS, event.event_type_reason)) {
-  //   return {
-  //     error: 'bad_param',
-  //     error_description: `invalid event_type_reason ${event.event_type_reason}`
-  //   }
-  // }
+
+  event.event_types.forEach(event_type => {
+    if (!isEnum(VEHICLE_EVENTS, event_type))
+      return { error: 'bad_param', error_description: `invalid event_type in event_types ${event_type}` }
+  })
 
   if (event.trip_id === '') {
     /* eslint-reason TODO remove eventually -- Lime is spraying empty-string values */
@@ -326,26 +320,16 @@ export async function badEvent(event: VehicleEvent) {
 
   // event-specific checking goes last
   // TODO update events here
-  // TODO handle multiple event types
-  switch (event.event_types) {
-    // FIXME no really
-    // case VEHICLE_EVENTS.trip_start:
-    //   return badTelemetry(event.telemetry) || missingTripId()
-    // case VEHICLE_EVENTS.trip_end:
-    //   return badTelemetry(event.telemetry) || missingTripId()
-    // case VEHICLE_EVENTS.trip_enter_jurisdiction:
-    //   return badTelemetry(event.telemetry) || missingTripId()
-    // case VEHICLE_EVENTS.trip_leave_jurisdiction:
-    //   return badTelemetry(event.telemetry) || missingTripId()
-    // case VEHICLE_EVENTS.provider_drop_off:
-    //   return badTelemetry(event.telemetry)
-    // case VEHICLE_EVENTS.reservation_start:
-    // case VEHICLE_EVENTS.reservation_cancel:
-    //   return null
-    default:
-      logger.warn(`unsure how to validate mystery event_type in ${event.event_types}`)
-      break
-  }
+  if (
+    areThereCommonElements(
+      ['trip_start', 'trip_end', 'trip_enter_jurisdiction', 'trip_leave_jurisdiction'],
+      event.event_types
+    )
+  )
+    return !badTelemetry(event.telemetry) && !missingTripId()
+
+  if (event.event_types.includes('provider_drop_off')) return badTelemetry(event.telemetry)
+
   return null // we good
 }
 
@@ -419,12 +403,12 @@ export function computeCompositeVehicleData(payload: VehiclePayload) {
   }
 
   if (event) {
-    composite.prev_event = event.event_types[event.event_types.length - 1] // TODO function?
+    composite.prev_events = event.event_types
     composite.updated = event.timestamp
-    composite.state = (event.vehicle_state || 'unknown') as VEHICLE_STATE
+    composite.state = event.vehicle_state
   } else {
     composite.state = VEHICLE_STATES.removed
-    composite.prev_event = VEHICLE_EVENTS.decommissioned
+    composite.prev_events = [VEHICLE_EVENTS.decommissioned]
   }
   if (telemetry) {
     if (telemetry.gps) {

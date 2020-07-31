@@ -15,3 +15,4 @@
  */
 
 export { BigintTransformer } from './bigint-transformer'
+export { UppercaseTransformer } from './uppercase-transformer'

@@ -164,4 +164,4 @@ const generateGraph = () => {
   return `digraph G {\n${graphEntries.join('\n')}\n}`
 }
 
-export { getValidExitableStates, isEventValid, isEventSequenceValid, stateTransitionDict, getNextStates, generateGraph }
+export { getValidPreviousStates, isEventValid, isEventSequenceValid, stateTransitionDict, getNextStates, generateGraph }
