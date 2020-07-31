@@ -9,6 +9,7 @@ const TABLE = Enum(
   'audits',
   'devices',
   'events',
+  'events04', // 0.4 events table is significatly different
   'geographies',
   'geography_metadata',
   'migrations',
@@ -158,6 +159,18 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.year,
     COLUMN.mfgr,
     COLUMN.model,
+    COLUMN.recorded
+  ],
+  [TABLE.events04]: [
+    COLUMN.id,
+    COLUMN.device_id,
+    COLUMN.provider_id,
+    COLUMN.timestamp,
+    COLUMN.event_type, // deprecated 1.0
+    COLUMN.event_type_reason, // deprecated 1.0
+    COLUMN.telemetry_timestamp,
+    COLUMN.trip_id,
+    COLUMN.service_area_id,
     COLUMN.recorded
   ],
   [TABLE.events]: [

@@ -194,6 +194,12 @@ async function doMigrations(client: MDSPostgresClient) {
   await doMigration(exec, 'dropAuditEventsColumns', dropAuditEventsColumnsMigration)
 }
 
+// 1.0 migrations
+// alter the devices table with a couple renames
+// rename 'events' to 'events04'
+// create new 'events' from contents of 'events04'
+// profit!
+
 async function updateSchema(client: MDSPostgresClient) {
   await createTables(client)
   await doMigrations(client)
