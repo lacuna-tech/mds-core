@@ -129,14 +129,3 @@ data:
   postgresql-password: {{ .Values.postgresql.password | b64enc }}
   {{- end }}
 type: Opaque
-{{- if and $.Values.nats.enabled $.Values.nats.credentials }}
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: nats-creds
-  namespace: {{ $.Release.Namespace }}
-data:
-  sys.creds: {{ $.Values.nats | b64enc }}
-type: Opaque
-{{- end }}
