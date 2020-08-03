@@ -3,7 +3,7 @@ import assert from 'assert'
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 import should from 'should'
 import { FeatureCollection } from 'geojson'
-import { Telemetry, Recorded, VehicleEvent, Device, VEHICLE_EVENTS, Geography } from '@mds-core/mds-types'
+import { Telemetry, Recorded, VehicleEvent, Device, Geography } from '@mds-core/mds-types'
 import {
   JUMP_TEST_DEVICE_1,
   makeDevices,

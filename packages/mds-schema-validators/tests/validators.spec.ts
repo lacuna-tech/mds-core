@@ -16,7 +16,7 @@
 
 import test from 'unit.js'
 import { uuid } from '@mds-core/mds-utils'
-import { AUDIT_EVENT_TYPES, VEHICLE_EVENTS } from '@mds-core/mds-types'
+import { AUDIT_EVENT_TYPES } from '@mds-core/mds-types'
 import { providers } from '@mds-core/mds-providers' // map of uuids -> obj
 import {
   isValidAuditTripId,

@@ -28,9 +28,7 @@ import {
   VehicleEvent,
   TelemetryData,
   WithGpsProperty,
-  BoundingBox,
-  VEHICLE_EVENTS,
-  VEHICLE_STATES
+  BoundingBox
 } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
 import { now, tail } from '@mds-core/mds-utils'
