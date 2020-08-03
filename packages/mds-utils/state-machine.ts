@@ -1,11 +1,4 @@
-import {
-  VEHICLE_STATES,
-  VEHICLE_EVENTS,
-  VEHICLE_STATE,
-  VEHICLE_EVENT,
-  EVENT_STATES_MAP,
-  VehicleEvent
-} from '@mds-core/mds-types'
+import { VEHICLE_STATES, VEHICLE_STATE, VEHICLE_EVENT, EVENT_STATES_MAP, VehicleEvent } from '@mds-core/mds-types'
 
 /* Start with a state, then there's a list of valid event_types by which one
  * may transition out, then possible states for each event_type
@@ -17,82 +10,76 @@ const stateTransitionDict: {
     }
   >
 } = {
-  [VEHICLE_STATES.available]: {
-    [VEHICLE_EVENTS.agency_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.battery_low]: [VEHICLE_STATES.non_operational],
-    [VEHICLE_EVENTS.comms_lost]: [VEHICLE_STATES.unknown],
-    [VEHICLE_EVENTS.compliance_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.decommissioned]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.maintenance]: [VEHICLE_STATES.non_operational],
-    [VEHICLE_EVENTS.maintenance_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.missing]: [VEHICLE_STATES.unknown],
-    [VEHICLE_EVENTS.off_hours]: [VEHICLE_STATES.non_operational],
-    [VEHICLE_EVENTS.rebalance_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.reservation_start]: [VEHICLE_STATES.reserved],
-    [VEHICLE_EVENTS.system_suspend]: [VEHICLE_STATES.non_operational],
-    [VEHICLE_EVENTS.trip_start]: [VEHICLE_STATES.on_trip],
-    [VEHICLE_EVENTS.unspecified]: [VEHICLE_STATES.non_operational, VEHICLE_STATES.unknown, VEHICLE_STATES.removed]
+  available: {
+    agency_pick_up: ['removed'],
+    battery_low: ['non_operational'],
+    comms_lost: ['unknown'],
+    compliance_pick_up: ['removed'],
+    decommissioned: ['removed'],
+    maintenance: ['non_operational'],
+    maintenance_pick_up: ['removed'],
+    missing: ['unknown'],
+    off_hours: ['non_operational'],
+    rebalance_pick_up: ['removed'],
+    reservation_start: ['reserved'],
+    system_suspend: ['non_operational'],
+    trip_start: ['on_trip'],
+    unspecified: ['non_operational', 'unknown', 'removed']
   },
-  [VEHICLE_STATES.elsewhere]: {
-    [VEHICLE_EVENTS.agency_drop_off]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.agency_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.comms_lost]: [VEHICLE_STATES.unknown],
-    [VEHICLE_EVENTS.compliance_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.decommissioned]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.maintenance_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.missing]: [VEHICLE_STATES.unknown],
-    [VEHICLE_EVENTS.provider_drop_off]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.rebalance_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.trip_enter_jurisdiction]: [VEHICLE_STATES.on_trip],
-    [VEHICLE_EVENTS.unspecified]: [VEHICLE_STATES.available, VEHICLE_STATES.removed]
+  elsewhere: {
+    agency_drop_off: ['available'],
+    agency_pick_up: ['removed'],
+    comms_lost: ['unknown'],
+    compliance_pick_up: ['removed'],
+    decommissioned: ['removed'],
+    maintenance_pick_up: ['removed'],
+    missing: ['unknown'],
+    provider_drop_off: ['available'],
+    rebalance_pick_up: ['removed'],
+    trip_enter_jurisdiction: ['on_trip'],
+    unspecified: ['available', 'removed']
   },
-  [VEHICLE_STATES.non_operational]: {
-    [VEHICLE_EVENTS.agency_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.battery_charged]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.comms_lost]: [VEHICLE_STATES.unknown],
-    [VEHICLE_EVENTS.compliance_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.decommissioned]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.maintenance]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.maintenance_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.missing]: [VEHICLE_STATES.unknown],
-    [VEHICLE_EVENTS.on_hours]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.rebalance_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.system_resume]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.unspecified]: [VEHICLE_STATES.available, VEHICLE_STATES.removed]
+  non_operational: {
+    agency_pick_up: ['removed'],
+    battery_charged: ['available'],
+    comms_lost: ['unknown'],
+    compliance_pick_up: ['removed'],
+    decommissioned: ['removed'],
+    maintenance: ['available'],
+    maintenance_pick_up: ['removed'],
+    missing: ['unknown'],
+    on_hours: ['available'],
+    rebalance_pick_up: ['removed'],
+    system_resume: ['available'],
+    unspecified: ['available', 'removed']
   },
-  [VEHICLE_STATES.on_trip]: {
-    [VEHICLE_EVENTS.comms_lost]: [VEHICLE_STATES.unknown],
-    [VEHICLE_EVENTS.trip_cancel]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.trip_end]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.trip_leave_jurisdiction]: [VEHICLE_STATES.elsewhere],
-    [VEHICLE_EVENTS.missing]: [VEHICLE_STATES.unknown]
+  on_trip: {
+    comms_lost: ['unknown'],
+    trip_cancel: ['available'],
+    trip_end: ['available'],
+    trip_leave_jurisdiction: ['elsewhere'],
+    missing: ['unknown']
   },
-  [VEHICLE_STATES.removed]: {
-    [VEHICLE_EVENTS.agency_drop_off]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.decommissioned]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.provider_drop_off]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.unspecified]: [VEHICLE_STATES.available]
+  removed: {
+    agency_drop_off: ['available'],
+    decommissioned: ['removed'],
+    provider_drop_off: ['available'],
+    unspecified: ['available']
   },
-  [VEHICLE_STATES.reserved]: {
-    [VEHICLE_EVENTS.comms_lost]: [VEHICLE_STATES.unknown],
-    [VEHICLE_EVENTS.missing]: [VEHICLE_STATES.unknown],
-    [VEHICLE_EVENTS.reservation_cancel]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.trip_start]: [VEHICLE_STATES.on_trip],
-    [VEHICLE_EVENTS.unspecified]: [VEHICLE_STATES.available]
+  reserved: {
+    comms_lost: ['unknown'],
+    missing: ['unknown'],
+    reservation_cancel: ['available'],
+    trip_start: ['on_trip'],
+    unspecified: ['available']
   },
-  [VEHICLE_STATES.unknown]: {
-    [VEHICLE_EVENTS.agency_drop_off]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.agency_pick_up]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.comms_restored]: [
-      VEHICLE_STATES.available,
-      VEHICLE_STATES.elsewhere,
-      VEHICLE_STATES.reserved,
-      VEHICLE_STATES.on_trip,
-      VEHICLE_STATES.non_operational
-    ],
-    [VEHICLE_EVENTS.decommissioned]: [VEHICLE_STATES.removed],
-    [VEHICLE_EVENTS.provider_drop_off]: [VEHICLE_STATES.available],
-    [VEHICLE_EVENTS.unspecified]: [VEHICLE_STATES.available, VEHICLE_STATES.removed]
+  unknown: {
+    agency_drop_off: ['available'],
+    agency_pick_up: ['removed'],
+    comms_restored: ['available', 'elsewhere', 'reserved', 'on_trip', 'non_operational'],
+    decommissioned: ['removed'],
+    provider_drop_off: ['available'],
+    unspecified: ['available', 'removed']
   }
 }
 
@@ -101,10 +88,7 @@ const getNextStates = (currStatus: VEHICLE_STATE, nextEvent: VEHICLE_EVENT): VEH
 }
 
 // Filter for all states that have this event as a valid exiting event
-function getValidPreviousStates(
-  event: VEHICLE_EVENT,
-  states: VEHICLE_STATE[] = Object.keys(VEHICLE_STATES) as VEHICLE_STATE[]
-) {
+function getValidPreviousStates(event: VEHICLE_EVENT, states: Readonly<VEHICLE_STATE[]> = VEHICLE_STATES) {
   return states.filter(state => {
     return Object.keys(stateTransitionDict[state]).includes(event)
   })
@@ -147,7 +131,7 @@ const generateTransitionLabel = (status: VEHICLE_STATE, nextStatus: VEHICLE_STAT
 // Punch this output into http://www.webgraphviz.com/
 const generateGraph = () => {
   const graphEntries = []
-  const statuses: VEHICLE_STATE[] = Object.values(VEHICLE_STATES)
+  const statuses: Readonly<VEHICLE_STATE[]> = VEHICLE_STATES
   for (const status of statuses) {
     const eventTransitions: VEHICLE_EVENT[] = Object.keys(stateTransitionDict[status]) as VEHICLE_EVENT[]
     for (const event of eventTransitions) {

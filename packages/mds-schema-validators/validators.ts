@@ -152,13 +152,13 @@ const geographiesSchema = Joi.array().items(geographySchema)
 
 const eventsSchema = Joi.array().items()
 
-const vehicleEventTypeSchema = stringSchema.valid(...Object.keys(VEHICLE_EVENTS))
+const vehicleEventTypeSchema = stringSchema.valid(...VEHICLE_EVENTS)
 
 const vehicleTypeSchema = stringSchema.valid(...Object.keys(VEHICLE_TYPES))
 
 const propulsionTypeSchema = stringSchema.valid(...Object.keys(PROPULSION_TYPES))
 
-const vehicleStatusSchema = stringSchema.valid(...Object.keys(VEHICLE_STATES))
+const vehicleStatusSchema = stringSchema.valid(...VEHICLE_STATES)
 
 const eventSchema = Joi.object().keys({
   device_id: uuidSchema.required(),
@@ -389,11 +389,11 @@ export const validateEvent = (event: unknown) => {
   if (isValidEvent(event, { allowUnknown: true })) {
     const { event_types } = event
 
-    const TRIP_EVENTS: string[] = [
-      VEHICLE_EVENTS.trip_start,
-      VEHICLE_EVENTS.trip_end,
-      VEHICLE_EVENTS.trip_enter_jurisdiction,
-      VEHICLE_EVENTS.trip_leave_jurisdiction
+    const TRIP_EVENTS: VEHICLE_EVENT[] = [
+      'trip_start',
+      'trip_end',
+      'trip_enter_jurisdiction',
+      'trip_leave_jurisdiction'
     ]
 
     if (areThereCommonElements(TRIP_EVENTS, event_types)) {

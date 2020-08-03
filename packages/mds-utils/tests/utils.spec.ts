@@ -16,14 +16,7 @@
 
 import test from 'unit.js'
 import assert from 'assert'
-import {
-  VEHICLE_EVENTS,
-  VehicleEvent,
-  VEHICLE_EVENT,
-  VEHICLE_STATES,
-  VEHICLE_STATE,
-  EVENT_STATES_MAP
-} from '@mds-core/mds-types'
+import { VEHICLE_EVENTS, VehicleEvent, VEHICLE_STATES, EVENT_STATES_MAP } from '@mds-core/mds-types'
 import { routeDistance, isEventSequenceValid, normalizeToArray, filterDefined } from '../utils'
 import { isEventValid, stateTransitionDict } from '../state-machine'
 
@@ -94,8 +87,8 @@ describe('Tests Utilities', () => {
 
   describe('State machine', () => {
     it('Tests state transitions', () => {
-      const events = Object.keys(VEHICLE_EVENTS) as VEHICLE_EVENT[]
-      const states = Object.keys(VEHICLE_STATES) as VEHICLE_STATE[]
+      const events = VEHICLE_EVENTS
+      const states = VEHICLE_STATES
       for (const event_type_A of events) {
         for (const eventAState of states) {
           const eventA = { vehicle_state: eventAState, event_types: [event_type_A] } as VehicleEvent

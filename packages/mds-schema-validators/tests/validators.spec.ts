@@ -172,7 +172,7 @@ describe('Tests validators', () => {
     test.assert.throws(() => isValidVehicleEventType(null), ValidationError)
     test.assert.throws(() => isValidVehicleEventType('invalid'), ValidationError)
     test.value(isValidVehicleEventType(AUDIT_EVENT_TYPES.telemetry, { assert: false })).is(false)
-    test.value(isValidVehicleEventType(VEHICLE_EVENTS.trip_end)).is(true)
+    test.value(isValidVehicleEventType('trip_end')).is(true)
     done()
   })
 

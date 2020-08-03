@@ -29,17 +29,7 @@
 
 import supertest from 'supertest'
 import test from 'unit.js'
-import {
-  VEHICLE_EVENTS,
-  VEHICLE_STATES,
-  VEHICLE_TYPES,
-  PROPULSION_TYPES,
-  Timestamp,
-  Device,
-  VehicleEvent,
-  Geography,
-  Stop
-} from '@mds-core/mds-types'
+import { VEHICLE_TYPES, PROPULSION_TYPES, Timestamp, Device, VehicleEvent, Geography, Stop } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-agency-cache'
 import stream from '@mds-core/mds-stream'
@@ -106,7 +96,7 @@ let testTimestamp = now()
 
 const test_event: Omit<VehicleEvent, 'recorded' | 'provider_id'> = {
   device_id: DEVICE_UUID,
-  event_types: [VEHICLE_EVENTS.decommissioned],
+  event_types: ['decommissioned'],
   vehicle_state: 'removed',
   timestamp: testTimestamp
 }
@@ -361,7 +351,7 @@ describe('Tests API', () => {
         // log('----------', result.body)
         test.object(result.body).match((obj: Device) => obj.device_id === DEVICE_UUID)
         test.object(result.body).match((obj: Device) => obj.provider_id === TEST1_PROVIDER_ID)
-        test.object(result.body).match((obj: Device) => obj.state === VEHICLE_STATES.removed)
+        test.object(result.body).match((obj: Device) => obj.state === 'removed')
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -375,7 +365,7 @@ describe('Tests API', () => {
         // log('----------', result.body)
         test.object(result.body).match((obj: Device) => obj.device_id === DEVICE_UUID)
         test.object(result.body).match((obj: Device) => obj.provider_id === TEST1_PROVIDER_ID)
-        test.object(result.body).match((obj: Device) => obj.state === VEHICLE_STATES.removed)
+        test.object(result.body).match((obj: Device) => obj.state === 'removed')
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -584,7 +574,7 @@ describe('Tests API', () => {
 
   it('verifies read-back of post device status decomissioned success (db)', async () => {
     const event = await db.readEvent(DEVICE_UUID, test_event.timestamp)
-    test.assert(event.event_types[0] === VEHICLE_EVENTS.decommissioned)
+    test.assert(event.event_types[0] === 'decommissioned')
     test.assert(event.device_id === DEVICE_UUID)
   })
 
@@ -608,7 +598,7 @@ describe('Tests API', () => {
       .post(pathPrefix('/vehicles/' + 'bogus' + '/event'))
       .set('Authorization', AUTH)
       .send({
-        event_types: [VEHICLE_EVENTS.maintenance_pick_up],
+        event_types: ['maintenance_pick_up'],
         telemetry: TEST_TELEMETRY,
         timestamp: testTimestamp++
       })
@@ -624,7 +614,7 @@ describe('Tests API', () => {
       .post(pathPrefix(`/vehicles/${DEVICE_UUID}/event`))
       .set('Authorization', AUTH2)
       .send({
-        event_types: [VEHICLE_EVENTS.maintenance_pick_up],
+        event_types: ['maintenance_pick_up'],
         vehicle_state: 'removed',
         telemetry: TEST_TELEMETRY,
         timestamp: testTimestamp++
@@ -641,7 +631,7 @@ describe('Tests API', () => {
       .post(pathPrefix(`/vehicles/${DEVICE_UUID}/event`))
       .set('Authorization', AUTH)
       .send({
-        event_types: [VEHICLE_EVENTS.maintenance_pick_up],
+        event_types: ['maintenance_pick_up'],
         vehicle_state: 'removed',
         telemetry: TEST_TELEMETRY
       })
@@ -676,7 +666,7 @@ describe('Tests API', () => {
       .post(pathPrefix(`/vehicles/${DEVICE_UUID}/event`))
       .set('Authorization', AUTH)
       .send({
-        event_types: [VEHICLE_EVENTS.maintenance_pick_up],
+        event_types: ['maintenance_pick_up'],
         vehicle_state: 'removed',
         telemetry: TEST_TELEMETRY,
         timestamp: testTimestamp++
@@ -691,7 +681,7 @@ describe('Tests API', () => {
       .post(pathPrefix(`/vehicles/${DEVICE_UUID}/event`))
       .set('Authorization', AUTH)
       .send({
-        event_types: [VEHICLE_EVENTS.maintenance_pick_up],
+        event_types: ['maintenance_pick_up'],
         vehicle_state: 'removed',
         telemetry: TEST_TELEMETRY,
         timestamp: testTimestamp - 1
@@ -710,7 +700,7 @@ describe('Tests API', () => {
       .post(pathPrefix(`/vehicles/${TRIP_UUID}/event`))
       .set('Authorization', AUTH)
       .send({
-        event_types: [VEHICLE_EVENTS.maintenance_pick_up],
+        event_types: ['maintenance_pick_up'],
         vehicle_state: 'removed',
         telemetry: TEST_TELEMETRY,
         timestamp: testTimestamp
@@ -818,7 +808,7 @@ describe('Tests API', () => {
       .post(pathPrefix(`/vehicles/${DEVICE_UUID}/event`))
       .set('Authorization', AUTH)
       .send({
-        event_types: [VEHICLE_EVENTS.reservation_start],
+        event_types: ['reservation_start'],
         vehicle_state: 'reserved',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
@@ -834,7 +824,7 @@ describe('Tests API', () => {
       .post(pathPrefix(`/vehicles/${DEVICE_UUID}/event`))
       .set('Authorization', AUTH)
       .send({
-        event_types: [VEHICLE_EVENTS.reservation_cancel],
+        event_types: ['reservation_cancel'],
         vehicle_state: 'available',
         trip_id: TRIP_UUID,
         telemetry: TEST_TELEMETRY,
@@ -1050,7 +1040,7 @@ describe('Tests API', () => {
       .post(pathPrefix(`/vehicles/${DEVICE_UUID}/event`))
       .set('Authorization', AUTH)
       .send({
-        event_types: [VEHICLE_EVENTS.off_hours],
+        event_types: ['off_hours'],
         vehicle_state: 'non_operational',
         telemetry: TEST_TELEMETRY,
         timestamp: lateTimestamp
@@ -1082,7 +1072,7 @@ describe('Tests API', () => {
       .post(pathPrefix(`/vehicles/${WEIRD_UUID}/event`))
       .set('Authorization', AUTH)
       .send({
-        event_types: [VEHICLE_EVENTS.off_hours],
+        event_types: ['off_hours'],
         vehicle_state: 'non_operational',
         telemetry: TEST_TELEMETRY,
         timestamp: lateTimestamp
@@ -1277,8 +1267,8 @@ describe('Tests API', () => {
         test.value(deviceA.device_id).is(DEVICE_UUID)
         test.value(deviceA.provider_id).is(TEST1_PROVIDER_ID)
         test.value(deviceA.gps.lat).is(TEST_TELEMETRY.gps.lat)
-        test.value(deviceA.state).is(VEHICLE_STATES.available)
-        test.value(JSON.stringify(deviceA.prev_events)).is(JSON.stringify([VEHICLE_EVENTS.reservation_cancel]))
+        test.value(deviceA.state).is('available')
+        test.value(JSON.stringify(deviceA.prev_events)).is(JSON.stringify(['reservation_cancel']))
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -1295,8 +1285,8 @@ describe('Tests API', () => {
         test.value(deviceB.device_id).is(DEVICE_UUID)
         test.value(deviceB.provider_id).is(TEST1_PROVIDER_ID)
         test.value(deviceB.gps.lat).is(TEST_TELEMETRY.gps.lat)
-        test.value(deviceB.state).is(VEHICLE_STATES.available)
-        test.value(JSON.stringify(deviceB.prev_events)).is(JSON.stringify([VEHICLE_EVENTS.reservation_cancel]))
+        test.value(deviceB.state).is('available')
+        test.value(JSON.stringify(deviceB.prev_events)).is(JSON.stringify(['reservation_cancel']))
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
@@ -1311,7 +1301,7 @@ describe('Tests API', () => {
       .send({
         device_id: JUMP_TEST_DEVICE_1,
         timestamp: now(),
-        event_types: [VEHICLE_EVENTS.decommissioned],
+        event_types: ['decommissioned'],
         vehicle_state: 'removed'
       })
       .expect(201)
@@ -1320,8 +1310,8 @@ describe('Tests API', () => {
       .get(pathPrefix(`/vehicles/${JUMP_TEST_DEVICE_1_ID}`))
       .set('Authorization', AUTH)
       .expect(200)
-    test.assert(result.body.state === VEHICLE_STATES.removed)
-    test.assert(JSON.stringify(result.body.prev_events) === JSON.stringify([VEHICLE_EVENTS.decommissioned]))
+    test.assert(result.body.state === 'removed')
+    test.assert(JSON.stringify(result.body.prev_events) === JSON.stringify(['decommissioned']))
   })
 
   it('get multiple devices endpoint has vehicle status default to `inactive` if event is missing for a device', async () => {
@@ -1330,7 +1320,7 @@ describe('Tests API', () => {
     test.assert(ids.includes(JUMP_TEST_DEVICE_1_ID))
     result.body.vehicles.map((device: any) => {
       if (device.device_id === JUMP_TEST_DEVICE_1_ID) {
-        test.assert(device.state === VEHICLE_STATES.removed)
+        test.assert(device.state === 'removed')
       }
     })
   })

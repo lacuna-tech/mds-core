@@ -212,10 +212,10 @@ if (pg_info.database) {
       it('.getEventCountsPerProviderSince', async () => {
         const result = await MDSDBPostgres.getEventCountsPerProviderSince()
         assert.deepEqual(result[0].provider_id, JUMP_PROVIDER_ID)
-        assert.deepEqual(result[0].event_type, VEHICLE_EVENTS.decommissioned)
+        assert.deepEqual(result[0].event_type, 'decommissioned')
         assert.deepEqual(result[0].count, 9)
         assert.deepEqual(result[1].provider_id, JUMP_PROVIDER_ID)
-        assert.deepEqual(result[1].event_type, VEHICLE_EVENTS.trip_end)
+        assert.deepEqual(result[1].event_type, 'trip_end')
         assert.deepEqual(result[1].count, 1)
       })
 
