@@ -11,7 +11,6 @@ import {
   Telemetry,
   ErrorObject,
   DeviceID,
-  VEHICLE_STATES,
   VEHICLE_EVENT,
   UUID,
   VEHICLE_STATE

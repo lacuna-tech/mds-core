@@ -363,7 +363,7 @@ export interface PolicyMessage {
 
 // This gets you a type where the keys must be VEHICLE_STATES, such as 'available',
 // and the values are an array of events.
-export type StatesToEvents = { [S in VEHICLE_STATE]: (keyof typeof STATE_EVENT_MAP[S])[] | [] }
+export type StatesToEvents = { [S in VEHICLE_STATE]: typeof STATE_EVENT_MAP[S] | [] }
 
 interface BaseRule<RuleType = 'count' | 'speed' | 'time'> {
   // TODO 'rate'
