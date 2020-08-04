@@ -1,14 +1,4 @@
-import {
-  UUID,
-  Device,
-  VehicleEvent,
-  Telemetry,
-  Timestamp,
-  Recorded,
-  VEHICLE_STATE,
-  Stop,
-  VEHICLE_EVENT
-} from '@mds-core/mds-types'
+import { UUID, Device, VehicleEvent, Telemetry, Timestamp, Recorded, VEHICLE_STATE, Stop } from '@mds-core/mds-types'
 import { MultiPolygon } from 'geojson'
 import {
   ApiRequest,
@@ -100,7 +90,7 @@ export type TelemetryResult =
     >[]
 
 export type CompositeVehicle = Partial<
-  Device & { prev_events?: VEHICLE_EVENT[]; updated?: Timestamp; gps?: Recorded<Telemetry>['gps'] }
+  Device & { prev_events?: string[]; updated?: Timestamp; gps?: Recorded<Telemetry>['gps'] }
 >
 
 export type PaginatedVehiclesList = {

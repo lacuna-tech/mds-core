@@ -3,7 +3,7 @@ import assert from 'assert'
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 import should from 'should'
 import { FeatureCollection } from 'geojson'
-import { Telemetry, Recorded, VehicleEvent, Device, Geography } from '@mds-core/mds-types'
+import { Telemetry, Recorded, VehicleEvent, Device, VEHICLE_EVENTS, Geography } from '@mds-core/mds-types'
 import {
   JUMP_TEST_DEVICE_1,
   makeDevices,
@@ -212,10 +212,10 @@ if (pg_info.database) {
       it('.getEventCountsPerProviderSince', async () => {
         const result = await MDSDBPostgres.getEventCountsPerProviderSince()
         assert.deepEqual(result[0].provider_id, JUMP_PROVIDER_ID)
-        assert.deepEqual(result[0].event_type, 'decommissioned')
+        assert.deepEqual(result[0].event_type, VEHICLE_EVENTS.decommissioned)
         assert.deepEqual(result[0].count, 9)
         assert.deepEqual(result[1].provider_id, JUMP_PROVIDER_ID)
-        assert.deepEqual(result[1].event_type, 'trip_end')
+        assert.deepEqual(result[1].event_type, VEHICLE_EVENTS.trip_end)
         assert.deepEqual(result[1].count, 1)
       })
 

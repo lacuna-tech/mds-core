@@ -28,7 +28,9 @@ import {
   VehicleEvent,
   TelemetryData,
   WithGpsProperty,
-  BoundingBox
+  BoundingBox,
+  VEHICLE_EVENTS,
+  VEHICLE_STATES
 } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
 import { now, tail } from '@mds-core/mds-utils'
@@ -177,7 +179,7 @@ export async function getVehicle(provider_id: UUID, vehicle_id: string) {
   await Promise.all(
     devices.map(async device => {
       const deviceStatus = (await cache.readDeviceStatus(device.device_id)) as (VehicleEvent & Device) | null
-      if (deviceStatus === null || tail(deviceStatus.event_types) === 'decommissioned') {
+      if (deviceStatus === null || tail(deviceStatus.event_types) === VEHICLE_EVENTS.decommissioned) {
         const { device_id } = device
         logger.info('Bad vehicle status', { deviceStatus, provider_id, vehicle_id, device_id })
         deviceStatusMap.inactive.push(device)
@@ -211,7 +213,7 @@ export async function getVehicles(
 
   const start = now()
   const statusesSuperset = ((await cache.readDevicesStatus({ bbox, strict })) as (VehicleEvent & Device)[]).filter(
-    status => status.vehicle_state !== 'removed' && (!provider_id || status.provider_id === provider_id)
+    status => status.vehicle_state !== VEHICLE_STATES.removed && (!provider_id || status.provider_id === provider_id)
   )
   const statusesSubset = statusesSuperset.slice(skip, skip + take)
   const devices = statusesSubset.reduce((acc: (VehicleEvent & Device)[], item) => {

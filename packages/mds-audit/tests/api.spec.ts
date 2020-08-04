@@ -31,8 +31,9 @@ import {
   Timestamp,
   AUDIT_EVENT_TYPES,
   PROPULSION_TYPES,
-  VEHICLE_TYPES,
-  VehicleEvent
+  VEHICLE_EVENTS,
+  VEHICLE_STATES,
+  VEHICLE_TYPES
 } from '@mds-core/mds-types'
 import { makeEventsWithTelemetry, makeDevices, makeTelemetryInArea, SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { NotFoundError, now, rangeRandomInt, uuid, pathPrefix } from '@mds-core/mds-utils'
@@ -78,11 +79,11 @@ before('Initializing Database', async () => {
 
 describe('Testing API', () => {
   before(done => {
-    const baseEvent: VehicleEvent = {
+    const baseEvent = {
       provider_id,
       device_id: provider_device_id,
-      event_types: ['agency_drop_off'],
-      vehicle_state: 'available',
+      event_types: [VEHICLE_EVENTS.agency_drop_off],
+      vehicle_state: VEHICLE_STATES.available,
       telemetry_timestamp: AUDIT_START,
       trip_id: uuid(),
       timestamp: AUDIT_START,
@@ -219,7 +220,7 @@ describe('Testing API', () => {
       .post(pathPrefix(`/trips/${audit_trip_id}/vehicle/event`))
       .set('Authorization', SCOPED_AUTH(['audits:write'], audit_subject_id))
       .send({
-        event_type: 'trip_start',
+        event_type: VEHICLE_EVENTS.trip_start,
         timestamp: Date.now(),
         trip_id: audit_trip_id,
         telemetry: telemetry()
@@ -271,7 +272,7 @@ describe('Testing API', () => {
       .post(pathPrefix(`/trips/${audit_trip_id}/vehicle/event`))
       .set('Authorization', SCOPED_AUTH(['audits:write'], audit_subject_id))
       .send({
-        event_type: 'trip_end',
+        event_type: VEHICLE_EVENTS.trip_end,
         timestamp: Date.now(),
         trip_id: audit_trip_id,
         telemetry: telemetry()
@@ -364,7 +365,7 @@ describe('Testing API', () => {
         test.value(result).hasHeader('content-type', APP_JSON)
         test.value(result.body.version, AUDIT_API_DEFAULT_VERSION)
         test.value(result.body.events.length).is(7)
-        test.value(result.body.provider_event_type).is('agency_drop_off')
+        test.value(result.body.provider_event_type).is(VEHICLE_EVENTS.agency_drop_off)
         test.value(result.body.provider_status).is('available')
         test.value(result.body.provider_telemetry.charge).is(0.5)
         test.value(result.body.provider_event_time).is(AUDIT_START)

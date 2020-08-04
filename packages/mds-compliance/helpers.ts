@@ -1,4 +1,4 @@
-import { Policy, Geography, UUID, Device } from '@mds-core/mds-types'
+import { Policy, Geography, UUID, Timestamp, Device } from '@mds-core/mds-types'
 import cache from '@mds-core/mds-agency-cache'
 import db from '@mds-core/mds-db'
 import { AllowedProviderIDs } from './constants'

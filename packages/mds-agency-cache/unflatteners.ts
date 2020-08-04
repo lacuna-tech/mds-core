@@ -53,7 +53,7 @@ function parseEvent(
       timestamp: Number(event.timestamp),
       timestamp_long: event.timestamp_long ? event.timestamp_long : null,
       delta: event.delta ? Number(event.delta) : null,
-      event_types: event.event_types as VEHICLE_EVENT[],
+      event_types: JSON.parse(event.event_types) as VEHICLE_EVENT[],
       telemetry_timestamp: event.telemetry_timestamp ? Number(event.telemetry_timestamp) : null,
       telemetry: event.telemetry ? parseTelemetry(event.telemetry) : null,
       trip_id: event.trip_id ? event.trip_id : null,

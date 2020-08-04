@@ -45,7 +45,15 @@ import {
 } from '@mds-core/mds-schema-validators'
 
 import { providerName } from '@mds-core/mds-providers' // map of uuids -> obj
-import { AUDIT_EVENT_TYPES, AuditEvent, Timestamp, Telemetry, TelemetryData } from '@mds-core/mds-types'
+import {
+  AUDIT_EVENT_TYPES,
+  AuditEvent,
+  EVENT_STATES_MAP,
+  Timestamp,
+  Telemetry,
+  TelemetryData,
+  VEHICLE_EVENT
+} from '@mds-core/mds-types'
 import { parsePagingQueryParams, asJsonApiLinks, parseRequest } from '@mds-core/mds-api-helpers'
 import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import {

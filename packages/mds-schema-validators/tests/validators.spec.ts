@@ -16,7 +16,7 @@
 
 import test from 'unit.js'
 import { uuid } from '@mds-core/mds-utils'
-import { AUDIT_EVENT_TYPES } from '@mds-core/mds-types'
+import { AUDIT_EVENT_TYPES, VEHICLE_EVENTS } from '@mds-core/mds-types'
 import { providers } from '@mds-core/mds-providers' // map of uuids -> obj
 import {
   isValidAuditTripId,
@@ -172,7 +172,7 @@ describe('Tests validators', () => {
     test.assert.throws(() => isValidVehicleEventType(null), ValidationError)
     test.assert.throws(() => isValidVehicleEventType('invalid'), ValidationError)
     test.value(isValidVehicleEventType(AUDIT_EVENT_TYPES.telemetry, { assert: false })).is(false)
-    test.value(isValidVehicleEventType('trip_end')).is(true)
+    test.value(isValidVehicleEventType(VEHICLE_EVENTS.trip_end)).is(true)
     done()
   })
 
