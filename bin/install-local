@@ -50,12 +50,15 @@ function install_helm_tiller {
 # istio install
 function install_istio {
   check_kube_context
+  pushd .
   cd /tmp
   curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.6 sh -
   cd istio-1.4.6
   helm install --name istio-init --namespace istio-system ./install/kubernetes/helm/istio-init
+  kubectl wait --for condition=complete pods --all
   helm install --name istio --namespace istio-system ./install/kubernetes/helm/istio \
     --values ./install/kubernetes/helm/istio/values-istio-demo.yaml
+  popd
 }
 
 function install_mds {
