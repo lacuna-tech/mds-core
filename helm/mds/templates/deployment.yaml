@@ -1,5 +1,5 @@
 {{- range $name, $api := .Values.apis }}
-  {{- if $api.enabled }}
+{{- if $api.enabled }}
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -22,19 +22,14 @@ spec:
       labels:
         app: {{ $name }}
     spec:
-      volumes:
-        {{- if and $.Values.nats.enabled $.Values.nats.credentials }}
-        - name: creds-volume
-          secret:
-            secretName: nats-creds
-        {{- end }}
       containers:
       - name: {{ $name }}
         image: {{ if $.Values.registry }}{{ printf "%s/" $.Values.registry }}{{- end}}{{ $name }}:{{ $api.version }}
-        {{- if $.Values.registry }}
+        [[- if $.Values.imagePullPolicy }}
+        imagePullPolicy: {{ $.Values.imagePullPolicy }}
+        {{- else if $.Values.registry }}
         imagePullPolicy: IfNotPresent
-        {{- end }}
-        {{- if (eq $api.version "latest") }}
+        {{- else }}
         imagePullPolicy: Never
         {{- end }}
         resources:
@@ -114,7 +109,6 @@ spec:
           {{- if hasKey $.Values "global" }}
           {{- if hasKey $.Values.global "env" }}
 {{ toYaml $.Values.global.env | indent 10 }}
-          {{- end }}
           {{- end }}
   {{- end }}
 {{- end }}
