@@ -264,9 +264,8 @@ docker images --filter reference='mds-*'
 kubectl create namespace mds
 kubectl label namespace mds istio-injection=enabled
 cd helm/mds
-helm dep up 
-cd ..
-helm install --name mds --namespace mds ./helm/mds
+helm dep up
+helm install --name mds --namespace mds .
 ```
 
 Verify:
