@@ -14,7 +14,6 @@
     limitations under the License.
  */
 
-import { ProcessManager } from '@mds-core/mds-service-helpers'
-import { JurisdictionServiceProvider } from '../service/provider'
+import { JurisdictionServiceManager } from './manager'
 
-ProcessManager(JurisdictionServiceProvider).monitor()
+JurisdictionServiceManager.monitor()
