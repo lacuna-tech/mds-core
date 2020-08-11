@@ -92,8 +92,8 @@ export interface Device_v0_4_1 {
   device_id: UUID
   provider_id: UUID
   vehicle_id: string
-  type: VEHICLE_TYPE // changed name in 1.0
-  propulsion: PROPULSION_TYPE // changed name in 1.0
+  type: VEHICLE_TYPE
+  propulsion: PROPULSION_TYPE
   year?: number | null
   mfgr?: string | null
   model?: string | null
