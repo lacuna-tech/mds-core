@@ -186,8 +186,10 @@ export type Device = Device_v1_0_0
 
 export type DeviceID = Pick<Device, 'provider_id' | 'device_id'>
 
-// Represents a row in the "events" table
-// Named "VehicleEvent" to avoid confusion with the DOM's Event interface
+/* Represents a row in the "events" table
+ * Named "VehicleEvent" to avoid confusion with the DOM's Event interface
+ * Keeping 1_0_0 types in here and not in transformers/@types to avoid circular imports.
+ */
 export interface VehicleEvent_1_0_0 {
   device_id: UUID
   provider_id: UUID
