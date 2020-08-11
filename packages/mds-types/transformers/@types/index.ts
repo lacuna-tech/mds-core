@@ -93,10 +93,10 @@ export interface Device_v0_4_1 {
   provider_id: UUID
   vehicle_id: string
   type: VEHICLE_TYPE // changed name in 1.0
-  propulsion_type: PROPULSION_TYPE // changed name in 1.0
+  propulsion: PROPULSION_TYPE // changed name in 1.0
   year?: number | null
   mfgr?: string | null
   model?: string | null
   recorded: Timestamp
-  state?: VEHICLE_STATE | null
+  status?: VEHICLE_STATE | null
 }
