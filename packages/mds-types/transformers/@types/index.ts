@@ -7,7 +7,7 @@
  *  former `event_type_reasons`.
  */
 
-import { UUID, Timestamp, Telemetry } from '../../index'
+import { UUID, Timestamp, Telemetry, VEHICLE_TYPE, PROPULSION_TYPE, VEHICLE_STATE } from '../../index'
 
 export const VEHICLE_REASONS_0_4_1 = [
   'battery_charged',
@@ -87,3 +87,16 @@ export const EVENT_STATES_MAP_0_4_1: { [P in VEHICLE_EVENT_0_4_1]: VEHICLE_STATE
 
 export type TRANSFORMER_VEHICLE_EVENT = 'no_backconversion_available'
 export type TRANSFORMER_EVENT_TYPE_REASON = 'no_event_type_reason'
+
+export interface Device_v0_4_1 {
+  device_id: UUID
+  provider_id: UUID
+  vehicle_id: string
+  type: VEHICLE_TYPE // changed name in 1.0
+  propulsion_type: PROPULSION_TYPE // changed name in 1.0
+  year?: number | null
+  mfgr?: string | null
+  model?: string | null
+  recorded: Timestamp
+  state?: VEHICLE_STATE | null
+}

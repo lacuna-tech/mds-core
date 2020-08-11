@@ -37,7 +37,7 @@ export type PROPULSION_TYPE = keyof typeof PROPULSION_TYPES
 
 export const RIGHT_OF_WAY_STATES = ['available', 'reserved', 'non_operational', 'trip'] as const
 
-const VEHICLE_STATES_1_0_0 = [
+export const VEHICLE_STATES_1_0_0 = [
   'available',
   'elsewhere',
   'non_operational',
@@ -46,10 +46,11 @@ const VEHICLE_STATES_1_0_0 = [
   'reserved',
   'unknown'
 ] as const
-export type VEHICLE_STATE = typeof VEHICLE_STATES_1_0_0[number]
+export type VEHICLE_STATE_1_0_0 = typeof VEHICLE_STATES_1_0_0[number]
+export type VEHICLE_STATE = VEHICLE_STATE_1_0_0
 export const VEHICLE_STATES = VEHICLE_STATES_1_0_0
 
-const VEHICLE_EVENTS_1_0_0 = [
+export const VEHICLE_EVENTS_1_0_0 = [
   'agency_drop_off',
   'agency_pick_up',
   'battery_charged',
@@ -78,7 +79,8 @@ const VEHICLE_EVENTS_1_0_0 = [
 ] as const
 
 export const VEHICLE_EVENTS = VEHICLE_EVENTS_1_0_0
-export type VEHICLE_EVENT = typeof VEHICLE_EVENTS_1_0_0[number]
+export type VEHICLE_EVENT_1_0_0 = typeof VEHICLE_EVENTS_1_0_0[number]
+export type VEHICLE_EVENT = VEHICLE_EVENT_1_0_0
 
 export const AUDIT_EVENT_TYPES = Enum('start', 'note', 'summary', 'issue', 'telemetry', 'end')
 export type AUDIT_EVENT_TYPE = keyof typeof AUDIT_EVENT_TYPES
@@ -168,7 +170,7 @@ export type Optional<T, P extends keyof T> = Omit<T, P> & Partial<Pick<T, P>>
 export type NonEmptyArray<T> = [T, ...T[]]
 
 // Represents a row in the "devices" table
-export interface Device {
+export interface Device_v1_0_0 {
   device_id: UUID
   provider_id: UUID
   vehicle_id: string
@@ -180,12 +182,13 @@ export interface Device {
   recorded: Timestamp
   state?: VEHICLE_STATE | null
 }
+export type Device = Device_v1_0_0
 
 export type DeviceID = Pick<Device, 'provider_id' | 'device_id'>
 
 // Represents a row in the "events" table
 // Named "VehicleEvent" to avoid confusion with the DOM's Event interface
-export interface VehicleEvent {
+export interface VehicleEvent_1_0_0 {
   device_id: UUID
   provider_id: UUID
   timestamp: Timestamp
@@ -198,6 +201,7 @@ export interface VehicleEvent {
   vehicle_state: VEHICLE_STATE
   recorded: Timestamp
 }
+export type VehicleEvent = VehicleEvent_1_0_0
 
 // Standard telemetry columns (used in more than one table)
 export interface TelemetryData {

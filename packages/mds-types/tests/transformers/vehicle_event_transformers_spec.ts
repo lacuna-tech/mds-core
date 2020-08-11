@@ -2,7 +2,7 @@ import assert from 'assert'
 import { uuid, now } from '@mds-core/mds-utils'
 import { VehicleEvent_v0_4_1 } from '../../transformers/@types'
 import { VehicleEvent } from '../../index'
-import { convert_v0_4_1_to_v1_0_0, convert_v1_0_0_to_v0_4_1 } from '../../transformers'
+import { convert_v1_0_0_vehicle_event_to_v0_4_1, convert_v0_4_1_vehicle_event_to_v1_0_0 } from '../../transformers'
 
 const TIME = now()
 const DEVICE_ID = uuid()
@@ -19,7 +19,7 @@ describe('Test transformers', () => {
       recorded: TIME
     }
 
-    const transformedEvent = convert_v0_4_1_to_v1_0_0(event)
+    const transformedEvent = convert_v0_4_1_vehicle_event_to_v1_0_0(event)
     assert.deepEqual(transformedEvent, {
       delta: null,
       device_id: DEVICE_ID,
@@ -43,7 +43,7 @@ describe('Test transformers', () => {
       recorded: TIME
     }
 
-    const transformedEvent2 = convert_v0_4_1_to_v1_0_0(event2)
+    const transformedEvent2 = convert_v0_4_1_vehicle_event_to_v1_0_0(event2)
     assert.deepEqual(transformedEvent2, {
       delta: null,
       device_id: DEVICE_ID,
@@ -66,7 +66,7 @@ describe('Test transformers', () => {
       recorded: TIME
     }
 
-    const transformedEvent3 = convert_v0_4_1_to_v1_0_0(event3)
+    const transformedEvent3 = convert_v0_4_1_vehicle_event_to_v1_0_0(event3)
 
     assert.deepEqual(transformedEvent3, {
       delta: null,
@@ -94,7 +94,7 @@ describe('Test transformers', () => {
       recorded: TIME
     }
 
-    const { 0: converted_eventA_1, 1: converted_eventA_2 } = convert_v1_0_0_to_v0_4_1(eventA)
+    const { 0: converted_eventA_1, 1: converted_eventA_2 } = convert_v1_0_0_vehicle_event_to_v0_4_1(eventA)
     assert.deepEqual(converted_eventA_1.event_type, 'provider_drop_off')
     assert.deepEqual(converted_eventA_2.event_type, 'trip_start')
 
@@ -107,7 +107,7 @@ describe('Test transformers', () => {
       recorded: TIME
     }
 
-    const { 0: converted_eventB_1, 1: converted_eventB_2 } = convert_v1_0_0_to_v0_4_1(eventB)
+    const { 0: converted_eventB_1, 1: converted_eventB_2 } = convert_v1_0_0_vehicle_event_to_v0_4_1(eventB)
     assert.deepEqual(converted_eventB_1.event_type, 'no_backconversion_available')
     assert.deepEqual(converted_eventB_2.event_type, 'no_backconversion_available')
     done()
