@@ -44,7 +44,6 @@ export const ApiServer = (
     CompressionMiddleware(options.compression),
     CorsMiddleware(options.cors),
     JsonBodyParserMiddleware(options.jsonBodyParser),
-    MaintenanceModeMiddleware(options.maintenanceMode),
     AuthorizationMiddleware(options.authorization),
     /** Prometheus Middleware
      * Placed after the other middleware so it can label metrics with additional
@@ -55,6 +54,7 @@ export const ApiServer = (
      * Placed after Prometheus middleware to avoid excessive logging
      */
     RequestLoggingMiddleware(options.requestLogging),
+    MaintenanceModeMiddleware(options.maintenanceMode),
     /** HTTP Context Middleware
      * Placed after the other middleware to avoid causing collisions
      * see express-http-context's README for more information
