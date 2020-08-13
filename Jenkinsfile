@@ -1,17 +1,23 @@
 pipeline {
+
   agent any
 
   stages {
+
+
     stage('Build') {
       steps {
+        setBuildStatus('Build Pending... 🥱', 'PENDING')
         nvm('version': 'v14.2.0') {
           sh 'yarn clean'
           sh 'yarn build'
         }
       }
     }
+
     stage('Test') {
       steps {
+        setBuildStatus('Tests Pending... 🥱', 'PENDING')
         nvm('version': 'v14.2.0') {
           sh '''
             randport() {
@@ -36,5 +42,18 @@ pipeline {
         }
       }
     }
+
+  }
+
+  post {
+
+    success {
+      setBuildStatus('Build and tests succeeded! 🤓', 'SUCCESS')
+    }
+
+    failure {
+      setBuildStatus('Build or tests failed. 😢', 'FAILURE')
+    }
+
   }
 }
