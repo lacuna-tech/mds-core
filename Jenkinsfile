@@ -17,7 +17,6 @@ pipeline {
       steps {
         setBuildStatus('Build/Tests Pending... 🥱', 'PENDING')
         nvm('version': 'v14.2.0') {
-          sh 'exit 1'
           sh 'yarn clean'
           sh 'yarn build'
         }
