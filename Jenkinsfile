@@ -5,8 +5,8 @@ pipeline {
     stage('Build') {
       steps {
         nvm('version': 'v14.2.0') {
-          yarn clean
-          yarn build
+          sh 'yarn clean'
+          sh 'yarn build'
         }
       }
     }
