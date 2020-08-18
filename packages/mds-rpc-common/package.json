@@ -1,39 +1,30 @@
 {
-  "name": "@mds-core/mds-api-server",
-  "version": "0.1.26",
-  "description": "MDS API Server",
+  "name": "@mds-core/mds-rpc-common",
+  "version": "0.1.0",
+  "description": "MDS RPC Common Utilities",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
     "dist/"
   ],
+  "keywords": [],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --ignore-path ../../.gitignore '**/*.ts'",
     "test:unit": "DOTENV_CONFIG_PATH=../../.env nyc ts-mocha --project ../../tsconfig.json"
   },
-  "keywords": [
-    "mds"
-  ],
   "author": "City of Los Angeles",
   "license": "Apache-2.0",
   "dependencies": {
-    "@mds-core/mds-api-authorizer": "0.1.26",
+    "@improbable-eng/grpc-web-node-http-transport": "0.13.0",
+    "@mds-core/mds-api-server": "0.1.26",
     "@mds-core/mds-logger": "0.1.24",
-    "@mds-core/mds-utils": "0.1.26",
-    "@types/body-parser": "1.19.0",
-    "@types/compression": "1.7.0",
-    "@types/cors": "2.8.7",
+    "@mds-core/mds-service-helpers": "0.1.0",
+    "@mds-core/mds-types": "0.1.23",
     "@types/express": "4.17.7",
-    "@types/morgan": "1.9.1",
-    "body-parser": "1.19.0",
-    "compression": "1.7.4",
-    "cors": "2.8.5",
+    "envalid": "6.0.2",
     "express": "4.17.1",
-    "express-http-context": "1.2.4",
-    "express-prom-bundle": "6.1.0",
-    "morgan": "1.10.0",
-    "prom-client": "12.0.0"
+    "rpc_ts": "2.1.0"
   }
 }

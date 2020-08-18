@@ -164,7 +164,7 @@ lerna run prettier
 * Select any one of the files in a package's test folder
 * Press `F5`
 
-## Local Kubernetes Install
+## Kubernetes
 
 MDS can readily be provisioned to a [Kubernetes](https://kubernetes.io) capable cluster, be it a local or remote. The following steps describe how to build, deploy and operate against a local MDS cluster.
 
@@ -216,6 +216,8 @@ kubectl cluster-info
 
 #### Install Helm/Tiller
 This implementation of MDS uses a Helm v2 chart for installation.  Helm can be installed to your local system with Homebrew (MacOS), or by downloading the correct executable for your system from https://github.com/helm/helm/releases/tag/v2.16.9
+
+### Build : compile source into deployable images
 
 Once you have the `helm` executable on your local system, you can set up the k8s side with the following commands:
 
@@ -274,7 +276,7 @@ Verify:
 curl localhost/agency
 ```
 
-#### In-Cluster Development
+### In-Cluster Development
 Due to the nature of `mds-core` being a highly portable Typescript project that compiles down into minified javascript for its images, rapidly development in-cluster can be quite challenging. `mds-core` utilizes [Okteto](https://okteto.com) to enable developers to actively develop their code in-cluster.
 
 After following the above steps to set up a local MDS cluster, you can override an existing service's deployment with these steps.
@@ -294,7 +296,7 @@ yarn start
 5. This session is now safe to close, and you can reattach with the `okteto.${SERVICE_NAME}` ssh profile automatically added for you using the VSCode `Remote - SSH` package.
 6. When you're completely done with your session, run `> Okteto Down` from the VSCode command palette, or `okteto down` from terminal to revert the changes made by Okteto, and return your service to its previous deployment.
 
-#### Additional Considerations
+### Additional Considerations
 
 Access the database:
 
@@ -310,12 +312,22 @@ kubectl port-forward svc/mds-redis-master 6379 &
 redis-cli
 ```
 
-#### Cleanup
+### Cleanup
 
 ```sh
 helm del --purge mds
 ```
 
 ## Other
+
+### CI/CD
+
+This project includes a Jenkinsfile to run as a pipeline with the Jenkins CI/CD application.  You can test the syntax of this file with the following command:
+
+```sh
+curl --user user:password -X POST -F "jenkinsfile=<Jenkinsfile" http://localhost:8080/pipeline-model-converter/validate
+```
+
+This assumes you have a jenkins server running on port 8080 of your local machine.  Note that this will only validate syntax, not whether the pipeline can actually be run.
 
 To commit code, you will need the pre-commit tool, which can be installed via `brew install pre-commit`.  For more information, see [SECURITY.md](.github/SECURITY.md)
