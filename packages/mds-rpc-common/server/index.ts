@@ -79,7 +79,7 @@ export const RpcServer = <S>(
             .createServer(socket => {
               Object.assign(
                 REPL.start({
-                  prompt: `${process.env.npm_package_name}:REPL> `,
+                  prompt: `${process.env.npm_package_name} REPL> `,
                   input: socket,
                   output: socket
                 }).context,
