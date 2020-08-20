@@ -29,7 +29,9 @@ import {
 import { Nullable } from '@mds-core/mds-types'
 import { Server } from 'http'
 import { ProcessManager } from '@mds-core/mds-service-helpers'
-import { RpcServiceDefinition, RPC_PORT, RPC_CONTENT_TYPE } from '../@types'
+import net from 'net'
+import REPL from 'repl'
+import { RpcServiceDefinition, RPC_PORT, RPC_CONTENT_TYPE, REPL_PORT } from '../@types'
 
 export interface RpcServiceHandlers {
   onStart: () => Promise<void>
@@ -38,6 +40,10 @@ export interface RpcServiceHandlers {
 
 export interface RpcServerOptions {
   port: string | number
+  repl: Partial<{
+    port: string
+    context: unknown
+  }>
 }
 
 export const RpcServer = <S>(
@@ -64,6 +70,24 @@ export const RpcServer = <S>(
             .use(ModuleRpcProtocolServer.registerRpcRoutes(definition, routes)),
           { port }
         )
+        if (options.repl) {
+          const { port: replPort } = cleanEnv(options.repl, {
+            port: validatePort({ default: REPL_PORT })
+          })
+          logger.info(`Starting ${process.env.npm_package_name} REPL on port ${replPort}`)
+          net
+            .createServer(socket => {
+              Object.assign(
+                REPL.start({
+                  prompt: `${process.env.npm_package_name}:REPL> `,
+                  input: socket,
+                  output: socket
+                }).context,
+                options.repl?.context ?? {}
+              )
+            })
+            .listen(replPort)
+        }
         logger.info(`Starting RPC server listening for ${RPC_CONTENT_TYPE} requests`)
       }
     },
