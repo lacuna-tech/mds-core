@@ -82,9 +82,11 @@ export const RpcServer = <S>(
                 REPL.start({
                   prompt: `${process.env.npm_package_name} REPL> `,
                   input: socket,
-                  output: socket
+                  output: socket,
+                  ignoreUndefined: true,
+                  terminal: true
                 }).context,
-                options.repl?.context ?? {}
+                { context: options.repl?.context ?? {} }
               )
             })
             .listen(replPort)
