@@ -27,7 +27,7 @@ import {
   RawBodyParserMiddleware
 } from '@mds-core/mds-api-server'
 import { Nullable } from '@mds-core/mds-types'
-import { Server } from 'http'
+import http from 'http'
 import { ProcessManager } from '@mds-core/mds-service-helpers'
 import net from 'net'
 import REPL from 'repl'
@@ -52,7 +52,8 @@ export const RpcServer = <S>(
   routes: ServiceHandlerFor<RpcServiceDefinition<S>>,
   options: Partial<RpcServerOptions> = {}
 ) => {
-  let server: Nullable<Server> = null
+  let server: Nullable<http.Server> = null
+  let repl: Nullable<net.Server> = null
 
   return ProcessManager({
     start: async () => {
@@ -75,7 +76,7 @@ export const RpcServer = <S>(
             port: validatePort({ default: REPL_PORT })
           })
           logger.info(`Starting ${process.env.npm_package_name} REPL on port ${replPort}`)
-          net
+          repl = net
             .createServer(socket => {
               Object.assign(
                 REPL.start({
@@ -96,6 +97,11 @@ export const RpcServer = <S>(
         logger.info(`Stopping RPC server listening for ${RPC_CONTENT_TYPE} requests`)
         server.close()
         server = null
+        if (repl) {
+          logger.info(`Stopping ${process.env.npm_package_name} REPL`)
+          repl.close()
+          repl = null
+        }
         await onStop()
       }
     }
