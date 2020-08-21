@@ -33,4 +33,4 @@ export type RpcServiceDefinition<S> = {
 export const RPC_HOST = 'http://localhost'
 export const RPC_PORT = 4000
 export const RPC_CONTENT_TYPE = 'application/grpc-web+json'
-export const REPL_PORT = 6000
+export const REPL_PORT = 7375 // That spells REPL on your phone
