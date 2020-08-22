@@ -46,6 +46,32 @@ export interface RpcServerOptions {
   }>
 }
 
+const startRepl = (options: RpcServerOptions['repl']) => {
+  const { port } = cleanEnv(options, {
+    port: validatePort({ default: REPL_PORT })
+  })
+  const { context = {} } = options
+  logger.info(`Starting REPL server on port ${port}`)
+  return net
+    .createServer(socket => {
+      const repl = REPL.start({
+        prompt: `${process.env.npm_package_name} REPL> `,
+        input: socket,
+        output: socket,
+        ignoreUndefined: true,
+        terminal: true
+      })
+      Object.assign(repl.context, context)
+      repl.on('reset', () => {
+        Object.assign(repl.context, context)
+      })
+    })
+    .on('close', () => {
+      logger.info(`Stopping REPL server`)
+    })
+    .listen(port)
+}
+
 export const RpcServer = <S>(
   definition: RpcServiceDefinition<S>,
   { onStart, onStop }: RpcServiceHandlers,
@@ -72,24 +98,7 @@ export const RpcServer = <S>(
           { port }
         )
         if (options.repl) {
-          const { port: replPort } = cleanEnv(options.repl, {
-            port: validatePort({ default: REPL_PORT })
-          })
-          logger.info(`Starting ${process.env.npm_package_name} REPL on port ${replPort}`)
-          repl = net
-            .createServer(socket => {
-              Object.assign(
-                REPL.start({
-                  prompt: `${process.env.npm_package_name} REPL> `,
-                  input: socket,
-                  output: socket,
-                  ignoreUndefined: true,
-                  terminal: true
-                }).context,
-                { context: options.repl?.context ?? {} }
-              )
-            })
-            .listen(replPort)
+          repl = startRepl(options.repl)
         }
         logger.info(`Starting RPC server listening for ${RPC_CONTENT_TYPE} requests`)
       }
@@ -100,7 +109,6 @@ export const RpcServer = <S>(
         server.close()
         server = null
         if (repl) {
-          logger.info(`Stopping ${process.env.npm_package_name} REPL`)
           repl.close()
           repl = null
         }

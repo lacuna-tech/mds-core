@@ -23,7 +23,7 @@ export const JurisdictionServiceManager = RpcServer(
     port: process.env.JURISDICTION_SERVICE_RPC_PORT,
     repl: {
       port: process.env.JURISDICTION_SERVICE_REPL_PORT,
-      context: { ...JurisdictionServiceClient }
+      context: { client: JurisdictionServiceClient }
     }
   }
 )
