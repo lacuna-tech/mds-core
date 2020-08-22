@@ -15,6 +15,9 @@
  */
 
 import express from 'express'
+import http from 'http'
+import net from 'net'
+import REPL from 'repl'
 import { ServiceHandlerFor } from 'rpc_ts/lib/server/server'
 import { cleanEnv, port as validatePort } from 'envalid'
 import { ModuleRpcProtocolServer } from 'rpc_ts/lib/protocol/server'
@@ -27,10 +30,7 @@ import {
   RawBodyParserMiddleware
 } from '@mds-core/mds-api-server'
 import { Nullable } from '@mds-core/mds-types'
-import http from 'http'
 import { ProcessManager } from '@mds-core/mds-service-helpers'
-import net from 'net'
-import REPL from 'repl'
 import { RpcServiceDefinition, RPC_PORT, RPC_CONTENT_TYPE, REPL_PORT } from '../@types'
 
 export interface RpcServiceHandlers {
