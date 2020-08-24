@@ -43,6 +43,9 @@ spec:
         - containerPort: 4000
           name: user-port
           protocol: TCP
+        - containerPort: 7375
+          name: repl-port
+          protocol: TCP
         env:
           - name: PORT
             value: "4000"
