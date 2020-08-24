@@ -11,77 +11,87 @@ const STOP_ID = uuid()
 
 describe('Test transformers', () => {
   it('spot checks the transformation between v0.4.1 and v1.0.0 VehicleEvent types', done => {
-    const event: VehicleEvent_v0_4_1 = {
-      device_id: DEVICE_ID,
-      provider_id: PROVIDER_ID,
-      timestamp: TIME,
-      event_type: 'provider_pick_up',
-      event_type_reason: 'charge',
-      recorded: TIME
-    }
+    it('checks the provider_pick_up and charge combo translate correctly', finished => {
+      const event: VehicleEvent_v0_4_1 = {
+        device_id: DEVICE_ID,
+        provider_id: PROVIDER_ID,
+        timestamp: TIME,
+        event_type: 'provider_pick_up',
+        event_type_reason: 'charge',
+        recorded: TIME
+      }
 
-    const transformedEvent = convert_v0_4_1_vehicle_event_to_v1_0_0(event)
-    assert.deepEqual(transformedEvent, {
-      delta: null,
-      device_id: DEVICE_ID,
-      provider_id: PROVIDER_ID,
-      timestamp: TIME,
-      vehicle_state: 'removed',
-      event_types: ['maintenance_pick_up'],
-      recorded: TIME,
-      telemetry: null,
-      telemetry_timestamp: null,
-      timestamp_long: null,
-      trip_id: null
+      const transformedEvent = convert_v0_4_1_vehicle_event_to_v1_0_0(event)
+      assert.deepEqual(transformedEvent, {
+        delta: null,
+        device_id: DEVICE_ID,
+        provider_id: PROVIDER_ID,
+        timestamp: TIME,
+        vehicle_state: 'removed',
+        event_types: ['maintenance_pick_up'],
+        recorded: TIME,
+        telemetry: null,
+        telemetry_timestamp: null,
+        timestamp_long: null,
+        trip_id: null
+      })
+      finished()
     })
 
-    const event2: VehicleEvent_v0_4_1 = {
-      device_id: DEVICE_ID,
-      provider_id: PROVIDER_ID,
-      timestamp: TIME,
-      event_type: 'service_end',
-      event_type_reason: 'low_battery',
-      recorded: TIME
-    }
+    it('checks that the service_end and low_battery combo translate correctly', finished => {
+      const event: VehicleEvent_v0_4_1 = {
+        device_id: DEVICE_ID,
+        provider_id: PROVIDER_ID,
+        timestamp: TIME,
+        event_type: 'service_end',
+        event_type_reason: 'low_battery',
+        recorded: TIME
+      }
 
-    const transformedEvent2 = convert_v0_4_1_vehicle_event_to_v1_0_0(event2)
-    assert.deepEqual(transformedEvent2, {
-      delta: null,
-      device_id: DEVICE_ID,
-      provider_id: PROVIDER_ID,
-      timestamp: TIME,
-      vehicle_state: 'non_operational',
-      event_types: ['battery_low'],
-      recorded: TIME,
-      telemetry: null,
-      telemetry_timestamp: null,
-      timestamp_long: null,
-      trip_id: null
+      const transformedEvent = convert_v0_4_1_vehicle_event_to_v1_0_0(event)
+      assert.deepEqual(transformedEvent, {
+        delta: null,
+        device_id: DEVICE_ID,
+        provider_id: PROVIDER_ID,
+        timestamp: TIME,
+        vehicle_state: 'non_operational',
+        event_types: ['battery_low'],
+        recorded: TIME,
+        telemetry: null,
+        telemetry_timestamp: null,
+        timestamp_long: null,
+        trip_id: null
+      })
+      finished()
     })
 
-    const event3: VehicleEvent_v0_4_1 = {
-      device_id: DEVICE_ID,
-      provider_id: PROVIDER_ID,
-      timestamp: TIME,
-      event_type: 'trip_enter',
-      recorded: TIME
-    }
+    it('verifies the translation of trip_enter to on_trip', finished => {
+      const event3: VehicleEvent_v0_4_1 = {
+        device_id: DEVICE_ID,
+        provider_id: PROVIDER_ID,
+        timestamp: TIME,
+        event_type: 'trip_enter',
+        recorded: TIME
+      }
 
-    const transformedEvent3 = convert_v0_4_1_vehicle_event_to_v1_0_0(event3)
+      const transformedEvent3 = convert_v0_4_1_vehicle_event_to_v1_0_0(event3)
 
-    assert.deepEqual(transformedEvent3, {
-      delta: null,
-      device_id: DEVICE_ID,
-      provider_id: PROVIDER_ID,
-      timestamp: TIME,
-      vehicle_state: 'on_trip',
-      event_types: ['trip_enter_jurisdiction'],
-      recorded: TIME,
-      telemetry: null,
-      telemetry_timestamp: null,
-      timestamp_long: null,
-      trip_id: null
+      assert.deepEqual(transformedEvent3, {
+        delta: null,
+        device_id: DEVICE_ID,
+        provider_id: PROVIDER_ID,
+        timestamp: TIME,
+        vehicle_state: 'on_trip',
+        event_types: ['trip_enter_jurisdiction'],
+        recorded: TIME,
+        telemetry: null,
+        telemetry_timestamp: null,
+        timestamp_long: null,
+        trip_id: null
+      })
+      finished()
     })
+
     done()
   })
 

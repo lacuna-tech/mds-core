@@ -59,6 +59,7 @@ export const VEHICLE_EVENTS_v1_0_0 = [
   'comms_restored',
   'compliance_pick_up',
   'decommissioned',
+  'located',
   'maintenance',
   'maintenance_pick_up',
   'missing',
@@ -95,6 +96,7 @@ export const EVENT_STATES_MAP: { [P in VEHICLE_EVENT]: VEHICLE_STATE[] } = {
   comms_restored: ['available', 'non_operational', 'reserved', 'on_trip', 'elsewhere'],
   compliance_pick_up: ['removed'],
   decommissioned: ['removed'],
+  located: ['available', 'non_operational', 'reserved', 'on_trip', 'elsewhere'],
   maintenance: ['available', 'non_operational'],
   maintenance_pick_up: ['removed'],
   missing: ['unknown'],
@@ -144,7 +146,7 @@ export const STATE_EVENT_MAP = StatusEventMap({
     'decommissioned',
     'unspecified'
   ],
-  unknown: ['comms_lost', 'missing']
+  unknown: ['comms_lost', 'missing', 'located']
 })
 
 export const DAYS_OF_WEEK = Enum('sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat')

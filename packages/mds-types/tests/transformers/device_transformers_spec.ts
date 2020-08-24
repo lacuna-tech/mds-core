@@ -18,6 +18,9 @@ describe('Test transformers', () => {
       type: 'scooter',
       propulsion: ['electric'],
       status: 'removed',
+      year: 2000,
+      mfgr: 'Cadillac',
+      model: 'luxury',
       recorded: TIME
     }
 
@@ -29,9 +32,9 @@ describe('Test transformers', () => {
       propulsion_types: ['electric'],
       state: 'removed',
       recorded: TIME,
-      year: null,
-      mfgr: null,
-      model: null
+      year: 2000,
+      mfgr: 'Cadillac',
+      model: 'luxury'
     })
 
     done()
