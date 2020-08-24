@@ -79,7 +79,8 @@ const stateTransitionDict: {
     comms_restored: ['available', 'elsewhere', 'reserved', 'on_trip', 'non_operational'],
     decommissioned: ['removed'],
     provider_drop_off: ['available'],
-    unspecified: ['available', 'removed']
+    unspecified: ['available', 'removed'],
+    located: ['available', 'elsewhere', 'reserved', 'on_trip', 'non_operational']
   }
 }
 
