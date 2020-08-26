@@ -66,7 +66,7 @@ describe('Test transformers', () => {
     })
 
     it('verifies the translation of trip_enter to on_trip', finished => {
-      const event3: VehicleEvent_v0_4_1 = {
+      const event: VehicleEvent_v0_4_1 = {
         device_id: DEVICE_ID,
         provider_id: PROVIDER_ID,
         timestamp: TIME,
@@ -74,9 +74,9 @@ describe('Test transformers', () => {
         recorded: TIME
       }
 
-      const transformedEvent3 = convert_v0_4_1_vehicle_event_to_v1_0_0(event3)
+      const transformedEvent = convert_v0_4_1_vehicle_event_to_v1_0_0(event)
 
-      assert.deepEqual(transformedEvent3, {
+      assert.deepEqual(transformedEvent, {
         delta: null,
         device_id: DEVICE_ID,
         provider_id: PROVIDER_ID,
