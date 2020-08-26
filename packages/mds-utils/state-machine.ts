@@ -37,7 +37,7 @@ const stateTransitionDict: {
     provider_drop_off: ['available'],
     rebalance_pick_up: ['removed'],
     trip_enter_jurisdiction: ['on_trip'],
-    unspecified: ['available', 'removed']
+    unspecified: ['available', 'removed', 'unknown']
   },
   non_operational: {
     agency_pick_up: ['removed'],
@@ -51,32 +51,35 @@ const stateTransitionDict: {
     on_hours: ['available'],
     rebalance_pick_up: ['removed'],
     system_resume: ['available'],
-    unspecified: ['available', 'removed']
+    unspecified: ['available', 'removed', 'unknown']
   },
   on_trip: {
     comms_lost: ['unknown'],
     trip_cancel: ['available'],
     trip_end: ['available'],
     trip_leave_jurisdiction: ['elsewhere'],
-    missing: ['unknown']
+    missing: ['unknown'],
+    unspecified: ['unknown']
   },
   removed: {
+    comms_lost: ['unknown'],
+    missing: ['unknown'],
     agency_drop_off: ['available'],
     decommissioned: ['removed'],
     provider_drop_off: ['available'],
-    unspecified: ['available']
+    unspecified: ['unknown']
   },
   reserved: {
     comms_lost: ['unknown'],
     missing: ['unknown'],
     reservation_cancel: ['available'],
     trip_start: ['on_trip'],
-    unspecified: ['available']
+    unspecified: ['unknown']
   },
   unknown: {
     agency_drop_off: ['available'],
     agency_pick_up: ['removed'],
-    comms_restored: ['available', 'elsewhere', 'reserved', 'on_trip', 'non_operational'],
+    comms_restored: ['available', 'elsewhere', 'removed', 'reserved', 'on_trip', 'non_operational'],
     decommissioned: ['removed'],
     provider_drop_off: ['available'],
     unspecified: ['available', 'removed'],

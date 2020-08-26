@@ -14,6 +14,6 @@
     limitations under the License.
  */
 
-import { JurisdictionServiceManager } from './manager'
-
-JurisdictionServiceManager.monitor()
+export { RpcServiceDefinition, RpcRouteDefinition, RpcRoute } from './@types'
+export { RpcClientOptions, RpcClient, RpcRequest } from './client'
+export { RpcServerOptions, RpcServiceHandlers, RpcServer } from './server'
