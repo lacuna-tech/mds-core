@@ -52,8 +52,8 @@ function install_istio {
   check_kube_context
   pushd .
   cd /tmp
-  curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.4.6 sh -
-  cd istio-1.4.6
+  curl -L https://istio.io/downloadIstio | ISTIO_VERSION=1.5.10 sh -
+  cd istio-1.5.10
   helm install --name istio-init --namespace istio-system ./install/kubernetes/helm/istio-init
   kubectl wait --for condition=complete pods --all
   helm install --name istio --namespace istio-system ./install/kubernetes/helm/istio \
