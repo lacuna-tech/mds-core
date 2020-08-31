@@ -32,7 +32,7 @@ export type ApiError = { error: unknown; error_description?: string; error_detai
 export type ApiResponse<B = {}> = Omit<express.Response<B | ApiError>, 'locals'> & { locals: unknown }
 
 /**
- * Extracts the body generic for APIResponse, in addition to possible error values.
+ * Extracts the body generic (B) for an APIResponse, in addition to possible error values.
  * Useful for frontend applications attempting to use the response payloads defined for Express.
  */
 export type ExtractApiResponseBody<P> = P extends ApiResponse<infer T> ? T | ApiError : never
