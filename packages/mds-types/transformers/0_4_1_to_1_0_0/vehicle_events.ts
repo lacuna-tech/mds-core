@@ -8,7 +8,10 @@ import {
 import { VEHICLE_EVENT_v1_0_0, VEHICLE_STATE_v1_0_0, VehicleEvent_v1_0_0 } from '../../index'
 
 export const FULL_STATE_MAPPING_v0_4_1_to_v1_0_0: {
-  [P in VEHICLE_EVENT_v0_4_1 | TRANSFORMER_VEHICLE_EVENT]: {
+  /* We don't actually accept/ingest events with the `register` event_type in 0.4.1 Agency, so
+   * it's omitted here.
+   */
+  [P in Exclude<VEHICLE_EVENT_v0_4_1, 'register'> | TRANSFORMER_VEHICLE_EVENT]: {
     [Q in VEHICLE_REASON_v0_4_1 | TRANSFORMER_EVENT_TYPE_REASON]: {
       event_type: VEHICLE_EVENT_v1_0_0
       vehicle_state: VEHICLE_STATE_v1_0_0
@@ -60,13 +63,6 @@ export const FULL_STATE_MAPPING_v0_4_1_to_v1_0_0: {
   },
   trip_start: {
     no_event_type_reason: { event_type: 'trip_start', vehicle_state: 'on_trip' }
-  },
-  /* We don't actually accept events with this event_type in Agency, but it's part of
-   * the VEHICLE_EVENT_0_4_v1 type, and Omit doesn't seem to work on types that
-   * are string arrays, so it has to be here.
-   */
-  register: {
-    no_event_type_reason: { event_type: 'unspecified', vehicle_state: 'unknown' }
   },
   /* This event_type exists only to ensure backconversions and should not be present in any
    * real events submitted via 0.4.1.
