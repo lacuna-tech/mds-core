@@ -34,9 +34,10 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
   try {
     const client = await getReadOnlyClient()
 
-    const { get_published, get_unpublished, geography_ids } = {
+    const { get_published, get_unpublished, geography_ids, only_published_after } = {
       get_published: false,
       get_unpublished: false,
+      only_published_after: null,
       ...params
     }
     if (get_published && get_unpublished) {
@@ -49,7 +50,11 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
     const vals = new SqlVals()
 
     if (get_published) {
-      conditions.push(`publish_date IS NOT NULL`)
+      if (only_published_after) {
+        conditions.push(`publish_date > ${only_published_after}`)
+      } else {
+        conditions.push(`publish_date IS NOT NULL`)
+      }
     }
 
     if (get_unpublished) {
