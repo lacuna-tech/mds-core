@@ -482,6 +482,9 @@ if (pg_info.database) {
       })
 
       it('can read published geographies, filter by date published', async () => {
+        const allPublishedGeographies = await MDSDBPostgres.readPublishedGeographies()
+        assert.deepEqual(allPublishedGeographies.length, 1)
+
         const publishTimePastGeographies = await MDSDBPostgres.readPublishedGeographies(START_ONE_MONTH_AGO)
         assert.deepEqual(publishTimePastGeographies.length, 1)
 

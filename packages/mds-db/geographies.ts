@@ -87,7 +87,7 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
   }
 }
 
-export async function readPublishedGeographies(only_published_after: Timestamp): Promise<Geography[]> {
+export async function readPublishedGeographies(only_published_after?: Timestamp): Promise<Geography[]> {
   try {
     const client = await getReadOnlyClient()
 
