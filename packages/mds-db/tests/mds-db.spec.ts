@@ -479,18 +479,15 @@ if (pg_info.database) {
         })
         const writeableGeographies = await MDSDBPostgres.readGeographies({ get_published: false })
         assert.deepEqual(writeableGeographies.length, 1)
+      })
 
-        const publishTimePastGeographies = await MDSDBPostgres.readGeographies({
-          get_published: true,
-          only_published_after: START_ONE_MONTH_AGO
-        })
+      it('can read published geographies, filter by date published', async () => {
+        const publishTimePastGeographies = await MDSDBPostgres.readPublishedGeographies(START_ONE_MONTH_AGO)
         assert.deepEqual(publishTimePastGeographies.length, 1)
 
         const ONE_MONTH_FROM_NOW = now() + days(30)
-        const publishTimeFutureGeographies = await MDSDBPostgres.readGeographies({
-          get_published: true,
-          only_published_after: ONE_MONTH_FROM_NOW
-        })
+        const publishTimeFutureGeographies = await MDSDBPostgres.readPublishedGeographies(ONE_MONTH_FROM_NOW)
+
         assert.deepEqual(publishTimeFutureGeographies.length, 0)
       })
 

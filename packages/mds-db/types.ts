@@ -78,7 +78,6 @@ export interface VehicleEventCountResult {
 
 export interface ReadGeographiesParams {
   get_published: Nullable<boolean>
-  only_published_after?: Timestamp
   get_unpublished: Nullable<boolean>
   geography_ids?: UUID[]
 }
