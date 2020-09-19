@@ -2,10 +2,10 @@ import { Policy, UUID, PolicyMetadata, Optional } from '@mds-core/mds-types'
 import {
   ApiRequest,
   ApiVersionedResponse,
-  ApiClaims,
-  ApiResponseLocals,
   ApiRequestParams,
-  ApiRequestQuery
+  ApiRequestQuery,
+  ApiResponseLocalsClaims,
+  ApiResponseLocalsScopes
 } from '@mds-core/mds-api-server'
 
 export const POLICY_AUTHOR_API_SUPPORTED_VERSIONS = ['0.4.1'] as const
@@ -30,7 +30,8 @@ export type PolicyAuthorApiAccessTokenScopes =
   | 'policies:delete'
 
 type PolicyAuthorApiResponse<B = {}> = ApiVersionedResponse<POLICY_AUTHOR_API_SUPPORTED_VERSION, B> &
-  ApiResponseLocals<ApiClaims<PolicyAuthorApiAccessTokenScopes>>
+  ApiResponseLocalsClaims &
+  ApiResponseLocalsScopes<PolicyAuthorApiAccessTokenScopes>
 
 export type PolicyAuthorApiGetPoliciesResponse = PolicyAuthorApiResponse<{ data: { policies: Policy[] } }>
 export type PolicyAuthorApiGetPolicyResponse = PolicyAuthorApiResponse<{ data: { policy: Policy } }>
