@@ -51,7 +51,5 @@ export type ApiResponseLocalsScopes<AccessTokenScope extends string> = ApiRespon
   Array<AccessTokenScope>
 >
 
-export type ApiVersion<V extends string> = { version: V }
-
-export type ApiVersionedResponse<V extends string, B = {}> = ApiResponse<B & ApiVersion<V>> &
+export type ApiVersionedResponse<V extends string, B = {}> = ApiResponse<B & { version: V }> &
   ApiResponseLocals<'version', V>
