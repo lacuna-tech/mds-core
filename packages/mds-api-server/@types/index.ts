@@ -44,12 +44,13 @@ export type ApiResponseLocals<L extends string, T> = {
   locals: Record<L, T>
 }
 
-export type ApiResponseLocalsClaims = ApiResponseLocals<'claims', AuthorizerClaims | null>
-
-export type ApiResponseLocalsScopes<AccessTokenScope extends string> = ApiResponseLocals<
-  'scopes',
-  Array<AccessTokenScope>
->
+export type ApiResponseLocalsClaims<AccessTokenScope extends string | undefined = undefined> = ApiResponseLocals<
+  'claims',
+  AuthorizerClaims | null
+> &
+  AccessTokenScope extends undefined
+  ? ApiResponseLocals<'scopes', undefined>
+  : ApiResponseLocals<'scopes', Array<AccessTokenScope>>
 
 export type ApiVersionedResponse<V extends string, B = {}> = ApiResponse<B & { version: V }> &
   ApiResponseLocals<'version', V>

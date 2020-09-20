@@ -1,13 +1,12 @@
 import express from 'express'
 import morgan from 'morgan'
 import logger from '@mds-core/mds-logger'
-import { AuthorizerClaims } from '@mds-core/mds-api-authorizer'
-import { ApiRequest, ApiResponse, ApiResponseLocals } from '../@types'
+import { ApiRequest, ApiResponse, ApiResponseLocalsClaims } from '../@types'
 
 export type RequestLoggingMiddlewareOptions = Partial<{}>
 
 export const RequestLoggingMiddleware = (options: RequestLoggingMiddlewareOptions = {}): express.RequestHandler =>
-  morgan<ApiRequest, ApiResponse & ApiResponseLocals<'claims', AuthorizerClaims | null>>(
+  morgan<ApiRequest, ApiResponse & ApiResponseLocalsClaims>(
     (tokens, req, res) => {
       return [
         ...(res.locals.claims?.provider_id ? [res.locals.claims.provider_id] : []),

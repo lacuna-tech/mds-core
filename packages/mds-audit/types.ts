@@ -35,7 +35,6 @@ import {
   ApiVersionedResponse,
   ApiRequestParams,
   ApiResponseLocals,
-  ApiResponseLocalsScopes,
   ApiResponseLocalsClaims
 } from '@mds-core/mds-api-server'
 
@@ -122,8 +121,7 @@ type AuditedDevice =
     })
 // Allow adding type definitions for Express Response objects
 export type AuditApiResponse<B = {}> = ApiVersionedResponse<AUDIT_API_SUPPORTED_VERSION, B> &
-  ApiResponseLocalsClaims &
-  ApiResponseLocalsScopes<AuditApiAccessTokenScopes> &
+  ApiResponseLocalsClaims<AuditApiAccessTokenScopes> &
   ApiResponseLocals<'audit_subject_id', string> &
   ApiResponseLocals<'audit_trip_id', UUID> &
   ApiResponseLocals<'audit', Nullable<Audit>> &

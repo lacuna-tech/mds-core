@@ -1,7 +1,7 @@
 import express from 'express'
 import { AuthorizerClaims } from '@mds-core/mds-api-authorizer'
 import { AuthorizationError } from '@mds-core/mds-utils'
-import { ApiRequest, ApiResponse, ApiResponseLocalsClaims, ApiResponseLocalsScopes } from '../@types'
+import { ApiRequest, ApiResponse, ApiResponseLocalsClaims } from '../@types'
 
 export const healthInfo = () => {
   const {
@@ -49,10 +49,10 @@ export const checkAccess = <AccessTokenScope extends string = never>(
       }
     : async (
         req: ApiRequest,
-        res: ApiResponse & ApiResponseLocalsClaims & ApiResponseLocalsScopes<AccessTokenScope>,
+        res: ApiResponse & ApiResponseLocalsClaims<AccessTokenScope>,
         next: express.NextFunction
       ) => {
-        const { scopes, claims } = res.locals
+        const { scopes = [], claims } = res.locals
         const valid = await validator(scopes, claims)
         return valid
           ? next()

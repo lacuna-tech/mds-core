@@ -5,7 +5,6 @@ import {
   ApiResponse,
   ApiResponseLocals,
   ApiRequestParams,
-  ApiResponseLocalsScopes,
   ApiResponseLocalsClaims
 } from '@mds-core/mds-api-server'
 
@@ -27,8 +26,7 @@ export type AgencyApiReadStopRequest = AgencyApiRequest & ApiRequestParams<'stop
 export type AgencyApiAccessTokenScopes = 'admin:all' | 'vehicles:read'
 
 export type AgencyApiResponse<B = {}> = ApiResponse<B> &
-  ApiResponseLocalsClaims &
-  ApiResponseLocalsScopes<AgencyApiAccessTokenScopes> &
+  ApiResponseLocalsClaims<AgencyApiAccessTokenScopes> &
   ApiResponseLocals<'provider_id', UUID>
 
 export type AgencyApiRegisterVehicleResponse = AgencyApiResponse

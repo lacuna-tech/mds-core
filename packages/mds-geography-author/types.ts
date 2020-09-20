@@ -19,7 +19,6 @@ import {
   ApiVersionedResponse,
   ApiRequestQuery,
   ApiRequestParams,
-  ApiResponseLocalsScopes,
   ApiResponseLocalsClaims
 } from '@mds-core/mds-api-server'
 import { GeographyMetadata, Geography, UUID } from '@mds-core/mds-types'
@@ -54,8 +53,7 @@ export type GeographyAuthorApiPutGeographyMetadataRequest = GeographyAuthorApiRe
 export type GeographyAuthorApiPublishGeographyRequest = GeographyAuthorApiRequest & ApiRequestParams<'geography_id'>
 
 export type GeographyAuthorApiResponse<B = {}> = ApiVersionedResponse<GEOGRAPHY_AUTHOR_API_SUPPORTED_VERSION, B> &
-  ApiResponseLocalsClaims &
-  ApiResponseLocalsScopes<GeographyAuthorApiAccessTokenScopes>
+  ApiResponseLocalsClaims<GeographyAuthorApiAccessTokenScopes>
 
 export type GeographyAuthorApiGetGeographyMetadatumResponse = GeographyAuthorApiResponse<{
   data: { geography_metadata: GeographyMetadata }

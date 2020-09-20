@@ -4,7 +4,6 @@ import {
   ApiVersionedResponse,
   ApiResponseLocals,
   ApiRequestParams,
-  ApiResponseLocalsScopes,
   ApiResponseLocalsClaims
 } from '@mds-core/mds-api-server'
 
@@ -20,8 +19,7 @@ export type ComplianceApiCountRequest = ComplianceApiRequest & ApiRequestParams<
 export type ComplianceApiAccessTokenScopes = never
 
 export type ComplianceApiResponse<B = {}> = ApiVersionedResponse<COMPLIANCE_API_SUPPORTED_VERSION, B> &
-  ApiResponseLocalsClaims &
-  ApiResponseLocalsScopes<ComplianceApiAccessTokenScopes> &
+  ApiResponseLocalsClaims<ComplianceApiAccessTokenScopes> &
   ApiResponseLocals<'provider_id', UUID>
 
 export type ComplianceApiSnapshotResponse = ComplianceApiResponse<ComplianceResponse & { timestamp: Timestamp }>

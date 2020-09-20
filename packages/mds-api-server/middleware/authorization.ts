@@ -1,6 +1,6 @@
 import express from 'express'
 import { ApiAuthorizer, AuthorizationHeaderApiAuthorizer } from '@mds-core/mds-api-authorizer'
-import { ApiRequest, ApiResponse, ApiResponseLocalsScopes, ApiResponseLocalsClaims } from '../@types'
+import { ApiRequest, ApiResponse, ApiResponseLocalsClaims } from '../@types'
 
 export type AuthorizationMiddlewareOptions = Partial<{ authorizer: ApiAuthorizer }>
 
@@ -8,7 +8,7 @@ export const AuthorizationMiddleware = ({
   authorizer = AuthorizationHeaderApiAuthorizer
 }: AuthorizationMiddlewareOptions = {}) => <AccessTokenScope extends string>(
   req: ApiRequest,
-  res: ApiResponse & ApiResponseLocalsClaims & ApiResponseLocalsScopes<AccessTokenScope>,
+  res: ApiResponse & ApiResponseLocalsClaims<AccessTokenScope>,
   next: express.NextFunction
 ) => {
   const claims = authorizer(req)
