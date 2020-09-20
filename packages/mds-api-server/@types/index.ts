@@ -38,10 +38,10 @@ export type ApiResponse<B = {}> = express.Response<B | ApiError>
 export type ExtractApiResponseBody<P> = P extends ApiResponse<infer T> ? T | ApiError : never
 
 /**
- * L: Type of response locals (res.locals)
+ * P, T: Property name/type { [P]: T } added to response locals (res.locals)
  */
-export type ApiResponseLocals<L extends string, T> = {
-  locals: Record<L, T>
+export type ApiResponseLocals<P extends string, T> = {
+  locals: Record<P, T>
 }
 
 export type ApiResponseLocalsClaims<AccessTokenScope extends string | undefined = undefined> = ApiResponseLocals<
