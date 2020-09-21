@@ -13,7 +13,7 @@ const MIGRATIONS = [
   'dropReadOnlyGeographyColumn',
   'dropAuditEventsColumns',
   'alterReportsTripsMigration',
-  'addIndexToGeographiesPulishDate'
+  'addIndexToGeographiesPublishDate'
 ] as const
 type MIGRATION = typeof MIGRATIONS[number]
 
@@ -185,7 +185,7 @@ async function dropAuditEventsColumnsMigration(exec: SqlExecuterFunction) {
   await exec(`ALTER TABLE ${schema.TABLE.audit_events} DROP COLUMN provider_event_type_reason`)
 }
 
-async function addIndexToGeographiesPulishDate(exec: SqlExecuterFunction) {
+async function addIndexToGeographiesPublishDate(exec: SqlExecuterFunction) {
   await exec(`CREATE INDEX geographies_publish_date_idx on geographies(publish_date)`)
 }
 
@@ -197,7 +197,7 @@ async function doMigrations(client: MDSPostgresClient) {
   await doMigration(exec, 'dropDeprecatedProviderTables', dropDeprecatedProviderTablesMigration)
   await doMigration(exec, 'dropReadOnlyGeographyColumn', dropReadOnlyGeographyColumnMigration)
   await doMigration(exec, 'dropAuditEventsColumns', dropAuditEventsColumnsMigration)
-  await doMigration(exec, 'addIndexToGeographiesPulishDate', addIndexToGeographiesPulishDate)
+  await doMigration(exec, 'addIndexToGeographiesPublishDate', addIndexToGeographiesPublishDate)
 }
 
 async function updateSchema(client: MDSPostgresClient) {
