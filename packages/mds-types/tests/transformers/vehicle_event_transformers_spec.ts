@@ -1,13 +1,12 @@
 import assert from 'assert'
-import { uuid, now } from '@mds-core/mds-utils'
 import { VehicleEvent_v0_4_1 } from '../../transformers/@types'
 import { VehicleEvent_v1_0_0 } from '../../index'
 import { convert_v1_0_0_vehicle_event_to_v0_4_1, convert_v0_4_1_vehicle_event_to_v1_0_0 } from '../../transformers'
 
-const TIME = now()
-const DEVICE_ID = uuid()
-const PROVIDER_ID = uuid()
-const STOP_ID = uuid()
+const TIME = 1600720345
+const DEVICE_ID = 'd0d9c274-773f-46c4-8c3a-f3cd35e4f99c'
+const PROVIDER_ID = 'baf215d4-8b4b-4be4-8189-980171a964ba'
+const STOP_ID = '3f411cb1-a5a4-4b29-9e72-2714fdd24bc8'
 
 describe('Test transformers', () => {
   it('spot checks the transformation between v0.4.1 and v1.0.0 VehicleEvent types', done => {
