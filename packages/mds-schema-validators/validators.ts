@@ -90,16 +90,13 @@ const ruleSchema = Joi.object().keys({
     .required(),
   rule_units: Joi.string().valid('seconds', 'minutes', 'hours', 'mph', 'kph'),
   geographies: Joi.array().items(Joi.string().guid()),
-  statuses: Joi.object()
-    .keys({
-      available: Joi.array(),
-      reserved: Joi.array(),
-      unavailable: Joi.array(),
-      removed: Joi.array(),
-      inactive: Joi.array(),
-      trip: Joi.array(),
-      elsewhere: Joi.array()
-    })
+  states: Joi.object()
+    .keys(
+      VEHICLE_STATES.reduce(
+        (acc, state) => Object.assign(acc, { [state]: Joi.array().items(stringSchema.valid(...VEHICLE_EVENTS)) }),
+        {}
+      )
+    )
     .allow(null),
   vehicle_types: Joi.array().items(Joi.string().valid(...Object.values(VEHICLE_TYPES))),
   maximum: Joi.number(),
