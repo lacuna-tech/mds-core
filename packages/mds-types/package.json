@@ -19,7 +19,6 @@
     "test:unit": "DOTENV_CONFIG_PATH=../../.env nyc ts-mocha --project ../../tsconfig.json"
   },
   "dependencies": {
-    "@types/geojson": "7946.0.7",
-    "@mds-core/mds-utils": "0.1.26"
+    "@types/geojson": "7946.0.7"
   }
 }

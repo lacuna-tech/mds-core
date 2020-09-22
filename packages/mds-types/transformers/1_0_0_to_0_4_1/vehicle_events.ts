@@ -1,4 +1,3 @@
-import { clone } from '@mds-core/mds-utils'
 import { VEHICLE_REASON_v0_4_1, VehicleEvent_v0_4_1, VEHICLE_EVENT_v0_4_1, TRANSFORMER_VEHICLE_EVENT } from '../@types'
 import { VehicleEvent_v1_0_0, VEHICLE_EVENT_v1_0_0 } from '../../index'
 
@@ -66,19 +65,22 @@ export const FULL_STATE_MAPPING_v1_0_0_to_v0_4_1: {
   battery_charged: {
     event_type: 'service_start'
   },
-  trip_cancel: {
-    event_type: 'no_backconversion_available'
-  },
   comms_lost: {
     event_type: 'no_backconversion_available'
   },
   comms_restored: {
     event_type: 'no_backconversion_available'
   },
+  located: {
+    event_type: 'no_backconversion_available'
+  },
   system_resume: {
     event_type: 'no_backconversion_available'
   },
   system_suspend: {
+    event_type: 'no_backconversion_available'
+  },
+  trip_cancel: {
     event_type: 'no_backconversion_available'
   },
   unspecified: {
@@ -92,7 +94,7 @@ function convert_v1_0_0_to_v0_4_1_helper(
 ): VehicleEvent_v0_4_1 {
   const { event_type, event_type_reason } = FULL_STATE_MAPPING_v1_0_0_to_v0_4_1[current_event_type]
 
-  const telemetry = event.telemetry ? clone(event.telemetry) : null
+  const telemetry = event.telemetry ? JSON.parse(JSON.stringify(event.telemetry)) : null
   if (telemetry && telemetry.stop_id) {
     delete telemetry.stop_id
   }
