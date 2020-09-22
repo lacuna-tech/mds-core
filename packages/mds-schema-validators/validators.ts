@@ -43,7 +43,7 @@ import { ValidationError, areThereCommonElements } from '@mds-core/mds-utils'
 
 export { ValidationError }
 
-interface ValidatorOptions {
+export interface ValidatorOptions {
   property: string
   assert: boolean
   required: boolean
@@ -62,9 +62,9 @@ export const timestampSchema = numberSchema.min(1420099200000)
 
 export const providerIdSchema = uuidSchema.valid(...Object.keys(providers))
 
-const vehicleIdSchema = stringSchema.max(255)
+export const vehicleIdSchema = stringSchema.max(255)
 
-const telemetrySchema = Joi.object().keys({
+export const telemetrySchema = Joi.object().keys({
   gps: Joi.object()
     .keys({
       lat: numberSchema.min(-90).max(90).required(),
@@ -92,16 +92,13 @@ const ruleSchema = Joi.object().keys({
     .required(),
   rule_units: Joi.string().valid('seconds', 'minutes', 'hours', 'mph', 'kph'),
   geographies: Joi.array().items(Joi.string().guid()),
-  statuses: Joi.object()
-    .keys({
-      available: Joi.array(),
-      reserved: Joi.array(),
-      unavailable: Joi.array(),
-      removed: Joi.array(),
-      inactive: Joi.array(),
-      trip: Joi.array(),
-      elsewhere: Joi.array()
-    })
+  states: Joi.object()
+    .keys(
+      VEHICLE_STATES.reduce(
+        (acc, state) => Object.assign(acc, { [state]: Joi.array().items(stringSchema.valid(...VEHICLE_EVENTS)) }),
+        {}
+      )
+    )
     .allow(null),
   vehicle_types: Joi.array().items(Joi.string().valid(...Object.values(VEHICLE_TYPES))),
   maximum: Joi.number(),
@@ -393,7 +390,7 @@ export function rawValidatePolicy(policy: Policy): Joi.ValidationResult {
 
 const validateTripEvent = (event: VehicleEvent) => ValidateSchema(event, tripEventSchema, {})
 
-export const validateEvent = (event: unknown) => {
+const validate_v1_0_0_Event = (event: unknown) => {
   if (isValidEvent(event, { allowUnknown: true })) {
     const { event_types } = event
 
@@ -411,6 +408,8 @@ export const validateEvent = (event: unknown) => {
     return ValidateSchema(event, eventSchema, {})
   }
 }
+
+export const validateEvent = validate_v1_0_0_Event
 
 export const policySchemaJson = joiToJson(policySchema)
 
