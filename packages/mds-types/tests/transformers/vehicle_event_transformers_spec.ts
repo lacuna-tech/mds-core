@@ -1,7 +1,11 @@
 import assert from 'assert'
 import { VehicleEvent_v0_4_1 } from '../../transformers/@types'
 import { VehicleEvent_v1_0_0 } from '../../index'
-import { convert_v1_0_0_vehicle_event_to_v0_4_1, convert_v0_4_1_vehicle_event_to_v1_0_0 } from '../../transformers'
+import {
+  convert_v1_0_0_vehicle_event_to_v0_4_1,
+  convert_v0_4_1_vehicle_event_to_v1_0_0,
+  UnsupportedEventTypeError
+} from '../../transformers'
 
 const TIME = Date.now()
 const DEVICE_ID = 'd0d9c274-773f-46c4-8c3a-f3cd35e4f99c'
@@ -97,7 +101,7 @@ describe('Test transformers', () => {
         recorded: TIME
       }
 
-      assert.throws(() => convert_v0_4_1_vehicle_event_to_v1_0_0(event), Error)
+      assert.throws(() => convert_v0_4_1_vehicle_event_to_v1_0_0(event), UnsupportedEventTypeError)
     })
   })
 
