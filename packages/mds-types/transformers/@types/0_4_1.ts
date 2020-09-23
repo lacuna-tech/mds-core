@@ -47,7 +47,7 @@ export interface VehicleEvent_v0_4_1 {
   timestamp: Timestamp
   timestamp_long?: string | null
   delta?: Timestamp | null
-  event_type: Exclude<VEHICLE_EVENT_v0_4_1, 'register'> | TRANSFORMER_VEHICLE_EVENT
+  event_type: VEHICLE_EVENT_v0_4_1 | TRANSFORMER_VEHICLE_EVENT
   event_type_reason?: VEHICLE_REASON_v0_4_1 | null | TRANSFORMER_EVENT_TYPE_REASON
   telemetry_timestamp?: Timestamp | null
   telemetry?: Telemetry | null

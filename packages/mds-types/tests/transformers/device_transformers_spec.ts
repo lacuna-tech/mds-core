@@ -1,12 +1,11 @@
 import assert from 'assert'
 import { Device_v0_4_1, Device_v1_0_0 } from '../../transformers/@types'
-
 import { convert_v0_4_1_device_to_1_0_0, convert_v1_0_0_device_to_0_4_1 } from '../../transformers'
 
 const TIME = Date.now()
-const DEVICE_ID = '79b2f745-c9a5-4ea8-a339-dcddf9184eab'
-const PROVIDER_ID = 'c5e78c3c-e816-4af0-bce4-6cf092524245'
-const VEHICLE_ID = '35d8c181-e288-40b6-bf20-29a83af4e173'
+const DEVICE_ID = 'd0d9c274-773f-46c4-8c3a-f3cd35e4f99c'
+const PROVIDER_ID = 'baf215d4-8b4b-4be4-8189-980171a964ba'
+const VEHICLE_ID = '3f411cb1-a5a4-4b29-9e72-2714fdd24bc8'
 
 describe('Test transformers', () => {
   it('checks the transformation between v0.4.1 and v1.0.0 Device types', done => {

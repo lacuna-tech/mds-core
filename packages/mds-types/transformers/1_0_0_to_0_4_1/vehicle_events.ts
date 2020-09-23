@@ -71,9 +71,6 @@ export const FULL_STATE_MAPPING_v1_0_0_to_v0_4_1: {
   battery_charged: {
     event_type: 'service_start'
   },
-  trip_cancel: {
-    event_type: 'no_backconversion_available'
-  },
   comms_lost: {
     event_type: 'no_backconversion_available'
   },
@@ -87,6 +84,9 @@ export const FULL_STATE_MAPPING_v1_0_0_to_v0_4_1: {
     event_type: 'no_backconversion_available'
   },
   system_suspend: {
+    event_type: 'no_backconversion_available'
+  },
+  trip_cancel: {
     event_type: 'no_backconversion_available'
   },
   unspecified: {

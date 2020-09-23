@@ -7,11 +7,19 @@ import {
 } from '../@types'
 import { VEHICLE_EVENT_v1_0_0, VEHICLE_STATE_v1_0_0, VehicleEvent_v1_0_0 } from '../@types/1_0_0'
 
+export class UnsupportedEventTypeError extends Error {
+  public constructor(public name: string, public reason?: string, public info?: unknown) {
+    super(reason)
+    Error.captureStackTrace(this, Error)
+  }
+}
+
+type INGESTABLE_VEHICLE_EVENT = Exclude<VEHICLE_EVENT_v0_4_1, 'register'>
 export const FULL_STATE_MAPPING_v0_4_1_to_v1_0_0: {
   /* We don't actually accept/ingest events with the `register` event_type in 0.4.1 Agency, so
    * it's omitted here.
    */
-  [P in Exclude<VEHICLE_EVENT_v0_4_1, 'register'> | TRANSFORMER_VEHICLE_EVENT]: {
+  [P in INGESTABLE_VEHICLE_EVENT | TRANSFORMER_VEHICLE_EVENT]: {
     [Q in VEHICLE_REASON_v0_4_1 | TRANSFORMER_EVENT_TYPE_REASON]: {
       event_type: VEHICLE_EVENT_v1_0_0
       vehicle_state: VEHICLE_STATE_v1_0_0
@@ -73,7 +81,7 @@ export const FULL_STATE_MAPPING_v0_4_1_to_v1_0_0: {
 }
 
 function map_v0_4_1_vehicle_event_fields_to_v1_0_0_fields(
-  event_type: Exclude<VEHICLE_EVENT_v0_4_1, 'register'> | TRANSFORMER_VEHICLE_EVENT,
+  event_type: INGESTABLE_VEHICLE_EVENT | TRANSFORMER_VEHICLE_EVENT,
   event_type_reason: VEHICLE_REASON_v0_4_1 | TRANSFORMER_EVENT_TYPE_REASON | null | undefined
 ): { event_type: VEHICLE_EVENT_v1_0_0; vehicle_state: VEHICLE_STATE_v1_0_0 } {
   if (event_type_reason) {
@@ -96,6 +104,10 @@ export function convert_v0_4_1_vehicle_event_to_v1_0_0(event: VehicleEvent_v0_4_
     trip_id = null,
     recorded
   } = event
+
+  if (event_type === 'register') {
+    throw new UnsupportedEventTypeError(`Unexpected 'register' event_type for device_id ${device_id}`)
+  }
 
   const { event_type: new_event_type, vehicle_state } = map_v0_4_1_vehicle_event_fields_to_v1_0_0_fields(
     event_type,
