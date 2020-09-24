@@ -27,6 +27,7 @@ import {
   HealthRequestHandler,
   PrometheusMiddleware,
   RequestLoggingMiddleware,
+  RawBodyParserMiddlewareOptions,
   RawBodyParserMiddleware
 } from '@mds-core/mds-api-server'
 import { Nullable } from '@mds-core/mds-types'
@@ -44,6 +45,7 @@ export interface RpcServerOptions {
     port: string
     context: unknown
   }>
+  maxRequestSize: RawBodyParserMiddlewareOptions['limit']
 }
 
 const stopServer = async (server: http.Server | net.Server): Promise<void> =>
@@ -109,7 +111,7 @@ export const RpcServer = <S>(
           express()
             .use(PrometheusMiddleware())
             .use(RequestLoggingMiddleware())
-            .use(RawBodyParserMiddleware({ type: RPC_CONTENT_TYPE }))
+            .use(RawBodyParserMiddleware({ type: RPC_CONTENT_TYPE, limit: options.maxRequestSize }))
             .get('/health', HealthRequestHandler)
             .use(ModuleRpcProtocolServer.registerRpcRoutes(definition, routes)),
           { port }
