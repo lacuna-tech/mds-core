@@ -188,7 +188,7 @@ export async function getVehicle(provider_id: UUID, vehicle_id: string) {
       } else {
         const status = EVENT_STATUS_MAP[deviceStatus.event_type as VEHICLE_EVENT]
         const updated = deviceStatus.timestamp
-        deviceStatusMap.active.push({ ...device, ...deviceStatus, status, updated })
+        deviceStatusMap.active.push({ ...deviceStatus, ...device, status, updated })
       }
     })
   )
