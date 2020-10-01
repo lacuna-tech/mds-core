@@ -22,7 +22,7 @@
     "@types/sinon": "9.0.5",
     "bluebird": "3.7.2",
     "flat": "5.0.2",
-    "kafkajs": "1.12.0",
+    "kafkajs": "1.14.0",
     "redis": "3.0.2",
     "sinon": "9.0.3",
     "ts-nats": "1.2.15"
@@ -31,6 +31,6 @@
     "build": "tsc --build tsconfig.build.json",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
-    "test:unit": "DOTENV_CONFIG_PATH=../../.env nyc --lines 30 ts-mocha --project ../../tsconfig.json"
+    "test:unit": "DOTENV_CONFIG_PATH=../../.env jest"
   }
 }
