@@ -1,2 +1,2 @@
 export { api } from './api'
-export { GeographyApiGetGeographyResponse, GeographyApiGetGeographiesResponse } from './types'
+export { GeographyApiGetGeographyResponseBody, GeographyApiGetGeographiesResponseBody } from './types'
