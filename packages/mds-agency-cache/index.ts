@@ -78,7 +78,7 @@ async function info() {
 async function updateVehicleList(device_id: UUID, timestamp?: Timestamp) {
   const when = timestamp || now()
   // logger.info('redis zadd', device_id, when)
-  return client.zadd(decorateKey('device-ids'), when, device_id)
+  return client.zadd(decorateKey('device-ids'), [when, device_id])
 }
 async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
   if (!device_id) {
@@ -95,7 +95,7 @@ async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
 /* Store latest known lat/lng for a given device in a redis geo-spatial analysis compatible manner. */
 async function addGeospatialHash(device_id: UUID, coordinates: [number, number]) {
   const [lat, lng] = coordinates
-  const res = await client.geoadd(decorateKey('locations'), lng, lat, device_id)
+  const res = await client.geoadd(device_id, lng, lat)
   return res
 }
 
@@ -346,8 +346,6 @@ async function readDevicesStatus(query: {
   const strictChecking = query.strict
 
   logger.info('redis zrangebyscore device-ids', start, stop)
-  const client = await getClient()
-
   const geoStart = now()
   const { bbox } = query
   const deviceIdsInBbox = await getEventsInBBox(bbox)

@@ -150,6 +150,12 @@ export const RedisCache = () => {
       }
       throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
     },
+    geoadd: async (key: KeyType, longitude: number, latitude: number) => {
+      if (isDefined(client)) {
+        return client.geoadd(key, longitude, latitude)
+      }
+      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+    },
     georadius: async (key: KeyType, longitude: number, latitude: number, radius: number, unit: string) => {
       if (isDefined(client)) {
         return client.georadius(key, longitude, latitude, radius, unit)
