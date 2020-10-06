@@ -103,6 +103,12 @@ export const RedisCache = () => {
       }
       throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
     },
+    hmset: async (key: KeyType, data: { [key: string]: ValueType }) => {
+      if (isDefined(client)) {
+        return client.hmset(key, data)
+      }
+      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+    },
     hdel: async (key: KeyType, ...fields: KeyType[]) => {
       if (isDefined(client)) {
         return client.hdel(key, fields)
