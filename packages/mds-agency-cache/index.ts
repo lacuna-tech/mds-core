@@ -125,16 +125,13 @@ async function hreads(
   if (ids === undefined) {
     throw new Error('hreads: no ids')
   }
-  // bleah
-  const multi = client.multi()
 
-  await Promise.all(
-    suffixes.map(suffix =>
-      ids.map(id => {
-        return multi.hgetall(decorateKey(`${prefix}:${id}:${suffix}`))
-      })
-    )
-  )
+  const multi = suffixes
+    .map(suffix => ids.map(id => decorateKey(`${prefix}:${id}:${suffix}`)))
+    .flat()
+    .reduce((pipeline, key) => {
+      return pipeline.hgetall(key)
+    }, await client.multi())
 
   const replies = await multi.exec()
   return replies.map((flat, index) => {
