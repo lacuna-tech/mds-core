@@ -1,45 +1,10 @@
 import Redis, { KeyType, ValueType } from 'ioredis'
-import { Timestamp } from '@mds-core/mds-types'
-// import { isDefined, ClientDisconnectedError, ExceptionMessages } from '@mds-core/mds-utils'
+import { Nullable, Timestamp } from '@mds-core/mds-types'
+import { isDefined, ClientDisconnectedError, ExceptionMessages } from '@mds-core/mds-utils'
 import { initClient } from './helpers/client'
 import { OrderedFields } from '../@types'
 
 // /////////////////// start back-ported junk
-
-// TODO MOVE LATER this is from 1.0 land, back-ported into 0.4.1
-export declare type Nullable<T> = T | null
-type isDefinedOptions = Partial<{ warnOnEmpty: boolean }>
-
-const isDefined = <T>(elem: T | undefined | null, options: isDefinedOptions = {}, index?: number): elem is T => {
-  const { warnOnEmpty } = options
-  if (elem !== undefined && elem !== null) {
-    return true
-  }
-  if (warnOnEmpty) {
-    // warn(`Encountered empty element at index: ${index}`)
-  }
-  return false
-}
-export const ExceptionMessages = {
-  INITIALIZE_CLIENT_MESSAGE: 'Client is not connected! Have you tried initializing the client with .initialize()?'
-}
-
-class BaseError extends Error {
-  public constructor(public name: string, public reason?: string, public info?: unknown) {
-    super(reason)
-    Error.captureStackTrace(this, BaseError)
-  }
-}
-
-const reason = (error?: Error | string) => (error instanceof Error ? error.message : error)
-
-export class ClientDisconnectedError extends BaseError {
-  public constructor(error?: Error | string, public info?: unknown) {
-    super('ClientDisconnectedError', reason(error), info)
-  }
-}
-
-// /////////////////// end back-ported junk
 
 export const RedisCache = () => {
   let client: Nullable<Redis.Redis> = null
@@ -194,10 +159,7 @@ export const RedisCache = () => {
     /* TODO: Improve multi call response structure */
     multihgetall: async (key: KeyType) => {
       if (isDefined(client)) {
-        return client
-          .multi()
-          .hgetall(key)
-          .exec()
+        return client.multi().hgetall(key).exec()
       }
       throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
     }

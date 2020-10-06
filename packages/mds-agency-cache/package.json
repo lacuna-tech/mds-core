@@ -15,15 +15,12 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@mds-core/mds-logger": "0.1.24",
+    "@mds-core/mds-cache": "0.0.1",
     "@mds-core/mds-schema-validators": "0.1.2",
     "@mds-core/mds-types": "0.1.23",
     "@mds-core/mds-utils": "0.1.26",
-    "@types/bluebird": "3.5.32",
     "@types/flat": "5.0.1",
-    "@types/redis": "2.8.27",
-    "bluebird": "3.7.2",
-    "flat": "5.0.2",
-    "redis": "3.0.2"
+    "flat": "5.0.2"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",

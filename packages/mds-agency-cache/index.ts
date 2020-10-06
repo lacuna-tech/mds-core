@@ -28,8 +28,8 @@ import {
   EVENT_STATUS_MAP,
   VEHICLE_STATUSES
 } from '@mds-core/mds-types'
-import redis from 'redis'
-import bluebird from 'bluebird'
+
+import { RedisCache } from '@mds-core/mds-cache'
 
 import { parseTelemetry, parseEvent, parseDevice, parseCachedItem } from './unflatteners'
 import {
@@ -45,33 +45,7 @@ const { env } = process
 
 const { unflatten } = flatten
 
-declare module 'redis' {
-  interface RedisClient {
-    dbsizeAsync: () => Promise<number>
-    delAsync: (...arg1: string[]) => Promise<number>
-    flushdbAsync: () => Promise<'OK'>
-    hdelAsync: (...args: (string | number)[]) => Promise<number>
-    hgetallAsync: (arg1: string) => Promise<{ [key: string]: string }>
-    hgetAsync: (key: string, field: string) => Promise<string>
-    hscanAsync: (key: string, cursor: number, condition: string, pattern: string) => Promise<[string, string[]]>
-    hsetAsync: (key: string, field: string, value: string) => Promise<number>
-    hmsetAsync: (...args: unknown[]) => Promise<'OK'>
-    infoAsync: () => Promise<string>
-    keysAsync: (arg1: string) => Promise<string[]>
-    zaddAsync: (arg1: string | number, arg2: number, arg3: string) => Promise<number>
-    zrangebyscoreAsync: (key: string, min: number | string, max: number | string) => Promise<string[]>
-    georadiusAsync: (key: string, longitude: number, latitude: number, radius: number, unit: string) => Promise<UUID[]>
-  }
-  interface Multi {
-    hgetallAsync: (arg1: string) => Promise<{ [key: string]: string }>
-    execAsync: () => Promise<object[]>
-  }
-}
-
-bluebird.promisifyAll(redis.RedisClient.prototype)
-bluebird.promisifyAll(redis.Multi.prototype)
-
-let cachedClient: redis.RedisClient | null
+const client = RedisCache()
 
 // optionally prefix a 'tenantId' key given the redis is a shared service across deployments
 function decorateKey(key: string): string {
@@ -79,30 +53,11 @@ function decorateKey(key: string): string {
 }
 
 async function getClient() {
-  if (!cachedClient) {
-    const port = Number(env.REDIS_PORT) || 6379
-    const host = env.REDIS_HOST || 'localhost'
-    logger.info(`connecting to redis on ${host}:${port}`)
-    cachedClient = redis.createClient({ port, host, password: env.REDIS_PASS })
-    logger.info('redis client created')
-    cachedClient.on('connect', () => {
-      logger.info('redis cache connected')
-    })
-    cachedClient.on('error', async err => {
-      logger.error(`redis cache error ${err}`)
-    })
-    try {
-      const size = await cachedClient.dbsizeAsync()
-      logger.info(`redis cache has ${size} keys`)
-    } catch (err) {
-      logger.error('redis failed to get dbsize', err)
-    }
-  }
-  return cachedClient
+  return client
 }
 
 async function info() {
-  const results = await (await getClient()).infoAsync()
+  const results = await client.info()
   const lines = results.split('\r\n')
   const data: { [propName: string]: string | number } = {}
   lines.map(line => {
@@ -123,14 +78,14 @@ async function info() {
 async function updateVehicleList(device_id: UUID, timestamp?: Timestamp) {
   const when = timestamp || now()
   // logger.info('redis zadd', device_id, when)
-  return (await getClient()).zaddAsync(decorateKey('device-ids'), when, device_id)
+  return client.zadd(decorateKey('device-ids'), when, device_id)
 }
 async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
   if (!device_id) {
     throw new Error(`hread: tried to read ${suffix} for device_id ${device_id}`)
   }
   const key = decorateKey(`device:${device_id}:${suffix}`)
-  const flat = await (await getClient()).hgetallAsync(key)
+  const flat = await client.hgetall(key)
   if (flat) {
     return unflatten({ ...flat, device_id })
   }
@@ -139,7 +94,6 @@ async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
 
 /* Store latest known lat/lng for a given device in a redis geo-spatial analysis compatible manner. */
 async function addGeospatialHash(device_id: UUID, coordinates: [number, number]) {
-  const client = await getClient()
   const [lat, lng] = coordinates
   const res = await client.geoadd(decorateKey('locations'), lng, lat, device_id)
   return res
@@ -147,14 +101,13 @@ async function addGeospatialHash(device_id: UUID, coordinates: [number, number])
 
 async function getEventsInBBox(bbox: BoundingBox) {
   const start = now()
-  const client = await getClient()
   const [pt1, pt2] = bbox
   const points = bbox.map(pt => {
     return { lat: pt[0], lng: pt[1] }
   })
   const [lng, lat] = [(pt1[0] + pt2[0]) / 2, (pt1[1] + pt2[1]) / 2]
   const radius = routeDistance(points)
-  const events = client.georadiusAsync(decorateKey('locations'), lng, lat, radius, 'm')
+  const events = client.georadius(decorateKey('locations'), lng, lat, radius, 'm')
   const finish = now()
   const timeElapsed = finish - start
   logger.info(`mds-agency-cache getEventsInBBox ${JSON.stringify(bbox)} time elapsed: ${timeElapsed}ms`)
@@ -173,17 +126,17 @@ async function hreads(
     throw new Error('hreads: no ids')
   }
   // bleah
-  const multi = (await getClient()).multi()
+  const multi = client.multi()
 
   await Promise.all(
     suffixes.map(suffix =>
       ids.map(id => {
-        return multi.hgetallAsync(decorateKey(`${prefix}:${id}:${suffix}`))
+        return multi.hgetall(decorateKey(`${prefix}:${id}:${suffix}`))
       })
     )
   )
 
-  const replies = await multi.execAsync()
+  const replies = await multi.exec()
   return replies.map((flat, index) => {
     if (flat) {
       const flattened = { ...flat, [`${prefix}_id`]: ids[index % ids.length] }
@@ -209,14 +162,12 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
   if (nulls.length > 0) {
     // redis doesn't store null keys, so we have to delete them
     // TODO unit-test
-    await (await getClient()).hdelAsync(key, ...nulls)
+    await client.hdel(key, ...nulls)
   }
-
-  const client = await getClient()
 
   await Promise.all(
     (suffix === 'event' ? [decorateKey(`provider:${item.provider_id}:latest_event`), key] : [key]).map(k =>
-      client.hmsetAsync(k, hmap)
+      client.hmset(k, hmap)
     )
   )
 
@@ -232,7 +183,7 @@ async function writeDevice(device: Device) {
 }
 
 async function readKeys(pattern: string) {
-  return (await getClient()).keysAsync(decorateKey(pattern))
+  return client.keys(decorateKey(pattern))
 }
 
 async function getMostRecentEventByProvider(): Promise<{ provider_id: string; max: number }[]> {
@@ -255,7 +206,7 @@ async function wipeDevice(device_id: UUID) {
   ]
   if (keys.length > 0) {
     logger.info('del', ...keys)
-    return (await getClient()).delAsync(...keys)
+    return client.del(...keys)
   }
   logger.info('no keys found for', device_id)
   return 0
@@ -309,7 +260,7 @@ async function readEvents(device_ids: UUID[]): Promise<VehicleEvent[]> {
     .map(e => {
       return parseEvent(e as StringifiedEventWithTelemetry)
     })
-    .filter(e => !!e)
+    .filter(e => Boolean(e))
 }
 
 async function readAllEvents(): Promise<Array<VehicleEvent | null>> {
@@ -401,9 +352,7 @@ async function readDevicesStatus(query: {
   const { bbox } = query
   const deviceIdsInBbox = await getEventsInBBox(bbox)
   const deviceIdsRes =
-    deviceIdsInBbox.length === 0
-      ? await client.zrangebyscoreAsync(decorateKey('device-ids'), start, stop)
-      : deviceIdsInBbox
+    deviceIdsInBbox.length === 0 ? await client.zrangebyscore(decorateKey('device-ids'), start, stop) : deviceIdsInBbox
   const skip = query.skip || 0
   const take = query.take || 100000000000
   const deviceIds = deviceIdsRes.slice(skip, skip + take)
@@ -537,7 +486,7 @@ async function seed(dataParam: { devices: Device[]; events: VehicleEvent[]; tele
 
 async function reset() {
   logger.info('cache reset')
-  await (await getClient()).flushdbAsync()
+  await client.flushdb()
   return logger.info('redis flushed')
 }
 
@@ -550,11 +499,8 @@ async function startup() {
   await getClient()
 }
 
-function shutdown() {
-  if (cachedClient) {
-    cachedClient.quit()
-    cachedClient = null
-  }
+async function shutdown() {
+  await client.shutdown()
 }
 
 async function health() {
@@ -585,7 +531,7 @@ async function cleanup() {
       })
       // let's just purge a few as an experiment
       badKeys = badKeys.slice(0, 10000)
-      const result = await (await getClient()).delAsync(...badKeys)
+      const result = await client.del(...badKeys)
       // return a wee report
       report.deleted = result
       return report

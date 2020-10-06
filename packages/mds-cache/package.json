@@ -1,5 +1,5 @@
 {
-  "name": "@mds-core/mds-redis",
+  "name": "@mds-core/mds-cache",
   "version": "0.0.1",
   "description": "Cache Interface",
   "main": "dist/index.js",
