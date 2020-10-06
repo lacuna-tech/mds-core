@@ -51,6 +51,12 @@ describe('Redis Tests', () => {
       expect(res).toEqual(1)
     })
 
+    it('hmset()', async () => {
+      await redis.hmset('foo', { bar: 'baz' })
+      const res = await redis.hgetall('foo')
+      expect(res).toEqual({ bar: 'baz' })
+    })
+
     it('hdel() single field', async () => {
       await redis.hset('foo', 'bar', 'baz')
       const res = await redis.hdel('foo', 'bar')
