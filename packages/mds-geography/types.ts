@@ -43,7 +43,7 @@ export type GeographyApiResponse<B = {}> = ApiVersionedResponse<GEOGRAPHY_API_SU
   ApiResponseLocalsClaims<GeographyApiAccessTokenScopes>
 
 export type GeographyApiGetGeographyResponseBody = {
-  data: { geographies: Geography[] | GeographySummary[] } | { geography: Geography | GeographySummary }
+  data: { geography: Geography }
 }
 
 export type GeographyApiGetGeographyResponse = GeographyApiResponse<GeographyApiGetGeographyResponseBody>
@@ -53,4 +53,3 @@ export type GeographyApiGetGeographiesResponseBody = {
 }
 
 export type GeographyApiGetGeographiesResponse = GeographyApiResponse<GeographyApiGetGeographiesResponseBody>
-
