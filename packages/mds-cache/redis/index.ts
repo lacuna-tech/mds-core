@@ -9,6 +9,20 @@ import { OrderedFields } from '../@types'
 export const RedisCache = () => {
   let client: Nullable<Redis.Redis> = null
 
+  /**
+   * If the client is defined, the closure is called, otherwise throws an error
+   * @param closure called with a Redis client, returns the result
+   * @returns same as what the closure returns
+   * @throws ClientDisconnectedError
+   */
+
+  const safelyExec = async <T>(closure: (theClient: Redis.Redis) => T) => {
+    if (isDefined(client)) {
+      return closure(client)
+    }
+    throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+  }
+
   return {
     initialize: async () => {
       client = await initClient()
@@ -20,160 +34,135 @@ export const RedisCache = () => {
       client = null
     },
     multi: async () => {
-      if (isDefined(client)) {
-        return client.multi()
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.multi()
+      })
     },
     get: async (key: KeyType) => {
-      if (isDefined(client)) {
-        return client.get(key)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.get(key)
+      })
     },
     set: async (key: KeyType, val: ValueType) => {
-      if (isDefined(client)) {
-        return client.set(key, val)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.set(key, val)
+      })
     },
     expireAt: async (key: KeyType, time: Timestamp) => {
-      if (isDefined(client)) {
-        return client.expireat(key, time)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.expireat(key, time)
+      })
     },
     dbsize: async () => {
-      if (isDefined(client)) {
-        return client.dbsize()
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.dbsize()
+      })
     },
     del: async (...keys: KeyType[]) => {
-      if (isDefined(client)) {
-        return client.del(keys)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.del(keys)
+      })
     },
     flushdb: async () => {
-      if (isDefined(client)) {
-        return client.flushdb()
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.flushdb()
+      })
     },
     sadd: async (key: KeyType, val: ValueType) => {
-      if (isDefined(client)) {
-        return client.sadd(key, val)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.sadd(key, val)
+      })
     },
     srem: async (key: KeyType, val: ValueType) => {
-      if (isDefined(client)) {
-        return client.srem(key, val)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.srem(key, val)
+      })
     },
     smembers: async (key: KeyType) => {
-      if (isDefined(client)) {
-        return client.smembers(key)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.smembers(key)
+      })
     },
     lpush: async (key: KeyType, val: ValueType) => {
-      if (isDefined(client)) {
-        return client.lpush(key, val)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.lpush(key, val)
+      })
     },
     rpush: async (key: KeyType, val: ValueType) => {
-      if (isDefined(client)) {
-        return client.rpush(key, val)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.rpush(key, val)
+      })
     },
     lrange: async (key: KeyType, min: number, max: number) => {
-      if (isDefined(client)) {
-        return client.lrange(key, min, max)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.lrange(key, min, max)
+      })
     },
     hset: async (key: KeyType, field: string, val: ValueType) => {
-      if (isDefined(client)) {
-        return client.hset(key, field, val)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.hset(key, field, val)
+      })
     },
     hmset: async (key: KeyType, data: { [key: string]: ValueType }) => {
-      if (isDefined(client)) {
-        return client.hmset(key, data)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.hmset(key, data)
+      })
     },
     hdel: async (key: KeyType, ...fields: KeyType[]) => {
-      if (isDefined(client)) {
-        return client.hdel(key, fields)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.hdel(key, fields)
+      })
     },
     hgetall: async (key: KeyType) => {
-      if (isDefined(client)) {
-        return client.hgetall(key)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.hgetall(key)
+      })
     },
     info: async () => {
-      if (isDefined(client)) {
-        return client.info()
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.info()
+      })
     },
     keys: async (pattern: string) => {
-      if (isDefined(client)) {
-        return client.keys(pattern)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.keys(pattern)
+      })
     },
     zadd: async (key: KeyType, fields: OrderedFields | (string | number)[]) => {
-      if (isDefined(client)) {
+      return safelyExec(theClient => {
         const entries: (string | number)[] = !Array.isArray(fields)
           ? Object.entries(fields).reduce((acc: (number | string)[], [field, value]) => {
               return [...acc, value, field]
             }, [])
           : fields
-        return client.zadd(key, ...entries)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+        return theClient.zadd(key, ...entries)
+      })
     },
     zrem: async (key: KeyType, val: ValueType) => {
-      if (isDefined(client)) {
-        return client.zrem(key, val)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.zrem(key, val)
+      })
     },
     zrangebyscore: async (key: KeyType, min: string | number, max: string | number) => {
-      if (isDefined(client)) {
-        return client.zrangebyscore(key, min, max)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.zrangebyscore(key, min, max)
+      })
     },
     geoadd: async (key: KeyType, longitude: number, latitude: number) => {
-      if (isDefined(client)) {
-        return client.geoadd(key, longitude, latitude)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.geoadd(key, longitude, latitude)
+      })
     },
     georadius: async (key: KeyType, longitude: number, latitude: number, radius: number, unit: string) => {
-      if (isDefined(client)) {
-        return client.georadius(key, longitude, latitude, radius, unit)
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.georadius(key, longitude, latitude, radius, unit)
+      })
     },
     /* TODO: Improve multi call response structure */
     multihgetall: async (key: KeyType) => {
-      if (isDefined(client)) {
-        return client.multi().hgetall(key).exec()
-      }
-      throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      return safelyExec(theClient => {
+        return theClient.multi().hgetall(key).exec()
+      })
     }
   }
 }
