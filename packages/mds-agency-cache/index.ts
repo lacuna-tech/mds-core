@@ -106,9 +106,9 @@ async function getEventsInBBox(bbox: BoundingBox) {
     return { lat: pt[0], lng: pt[1] }
   })
   const [lng, lat] = [(pt1[0] + pt2[0]) / 2, (pt1[1] + pt2[1]) / 2]
-  const radius = routeDistance(points)
-  const events = client.georadius(decorateKey('locations'), lng, lat, radius, 'm')
-  const finish = now()
+  const radius: number = routeDistance(points)
+  const events: string[] = await client.georadius(decorateKey('locations'), lng, lat, radius, 'm')
+  const finish: Timestamp = now()
   const timeElapsed = finish - start
   logger.info(`mds-agency-cache getEventsInBBox ${JSON.stringify(bbox)} time elapsed: ${timeElapsed}ms`)
   return events
