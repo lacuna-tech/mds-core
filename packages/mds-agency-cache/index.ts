@@ -125,16 +125,17 @@ async function hreads(
   }
   const multi = await client.multi()
 
-  await Promise.all(
-    suffixes.map(suffix =>
-      ids.map(id => {
-        return multi.hgetall(decorateKey(`${prefix}:${id}:${suffix}`))
-      })
-    )
+  suffixes.map(suffix =>
+    ids.map(id => {
+      return multi.hgetall(decorateKey(`${prefix}:${id}:${suffix}`))
+    })
   )
 
-  const [, ...replies] = (await multi.exec())[0]
-  return replies.map((flat, index) => unflatten({ ...flat, [`${prefix}_id`]: ids[index % ids.length] }))
+  const replies = (await multi.exec()).map(([_, result]) => result)
+
+  return replies.map((flat, index) =>
+    Object.keys(flat).length > 0 ? unflatten({ ...flat, [`${prefix}_id`]: ids[index % ids.length] }) : unflatten(null)
+  )
 }
 
 // anything with a device_id, e.g. device, telemetry, etc.
