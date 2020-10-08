@@ -105,22 +105,25 @@ export const RedisCache = () => {
       key: KeyType,
       ...data: [{ [key: string]: ValueType }] | [KeyType, ValueType][] | [KeyType, ValueType]
     ) => {
+      /* We need to do tons of type coercion in here due to poor typing in DefinitelyTyped... I am so sorry. */
       const isTupleArr = (d: unknown[]): d is [KeyType, ValueType][] => Array.isArray(d[0])
 
       const isSingleTuple = (d: unknown[]): d is [KeyType, ValueType] => typeof d[0] === 'string'
 
       return safelyExec(theClient => {
         if (isTupleArr(data)) {
-          return theClient.hset(key, ...data.flat())
+          const args = [key, ...data.flat()] as [key: KeyType, field: string, value: ValueType]
+          return theClient.hset(...args)
         }
 
         if (isSingleTuple(data)) {
-          return theClient.hset(key, ...data)
+          const args = [key, ...data] as [key: KeyType, field: string, value: ValueType]
+          return theClient.hset(...args)
         }
 
         const [first] = data
-        // We know that data is a [{ [key: string]: ValueType }]
-        return theClient.hset(key, first)
+        const args = ([key, first] as unknown) as [key: KeyType, field: string, value: ValueType]
+        return theClient.hset(...args)
       })
     },
     hmset: async (key: KeyType, data: { [key: string]: ValueType }) => {
