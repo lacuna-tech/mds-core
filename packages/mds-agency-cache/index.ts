@@ -50,10 +50,6 @@ function decorateKey(key: string): string {
   return env.TENANT_ID ? `${env.TENANT_ID}:${key}` : key
 }
 
-async function getClient() {
-  return client
-}
-
 async function info() {
   const results = await client.info()
   const lines = results.split('\r\n')
@@ -491,7 +487,7 @@ async function initialize() {
 }
 
 async function startup() {
-  await getClient()
+  await client.initialize()
 }
 
 async function shutdown() {

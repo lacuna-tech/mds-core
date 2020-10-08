@@ -38,6 +38,9 @@ import { ApiServer } from '@mds-core/mds-api-server'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, MOCHA_PROVIDER_ID, JUMP_PROVIDER_ID } from '@mds-core/mds-providers'
 import { api } from '../api'
 
+// eslint-disable-next-line
+var wtf = require('wtfnode');
+
 const request = supertest(ApiServer(api))
 const agency_request = supertest(ApiServer(agency))
 
@@ -250,6 +253,9 @@ const TIME_POLICY_JSON: Policy = {
 
 const APP_JSON = 'application/vnd.mds.compliance+json; charset=utf-8; version=0.1'
 describe('Tests Compliance API:', () => {
+  beforeEach(async () => {
+    await Promise.all([db.startup(), cache.startup()])
+  })
   afterEach(async () => {
     await Promise.all([db.shutdown(), cache.shutdown(), stream.shutdown()])
   })
