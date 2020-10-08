@@ -1,4 +1,4 @@
-import Redis, { KeyType, OverloadedKeyedHashCommand, ValueType } from 'ioredis'
+import Redis, { KeyType, ValueType } from 'ioredis'
 import { Nullable, Timestamp } from '@mds-core/mds-types'
 import { isDefined, ClientDisconnectedError, ExceptionMessages } from '@mds-core/mds-utils'
 import { initClient } from './helpers/client'
