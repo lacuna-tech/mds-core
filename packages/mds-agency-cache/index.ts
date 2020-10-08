@@ -16,7 +16,7 @@
 
 import logger from '@mds-core/mds-logger'
 
-import flatten from 'flat'
+import flatten, { unflatten } from 'flat'
 import { NotFoundError, nullKeys, stripNulls, now, isInsideBoundingBox, routeDistance } from '@mds-core/mds-utils'
 import {
   UUID,
@@ -85,7 +85,7 @@ async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
   const key = decorateKey(`device:${device_id}:${suffix}`)
   const flat = await client.hgetall(key)
   if (Object.keys(flat).length !== 0) {
-    return { ...flat, device_id } as CachedItem
+    return unflatten({ ...flat, device_id })
   }
   throw new NotFoundError(`${suffix} for ${device_id} not found`)
 }
@@ -134,7 +134,7 @@ async function hreads(
   )
 
   const [, ...replies] = (await multi.exec())[0]
-  return replies.map((flat, index) => ({ ...flat, [`${prefix}_id`]: ids[index % ids.length] }))
+  return replies.map((flat, index) => unflatten({ ...flat, [`${prefix}_id`]: ids[index % ids.length] }))
 }
 
 // anything with a device_id, e.g. device, telemetry, etc.

@@ -40,7 +40,6 @@ function parseEvent(
   }
 ): VehicleEvent {
   if (event) {
-    const { telemetry } = event.telemetry_timestamp ? unflatten(event) : { telemetry: null }
     return {
       device_id: event.device_id,
       provider_id: event.provider_id,
@@ -49,7 +48,7 @@ function parseEvent(
       delta: event.delta ? Number(event.delta) : null,
       event_type: event.event_type as VEHICLE_EVENT,
       telemetry_timestamp: event.telemetry_timestamp ? Number(event.telemetry_timestamp) : null,
-      telemetry: telemetry ? parseTelemetry(telemetry) : null,
+      telemetry: event.telemetry ? parseTelemetry(event.telemetry) : null,
       trip_id: event.trip_id ? event.trip_id : null,
       service_area_id: event.service_area_id ? event.service_area_id : null,
       recorded: Number(event.recorded)
