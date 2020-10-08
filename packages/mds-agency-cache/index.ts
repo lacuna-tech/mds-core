@@ -43,8 +43,6 @@ import {
 
 const { env } = process
 
-const { unflatten } = flatten
-
 const client = RedisCache()
 
 // optionally prefix a 'tenantId' key given the redis is a shared service across deployments
@@ -86,8 +84,8 @@ async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
   }
   const key = decorateKey(`device:${device_id}:${suffix}`)
   const flat = await client.hgetall(key)
-  if (flat) {
-    return unflatten({ ...flat, device_id })
+  if (Object.keys(flat).length !== 0) {
+    return { ...flat, device_id } as CachedItem
   }
   throw new NotFoundError(`${suffix} for ${device_id} not found`)
 }
@@ -95,7 +93,7 @@ async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
 /* Store latest known lat/lng for a given device in a redis geo-spatial analysis compatible manner. */
 async function addGeospatialHash(device_id: UUID, coordinates: [number, number]) {
   const [lat, lng] = coordinates
-  const res = await client.geoadd(device_id, lng, lat)
+  const res = await client.geoadd(decorateKey('locations'), lng, lat, device_id)
   return res
 }
 
@@ -125,8 +123,7 @@ async function hreads(
   if (ids === undefined) {
     throw new Error('hreads: no ids')
   }
-  // bleah
-  const multi = client.multi()
+  const multi = await client.multi()
 
   await Promise.all(
     suffixes.map(suffix =>
@@ -136,14 +133,8 @@ async function hreads(
     )
   )
 
-  const replies = await multi.exec()
-  return replies.map((flat, index) => {
-    if (flat) {
-      const flattened = { ...flat, [`${prefix}_id`]: ids[index % ids.length] }
-      return unflatten(flattened)
-    }
-    return unflatten(null)
-  })
+  const [, ...replies] = (await multi.exec())[0]
+  return replies.map((flat, index) => ({ ...flat, [`${prefix}_id`]: ids[index % ids.length] }))
 }
 
 // anything with a device_id, e.g. device, telemetry, etc.
@@ -165,11 +156,13 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
     await client.hdel(key, ...nulls)
   }
 
-  await Promise.all(
-    (suffix === 'event' ? [decorateKey(`provider:${item.provider_id}:latest_event`), key] : [key]).map(k =>
-      client.hmset(k, hmap)
-    )
+  const results = await Promise.all(
+    Object.entries(hmap).map(([field, value]) => {
+      return client.hset(key, field, value as any)
+    })
   )
+
+  console.log('results', results)
 
   return updateVehicleList(device_id)
 }
@@ -489,7 +482,7 @@ async function reset() {
 }
 
 async function initialize() {
-  await getClient()
+  await client.initialize()
   await reset()
 }
 
