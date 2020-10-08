@@ -11,6 +11,9 @@ export const RedisCache = () => {
 
   return {
     initialize: async () => {
+      if (client) {
+        await client.disconnect()
+      }
       client = await initClient()
     },
     shutdown: async () => {
