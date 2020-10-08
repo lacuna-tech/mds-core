@@ -60,6 +60,7 @@ useLatestImage: true
 domain: "*"
 tls:
   enabled: false
+  elbTermination: false
   domain:
 jwt:
   issuer:

@@ -58,6 +58,11 @@ spec:
       mode: SIMPLE
       serverCertificate: /etc/istio/ingressgateway-certs/tls.crt
       privateKey: /etc/istio/ingressgateway-certs/tls.key
+  {{- else if .Values.tls.elbTermination }}
+  - port:
+      number: 443
+      name: http443
+      protocol: HTTP
   {{- else }}
   - port:
       number: 80
