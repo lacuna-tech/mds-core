@@ -20,7 +20,9 @@
     "@mds-core/mds-types": "0.1.23",
     "@mds-core/mds-utils": "0.1.26",
     "@types/flat": "5.0.1",
-    "flat": "5.0.2"
+    "@types/ioredis": "4.17.4",
+    "flat": "5.0.2",
+    "ioredis": "4.17.3"
   },
   "scripts": {
     "build": "tsc --build tsconfig.build.json",

@@ -100,9 +100,9 @@ async function getEventsInBBox(bbox: BoundingBox) {
     return { lat: pt[0], lng: pt[1] }
   })
   const [lng, lat] = [(pt1[0] + pt2[0]) / 2, (pt1[1] + pt2[1]) / 2]
-  const radius = routeDistance(points)
-  const events = client.georadius(decorateKey('locations'), lng, lat, radius, 'm')
-  const finish = now()
+  const radius: number = routeDistance(points)
+  const events: string[] = await client.georadius(decorateKey('locations'), lng, lat, radius, 'm')
+  const finish: Timestamp = now()
   const timeElapsed = finish - start
   logger.info(`mds-agency-cache getEventsInBBox ${JSON.stringify(bbox)} time elapsed: ${timeElapsed}ms`)
   return events
@@ -119,13 +119,13 @@ async function hreads(
   if (ids === undefined) {
     throw new Error('hreads: no ids')
   }
-  const multi = await client.multi()
 
-  suffixes.map(suffix =>
-    ids.map(id => {
-      return multi.hgetall(decorateKey(`${prefix}:${id}:${suffix}`))
-    })
-  )
+  const multi = suffixes
+    .map(suffix => ids.map(id => decorateKey(`${prefix}:${id}:${suffix}`)))
+    .flat()
+    .reduce((pipeline, key) => {
+      return pipeline.hgetall(key)
+    }, await client.multi())
 
   const replies = (await multi.exec()).map(([_, result]) => result)
 
@@ -144,7 +144,8 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
   const key = decorateKey(`device:${device_id}:${suffix}`)
   const flat: { [key: string]: unknown } = flatten(item)
   const nulls = nullKeys(flat)
-  const hmap = stripNulls(flat) as { [key: string]: unknown; device_id?: UUID }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const hmap = stripNulls(flat) as { [key: string]: any; device_id?: UUID }
   delete hmap.device_id
 
   if (nulls.length > 0) {
@@ -316,6 +317,7 @@ async function readDeviceStatus(device_id: UUID) {
         Object.assign(deviceStatusMap[item.device_id], item)
       })
     const statuses = Object.values(deviceStatusMap)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return statuses.find((status: any) => status.telemetry) || statuses[0] || null
   } catch (err) {
     logger.error('Error reading device status', err)
@@ -393,6 +395,7 @@ async function readDevicesStatus(query: {
     Object.assign(deviceStatusMap[item.device_id], item)
   })
   const values = Object.values(deviceStatusMap)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const valuesWithTelemetry = values.filter((item: any) => item.telemetry)
   const devicesFinish = now()
   const devicesTimeElapsed = devicesFinish - devicesStart
