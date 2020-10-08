@@ -230,8 +230,8 @@ describe('Redis Tests', () => {
       )
     })
 
-    it('expireAt()', async () => {
-      await expect(redis.expireAt('foo', now() + hours(1))).rejects.toEqual(
+    it('expireat()', async () => {
+      await expect(redis.expireat('foo', now() + hours(1))).rejects.toEqual(
         new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
       )
     })

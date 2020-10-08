@@ -11,14 +11,14 @@ export const RedisCache = () => {
 
   /**
    * If the client is defined, the closure is called, otherwise throws an error
-   * @param closure called with a Redis client, returns the result
-   * @returns same as what the closure returns
+   * @param exec called with a Redis client, returns the result
+   * @returns same as what the exec returns
    * @throws ClientDisconnectedError
    */
 
-  const safelyExec = async <T>(closure: (theClient: Redis.Redis) => T) => {
+  const safelyExec = async <T>(exec: (theClient: Redis.Redis) => T) => {
     if (isDefined(client)) {
-      return closure(client)
+      return exec(client)
     }
     throw new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
   }
@@ -48,7 +48,7 @@ export const RedisCache = () => {
         return theClient.set(key, val)
       })
     },
-    expireAt: async (key: KeyType, time: Timestamp) => {
+    expireat: async (key: KeyType, time: Timestamp) => {
       return safelyExec(theClient => {
         return theClient.expireat(key, time)
       })
