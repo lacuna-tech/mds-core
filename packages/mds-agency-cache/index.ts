@@ -155,15 +155,7 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
   }
 
   const keys = suffix === 'event' ? [decorateKey(`provider:${item.provider_id}:latest_event`), key] : [key]
-  await Promise.all(
-    keys
-      .map(k =>
-        Object.entries(hmap).map(([field, value]) => {
-          return client.hset(k, field, value as any)
-        })
-      )
-      .flat()
-  )
+  await Promise.all(keys.map(k => client.hset(k, hmap)))
 
   return updateVehicleList(device_id)
 }
