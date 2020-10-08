@@ -2,7 +2,6 @@ import { VEHICLE_TYPE, VEHICLE_EVENT, VEHICLE_STATUS, Device, Telemetry, Vehicle
 
 import { ParseError } from '@mds-core/mds-utils'
 import { HasPropertyAssertion } from '@mds-core/mds-schema-validators'
-import { unflatten } from 'flat'
 import {
   StringifiedEvent,
   StringifiedEventWithTelemetry,
