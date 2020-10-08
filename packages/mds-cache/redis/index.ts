@@ -1,4 +1,4 @@
-import Redis, { KeyType, ValueType } from 'ioredis'
+import Redis, { KeyType, OverloadedKeyedHashCommand, ValueType } from 'ioredis'
 import { Nullable, Timestamp } from '@mds-core/mds-types'
 import { isDefined, ClientDisconnectedError, ExceptionMessages } from '@mds-core/mds-utils'
 import { initClient } from './helpers/client'
@@ -101,9 +101,26 @@ export const RedisCache = () => {
         return theClient.lrange(key, min, max)
       })
     },
-    hset: async (key: KeyType, field: string, val: ValueType) => {
+    hset: async (
+      key: KeyType,
+      ...data: [{ [key: string]: ValueType }] | [KeyType, ValueType][] | [KeyType, ValueType]
+    ) => {
+      const isTupleArr = (d: unknown[]): d is [KeyType, ValueType][] => Array.isArray(d[0])
+
+      const isSingleTuple = (d: unknown[]): d is [KeyType, ValueType] => typeof d[0] === 'string'
+
       return safelyExec(theClient => {
-        return theClient.hset(key, field, val)
+        if (isTupleArr(data)) {
+          return theClient.hset(key, ...data.flat())
+        }
+
+        if (isSingleTuple(data)) {
+          return theClient.hset(key, ...data)
+        }
+
+        const [first] = data
+        // We know that data is a [{ [key: string]: ValueType }]
+        return theClient.hset(key, first)
       })
     },
     hmset: async (key: KeyType, data: { [key: string]: ValueType }) => {
