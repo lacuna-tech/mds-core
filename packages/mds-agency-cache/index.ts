@@ -52,7 +52,7 @@ function decorateKey(key: string): string {
   return env.TENANT_ID ? `${env.TENANT_ID}:${key}` : key
 }
 
-async function getClient() {
+function getClient() {
   return client
 }
 
@@ -489,12 +489,12 @@ async function reset() {
 }
 
 async function initialize() {
-  await getClient()
+  await getClient().initialize()
   await reset()
 }
 
 async function startup() {
-  await getClient()
+  await getClient().initialize()
 }
 
 async function shutdown() {
