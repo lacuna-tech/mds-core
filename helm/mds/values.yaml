@@ -58,6 +58,7 @@ timezone: America/Los_Angeles
 registry:
 useLatestImage: true
 domain: "*"
+ingressgateway: ingressgateway
 tls:
   enabled: false
   elbTermination: false

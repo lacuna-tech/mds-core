@@ -53,7 +53,7 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   selector:
-    istio: ingressgateway # use Istio default gateway implementation
+    istio: {{ .Values.ingressgateway }}
   servers:
   {{- if .Values.tls.enabled }}
   - port:
