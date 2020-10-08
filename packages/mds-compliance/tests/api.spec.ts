@@ -38,9 +38,6 @@ import { ApiServer } from '@mds-core/mds-api-server'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID, MOCHA_PROVIDER_ID, JUMP_PROVIDER_ID } from '@mds-core/mds-providers'
 import { api } from '../api'
 
-// eslint-disable-next-line
-var wtf = require('wtfnode');
-
 const request = supertest(ApiServer(api))
 const agency_request = supertest(ApiServer(agency))
 
