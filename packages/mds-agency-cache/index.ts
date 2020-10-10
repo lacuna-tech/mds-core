@@ -16,7 +16,7 @@
 
 import logger from '@mds-core/mds-logger'
 
-import flatten from 'flat'
+import flatten, { unflatten } from 'flat'
 import { NotFoundError, nullKeys, stripNulls, now, isInsideBoundingBox, routeDistance } from '@mds-core/mds-utils'
 import {
   UUID,
@@ -43,17 +43,11 @@ import {
 
 const { env } = process
 
-const { unflatten } = flatten
-
 const client = RedisCache()
 
 // optionally prefix a 'tenantId' key given the redis is a shared service across deployments
 function decorateKey(key: string): string {
   return env.TENANT_ID ? `${env.TENANT_ID}:${key}` : key
-}
-
-function getClient() {
-  return client
 }
 
 async function info() {
@@ -86,7 +80,7 @@ async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
   }
   const key = decorateKey(`device:${device_id}:${suffix}`)
   const flat = await client.hgetall(key)
-  if (flat) {
+  if (Object.keys(flat).length !== 0) {
     return unflatten({ ...flat, device_id })
   }
   throw new NotFoundError(`${suffix} for ${device_id} not found`)
@@ -95,7 +89,7 @@ async function hread(suffix: string, device_id: UUID): Promise<CachedItem> {
 /* Store latest known lat/lng for a given device in a redis geo-spatial analysis compatible manner. */
 async function addGeospatialHash(device_id: UUID, coordinates: [number, number]) {
   const [lat, lng] = coordinates
-  const res = await client.geoadd(device_id, lng, lat)
+  const res = await client.geoadd(decorateKey('locations'), lng, lat, device_id)
   return res
 }
 
@@ -133,14 +127,11 @@ async function hreads(
       return pipeline.hgetall(key)
     }, await client.multi())
 
-  const replies = await multi.exec()
-  return replies.map((flat, index) => {
-    if (flat) {
-      const flattened = { ...flat, [`${prefix}_id`]: ids[index % ids.length] }
-      return unflatten(flattened)
-    }
-    return unflatten(null)
-  })
+  const replies = (await multi.exec()).map(([_, result]) => result)
+
+  return replies.map((flat, index) =>
+    Object.keys(flat).length > 0 ? unflatten({ ...flat, [`${prefix}_id`]: ids[index % ids.length] }) : unflatten(null)
+  )
 }
 
 // anything with a device_id, e.g. device, telemetry, etc.
@@ -163,11 +154,8 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
     await client.hdel(key, ...nulls)
   }
 
-  await Promise.all(
-    (suffix === 'event' ? [decorateKey(`provider:${item.provider_id}:latest_event`), key] : [key]).map(k =>
-      client.hmset(k, hmap)
-    )
-  )
+  const keys = suffix === 'event' ? [decorateKey(`provider:${item.provider_id}:latest_event`), key] : [key]
+  await Promise.all(keys.map(k => client.hset(k, hmap)))
 
   return updateVehicleList(device_id)
 }
@@ -489,12 +477,12 @@ async function reset() {
 }
 
 async function initialize() {
-  await getClient().initialize()
+  await client.initialize()
   await reset()
 }
 
 async function startup() {
-  await getClient().initialize()
+  await client.initialize()
 }
 
 async function shutdown() {

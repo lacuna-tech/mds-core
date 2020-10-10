@@ -250,6 +250,9 @@ const TIME_POLICY_JSON: Policy = {
 
 const APP_JSON = 'application/vnd.mds.compliance+json; charset=utf-8; version=0.1'
 describe('Tests Compliance API:', () => {
+  beforeEach(async () => {
+    await Promise.all([db.startup(), cache.startup()])
+  })
   afterEach(async () => {
     await Promise.all([db.shutdown(), cache.shutdown(), stream.shutdown()])
   })

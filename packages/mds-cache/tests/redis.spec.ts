@@ -46,19 +46,28 @@ describe('Redis Tests', () => {
       expect(res).toEqual(2)
     })
 
-    it('hset()', async () => {
-      const res = await redis.hset('foo', 'bar', 'baz')
-      expect(res).toEqual(1)
-    })
+    describe('hset()', () => {
+      it('with chained primitive keys and vals', async () => {
+        await redis.hset('foo', 'bar', 'baz')
+        const res = await redis.hgetall('foo')
+        expect(res).toEqual({ bar: 'baz' })
+      })
 
-    it('hmset()', async () => {
-      await redis.hmset('foo', { bar: 'baz' })
-      const res = await redis.hgetall('foo')
-      expect(res).toEqual({ bar: 'baz' })
+      it('with chained tuples', async () => {
+        await redis.hset('foo', ['bar', 'baz'], ['blip', 'blap'])
+        const res = await redis.hgetall('foo')
+        expect(res).toEqual({ bar: 'baz', blip: 'blap' })
+      })
+
+      it('with object', async () => {
+        await redis.hset('foo', { bar: 'baz' })
+        const res = await redis.hgetall('foo')
+        expect(res).toEqual({ bar: 'baz' })
+      })
     })
 
     it('hdel() single field', async () => {
-      await redis.hset('foo', 'bar', 'baz')
+      await redis.hset('foo', { bar: 'baz' })
       const res = await redis.hdel('foo', 'bar')
       expect(res).toEqual(1)
     })

@@ -292,6 +292,26 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Tests: mds-cache",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "${workspaceRoot}/node_modules/.bin/jest",
+        "--runInBand",
+        "--coverage",
+        "false"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-cache",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
+        "npm_package_name": "@mds-core/mds-cache"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Tests: mds-daily",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [

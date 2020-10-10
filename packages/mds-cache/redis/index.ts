@@ -25,6 +25,9 @@ export const RedisCache = () => {
 
   return {
     initialize: async () => {
+      if (client) {
+        await client.disconnect()
+      }
       client = await initClient()
     },
     shutdown: async () => {
@@ -98,9 +101,29 @@ export const RedisCache = () => {
         return theClient.lrange(key, min, max)
       })
     },
-    hset: async (key: KeyType, field: string, val: ValueType) => {
+    hset: async (
+      key: KeyType,
+      ...data: [{ [key: string]: ValueType }] | [KeyType, ValueType][] | [KeyType, ValueType]
+    ) => {
+      /* We need to do tons of type coercion in here due to poor typing in DefinitelyTyped... I am so sorry. */
+      const isTupleArr = (d: unknown[]): d is [KeyType, ValueType][] => Array.isArray(d[0])
+
+      const isSingleTuple = (d: unknown[]): d is [KeyType, ValueType] => typeof d[0] === 'string'
+
       return safelyExec(theClient => {
-        return theClient.hset(key, field, val)
+        if (isTupleArr(data)) {
+          const args = [key, ...data.flat()] as [key: KeyType, field: string, value: ValueType]
+          return theClient.hset(...args)
+        }
+
+        if (isSingleTuple(data)) {
+          const args = [key, ...data] as [key: KeyType, field: string, value: ValueType]
+          return theClient.hset(...args)
+        }
+
+        const [first] = data
+        const args = ([key, first] as unknown) as [key: KeyType, field: string, value: ValueType]
+        return theClient.hset(...args)
       })
     },
     hmset: async (key: KeyType, data: { [key: string]: ValueType }) => {
@@ -148,9 +171,9 @@ export const RedisCache = () => {
         return theClient.zrangebyscore(key, min, max)
       })
     },
-    geoadd: async (key: KeyType, longitude: number, latitude: number) => {
+    geoadd: async (key: KeyType, longitude: number, latitude: number, member: KeyType) => {
       return safelyExec(theClient => {
-        return theClient.geoadd(key, longitude, latitude)
+        return theClient.geoadd(key, longitude, latitude, member)
       })
     },
     georadius: async (key: KeyType, longitude: number, latitude: number, radius: number, unit: string) => {
