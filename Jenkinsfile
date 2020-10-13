@@ -8,13 +8,13 @@ void setBuildStatus(String message, String state) {
   ]);
 }
 
+def buildNumber = env.BUILD_NUMBER as int
+if (buildNumber > 1) milestone(buildNumber - 1)
+milestone(buildNumber)
+
 pipeline {
 
   agent any
-
-  def buildNumber = env.BUILD_NUMBER as int
-  if (buildNumber > 1) milestone(buildNumber - 1)
-  milestone(buildNumber)
 
   stages {
     stage('Build') {
