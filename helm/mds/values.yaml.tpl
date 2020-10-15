@@ -21,3 +21,5 @@ apis:
     version: ${GEOGRAPHY_VERSION}
   mds-geography-author:
     version: ${GEOGRAPHY_AUTHOR_VERSION}
+  mds-geography-service:
+    version: ${GEOGRAPHY_SERVICE_VERSION}
