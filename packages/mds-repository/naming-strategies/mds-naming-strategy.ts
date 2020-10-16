@@ -38,6 +38,6 @@ export class MdsNamingStrategy extends DefaultNamingStrategy implements NamingSt
     referencedTablePath?: string,
     referencedColumnNames?: string[]
   ): string {
-    return ['fk', referencedTablePath ?? tableName(tableOrName), ...columnNames].join('_')
+    return ['fk', referencedTablePath ?? tableName(tableOrName), ...(referencedColumnNames ?? columnNames)].join('_')
   }
 }
