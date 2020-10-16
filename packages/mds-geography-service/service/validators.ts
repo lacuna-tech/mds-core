@@ -1,14 +1,42 @@
 import Joi from 'joi'
 import { ValidationError } from '@mds-core/mds-utils'
-import { GeographyDomainModel } from '../@types'
+import { GeographyDomainModel, GeographyMetadataDomainModel } from '../@types'
 
-// FIXME: Add proper schema
-export const geographyDomainModelSchema = Joi.any()
+const schemaValidator = <T>(schema: Joi.AnySchema) => ({
+  validate: (value: unknown): T => {
+    const { error } = schema.validate(value)
+    if (error) {
+      throw new ValidationError(error.message, value)
+    }
+    return value as T
+  },
+  isValid: (value: unknown): value is T => !schema.validate(value).error
+})
 
-export const ValidateGeographyDomainModel = (geography: GeographyDomainModel): GeographyDomainModel => {
-  const { error } = geographyDomainModelSchema.validate(geography)
-  if (error) {
-    throw new ValidationError(error.message, geography)
-  }
-  return geography
-}
+export const { validate: validateGeographyDomainModel, isValid: isValidGeographyDomainModel } = schemaValidator<
+  GeographyDomainModel
+>(
+  Joi.object()
+    .keys({
+      geography_id: Joi.string().uuid().required(),
+      name: Joi.string().max(255).allow(null),
+      description: Joi.string().max(255).allow(null),
+      effective_date: Joi.number().integer().allow(null),
+      publish_date: Joi.number().integer().allow(null),
+      prev_geographies: Joi.array().items(Joi.string().uuid()).allow(null),
+      geography_json: Joi.object().required()
+    })
+    .unknown(false)
+)
+
+export const {
+  validate: validateGeographyMetadataDomainModel,
+  isValid: isValidGeographyMetadataDomainModel
+} = schemaValidator<GeographyMetadataDomainModel>(
+  Joi.object()
+    .keys({
+      geography_id: Joi.string().uuid().required(),
+      geography_metadata: Joi.any()
+    })
+    .unknown(false)
+)
