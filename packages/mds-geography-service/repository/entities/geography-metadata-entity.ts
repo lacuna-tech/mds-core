@@ -11,7 +11,7 @@ export interface GeographyMetadataEntityModel extends IdentityColumn {
 @Entity('geography_metadata')
 export class GeographyMetadataEntity extends IdentityColumn(class {}) implements GeographyMetadataEntityModel {
   @Column('uuid', { primary: true })
-  // Use ManyToOne since the PK already enforces OneToOne behaviour and the extra unique constraint is unnecessary
+  // Use ManyToOne since the PK already enforces OneToOne behavior and the extra unique constraint is unnecessary
   @ManyToOne(type => GeographyEntity, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'geography_id' })
   geography_id: GeographyMetadataEntityModel['geography_id']
