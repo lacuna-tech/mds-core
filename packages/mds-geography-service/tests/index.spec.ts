@@ -3,7 +3,15 @@ import { GeographyServiceManager } from '../service/manager'
 import { GeographyServiceClient } from '../client'
 import ormconfig = require('../ormconfig')
 
+const dropDatabase = async () => {
+  const connection = await createConnection(ormconfig as ConnectionOptions)
+  await connection.dropDatabase()
+  await connection.close()
+}
+
 describe('Test Migrations', () => {
+  beforeAll(dropDatabase)
+
   it('Run Migrations', async () => {
     const connection = await createConnection(ormconfig as ConnectionOptions)
     await connection.runMigrations()
@@ -15,6 +23,8 @@ describe('Test Migrations', () => {
     await connection.migrations.reduce(p => p.then(() => connection.undoLastMigration()), Promise.resolve())
     await connection.close()
   })
+
+  afterAll(dropDatabase)
 })
 
 const GeographyServer = GeographyServiceManager.controller()
