@@ -462,6 +462,26 @@
       }
     },
     {
+      "name": "Tests: mds-geography-service",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "${workspaceRoot}/node_modules/.bin/jest",
+        "--runInBand",
+        "--coverage",
+        "false"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-geography-service",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
+        "npm_package_name": "@lacuna-core/mds-geography-service"
+      }
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "Tests: mds-repository",

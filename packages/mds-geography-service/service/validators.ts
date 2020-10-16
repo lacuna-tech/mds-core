@@ -1,4 +1,5 @@
 import Joi from 'joi'
+import gjv from 'geojson-validation'
 import { ValidationError } from '@mds-core/mds-utils'
 import { GeographyDomainModel, GeographyMetadataDomainModel } from '../@types'
 
@@ -24,7 +25,17 @@ export const { validate: validateGeographyDomainModel, isValid: isValidGeography
       effective_date: Joi.number().integer().allow(null),
       publish_date: Joi.number().integer().allow(null),
       prev_geographies: Joi.array().items(Joi.string().uuid()).allow(null),
-      geography_json: Joi.object().required()
+      geography_json: Joi.custom((geography_json, helpers) => {
+        try {
+          const [error] = gjv.valid(geography_json, true)
+          if (error !== undefined) {
+            return helpers.message({ custom: `GeoJSON is invalid ${error}` })
+          }
+        } catch (error) {
+          return helpers.message({ custom: `GeoJSON could not be validated` })
+        }
+        return geography_json
+      })
     })
     .unknown(false)
 )
