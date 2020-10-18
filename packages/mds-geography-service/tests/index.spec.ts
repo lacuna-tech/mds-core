@@ -1,30 +1,15 @@
-import { createConnection, ConnectionOptions } from 'typeorm'
 import { GeographyServiceManager } from '../service/manager'
 import { GeographyServiceClient } from '../client'
-import ormconfig = require('../ormconfig')
-
-const dropDatabase = async () => {
-  const connection = await createConnection(ormconfig as ConnectionOptions)
-  await connection.dropDatabase()
-  await connection.close()
-}
+import { GeographyRepository } from '../repository'
 
 describe('Test Migrations', () => {
-  beforeAll(dropDatabase)
-
   it('Run Migrations', async () => {
-    const connection = await createConnection(ormconfig as ConnectionOptions)
-    await connection.runMigrations()
-    await connection.close()
+    await GeographyRepository.runAllMigrations()
   })
 
   it('Revert Migrations', async () => {
-    const connection = await createConnection(ormconfig as ConnectionOptions)
-    await connection.migrations.reduce(p => p.then(() => connection.undoLastMigration()), Promise.resolve())
-    await connection.close()
+    await GeographyRepository.revertAllMigrations()
   })
-
-  afterAll(dropDatabase)
 })
 
 const GeographyServer = GeographyServiceManager.controller()
