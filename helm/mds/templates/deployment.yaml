@@ -108,6 +108,8 @@ spec:
             value: http://mds-geography-service
           - name: JURISDICTION_SERVICE_RPC_HOST
             value: http://mds-jurisdiction-service
+          - name: POLICY_SERVICE_RPC_HOST
+            value: http://mds-policy-service
           - name: TENANT_ID
           {{- if hasKey $.Values "tenantId" }}
             value: {{ $.Values.tenantId }}

@@ -14,7 +14,7 @@ describe('Test Migrations', () => {
 
 const GeographyServer = GeographyServiceManager.controller()
 
-describe('Geographies Service Tests', () => {
+describe('Geography Service Tests', () => {
   beforeAll(async () => {
     await GeographyServer.start()
   })

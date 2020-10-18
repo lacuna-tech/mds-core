@@ -5,6 +5,8 @@ apis:
     version: ${AUDIT_VERSION}
   mds-policy:
     version: ${POLICY_VERSION}
+  mds-policy-service:
+    version: ${POLICY_SERVICE_VERSION}
   mds-compliance:
     version: ${COMPLIANCE_VERSION}
   mds-daily:

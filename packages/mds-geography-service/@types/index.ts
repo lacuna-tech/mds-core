@@ -15,9 +15,9 @@ export interface GeographyDomainModel {
 
 export type GeographyDomainCreateModel = DomainModelCreate<GeographyDomainModel>
 
-export interface GeographyMetadataDomainModel {
+export interface GeographyMetadataDomainModel<M extends {} = {}> {
   geography_id: UUID
-  geography_metadata: Nullable<{}>
+  geography_metadata: Nullable<M>
 }
 
 export type GeographyMetadataDomainCreateModel = DomainModelCreate<GeographyMetadataDomainModel>
