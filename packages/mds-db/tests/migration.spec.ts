@@ -2,6 +2,8 @@ import sinon from 'sinon'
 import test from 'unit.js'
 import assert from 'assert'
 
+import { GeographyRepository } from '@mds-core/mds-geography-service'
+import { PolicyRepository } from '@mds-core/mds-policy-service'
 import { createTables, dropTables } from '../migration'
 import schema from '../schema'
 import { PGInfo, configureClient } from '../sql-utils'
@@ -34,6 +36,10 @@ if (pg_info.database) {
       await client.connect()
       await dropTables(client)
       await client.end()
+    })
+
+    after(async () => {
+      await Promise.all([GeographyRepository.shutdown(), PolicyRepository.shutdown()])
     })
 
     it('can create the tables', async () => {
