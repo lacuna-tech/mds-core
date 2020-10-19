@@ -36,14 +36,6 @@ import {
   getConformanceLast24HoursHandler
 } from './request-handlers'
 
-async function initialize() {
-  try {
-    await cache.startup()
-  } catch (err) {
-    logger.error('mds-daily: failure during cache.startup', err)
-  }
-}
-
 async function agencyMiddleware(req: DailyApiRequest, res: DailyApiResponse, next: Function) {
   try {
     // verify presence of provider_id
@@ -195,4 +187,4 @@ function api(app: express.Express): express.Express {
 
 // ///////////////////// end test-only endpoints ///////////////////////
 
-export { agencyMiddleware, api, initialize }
+export { agencyMiddleware, api }
