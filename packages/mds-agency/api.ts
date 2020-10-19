@@ -11,6 +11,7 @@ import { isUUID, pathPrefix } from '@mds-core/mds-utils'
 import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import { AgencyApiRequest, AgencyApiResponse, AgencyApiAccessTokenScopes } from './types'
 import {
+  initialize,
   registerVehicle,
   getVehicleById,
   getVehiclesByProvider,
@@ -154,4 +155,4 @@ function api(app: express.Express): express.Express {
 
 // ///////////////////// end test-only endpoints ///////////////////////
 
-export { api }
+export { initialize, api }

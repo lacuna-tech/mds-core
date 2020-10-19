@@ -51,8 +51,19 @@ import {
   computeCompositeVehicleData
 } from './utils'
 
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-stream.initialize()
+export async function initialize() {
+  try {
+    await stream.initialize()
+  } catch (err) {
+    logger.error('agency: failure during stream.initialize', err)
+  }
+  try {
+    await cache.initialize()
+  } catch (err) {
+    logger.error('agency: failure during cache.initialize', err)
+  }
+}
+
 const agencyServerError = { error: 'server_error', error_description: 'Unknown server error' }
 
 export const registerVehicle = async (req: AgencyApiRegisterVehicleRequest, res: AgencyApiRegisterVehicleResponse) => {
