@@ -2,6 +2,8 @@ import assert from 'assert'
 /* eslint-reason extends object.prototype */
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
 import should from 'should'
+import test from 'unit.js'
+
 import { FeatureCollection } from 'geojson'
 import { Telemetry, Recorded, VehicleEvent, Device, VEHICLE_EVENTS, Geography } from '@mds-core/mds-types'
 import {
@@ -128,6 +130,7 @@ async function seedDB() {
 async function initializeDB() {
   const client: MDSPostgresClient = configureClient(pg_info)
   await client.connect()
+  await Promise.all([GeographyRepository.initialize(), PolicyRepository.initialize()])
   await dropTables(client)
   await createTables(client)
   await client.end()
@@ -146,6 +149,12 @@ if (pg_info.database) {
 
       afterEach(async () => {
         await shutdownDB()
+      })
+
+      // This is incredibly stupid and makes 0 sense, but if we don't import (and use) unit.js, should.js breaks...
+      it('Nonsensical test', () => {
+        // eslint-disable-next-line no-self-compare
+        test.assert(true === true)
       })
 
       it('can make successful writes', async () => {

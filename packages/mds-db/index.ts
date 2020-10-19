@@ -17,6 +17,8 @@
 import { VehicleEvent, Device, Telemetry } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
 
+import { PolicyRepository } from '@mds-core/mds-policy-service'
+import { GeographyRepository } from '@mds-core/mds-geography-service'
 import { dropTables, createTables } from './migration'
 import { MDSPostgresClient } from './sql-utils'
 import { getReadOnlyClient, getWriteableClient, makeReadOnlyQuery } from './client'
@@ -43,6 +45,7 @@ const { writeEvent } = events
 
 async function initialize() {
   const client: MDSPostgresClient = await getWriteableClient()
+  await Promise.all([GeographyRepository.initialize(), PolicyRepository.initialize()])
   await dropTables(client)
   await createTables(client)
   await getReadOnlyClient()
@@ -88,7 +91,12 @@ async function health(): Promise<{
 }
 
 async function startup() {
-  await Promise.all([getWriteableClient(), getReadOnlyClient()])
+  await Promise.all([
+    getWriteableClient(),
+    getReadOnlyClient(),
+    GeographyRepository.initialize(),
+    PolicyRepository.initialize()
+  ])
 }
 
 async function shutdown(): Promise<void> {
@@ -97,6 +105,7 @@ async function shutdown(): Promise<void> {
     await writeableClient.end()
     const readOnlyClient = await getReadOnlyClient()
     await readOnlyClient.end()
+    await Promise.all([GeographyRepository.shutdown(), PolicyRepository.shutdown()])
   } catch (err) {
     logger.error('error during disconnection', err.stack)
   }
