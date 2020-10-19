@@ -10,6 +10,7 @@ import {
   VEHICLE_TYPE,
   WithGpsProperty
 } from '@mds-core/mds-types'
+import { RpcServiceDefinition, RpcRoute } from '@mds-core/mds-rpc-common'
 
 export interface DeviceDomainModel {
   device_id: UUID
@@ -50,3 +51,11 @@ export interface EventDomainModel {
 }
 
 export type EventDomainCreateModel = DomainModelCreate<Omit<EventDomainModel, 'recorded'>>
+
+export interface IngestService {
+  name: () => string
+}
+
+export const IngestServiceDefinition: RpcServiceDefinition<IngestService> = {
+  name: RpcRoute<IngestService['name']>()
+}

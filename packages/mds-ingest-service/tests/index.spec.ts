@@ -1,14 +1,14 @@
 import { GeographyServiceManager } from '../service/manager'
-import { GeographyServiceClient } from '../client'
-import { GeographyRepository } from '../repository'
+import { IngestServiceClient } from '../client'
+import { IngestRepository } from '../repository'
 
 describe('Test Migrations', () => {
   it('Run Migrations', async () => {
-    await GeographyRepository.runAllMigrations()
+    await IngestRepository.runAllMigrations()
   })
 
   it('Revert Migrations', async () => {
-    await GeographyRepository.revertAllMigrations()
+    await IngestRepository.revertAllMigrations()
   })
 })
 
@@ -20,7 +20,7 @@ describe('Geography Service Tests', () => {
   })
 
   it('Test Name Method', async () => {
-    const name = await GeographyServiceClient.name()
+    const name = await IngestServiceClient.name()
     expect(name).toEqual('mds-geography-service')
   })
 
