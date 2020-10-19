@@ -58,9 +58,9 @@ export async function initialize() {
     logger.error('agency: failure during stream.initialize', err)
   }
   try {
-    await cache.initialize()
+    await cache.startup()
   } catch (err) {
-    logger.error('agency: failure during cache.initialize', err)
+    logger.error('agency: failure during cache.startup', err)
   }
 }
 
