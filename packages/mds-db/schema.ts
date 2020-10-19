@@ -14,12 +14,11 @@ const TABLE = Enum(
   'migrations',
   'policies',
   'policy_metadata',
-  'stops',
   'telemetry'
 )
 export type TABLE_NAME = keyof typeof TABLE
 const TABLES = Object.keys(TABLE) as TABLE_NAME[]
-const DEPRECATED_PROVIDER_TABLES = ['status_changes', 'trips']
+const DEPRECATED_TABLES = ['status_changes', 'trips', 'stops']
 
 const COLUMN = Enum(
   'accuracy',
@@ -193,29 +192,6 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
     COLUMN.altitude,
     COLUMN.charge,
     COLUMN.recorded
-  ],
-  [TABLE.stops]: [
-    COLUMN.id,
-    COLUMN.stop_id,
-    COLUMN.stop_name,
-    COLUMN.short_name,
-    COLUMN.platform_code,
-    COLUMN.geography_id,
-    COLUMN.zone_id,
-    COLUMN.address,
-    COLUMN.post_code,
-    COLUMN.rental_methods,
-    COLUMN.capacity,
-    COLUMN.location_type,
-    COLUMN.timezone,
-    COLUMN.cross_street,
-    COLUMN.num_vehicles_available,
-    COLUMN.num_vehicles_disabled,
-    COLUMN.num_spots_available,
-    COLUMN.num_spots_disabled,
-    COLUMN.wheelchair_boarding,
-    COLUMN.reservation_cost,
-    COLUMN.recorded
   ]
 }
 
@@ -231,7 +207,6 @@ const TABLE_KEY: { [T in TABLE_NAME]: COLUMN_NAME[] } = {
   [TABLE.migrations]: [COLUMN.migration],
   [TABLE.policies]: [COLUMN.policy_id],
   [TABLE.policy_metadata]: [COLUMN.policy_id],
-  [TABLE.stops]: [COLUMN.stop_id],
   [TABLE.telemetry]: [COLUMN.device_id, COLUMN.timestamp]
 }
 
@@ -315,7 +290,7 @@ export default {
   COLUMN,
   COLUMNS,
   COLUMN_TYPE,
-  DEPRECATED_PROVIDER_TABLES,
+  DEPRECATED_TABLES,
   TABLE,
   TABLES,
   TABLE_COLUMNS,

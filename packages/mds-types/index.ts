@@ -373,30 +373,6 @@ export interface Provider {
   gbfs_api_url?: string
 }
 
-export interface Stop {
-  stop_id: UUID
-  stop_name: string
-  short_name?: string
-  platform_code?: string
-  geography_id?: UUID
-  lat: number
-  lng: number
-  zone_id?: UUID
-  address?: string
-  post_code?: string
-  rental_methods?: string // TOOD: enum?
-  capacity: Partial<{ [S in VEHICLE_TYPE]: number }>
-  location_type?: string // TODO: enum?
-  timezone?: string
-  cross_street?: string
-  num_vehicles_available: Partial<{ [S in VEHICLE_TYPE]: number }>
-  num_vehicles_disabled?: Partial<{ [S in VEHICLE_TYPE]: number }>
-  num_spots_available: Partial<{ [S in VEHICLE_TYPE]: number }>
-  num_spots_disabled?: Partial<{ [S in VEHICLE_TYPE]: number }>
-  wheelchair_boarding?: boolean
-  reservation_cost?: Partial<{ [S in VEHICLE_TYPE]: number }> // Cost to reserve a spot per vehicle_type
-}
-
 // eslint-reason recursive declarations require interfaces
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
 export interface JsonArray extends Array<Json> {}

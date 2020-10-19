@@ -7,7 +7,7 @@ import { SqlExecuter, MDSPostgresClient } from './sql-utils'
 // drop tables from a list of table names
 async function dropTables(client: MDSPostgresClient) {
   const exec = SqlExecuter(client)
-  const drop = csv(schema.DEPRECATED_PROVIDER_TABLES.concat(schema.TABLES))
+  const drop = csv(schema.DEPRECATED_TABLES.concat(schema.TABLES))
   await exec(`DROP TABLE IF EXISTS ${drop};`)
   logger.info(`postgres drop table succeeded: ${drop}`)
 }
