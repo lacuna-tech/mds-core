@@ -5,5 +5,5 @@ import { IngestRepository } from '../repository'
 export const IngestServiceProvider: ServiceProvider<IngestService> & ProcessController = {
   start: IngestRepository.initialize,
   stop: IngestRepository.shutdown,
-  name: async () => ServiceResult('mds-geography-service')
+  name: async () => ServiceResult('mds-ingest-service')
 }

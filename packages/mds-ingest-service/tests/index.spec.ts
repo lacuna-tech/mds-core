@@ -21,7 +21,7 @@ describe('Geography Service Tests', () => {
 
   it('Test Name Method', async () => {
     const name = await IngestServiceClient.name()
-    expect(name).toEqual('mds-geography-service')
+    expect(name).toEqual('mds-ingest-service')
   })
 
   afterAll(async () => {
