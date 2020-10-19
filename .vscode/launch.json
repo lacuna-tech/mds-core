@@ -117,6 +117,27 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Server: mds-jursidiction-service",
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": ["server.ts"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-jurisdiction-service",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Server: mds-policy",
       "runtimeArgs": [
         "-r",
@@ -161,6 +182,49 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Server: mds-policy-service",
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": ["server.ts"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-policy-service",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Server: mds-geography",
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": ["server.ts"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-geography",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
+        "PATH_PREFIX": "/geography"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Server: mds-geography-author",
       "runtimeArgs": [
         "-r",
@@ -177,7 +241,28 @@
       "cwd": "${workspaceFolder}/packages/mds-geography-author",
       "env": {
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
-        "PATH_PREFIX": "/policy-author"
+        "PATH_PREFIX": "/geography-author"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Server: mds-geography-service",
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": ["server.ts"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-geography-service",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env"
       }
     },
     {
@@ -442,6 +527,49 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Tests: mds-policy-service",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-policy-service",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tests: mds-geography",
+      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--project",
+        "${workspaceFolder}/tsconfig.json",
+        "-r",
+        "ts-node/register",
+        "--timeout",
+        "0"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-geography",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
+        "PATH_PREFIX": "/geography"
+      }
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Tests: mds-geography-author",
       "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
       "args": [
@@ -458,7 +586,7 @@
       "cwd": "${workspaceFolder}/packages/mds-geography-author",
       "env": {
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
-        "PATH_PREFIX": "/policy-author"
+        "PATH_PREFIX": "/geography-author"
       }
     },
     {
@@ -479,6 +607,26 @@
       "env": {
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
         "npm_package_name": "@lacuna-core/mds-geography-service"
+      }
+    },
+    {
+      "name": "Tests: mds-policy-service",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "${workspaceRoot}/node_modules/.bin/jest",
+        "--runInBand",
+        "--coverage",
+        "false"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-policy-service",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
+        "npm_package_name": "@lacuna-core/mds-policy-service"
       }
     },
     {

@@ -17,7 +17,7 @@
 import { VehicleEvent, Device, Telemetry } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
 
-import { dropTables, updateSchema } from './migration'
+import { dropTables, createTables } from './migration'
 import { MDSPostgresClient } from './sql-utils'
 import { getReadOnlyClient, getWriteableClient, makeReadOnlyQuery } from './client'
 
@@ -44,7 +44,7 @@ const { writeEvent } = events
 async function initialize() {
   const client: MDSPostgresClient = await getWriteableClient()
   await dropTables(client)
-  await updateSchema(client)
+  await createTables(client)
   await getReadOnlyClient()
   return 'postgres'
 }
