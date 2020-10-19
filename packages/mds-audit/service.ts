@@ -37,14 +37,6 @@ import {
 import logger from '@mds-core/mds-logger'
 import { now } from '@mds-core/mds-utils'
 
-export async function initialize() {
-  try {
-    await cache.startup()
-  } catch (err) {
-    logger.error('mds-audit: failure during cache.startup', err)
-  }
-}
-
 export async function deleteAudit(audit_trip_id: UUID): Promise<number> {
   const result: number = await db.deleteAudit(audit_trip_id)
   return result

@@ -14,11 +14,22 @@
     limitations under the License.
  */
 
+import logger from '@mds-core/mds-logger'
+import cache from '@mds-core/mds-agency-cache'
 import { HttpServer, ApiServer } from '@mds-core/mds-api-server'
-import { api, initialize } from './api'
+import { api } from './api'
 
-// NOTE: this initialize method has its own try/catch block with error logging
+async function startup() {
+  try {
+    logger.info('mds-agency initializing cache')
+    await cache.startup()
+    logger.info('mds-agency initialized cache')
+  } catch (err) {
+    logger.error('mds-agency: failure during cache.startup', err)
+  }
+}
+// alternatively, we can fiddle with the paramaters to allow top-level await
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
-initialize()
+startup()
 
 HttpServer(ApiServer(api), { port: process.env.AGENCY_API_HTTP_PORT })

@@ -47,14 +47,6 @@ import { ComplianceApiVersionMiddleware } from './middleware'
 import { AllowedProviderIDs } from './constants'
 import { clientCanViewPolicyCompliance, getComplianceInputs } from './helpers'
 
-async function initialize() {
-  try {
-    await cache.startup()
-  } catch (err) {
-    logger.error('mds-audit: failure during cache.startup', err)
-  }
-}
-
 function api(app: express.Express): express.Express {
   app.use(ComplianceApiVersionMiddleware)
   app.use(async (req: ComplianceApiRequest, res: ComplianceApiResponse, next: express.NextFunction) => {
@@ -223,4 +215,4 @@ function api(app: express.Express): express.Express {
   return app
 }
 
-export { api, initialize }
+export { api }

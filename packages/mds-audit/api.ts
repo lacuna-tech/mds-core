@@ -83,7 +83,6 @@ import {
   GetAuditTripsDetailsResponse
 } from './types'
 import {
-  initialize,
   deleteAudit,
   getVehicle,
   getVehicles,
@@ -793,4 +792,4 @@ function api(app: express.Express): express.Express {
 
 // //////////////////// end audit-only endpoints ///////////////////////
 
-export { api, initialize }
+export { api }
