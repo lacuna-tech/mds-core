@@ -15,6 +15,10 @@
  */
 
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
-import { api } from './api'
+import { api, initialize } from './api'
+
+// NOTE: this initialize method has its own try/catch block with error logging
+// eslint-disable-next-line @typescript-eslint/no-floating-promises
+initialize()
 
 HttpServer(ApiServer(api), { port: process.env.AUDIT_API_HTTP_PORT })
