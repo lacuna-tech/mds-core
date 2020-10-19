@@ -35,8 +35,6 @@ import * as trips from './trips'
 
 import * as telemetry from './telemetry'
 
-import * as stops from './stops'
-
 import * as attachments from './attachments'
 
 const { writeDevice } = devices
@@ -142,6 +140,5 @@ export default {
   ...audit,
   ...trips,
   ...telemetry,
-  ...stops,
   ...attachments
 }
