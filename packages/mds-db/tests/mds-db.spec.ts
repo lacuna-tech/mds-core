@@ -135,11 +135,7 @@ if (pg_info.database) {
   describe('Test mds-db-postgres', () => {
     describe('test reads and writes', () => {
       beforeEach(async () => {
-        const client: MDSPostgresClient = configureClient(pg_info)
-        await client.connect()
-        await dropTables(client)
-        await createTables(client)
-        await client.end()
+        await setFreshDB()
       })
 
       afterEach(async () => {
@@ -191,11 +187,7 @@ if (pg_info.database) {
 
     describe('unit test read only functions', () => {
       beforeEach(async () => {
-        const client: MDSPostgresClient = configureClient(pg_info)
-        await client.connect()
-        await dropTables(client)
-        await createTables(client)
-        await client.end()
+        await setFreshDB()
         await seedDB()
       })
 
@@ -650,41 +642,4 @@ if (pg_info.database) {
       })
     })
   })
-
-  /*
-  TODO: finalize query semantics, then re-enable
-  it('Queries metrics correctly', async () => {
-    const fakeReadOnly = Sinon.fake.returns('boop')
-    Sinon.replace(dbClient, 'makeReadOnlyQuery', fakeReadOnly)
-    const start_time = 42
-    const end_time = 50
-    const provider_id: UUID[] = []
-    const geography_id = null
-    const vehicle_type: VEHICLE_TYPE[] = []
-    await getAllMetrics({ start_time, end_time, provider_id, geography_id, vehicle_type })
-    assert.strictEqual(
-      fakeReadOnly.args[0][0],
-      `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time}`
-    )
-    Sinon.restore()
-  })
-
-  it('Queries optional fields correctly', async () => {
-    const fakeReadOnly = Sinon.fake.returns('boop')
-    Sinon.replace(dbClient, 'makeReadOnlyQuery', fakeReadOnly)
-    const start_time = 42
-    const end_time = 50
-    const provider_id = [uuid(), uuid()]
-    const geography_id = uuid()
-    const vehicle_type = [VEHICLE_TYPES.scooter]
-    await getAllMetrics({ start_time, end_time, provider_id, geography_id, vehicle_type })
-    assert.strictEqual(
-      fakeReadOnly.args[0][0],
-      `SELECT * FROM reports_providers WHERE start_time BETWEEN ${start_time} AND ${end_time} AND provider_id IN ${arrayToInQueryFormat(
-        provider_id
-      )}  AND geography_id = "${geography_id}"  AND vehicle_type IN ${arrayToInQueryFormat(vehicle_type)} `
-    )
-    Sinon.restore()
-  })
-  */
 }
