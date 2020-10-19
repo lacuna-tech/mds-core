@@ -27,7 +27,7 @@ import {
 import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError, yesterday, days } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
 import MDSDBPostgres from '../index'
-import { dropTables, createTables, updateSchema } from '../migration'
+import { dropTables, createTables } from '../migration'
 import { Trip } from '../types'
 import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
 
@@ -128,7 +128,6 @@ async function setFreshDB() {
   await client.connect()
   await dropTables(client)
   await createTables(client)
-  await updateSchema(client)
   await client.end()
 }
 
@@ -140,7 +139,6 @@ if (pg_info.database) {
         await client.connect()
         await dropTables(client)
         await createTables(client)
-        await updateSchema(client)
         await client.end()
       })
 
@@ -197,7 +195,6 @@ if (pg_info.database) {
         await client.connect()
         await dropTables(client)
         await createTables(client)
-        await updateSchema(client)
         await client.end()
         await seedDB()
       })

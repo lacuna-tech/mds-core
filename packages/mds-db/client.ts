@@ -1,6 +1,6 @@
 import logger from '@mds-core/mds-logger'
+import { createTables } from './migration'
 
-import { updateSchema } from './migration'
 import { logSql, configureClient, MDSPostgresClient, SqlVals } from './sql-utils'
 
 const { env } = process
@@ -37,7 +37,7 @@ async function setupClient(useWriteable: boolean): Promise<MDSPostgresClient> {
     await client.connect()
     if (useWriteable) {
       if (PG_MIGRATIONS === 'true') {
-        await updateSchema(client)
+        await createTables(client)
       }
     }
     client.setConnected(true)
