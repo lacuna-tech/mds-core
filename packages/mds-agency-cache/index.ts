@@ -476,7 +476,7 @@ async function reset() {
   return logger.info('redis flushed')
 }
 
-async function initialize() {
+async function reinitialize() {
   await client.initialize()
   await reset()
 }
@@ -532,7 +532,7 @@ async function cleanup() {
 }
 
 export default {
-  initialize,
+  reinitialize,
   health,
   info,
   seed,
