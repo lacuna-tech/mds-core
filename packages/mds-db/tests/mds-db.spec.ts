@@ -156,7 +156,6 @@ if (pg_info.database) {
       })
 
       it('can make a successful read query after shutting down a DB client', async () => {
-        await MDSDBPostgres.initialize()
         await shutdownDB()
         await MDSDBPostgres.writeDevice(JUMP_TEST_DEVICE_1)
         await shutdownDB()
