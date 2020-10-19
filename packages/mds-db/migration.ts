@@ -1,37 +1,24 @@
 import { csv } from '@mds-core/mds-utils'
 
 import logger from '@mds-core/mds-logger'
-import schema, { COLUMN_NAME, TABLE_NAME } from './schema'
+import { GeographyRepository } from '@mds-core/mds-geography-service'
+import { PolicyRepository } from '@mds-core/mds-policy-service'
+import schema, { COLUMN_NAME, MANAGED_TABLE_NAME } from './schema'
 import { SqlExecuter, MDSPostgresClient } from './sql-utils'
 
 // drop tables from a list of table names
 async function dropTables(client: MDSPostgresClient) {
   const exec = SqlExecuter(client)
-  const drop = csv(schema.DEPRECATED_TABLES.concat(schema.TABLES))
+  const drop = csv(schema.DEPRECATED_TABLES.concat(schema.MANAGED_TABLES))
   await exec(`DROP TABLE IF EXISTS ${drop};`)
+  await Promise.all([GeographyRepository.revertAllMigrations(), PolicyRepository.revertAllMigrations()])
   logger.info(`postgres drop table succeeded: ${drop}`)
-}
-
-// Add a foreign key if it doesn't already exist
-async function addForeignKey(client: MDSPostgresClient, from: TABLE_NAME, to: TABLE_NAME, column: COLUMN_NAME) {
-  const exec = SqlExecuter(client)
-  const foreignKeyName = `fk_${to}_${column}`
-  const sql = `DO $$
-    BEGIN
-      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = '${foreignKeyName}') THEN
-        ALTER TABLE ${from}
-        ADD CONSTRAINT ${foreignKeyName}
-        FOREIGN KEY (${column}) REFERENCES ${to} (${column});
-      END IF;
-    END;
-    $$`
-  await exec(sql)
 }
 
 // Add an index if it doesn't already exist
 async function addIndex(
   client: MDSPostgresClient,
-  table: TABLE_NAME,
+  table: MANAGED_TABLE_NAME,
   column: COLUMN_NAME,
   options: Partial<{ unique: boolean }> = { unique: false }
 ) {
@@ -66,7 +53,7 @@ async function createTables(client: MDSPostgresClient) {
     'SELECT table_name FROM information_schema.tables WHERE table_catalog = CURRENT_CATALOG AND table_schema = CURRENT_SCHEMA'
   )
 
-  const missing = schema.TABLES.filter(
+  const missing = schema.MANAGED_TABLES.filter(
     /* eslint-reason ambiguous DB function */
     /* eslint-disable-next-line @typescript-eslint/no-explicit-any */
     (table: string) => !existing.rows.find((row: any) => row.table_name === table)
@@ -86,9 +73,8 @@ async function createTables(client: MDSPostgresClient) {
     logger.info('postgres create table suceeded')
     await Promise.all(missing.map(table => addIndex(client, table, schema.COLUMN.recorded)))
     await Promise.all(missing.map(table => addIndex(client, table, schema.COLUMN.id, { unique: true })))
-    await addForeignKey(client, schema.TABLE.policy_metadata, schema.TABLE.policies, schema.COLUMN.policy_id)
-    await addForeignKey(client, schema.TABLE.geography_metadata, schema.TABLE.geographies, schema.COLUMN.geography_id)
   }
+  await Promise.all([GeographyRepository.runAllMigrations(), PolicyRepository.runAllMigrations()])
 }
 
 export { dropTables, createTables }
