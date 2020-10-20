@@ -29,7 +29,9 @@ import {
 import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError, yesterday, days } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
 import { AttachmentRepository } from '@mds-core/mds-attachment-service'
+import { AuditRepository } from '@mds-core/mds-audit-service'
 import { GeographyRepository } from '@mds-core/mds-geography-service'
+import { IngestRepository } from '@mds-core/mds-ingest-service'
 import { PolicyRepository } from '@mds-core/mds-policy-service'
 import MDSDBPostgres from '../index'
 import { dropTables, createTables } from '../migration'
@@ -131,23 +133,23 @@ async function seedDB() {
 async function initializeDB() {
   const client: MDSPostgresClient = configureClient(pg_info)
   await client.connect()
-  await Promise.all([
-    AttachmentRepository.initialize(),
-    GeographyRepository.initialize(),
-    PolicyRepository.initialize()
-  ])
+  await Promise.all(
+    [AttachmentRepository, AuditRepository, GeographyRepository, IngestRepository, PolicyRepository].map(repository =>
+      repository.initialize()
+    )
+  )
   await dropTables(client)
   await createTables(client)
   await client.end()
 }
 
 async function shutdownDB() {
-  await Promise.all([
-    MDSDBPostgres.shutdown(),
-    AttachmentRepository.shutdown(),
-    GeographyRepository.shutdown(),
-    PolicyRepository.shutdown()
-  ])
+  await MDSDBPostgres.shutdown()
+  await Promise.all(
+    [AttachmentRepository, AuditRepository, GeographyRepository, IngestRepository, PolicyRepository].map(repository =>
+      repository.shutdown()
+    )
+  )
 }
 
 if (pg_info.database) {

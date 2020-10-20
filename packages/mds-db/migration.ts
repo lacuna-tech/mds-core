@@ -1,8 +1,11 @@
 import { csv } from '@mds-core/mds-utils'
 
 import logger from '@mds-core/mds-logger'
+import { AttachmentRepository } from '@mds-core/mds-attachment-service'
 import { GeographyRepository } from '@mds-core/mds-geography-service'
+import { IngestRepository } from '@mds-core/mds-ingest-service'
 import { PolicyRepository } from '@mds-core/mds-policy-service'
+import { AuditRepository } from '@mds-core/mds-audit-service'
 import schema, { COLUMN_NAME, MANAGED_TABLE_NAME } from './schema'
 import { SqlExecuter, MDSPostgresClient } from './sql-utils'
 
@@ -11,7 +14,11 @@ async function dropTables(client: MDSPostgresClient) {
   const exec = SqlExecuter(client)
   const drop = csv(schema.DEPRECATED_TABLES.concat(schema.MANAGED_TABLES))
   await exec(`DROP TABLE IF EXISTS ${drop};`)
-  await Promise.all([GeographyRepository.revertAllMigrations(), PolicyRepository.revertAllMigrations()])
+  await Promise.all(
+    [AttachmentRepository, AuditRepository, GeographyRepository, IngestRepository, PolicyRepository].map(repository =>
+      repository.revertAllMigrations()
+    )
+  )
   logger.info(`postgres drop table succeeded: ${drop}`)
 }
 
@@ -74,7 +81,11 @@ async function createTables(client: MDSPostgresClient) {
     await Promise.all(missing.map(table => addIndex(client, table, schema.COLUMN.recorded)))
     await Promise.all(missing.map(table => addIndex(client, table, schema.COLUMN.id, { unique: true })))
   }
-  await Promise.all([GeographyRepository.runAllMigrations(), PolicyRepository.runAllMigrations()])
+  await Promise.all(
+    [AttachmentRepository, AuditRepository, GeographyRepository, IngestRepository, PolicyRepository].map(repository =>
+      repository.runAllMigrations()
+    )
+  )
 }
 
 export { dropTables, createTables }

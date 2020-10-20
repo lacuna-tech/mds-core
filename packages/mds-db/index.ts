@@ -18,9 +18,10 @@ import { VehicleEvent, Device, Telemetry } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
 
 import { AttachmentRepository } from '@mds-core/mds-attachment-service'
+import { AuditRepository } from '@mds-core/mds-audit-service'
 import { GeographyRepository } from '@mds-core/mds-geography-service'
-import { PolicyRepository } from '@mds-core/mds-policy-service'
 import { IngestRepository } from '@mds-core/mds-ingest-service'
+import { PolicyRepository } from '@mds-core/mds-policy-service'
 import { dropTables, createTables } from './migration'
 import { MDSPostgresClient } from './sql-utils'
 import { getReadOnlyClient, getWriteableClient, makeReadOnlyQuery } from './client'
@@ -47,12 +48,11 @@ const { writeEvent } = events
 
 async function initialize() {
   const client: MDSPostgresClient = await getWriteableClient()
-  await Promise.all([
-    AttachmentRepository.initialize(),
-    GeographyRepository.initialize(),
-    IngestRepository.initialize(),
-    PolicyRepository.initialize()
-  ])
+  await Promise.all(
+    [AttachmentRepository, AuditRepository, GeographyRepository, IngestRepository, PolicyRepository].map(repository =>
+      repository.initialize()
+    )
+  )
   await dropTables(client)
   await createTables(client)
   await getReadOnlyClient()
@@ -98,28 +98,23 @@ async function health(): Promise<{
 }
 
 async function startup() {
-  await Promise.all([
-    getWriteableClient(),
-    getReadOnlyClient(),
-    AttachmentRepository.initialize(),
-    GeographyRepository.initialize(),
-    IngestRepository.initialize(),
-    PolicyRepository.initialize()
-  ])
+  await Promise.all([getWriteableClient(), getReadOnlyClient()])
+  await Promise.all(
+    [AttachmentRepository, AuditRepository, GeographyRepository, IngestRepository, PolicyRepository].map(repository =>
+      repository.initialize()
+    )
+  )
 }
 
 async function shutdown(): Promise<void> {
   try {
-    const writeableClient = await getWriteableClient()
-    await writeableClient.end()
-    const readOnlyClient = await getReadOnlyClient()
-    await readOnlyClient.end()
-    await Promise.all([
-      AttachmentRepository.shutdown(),
-      GeographyRepository.shutdown(),
-      IngestRepository.shutdown(),
-      PolicyRepository.shutdown()
-    ])
+    const [writeableClient, readOnlyClient] = await Promise.all([getWriteableClient(), getReadOnlyClient()])
+    await Promise.all([writeableClient.end(), readOnlyClient.end()])
+    await Promise.all(
+      [AttachmentRepository, AuditRepository, GeographyRepository, IngestRepository, PolicyRepository].map(repository =>
+        repository.shutdown()
+      )
+    )
   } catch (err) {
     logger.error('error during disconnection', err.stack)
   }
