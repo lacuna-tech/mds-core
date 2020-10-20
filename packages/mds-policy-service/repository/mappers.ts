@@ -1,4 +1,3 @@
-import { Timestamp } from '@mds-core/mds-types'
 import { IdentityColumn, ModelMapper } from '@mds-core/mds-repository'
 import { PolicyEntityModel } from './entities/policy-entity'
 import {
@@ -18,9 +17,7 @@ export const PolicyEntityToDomain = ModelMapper<PolicyEntityModel, PolicyDomainM
   }
 )
 
-type PolicyEntityCreateOptions = Partial<{
-  recorded: Timestamp
-}>
+type PolicyEntityCreateOptions = Partial<{}>
 
 export type PolicyEntityCreateModel = Omit<PolicyEntityModel, keyof IdentityColumn>
 
@@ -44,9 +41,7 @@ export const PolicyMetadataEntityToDomain = ModelMapper<
   return { policy_metadata, ...domain }
 })
 
-type PolicyMetadataEntityCreateOptions = Partial<{
-  recorded: Timestamp
-}>
+type PolicyMetadataEntityCreateOptions = Partial<{}>
 
 export type PolicyMetadataEntityCreateModel = Omit<PolicyMetadataEntityModel, keyof IdentityColumn>
 
