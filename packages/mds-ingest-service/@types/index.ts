@@ -28,12 +28,12 @@ export interface DeviceDomainModel {
 export type DeviceDomainCreateModel = DomainModelCreate<DeviceDomainModel>
 
 /* More flexible version of WithGpsProperty */
-type WithGpsPropertyFlex<T extends TelemetryData> = Omit<T, keyof Omit<TelemetryData, 'charge'>> & {
-  gps: Omit<T, 'charge'>
+type WithGpsData<T extends TelemetryData, P extends string = 'gps'> = Omit<T, keyof Omit<TelemetryData, 'charge'>> & {
+  [p in P]: Omit<T, 'charge'>
 }
 
 export interface TelemetryDomainModel
-  extends WithGpsPropertyFlex<NullableOptional<Omit<TelemetryData, 'hdop' | 'satellites'>>> {
+  extends WithGpsData<NullableOptional<Omit<TelemetryData, 'hdop' | 'satellites'>>> {
   device_id: UUID
   provider_id: UUID
   timestamp: Timestamp
