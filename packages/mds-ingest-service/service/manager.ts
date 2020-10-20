@@ -3,7 +3,7 @@ import { IngestServiceDefinition } from '../@types'
 import { IngestServiceClient } from '../client'
 import { IngestServiceProvider } from './provider'
 
-export const GeographyServiceManager = RpcServer(
+export const IngestServiceManager = RpcServer(
   IngestServiceDefinition,
   {
     onStart: IngestServiceProvider.start,

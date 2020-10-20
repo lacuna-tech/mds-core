@@ -1,4 +1,4 @@
-import { GeographyServiceManager } from '../service/manager'
+import { IngestServiceManager } from '../service/manager'
 import { IngestServiceClient } from '../client'
 import { IngestRepository } from '../repository'
 
@@ -12,11 +12,11 @@ describe('Test Migrations', () => {
   })
 })
 
-const GeographyServer = GeographyServiceManager.controller()
+const IngestServer = IngestServiceManager.controller()
 
-describe('Geography Service Tests', () => {
+describe('Ingest Service Tests', () => {
   beforeAll(async () => {
-    await GeographyServer.start()
+    await IngestServer.start()
   })
 
   it('Test Name Method', async () => {
@@ -25,6 +25,6 @@ describe('Geography Service Tests', () => {
   })
 
   afterAll(async () => {
-    await GeographyServer.stop()
+    await IngestServer.stop()
   })
 })
