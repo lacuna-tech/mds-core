@@ -1,4 +1,3 @@
-import { Timestamp } from '@mds-core/mds-types'
 import { IdentityColumn, ModelMapper } from '@mds-core/mds-repository'
 import { GeographyEntityModel } from './entities/geography-entity'
 import {
@@ -20,9 +19,7 @@ export const GeographyEntityToDomain = ModelMapper<
   return domain
 })
 
-type GeographyEntityCreateOptions = Partial<{
-  recorded: Timestamp
-}>
+type GeographyEntityCreateOptions = Partial<{}>
 
 export type GeographyEntityCreateModel = Omit<GeographyEntityModel, keyof IdentityColumn>
 
@@ -50,9 +47,7 @@ export const GeographyMetadataEntityToDomain = ModelMapper<
   return domain
 })
 
-type GeographyMetadataEntityCreateOptions = Partial<{
-  recorded: Timestamp
-}>
+type GeographyMetadataEntityCreateOptions = Partial<{}>
 
 export type GeographyMetadataEntityCreateModel = Omit<GeographyMetadataEntityModel, keyof IdentityColumn>
 

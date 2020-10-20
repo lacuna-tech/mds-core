@@ -28,6 +28,7 @@ import {
 } from '@mds-core/mds-test-data'
 import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError, yesterday, days } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
+import { AttachmentRepository } from '@mds-core/mds-attachment-service'
 import { GeographyRepository } from '@mds-core/mds-geography-service'
 import { PolicyRepository } from '@mds-core/mds-policy-service'
 import MDSDBPostgres from '../index'
@@ -130,14 +131,23 @@ async function seedDB() {
 async function initializeDB() {
   const client: MDSPostgresClient = configureClient(pg_info)
   await client.connect()
-  await Promise.all([GeographyRepository.initialize(), PolicyRepository.initialize()])
+  await Promise.all([
+    AttachmentRepository.initialize(),
+    GeographyRepository.initialize(),
+    PolicyRepository.initialize()
+  ])
   await dropTables(client)
   await createTables(client)
   await client.end()
 }
 
 async function shutdownDB() {
-  await Promise.all([MDSDBPostgres.shutdown(), GeographyRepository.shutdown(), PolicyRepository.shutdown()])
+  await Promise.all([
+    MDSDBPostgres.shutdown(),
+    AttachmentRepository.shutdown(),
+    GeographyRepository.shutdown(),
+    PolicyRepository.shutdown()
+  ])
 }
 
 if (pg_info.database) {
