@@ -1,3 +1,3 @@
-import { GeographyServiceManager } from '../service/manager'
+import { IngestServiceManager } from '../service/manager'
 
-GeographyServiceManager.monitor()
+IngestServiceManager.monitor()
