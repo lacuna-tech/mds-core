@@ -106,6 +106,8 @@ spec:
           {{- end }}
           - name: ATTACHMENT_SERVICE_RPC_HOST
             value: http://mds-attachment-service
+          - name: AUDIT_SERVICE_RPC_HOST
+            value: http://mds-audit-service
           - name: GEOGRAPHY_SERVICE_RPC_HOST
             value: http://mds-geography-service
           - name: INGEST_SERVICE_RPC_HOST
