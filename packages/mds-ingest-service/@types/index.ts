@@ -24,7 +24,7 @@ export interface DeviceDomainModel extends RecordedColumn {
   model: Nullable<string>
 }
 
-export type DeviceDomainCreateModel = DomainModelCreate<DeviceDomainModel>
+export type DeviceDomainCreateModel = DomainModelCreate<Omit<DeviceDomainModel, keyof RecordedColumn>>
 
 /* More flexible version of WithGpsProperty */
 type WithGpsData<T extends TelemetryData, P extends string = 'gps'> = Omit<T, keyof Omit<TelemetryData, 'charge'>> & {
@@ -38,7 +38,7 @@ export interface TelemetryDomainModel
   timestamp: Timestamp
 }
 
-export type TelemetryDomainCreateModel = DomainModelCreate<Omit<TelemetryDomainModel, 'recorded'>>
+export type TelemetryDomainCreateModel = DomainModelCreate<Omit<TelemetryDomainModel, keyof RecordedColumn>>
 
 export interface EventDomainModel extends RecordedColumn {
   device_id: UUID
@@ -53,7 +53,7 @@ export interface EventDomainModel extends RecordedColumn {
   service_area_id: Nullable<UUID>
 }
 
-export type EventDomainCreateModel = DomainModelCreate<Omit<EventDomainModel, 'recorded'>>
+export type EventDomainCreateModel = DomainModelCreate<Omit<EventDomainModel, keyof RecordedColumn>>
 
 export interface IngestService {
   name: () => string

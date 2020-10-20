@@ -29,6 +29,7 @@ export const TelemetryDomainToEntityCreate = ModelMapper<
     { gps: { lat, lng, speed = null, heading = null, accuracy = null, altitude = null }, charge = null, ...domain },
     options
   ) => {
+    const { recorded } = options ?? {}
     return {
       lat,
       lng,
@@ -37,6 +38,7 @@ export const TelemetryDomainToEntityCreate = ModelMapper<
       accuracy,
       altitude,
       charge,
+      recorded,
       ...domain
     }
   }
