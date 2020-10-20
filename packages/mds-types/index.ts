@@ -130,7 +130,6 @@ export type SingleOrArray<T> = T | T[]
 export type NullableKeys<T> = {
   [P in keyof T]: null extends T[P] ? P : never
 }[keyof T]
-// export type OptionalKeys<T> = { [K in keyof T]-?: {} extends { [P in K]: T[K] } ? K : never }[keyof T]
 export type Optional<T, P extends keyof T> = Omit<T, P> & Partial<Pick<T, P>>
 export type NonEmptyArray<T> = [T, ...T[]]
 export type RequiredKeys<T> = { [K in keyof T]-?: {} extends { [P in K]: T[K] } ? never : K }[keyof T]
