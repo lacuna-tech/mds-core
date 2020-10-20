@@ -17,7 +17,7 @@ const schemaValidator = <T>(schema: Joi.AnySchema) => ({
 export const { validate: validateGeographyDomainModel, isValid: isValidGeographyDomainModel } = schemaValidator<
   GeographyDomainModel
 >(
-  Joi.object()
+  Joi.object<GeographyDomainModel>()
     .keys({
       geography_id: Joi.string().uuid().required(),
       name: Joi.string().max(255).allow(null),
@@ -35,7 +35,7 @@ export const { validate: validateGeographyDomainModel, isValid: isValidGeography
           return helpers.message({ custom: `GeoJSON could not be validated` })
         }
         return geography_json
-      })
+      }).required()
     })
     .unknown(false)
 )
@@ -44,10 +44,10 @@ export const {
   validate: validateGeographyMetadataDomainModel,
   isValid: isValidGeographyMetadataDomainModel
 } = schemaValidator<GeographyMetadataDomainModel>(
-  Joi.object()
+  Joi.object<GeographyMetadataDomainModel>()
     .keys({
       geography_id: Joi.string().uuid().required(),
-      geography_metadata: Joi.any()
+      geography_metadata: Joi.any().allow(null)
     })
     .unknown(false)
 )
