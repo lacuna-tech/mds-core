@@ -130,8 +130,14 @@ export type SingleOrArray<T> = T | T[]
 export type NullableKeys<T> = {
   [P in keyof T]: null extends T[P] ? P : never
 }[keyof T]
+// export type OptionalKeys<T> = { [K in keyof T]-?: {} extends { [P in K]: T[K] } ? K : never }[keyof T]
 export type Optional<T, P extends keyof T> = Omit<T, P> & Partial<Pick<T, P>>
 export type NonEmptyArray<T> = [T, ...T[]]
+export type RequiredKeys<T> = { [K in keyof T]-?: {} extends { [P in K]: T[K] } ? never : K }[keyof T]
+export type OptionalKeys<T> = { [K in keyof T]-?: {} extends { [P in K]: T[K] } ? K : never }[keyof T]
+export type PickRequired<T> = Pick<T, RequiredKeys<T>>
+export type PickOptional<T> = Pick<T, OptionalKeys<T>>
+export type NullableOptional<T> = PickRequired<T> & NullableProperties<PickOptional<T>>
 
 // Represents a row in the "devices" table
 export interface Device {

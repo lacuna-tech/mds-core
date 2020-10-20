@@ -11,7 +11,7 @@ export const TelemetryEntityToDomain = ModelMapper<
   TelemetryEntityToDomainOptions
 >((entity, options) => {
   const { id, lat, lng, speed, heading, accuracy, altitude, charge, ...domain } = entity
-  return { gps: { lat, lng, speed, heading, accuracy, altitude, charge }, ...domain }
+  return { gps: { lat, lng, speed, heading, accuracy, altitude }, charge, ...domain }
 })
 
 type TelemetryEntityCreateOptions = Partial<{

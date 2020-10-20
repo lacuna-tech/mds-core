@@ -1,14 +1,14 @@
 import { DomainModelCreate } from '@mds-core/mds-repository'
 import {
   Nullable,
+  NullableOptional,
   PROPULSION_TYPE,
   TelemetryData,
   Timestamp,
   UUID,
   VEHICLE_EVENT,
   VEHICLE_REASON,
-  VEHICLE_TYPE,
-  WithGpsProperty
+  VEHICLE_TYPE
 } from '@mds-core/mds-types'
 import { RpcServiceDefinition, RpcRoute } from '@mds-core/mds-rpc-common'
 
@@ -27,7 +27,13 @@ export interface DeviceDomainModel {
 
 export type DeviceDomainCreateModel = DomainModelCreate<DeviceDomainModel>
 
-export interface TelemetryDomainModel extends WithGpsProperty<TelemetryData> {
+/* More flexible version of WithGpsProperty */
+type WithGpsPropertyFlex<T extends TelemetryData> = Omit<T, keyof Omit<TelemetryData, 'charge'>> & {
+  gps: Omit<T, 'charge'>
+}
+
+export interface TelemetryDomainModel
+  extends WithGpsPropertyFlex<NullableOptional<Omit<TelemetryData, 'hdop' | 'satellites'>>> {
   device_id: UUID
   provider_id: UUID
   timestamp: Timestamp
