@@ -8,8 +8,7 @@
     "dist/"
   ],
   "keywords": [
-    "mds",
-    "geographies"
+    "mds"
   ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
