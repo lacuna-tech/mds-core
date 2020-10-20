@@ -108,6 +108,8 @@ spec:
             value: http://mds-attachment-service
           - name: GEOGRAPHY_SERVICE_RPC_HOST
             value: http://mds-geography-service
+          - name: INGEST_SERVICE_RPC_HOST
+            value: http://mds-ingest-service
           - name: JURISDICTION_SERVICE_RPC_HOST
             value: http://mds-jurisdiction-service
           - name: POLICY_SERVICE_RPC_HOST
