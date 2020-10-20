@@ -4,7 +4,7 @@ import migrations from './migrations'
 
 class IngestReadWriteRepository extends ReadWriteRepository {
   constructor() {
-    super('devices', { entities, migrations })
+    super('ingest', { entities, migrations })
   }
 }
 
