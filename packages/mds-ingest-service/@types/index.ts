@@ -1,4 +1,4 @@
-import { DomainModelCreate } from '@mds-core/mds-repository'
+import { DomainModelCreate, RecordedColumn } from '@mds-core/mds-repository'
 import {
   Nullable,
   NullableOptional,
@@ -12,13 +12,12 @@ import {
 } from '@mds-core/mds-types'
 import { RpcServiceDefinition, RpcRoute } from '@mds-core/mds-rpc-common'
 
-export interface DeviceDomainModel {
+export interface DeviceDomainModel extends RecordedColumn {
   device_id: UUID
   provider_id: UUID
   vehicle_id: string
   type: VEHICLE_TYPE
   propulsion: PROPULSION_TYPE[]
-  recorded: Timestamp
 
   year: Nullable<number>
   mfgr: Nullable<string>
@@ -33,21 +32,19 @@ type WithGpsData<T extends TelemetryData, P extends string = 'gps'> = Omit<T, ke
 }
 
 export interface TelemetryDomainModel
-  extends WithGpsData<NullableOptional<Omit<TelemetryData, 'hdop' | 'satellites'>>> {
+  extends WithGpsData<NullableOptional<Omit<TelemetryData, 'hdop' | 'satellites'>>>, RecordedColumn {
   device_id: UUID
   provider_id: UUID
   timestamp: Timestamp
-  recorded: Timestamp
 }
 
 export type TelemetryDomainCreateModel = DomainModelCreate<Omit<TelemetryDomainModel, 'recorded'>>
 
-export interface EventDomainModel {
+export interface EventDomainModel extends RecordedColumn {
   device_id: UUID
   provider_id: UUID
   timestamp: Timestamp
   event_type: VEHICLE_EVENT
-  recorded: Timestamp
 
   event_type_reason: Nullable<VEHICLE_REASON>
   telemetry_timestamp: Nullable<Timestamp>
