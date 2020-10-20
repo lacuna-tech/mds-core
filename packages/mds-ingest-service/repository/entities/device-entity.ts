@@ -18,16 +18,16 @@ export class DeviceEntity extends IdentityColumn(RecordedColumn(class {})) imple
   @Column('uuid', { primary: true })
   device_id: DeviceEntityModel['device_id']
 
-  @Column('uuid', { nullable: false })
+  @Column('uuid')
   provider_id: DeviceEntityModel['provider_id']
 
-  @Column('varchar', { length: 255, nullable: false })
+  @Column('varchar', { length: 255 })
   vehicle_id: DeviceEntityModel['vehicle_id']
 
-  @Column('varchar', { length: 31, nullable: false })
+  @Column('varchar', { length: 31 })
   type: DeviceEntityModel['type']
 
-  @Column('varchar', { array: true, length: 31, nullable: false })
+  @Column('varchar', { array: true, length: 31 })
   propulsion: DeviceEntityModel['propulsion']
 
   @Column('smallint', { nullable: true })

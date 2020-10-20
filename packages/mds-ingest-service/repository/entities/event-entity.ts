@@ -18,13 +18,13 @@ export class EventEntity extends IdentityColumn(RecordedColumn(class {})) implem
   @Column('uuid', { primary: true })
   device_id: EventEntityModel['device_id']
 
-  @Column('uuid', { nullable: false })
+  @Column('uuid')
   provider_id: EventEntityModel['provider_id']
 
   @Column('bigint', { transformer: BigintTransformer, primary: true })
   timestamp: EventEntityModel['timestamp']
 
-  @Column('varchar', { length: 31, nullable: false })
+  @Column('varchar', { length: 31 })
   event_type: EventEntityModel['event_type']
 
   @Column('varchar', { length: 31, nullable: true })

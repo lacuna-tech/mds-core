@@ -20,16 +20,16 @@ export class TelemetryEntity extends IdentityColumn(RecordedColumn(class {})) im
   @Column('uuid', { primary: true })
   device_id: TelemetryEntityModel['device_id']
 
-  @Column('uuid', { nullable: false })
+  @Column('uuid')
   provider_id: TelemetryEntityModel['provider_id']
 
   @Column('bigint', { transformer: BigintTransformer, primary: true })
   timestamp: TelemetryEntityModel['timestamp']
 
-  @Column('double precision', { nullable: false })
+  @Column('double precision')
   lat: TelemetryEntityModel['lat']
 
-  @Column('double precision', { nullable: false })
+  @Column('double precision')
   lng: TelemetryEntityModel['lng']
 
   @Column('real', { nullable: true })
