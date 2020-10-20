@@ -16,20 +16,15 @@
 
 import logger from '@mds-core/mds-logger'
 import cache from '@mds-core/mds-agency-cache'
-import { HttpServer, ApiServer } from '@mds-core/mds-api-server'
+import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { api } from './api'
 
-async function startup() {
-  try {
-    logger.info('mds-agency initializing cache')
-    await cache.startup()
-    logger.info('mds-agency initialized cache')
-  } catch (err) {
-    logger.error('mds-agency: failure during cache.startup', err)
-  }
-}
-// alternatively, we can fiddle with the paramaters to allow top-level await
-// eslint-disable-next-line @typescript-eslint/no-floating-promises
-startup()
-
-HttpServer(ApiServer(api), { port: process.env.AGENCY_API_HTTP_PORT })
+cache
+  .startup()
+  .then(() => {
+    return HttpServer(ApiServer(api), { port: process.env.AGENCY_API_HTTP_PORT })
+  })
+  // eslint-disable-next-line promise/prefer-await-to-callbacks
+  .catch(err => {
+    logger.error('mds-agency startup failure', err)
+  })
