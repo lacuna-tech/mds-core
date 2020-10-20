@@ -20,6 +20,7 @@ import logger from '@mds-core/mds-logger'
 import { AttachmentRepository } from '@mds-core/mds-attachment-service'
 import { GeographyRepository } from '@mds-core/mds-geography-service'
 import { PolicyRepository } from '@mds-core/mds-policy-service'
+import { IngestRepository } from '@mds-core/mds-ingest-service'
 import { dropTables, createTables } from './migration'
 import { MDSPostgresClient } from './sql-utils'
 import { getReadOnlyClient, getWriteableClient, makeReadOnlyQuery } from './client'
@@ -49,6 +50,7 @@ async function initialize() {
   await Promise.all([
     AttachmentRepository.initialize(),
     GeographyRepository.initialize(),
+    IngestRepository.initialize(),
     PolicyRepository.initialize()
   ])
   await dropTables(client)
@@ -101,6 +103,7 @@ async function startup() {
     getReadOnlyClient(),
     AttachmentRepository.initialize(),
     GeographyRepository.initialize(),
+    IngestRepository.initialize(),
     PolicyRepository.initialize()
   ])
 }
@@ -111,7 +114,12 @@ async function shutdown(): Promise<void> {
     await writeableClient.end()
     const readOnlyClient = await getReadOnlyClient()
     await readOnlyClient.end()
-    await Promise.all([AttachmentRepository.shutdown(), GeographyRepository.shutdown(), PolicyRepository.shutdown()])
+    await Promise.all([
+      AttachmentRepository.shutdown(),
+      GeographyRepository.shutdown(),
+      IngestRepository.shutdown(),
+      PolicyRepository.shutdown()
+    ])
   } catch (err) {
     logger.error('error during disconnection', err.stack)
   }
