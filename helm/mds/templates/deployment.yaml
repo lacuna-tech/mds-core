@@ -104,6 +104,8 @@ spec:
             value: {{ $.Values.kafka.host }}:{{ $.Values.kafka.port }}
           {{- end }}
           {{- end }}
+          - name: ATTACHMENT_SERVICE_RPC_HOST
+            value: http://mds-attachment-service
           - name: GEOGRAPHY_SERVICE_RPC_HOST
             value: http://mds-geography-service
           - name: JURISDICTION_SERVICE_RPC_HOST

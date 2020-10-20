@@ -3,7 +3,6 @@ import { Enum } from '@mds-core/mds-types'
 // TODO providers are in CSV
 
 const MANAGED_TABLE = Enum(
-  'attachments',
   'audit_attachments',
   'audit_events',
   'audits',
@@ -15,13 +14,13 @@ const MANAGED_TABLE = Enum(
 export type MANAGED_TABLE_NAME = keyof typeof MANAGED_TABLE
 const MANAGED_TABLES = Object.keys(MANAGED_TABLE) as MANAGED_TABLE_NAME[]
 
-const UNMANAGED_TABLE = Enum('geographies', 'geography_metadata', 'policies', 'policy_metadata')
+const UNMANAGED_TABLE = Enum('attachments', 'geographies', 'geography_metadata', 'policies', 'policy_metadata')
 
 const TABLE = { ...MANAGED_TABLE, ...UNMANAGED_TABLE }
 export type TABLE_NAME = keyof typeof TABLE
 
 const TABLES = Object.keys(TABLE) as TABLE_NAME[]
-const DEPRECATED_TABLES = ['status_changes', 'trips', 'stops']
+const DEPRECATED_TABLES = ['migrations', 'status_changes', 'stops', 'trips']
 
 const COLUMN = Enum(
   'accuracy',
@@ -199,7 +198,6 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
 }
 
 const TABLE_KEY: { [T in MANAGED_TABLE_NAME]: COLUMN_NAME[] } = {
-  [TABLE.attachments]: [COLUMN.attachment_id],
   [TABLE.audit_attachments]: [COLUMN.attachment_id, COLUMN.audit_trip_id],
   [TABLE.audit_events]: [COLUMN.audit_trip_id, COLUMN.timestamp],
   [TABLE.audits]: [COLUMN.audit_trip_id],
