@@ -2,13 +2,14 @@ import { Enum } from '@mds-core/mds-types'
 
 // TODO providers are in CSV
 
-const MANAGED_TABLE = Enum('audit_attachments', 'audit_events')
+const MANAGED_TABLE = Enum('audit_attachments')
 export type MANAGED_TABLE_NAME = keyof typeof MANAGED_TABLE
 const MANAGED_TABLES = Object.keys(MANAGED_TABLE) as MANAGED_TABLE_NAME[]
 
 const UNMANAGED_TABLE = Enum(
   'attachments',
   'audits',
+  'audit_events',
   'devices',
   'events',
   'geographies',
@@ -199,8 +200,7 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
 }
 
 const TABLE_KEY: { [T in MANAGED_TABLE_NAME]: COLUMN_NAME[] } = {
-  [TABLE.audit_attachments]: [COLUMN.attachment_id, COLUMN.audit_trip_id],
-  [TABLE.audit_events]: [COLUMN.audit_trip_id, COLUMN.timestamp]
+  [TABLE.audit_attachments]: [COLUMN.attachment_id, COLUMN.audit_trip_id]
 }
 
 const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {

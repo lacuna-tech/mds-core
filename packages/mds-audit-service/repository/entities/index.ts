@@ -1,3 +1,4 @@
 import { AuditEntity } from './audit-entity'
+import { AuditEventEntity } from './audit-event-entity'
 
-export default [AuditEntity]
+export default [AuditEntity, AuditEventEntity]
