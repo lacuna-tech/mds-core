@@ -2,16 +2,6 @@ import { Entity, Column } from 'typeorm'
 import { BigintTransformer, IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
 import { AuditEventDomainModel } from '../../@types'
 
-/*
-  audit_trip_id: UUID
-  audit_event_id: UUID
-  audit_event_type: AUDIT_EVENT_TYPE | VEHICLE_EVENT
-  audit_issue_code: Nullable<string>
-  audit_subject_id: string
-  note: Nullable<string>
-  timestamp: Timestamp
-  */
-
 export interface AuditEventEntityModel extends IdentityColumn, RecordedColumn {
   audit_trip_id: AuditEventDomainModel['audit_trip_id']
   timestamp: AuditEventDomainModel['timestamp']

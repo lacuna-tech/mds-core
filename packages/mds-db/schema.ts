@@ -1,14 +1,9 @@
 import { Enum } from '@mds-core/mds-types'
 
-// TODO providers are in CSV
-
-const MANAGED_TABLE = Enum('audit_attachments')
-export type MANAGED_TABLE_NAME = keyof typeof MANAGED_TABLE
-const MANAGED_TABLES = Object.keys(MANAGED_TABLE) as MANAGED_TABLE_NAME[]
-
-const UNMANAGED_TABLE = Enum(
+const TABLE = Enum(
   'attachments',
   'audits',
+  'audit_attachments',
   'audit_events',
   'devices',
   'events',
@@ -18,8 +13,6 @@ const UNMANAGED_TABLE = Enum(
   'policy_metadata',
   'telemetry'
 )
-
-const TABLE = { ...MANAGED_TABLE, ...UNMANAGED_TABLE }
 export type TABLE_NAME = keyof typeof TABLE
 
 const TABLES = Object.keys(TABLE) as TABLE_NAME[]
@@ -199,94 +192,11 @@ const TABLE_COLUMNS: { [T in TABLE_NAME]: Readonly<COLUMN_NAME[]> } = {
   ]
 }
 
-const TABLE_KEY: { [T in MANAGED_TABLE_NAME]: COLUMN_NAME[] } = {
-  [TABLE.audit_attachments]: [COLUMN.attachment_id, COLUMN.audit_trip_id]
-}
-
-const COLUMN_TYPE: { [C in COLUMN_NAME]: string } = {
-  [COLUMN.accuracy]: 'real',
-  [COLUMN.address]: 'varchar(255)',
-  [COLUMN.altitude]: 'real',
-  [COLUMN.attachment_filename]: 'varchar(64) NOT NULL',
-  [COLUMN.attachment_id]: 'uuid NOT NULL',
-  [COLUMN.audit_device_id]: 'uuid NOT NULL',
-  [COLUMN.audit_event_id]: 'uuid NOT NULL',
-  [COLUMN.audit_event_type]: 'varchar(31) NOT NULL',
-  [COLUMN.audit_issue_code]: 'varchar(31)',
-  [COLUMN.audit_subject_id]: 'varchar(255) NOT NULL',
-  [COLUMN.audit_trip_id]: 'uuid NOT NULL',
-  [COLUMN.base_url]: 'varchar(127) NOT NULL',
-  [COLUMN.capacity]: 'jsonb',
-  [COLUMN.charge]: 'real',
-  [COLUMN.cross_street]: 'varchar(255)',
-  [COLUMN.deleted]: 'bigint',
-  [COLUMN.description]: 'varchar(255)',
-  [COLUMN.device_id]: 'uuid NOT NULL',
-  [COLUMN.effective_date]: 'bigint',
-  [COLUMN.end_time]: 'bigint',
-  [COLUMN.event_type]: 'varchar(31)',
-  [COLUMN.event_type_reason]: 'varchar(31)',
-  [COLUMN.geography_id]: 'uuid NOT NULL',
-  [COLUMN.geography_json]: 'json NOT NULL',
-  [COLUMN.geography_metadata]: 'json',
-  [COLUMN.heading]: 'real',
-  [COLUMN.id]: 'bigint GENERATED ALWAYS AS IDENTITY',
-  [COLUMN.lat]: 'double precision NOT NULL',
-  [COLUMN.lng]: 'double precision NOT NULL',
-  [COLUMN.location_type]: 'varchar(255)',
-  [COLUMN.mfgr]: 'varchar(127)',
-  [COLUMN.migration]: 'varchar(255) NOT NULL',
-  [COLUMN.mimetype]: 'varchar(255) NOT NULL',
-  [COLUMN.model]: 'varchar(127)',
-  [COLUMN.name]: 'varchar(255)',
-  [COLUMN.note]: 'varchar(255)',
-  [COLUMN.num_spots_available]: 'jsonb NOT NULL',
-  [COLUMN.num_spots_disabled]: 'jsonb',
-  [COLUMN.num_vehicles_available]: 'jsonb NOT NULL',
-  [COLUMN.num_vehicles_disabled]: 'jsonb',
-  [COLUMN.parking_verification_url]: 'varchar(255)',
-  [COLUMN.platform_code]: 'varchar(255)',
-  [COLUMN.policy_id]: 'uuid NOT NULL',
-  [COLUMN.policy_json]: 'json NOT NULL',
-  [COLUMN.policy_metadata]: 'json',
-  [COLUMN.post_code]: 'varchar(255)',
-  [COLUMN.prev_geographies]: 'uuid[]',
-  [COLUMN.propulsion]: 'varchar(31)[] NOT NULL',
-  [COLUMN.propulsion_type]: 'varchar(31)[] NOT NULL',
-  [COLUMN.provider_device_id]: 'uuid', // May be null if can't find
-  [COLUMN.provider_id]: 'uuid NOT NULL',
-  [COLUMN.provider_name]: 'varchar(127) NOT NULL',
-  [COLUMN.provider_vehicle_id]: 'varchar(255) NOT NULL',
-  [COLUMN.publish_date]: 'bigint',
-  [COLUMN.recorded]: 'bigint NOT NULL', // timestamp of when record was created
-  [COLUMN.rental_methods]: 'varchar(255)',
-  [COLUMN.reservation_cost]: 'jsonb',
-  [COLUMN.service_area_id]: 'uuid',
-  [COLUMN.short_name]: 'varchar(31)',
-  [COLUMN.speed]: 'real',
-  [COLUMN.stop_id]: 'uuid NOT NULL',
-  [COLUMN.stop_name]: 'varchar(255) NOT NULL',
-  [COLUMN.telemetry_timestamp]: 'bigint',
-  [COLUMN.thumbnail_filename]: 'varchar(64)',
-  [COLUMN.thumbnail_mimetype]: 'varchar(64)',
-  [COLUMN.timestamp]: 'bigint NOT NULL',
-  [COLUMN.timezone]: 'varchar(255)',
-  [COLUMN.trip_id]: 'uuid',
-  [COLUMN.type]: 'varchar(31) NOT NULL',
-  [COLUMN.vehicle_id]: 'varchar(255) NOT NULL',
-  [COLUMN.wheelchair_boarding]: 'bool DEFAULT FALSE',
-  [COLUMN.year]: 'smallint',
-  [COLUMN.zone_id]: 'varchar(255)'
-}
-
 export default {
   COLUMN,
   COLUMNS,
-  COLUMN_TYPE,
   DEPRECATED_TABLES,
-  MANAGED_TABLES,
   TABLE,
   TABLES,
-  TABLE_COLUMNS,
-  TABLE_KEY
+  TABLE_COLUMNS
 }

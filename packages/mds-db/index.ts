@@ -23,7 +23,6 @@ import { GeographyRepository } from '@mds-core/mds-geography-service'
 import { IngestRepository } from '@mds-core/mds-ingest-service'
 import { PolicyRepository } from '@mds-core/mds-policy-service'
 import { dropTables, createTables } from './migration'
-import { MDSPostgresClient } from './sql-utils'
 import { getReadOnlyClient, getWriteableClient, makeReadOnlyQuery } from './client'
 
 import * as devices from './devices'
@@ -47,15 +46,14 @@ const { writeTelemetry } = telemetry
 const { writeEvent } = events
 
 async function initialize() {
-  const client: MDSPostgresClient = await getWriteableClient()
+  await Promise.all([getWriteableClient(), getReadOnlyClient()])
   await Promise.all(
     [AttachmentRepository, AuditRepository, GeographyRepository, IngestRepository, PolicyRepository].map(repository =>
       repository.initialize()
     )
   )
-  await dropTables(client)
-  await createTables(client)
-  await getReadOnlyClient()
+  await dropTables()
+  await createTables()
   return 'postgres'
 }
 

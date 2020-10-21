@@ -36,7 +36,7 @@ import { PolicyRepository } from '@mds-core/mds-policy-service'
 import MDSDBPostgres from '../index'
 import { dropTables, createTables } from '../migration'
 import { Trip } from '../types'
-import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
+import { PGInfo } from '../sql-utils'
 
 const { env } = process
 const ACTIVE_POLICY_JSON = { ...POLICY_JSON, publish_date: yesterday(), start_date: yesterday() }
@@ -131,16 +131,13 @@ async function seedDB() {
 }
 
 async function initializeDB() {
-  const client: MDSPostgresClient = configureClient(pg_info)
-  await client.connect()
   await Promise.all(
     [AttachmentRepository, AuditRepository, GeographyRepository, IngestRepository, PolicyRepository].map(repository =>
       repository.initialize()
     )
   )
-  await dropTables(client)
-  await createTables(client)
-  await client.end()
+  await dropTables()
+  await createTables()
 }
 
 async function shutdownDB() {

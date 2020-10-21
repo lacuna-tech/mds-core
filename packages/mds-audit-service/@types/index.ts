@@ -28,6 +28,13 @@ export interface AuditEventDomainModel {
 
 export type AuditEventDomainCreateModel = DomainModelCreate<AuditEventDomainModel>
 
+export interface AuditAttachmentDomainModel {
+  audit_trip_id: UUID
+  attachment_id: UUID
+}
+
+export type AuditAttachmentDomainCreateModel = DomainModelCreate<AuditAttachmentDomainModel>
+
 export interface AuditService {
   name: () => string
 }
