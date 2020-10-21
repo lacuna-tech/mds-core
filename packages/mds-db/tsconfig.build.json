@@ -5,6 +5,7 @@
   },
   "references": [
     { "path": "../../packages/mds-attachment-service/tsconfig.build.json" },
+    { "path": "../../packages/mds-audit-service/tsconfig.build.json" },
     { "path": "../../packages/mds-geography-service/tsconfig.build.json" },
     { "path": "../../packages/mds-ingest-service/tsconfig.build.json" },
     { "path": "../../packages/mds-logger/tsconfig.build.json" },
