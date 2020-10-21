@@ -61,11 +61,7 @@ export const RedisCache = () => {
         return theClient.dbsize()
       })
     },
-    del: async (...keys: KeyType[]) => {
-      return safelyExec(theClient => {
-        return theClient.del(keys)
-      })
-    },
+    del: async (...keys: KeyType[]) => safelyExec(theClient => theClient.del(keys)),
     flushdb: async () => {
       return safelyExec(theClient => {
         return theClient.flushdb()
