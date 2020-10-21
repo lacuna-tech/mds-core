@@ -13,9 +13,9 @@ export const AuditServiceManager = RpcServer(
     name: args => AuditServiceProvider.name(...args)
   },
   {
-    port: process.env.ATTACHMENT_SERVICE_RPC_PORT,
+    port: process.env.AUDIT_SERVICE_RPC_PORT,
     repl: {
-      port: process.env.ATTACHMENT_SERVICE_REPL_PORT,
+      port: process.env.AUDIT_SERVICE_REPL_PORT,
       context: { client: AuditServiceClient }
     }
   }
