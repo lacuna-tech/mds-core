@@ -9,7 +9,7 @@ export class CreateEventsTable1603212540962 implements MigrationInterface {
     )
     if (events === undefined) {
       await queryRunner.query(
-        `CREATE TABLE "events" ("recorded" bigint NOT NULL DEFAULT (extract(epoch from now()) * 1000)::bigint, "id" BIGSERIAL NOT NULL, "device_id" uuid NOT NULL, "provider_id" uuid NOT NULL, "timestamp" bigint NOT NULL, "event_type" character varying(31) NOT NULL, "event_type_reason" character varying(31), "telemetry_timestamp" bigint, "trip_id" uuid, "service_area_id" uuid, CONSTRAINT "events_pkey" PRIMARY KEY ("device_id", "timestamp"))`
+        `CREATE TABLE "events" ("recorded" bigint NOT NULL DEFAULT (extract(epoch from now()) * 1000)::bigint, "id" bigint GENERATED ALWAYS AS IDENTITY, "device_id" uuid NOT NULL, "provider_id" uuid NOT NULL, "timestamp" bigint NOT NULL, "event_type" character varying(31) NOT NULL, "event_type_reason" character varying(31), "telemetry_timestamp" bigint, "trip_id" uuid, "service_area_id" uuid, CONSTRAINT "events_pkey" PRIMARY KEY ("device_id", "timestamp"))`
       )
       await queryRunner.query(`CREATE INDEX "idx_recorded_events" ON "events" ("recorded") `)
       await queryRunner.query(`CREATE UNIQUE INDEX "idx_id_events" ON "events" ("id") `)

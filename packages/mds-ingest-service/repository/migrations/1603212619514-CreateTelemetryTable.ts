@@ -9,7 +9,7 @@ export class CreateTelemetryTable1603212619514 implements MigrationInterface {
     )
     if (telemetry === undefined) {
       await queryRunner.query(
-        `CREATE TABLE "telemetry" ("recorded" bigint NOT NULL DEFAULT (extract(epoch from now()) * 1000)::bigint, "id" BIGSERIAL NOT NULL, "device_id" uuid NOT NULL, "provider_id" uuid NOT NULL, "timestamp" bigint NOT NULL, "lat" double precision NOT NULL, "lng" double precision NOT NULL, "speed" real, "heading" real, "accuracy" real, "altitude" real, "charge" real, CONSTRAINT "telemetry_pkey" PRIMARY KEY ("device_id", "timestamp"))`
+        `CREATE TABLE "telemetry" ("recorded" bigint NOT NULL DEFAULT (extract(epoch from now()) * 1000)::bigint, "id" bigint GENERATED ALWAYS AS IDENTITY, "device_id" uuid NOT NULL, "provider_id" uuid NOT NULL, "timestamp" bigint NOT NULL, "lat" double precision NOT NULL, "lng" double precision NOT NULL, "speed" real, "heading" real, "accuracy" real, "altitude" real, "charge" real, CONSTRAINT "telemetry_pkey" PRIMARY KEY ("device_id", "timestamp"))`
       )
       await queryRunner.query(`CREATE INDEX "idx_recorded_telemetry" ON "telemetry" ("recorded") `)
       await queryRunner.query(`CREATE UNIQUE INDEX "idx_id_telemetry" ON "telemetry" ("id") `)
