@@ -9,8 +9,6 @@ import {
 } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 
-import schema from './schema'
-
 import { vals_sql, cols_sql, vals_list, SqlVals } from './sql-utils'
 
 import { isGeographyPublished } from './geographies'
@@ -31,7 +29,7 @@ export async function readPolicies(params?: {
   const client = await getReadOnlyClient()
 
   // TODO more params
-  let sql = `select * from ${schema.TABLE.policies}`
+  let sql = `select * from "policies"`
   const conditions = []
   const vals = new SqlVals()
   if (params) {
@@ -79,7 +77,7 @@ export async function readActivePolicies(timestamp: Timestamp = now()): Promise<
   conditions.push(
     `(policy_json->>'publish_date' IS NOT NULL AND policy_json->>'publish_date' <= ${vals.add(timestamp)})`
   )
-  const sql = `select * from ${schema.TABLE.policies} WHERE ${conditions.join(' AND ')}`
+  const sql = `select * from "policies" WHERE ${conditions.join(' AND ')}`
   const values = vals.values()
   const res = await client.query(sql, values)
   return res.rows.map(row => row.policy_json)
@@ -101,7 +99,7 @@ export async function readBulkPolicyMetadata(params?: {
   if (policy_ids.length === 0) {
     return []
   }
-  const sql = `select * from ${schema.TABLE.policy_metadata} where policy_id in (${policy_ids.join(',')})`
+  const sql = `select * from "policy_metadata" where policy_id in (${policy_ids.join(',')})`
 
   const client = await getReadOnlyClient()
   const res = await client.query(sql)
@@ -113,7 +111,7 @@ export async function readBulkPolicyMetadata(params?: {
 export async function readSinglePolicyMetadata(policy_id: UUID): Promise<PolicyMetadata> {
   const client = await getReadOnlyClient()
 
-  const sql = `select * from ${schema.TABLE.policy_metadata} where policy_id = '${policy_id}'`
+  const sql = `select * from "policy_metadata" where policy_id = '${policy_id}'`
   const res = await client.query(sql)
   if (res.rows.length === 1) {
     const { policy_metadata } = res.rows[0]
@@ -126,7 +124,7 @@ export async function readSinglePolicyMetadata(policy_id: UUID): Promise<PolicyM
 export async function readPolicy(policy_id: UUID): Promise<Policy> {
   const client = await getReadOnlyClient()
 
-  const sql = `select * from ${schema.TABLE.policies} where policy_id = '${policy_id}'`
+  const sql = `select * from "policies" where policy_id = '${policy_id}'`
   const res = await client.query(sql)
   if (res.rows.length === 1) {
     return res.rows[0].policy_json
@@ -152,14 +150,13 @@ async function throwIfRulesAlreadyExist(policy: Policy) {
 }
 
 export async function writePolicy(policy: Policy): Promise<Recorded<Policy>> {
+  const columns = ['policy_id', 'policy_json']
   // validate TODO
   const client = await getWriteableClient()
   await throwIfRulesAlreadyExist(policy)
 
-  const sql = `INSERT INTO ${schema.TABLE.policies} (${cols_sql(schema.TABLE_COLUMNS.policies)}) VALUES (${vals_sql(
-    schema.TABLE_COLUMNS.policies
-  )}) RETURNING *`
-  const values = vals_list(schema.TABLE_COLUMNS.policies, { ...policy, policy_json: policy })
+  const sql = `INSERT INTO "policies" (${cols_sql(columns)}) VALUES (${vals_sql(columns)}) RETURNING *`
+  const values = vals_list(columns, { ...policy, policy_json: policy })
   try {
     const {
       rows: [recorded_policy]
@@ -176,7 +173,7 @@ export async function writePolicy(policy: Policy): Promise<Recorded<Policy>> {
 
 export async function isPolicyPublished(policy_id: UUID) {
   const client = await getReadOnlyClient()
-  const sql = `SELECT * FROM ${schema.TABLE.policies} WHERE policy_id='${policy_id}'`
+  const sql = `SELECT * FROM "policies" WHERE policy_id='${policy_id}'`
   const result = await client.query(sql)
   if (result.rows.length === 0) {
     return false
@@ -198,7 +195,7 @@ export async function editPolicy(policy: Policy) {
   }
   await throwIfRulesAlreadyExist(policy)
   const client = await getWriteableClient()
-  const sql = `UPDATE ${schema.TABLE.policies} SET policy_json=$1 WHERE policy_id='${policy_id}' AND policy_json->>'publish_date' IS NULL`
+  const sql = `UPDATE "policies" SET policy_json=$1 WHERE policy_id='${policy_id}' AND policy_json->>'publish_date' IS NULL`
   await client.query(sql, [policy])
   return policy
 }
@@ -209,7 +206,7 @@ export async function deletePolicy(policy_id: UUID) {
   }
 
   const client = await getWriteableClient()
-  const sql = `DELETE FROM ${schema.TABLE.policies} WHERE policy_id='${policy_id}' AND policy_json->>'publish_date' IS NULL`
+  const sql = `DELETE FROM "policies" WHERE policy_id='${policy_id}' AND policy_json->>'publish_date' IS NULL`
   await client.query(sql)
   return policy_id
 }
@@ -254,7 +251,7 @@ export async function publishPolicy(policy_id: UUID, publish_date = now()) {
     })
 
     // Only publish the policy if the geographies are successfully published first
-    const publishPolicySQL = `UPDATE ${schema.TABLE.policies}
+    const publishPolicySQL = `UPDATE "policies"
      SET policy_json = policy_json::jsonb || '{"publish_date": ${publish_date}}'
      where policy_id='${policy_id}' RETURNING *`
     const {
@@ -270,11 +267,10 @@ export async function publishPolicy(policy_id: UUID, publish_date = now()) {
 }
 
 export async function writePolicyMetadata(policy_metadata: PolicyMetadata) {
+  const columns = ['policy_id', 'policy_metadata']
   const client = await getWriteableClient()
-  const sql = `INSERT INTO ${schema.TABLE.policy_metadata} (${cols_sql(
-    schema.TABLE_COLUMNS.policy_metadata
-  )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.policy_metadata)}) RETURNING *`
-  const values = vals_list(schema.TABLE_COLUMNS.policy_metadata, {
+  const sql = `INSERT INTO "policy_metadata" (${cols_sql(columns)}) VALUES (${vals_sql(columns)}) RETURNING *`
+  const values = vals_list(columns, {
     policy_id: policy_metadata.policy_id,
     policy_metadata: policy_metadata.policy_metadata
   })
@@ -291,7 +287,7 @@ export async function updatePolicyMetadata(policy_metadata: PolicyMetadata) {
   try {
     await readSinglePolicyMetadata(policy_metadata.policy_id)
     const client = await getWriteableClient()
-    const sql = `UPDATE ${schema.TABLE.policy_metadata}
+    const sql = `UPDATE "policy_metadata"
       SET policy_metadata = '${JSON.stringify(policy_metadata.policy_metadata)}'
       WHERE policy_id = '${policy_metadata.policy_id}'`
     const {
@@ -309,7 +305,7 @@ export async function updatePolicyMetadata(policy_metadata: PolicyMetadata) {
 
 export async function readRule(rule_id: UUID): Promise<Rule> {
   const client = await getReadOnlyClient()
-  const sql = `SELECT * from ${schema.TABLE.policies} where EXISTS(SELECT FROM json_array_elements(policy_json->'rules') elem WHERE (elem->'rule_id')::jsonb ? '${rule_id}');`
+  const sql = `SELECT * from "policies" where EXISTS(SELECT FROM json_array_elements(policy_json->'rules') elem WHERE (elem->'rule_id')::jsonb ? '${rule_id}');`
   const res = await client.query(sql).catch(err => {
     throw err
   })
@@ -326,8 +322,8 @@ export async function readRule(rule_id: UUID): Promise<Rule> {
 
 export async function findPoliciesByGeographyID(geography_id: UUID): Promise<Policy[]> {
   const client = await getReadOnlyClient()
-  const sql = `select * from ${schema.TABLE.policies}
-    where ${schema.COLUMN.policy_json}::jsonb
+  const sql = `select * from "policies"
+    where policy_json::jsonb
     @> '{"rules":[{"geographies":["${geography_id}"]}]}'`
   const res = await client.query(sql)
   return res.rows.map(row => row.policy_json)

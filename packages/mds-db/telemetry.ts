@@ -3,8 +3,6 @@ import { now, csv, days, yesterday } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { TelemetryRecord } from './types'
 
-import schema from './schema'
-
 import { cols_sql, vals_list, SqlVals, logSql, to_sql } from './sql-utils'
 
 import { getReadOnlyClient, getWriteableClient, makeReadOnlyQuery } from './client'
@@ -36,6 +34,19 @@ export function convertTelemetryRecordToTelemetry(telemetryRecord: TelemetryReco
 }
 
 export async function writeTelemetry(telemetries: Telemetry[]): Promise<Recorded<Telemetry>[]> {
+  const columns = [
+    'device_id',
+    'provider_id',
+    'timestamp',
+    'lat',
+    'lng',
+    'speed',
+    'heading',
+    'accuracy',
+    'altitude',
+    'charge',
+    'recorded'
+  ]
   if (telemetries.length === 0) {
     return []
   }
@@ -45,13 +56,11 @@ export async function writeTelemetry(telemetries: Telemetry[]): Promise<Recorded
     const values = csv(
       telemetries
         .map(convertTelemetryToTelemetryRecord)
-        .map(telemetry => csv(vals_list(schema.TABLE_COLUMNS.telemetry, { ...telemetry }).map(to_sql)))
+        .map(telemetry => csv(vals_list(columns, { ...telemetry }).map(to_sql)))
         .map(row => `(${row})`)
     )
 
-    const sql = `INSERT INTO ${schema.TABLE.telemetry} (${cols_sql(
-      schema.TABLE_COLUMNS.telemetry
-    )}) VALUES ${values} ON CONFLICT DO NOTHING RETURNING *`
+    const sql = `INSERT INTO "telemetry" (${cols_sql(columns)}) VALUES ${values} ON CONFLICT DO NOTHING RETURNING *`
 
     await logSql(sql)
     const start = now()
@@ -88,7 +97,7 @@ export async function readTelemetry(
   const client = await getReadOnlyClient()
   const vals = new SqlVals()
   try {
-    let sql = `SELECT * FROM ${schema.TABLE.telemetry} WHERE device_id=${vals.add(device_id)}`
+    let sql = `SELECT * FROM "telemetry" WHERE device_id=${vals.add(device_id)}`
     if (start === undefined && stop === undefined) {
       sql += ' ORDER BY "timestamp" DESC LIMIT 1'
     } else {
@@ -128,6 +137,6 @@ export async function getTelemetryCountsPerProviderSince(
 
 // TODO way too slow to be useful -- move into mds-agency-cache
 export async function getMostRecentTelemetryByProvider(): Promise<{ provider_id: UUID; max: number }[]> {
-  const sql = `select provider_id, max(recorded) from ${schema.TABLE.telemetry} group by provider_id`
+  const sql = `select provider_id, max(recorded) from "telemetry" group by provider_id`
   return makeReadOnlyQuery(sql)
 }

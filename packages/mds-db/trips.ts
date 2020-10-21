@@ -2,8 +2,6 @@ import { UUID, Timestamp, VEHICLE_EVENT } from '@mds-core/mds-types'
 import { now, yesterday } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 
-import schema from './schema'
-
 import { logSql, SqlVals } from './sql-utils'
 
 import { getReadOnlyClient, makeReadOnlyQuery } from './client'
@@ -48,12 +46,12 @@ export async function readTripIds(params: Partial<ReadTripIdsQueryParams> = {}):
   const condSql = conditions.join(' AND ')
 
   try {
-    const countSql = `SELECT COUNT(*) FROM ${schema.TABLE.events} WHERE ${condSql}`
+    const countSql = `SELECT COUNT(*) FROM "events" WHERE ${condSql}`
     const countVals = vals.values()
     await logSql(countSql, countVals)
     const res = await client.query(countSql, countVals)
     const count = parseInt(res.rows[0].count)
-    const selectSql = `SELECT * FROM ${schema.TABLE.events} WHERE ${condSql} ORDER BY "timestamp" OFFSET ${vals.add(
+    const selectSql = `SELECT * FROM "events" WHERE ${condSql} ORDER BY "timestamp" OFFSET ${vals.add(
       skip
     )} LIMIT ${vals.add(take)}`
     const selectVals = vals.values()
@@ -85,8 +83,8 @@ export async function getTripEventsLast24HoursByProvider(
   stop = now()
 ): Promise<{ provider_id: UUID; trip_id: UUID; event_type: VEHICLE_EVENT; recorded: number; timestamp: number }[]> {
   const vals = new SqlVals()
-  const sql = `select provider_id, trip_id, event_type, recorded, timestamp from ${
-    schema.TABLE.events
-  } where trip_id is not null and recorded > ${vals.add(start)} and recorded < ${vals.add(stop)} order by "timestamp"`
+  const sql = `select provider_id, trip_id, event_type, recorded, timestamp from "events" where trip_id is not null and recorded > ${vals.add(
+    start
+  )} and recorded < ${vals.add(stop)} order by "timestamp"`
   return makeReadOnlyQuery(sql, vals)
 }

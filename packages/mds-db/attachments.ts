@@ -1,15 +1,21 @@
 import { Attachment, AuditAttachment, Recorded, UUID } from '@mds-core/mds-types'
 import { NotFoundError, now } from '@mds-core/mds-utils'
-import schema from './schema'
 import { vals_sql, cols_sql, vals_list, logSql } from './sql-utils'
 import { getReadOnlyClient, getWriteableClient } from './client'
 
 export async function writeAttachment(attachment: Attachment): Promise<Recorded<Attachment>> {
+  const columns = [
+    'attachment_filename',
+    'attachment_id',
+    'base_url',
+    'mimetype',
+    'thumbnail_filename',
+    'thumbnail_mimetype',
+    'recorded'
+  ]
   const client = await getWriteableClient()
-  const sql = `INSERT INTO ${schema.TABLE.attachments} (${cols_sql(
-    schema.TABLE_COLUMNS.attachments
-  )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.attachments)}) RETURNING *`
-  const values = vals_list(schema.TABLE_COLUMNS.attachments, { ...attachment, recorded: now() })
+  const sql = `INSERT INTO "attachments" (${cols_sql(columns)}) VALUES (${vals_sql(columns)}) RETURNING *`
+  const values = vals_list(columns, { ...attachment, recorded: now() })
   await logSql(sql, values)
   const {
     rows: [recordedAttachment]
@@ -19,7 +25,7 @@ export async function writeAttachment(attachment: Attachment): Promise<Recorded<
 
 export async function readAttachmentsForAudit(audit_trip_id: UUID): Promise<Recorded<Attachment>[]> {
   const client = await getReadOnlyClient()
-  const sql = `SELECT * FROM ${schema.TABLE.attachments} a JOIN ${schema.TABLE.audit_attachments} aa
+  const sql = `SELECT * FROM "attachments" a JOIN "audit_attachments" aa
     ON a.attachment_id = aa.attachment_id where aa.audit_trip_id = '${audit_trip_id}'`
   const { rows } = await client.query(sql)
   return rows
@@ -27,17 +33,16 @@ export async function readAttachmentsForAudit(audit_trip_id: UUID): Promise<Reco
 
 export async function readAuditAttachments(attachment_id: UUID): Promise<AuditAttachment[]> {
   const client = await getWriteableClient()
-  const sql = `SELECT * FROM ${schema.TABLE.audit_attachments} WHERE attachment_id=$1`
+  const sql = `SELECT * FROM "audit_attachments" WHERE attachment_id=$1`
   const res = await client.query(sql, [attachment_id])
   return res.rows
 }
 
 export async function writeAuditAttachment(auditAttachment: AuditAttachment): Promise<Recorded<AuditAttachment>> {
+  const columns = ['attachment_id', 'audit_trip_id', 'recorded']
   const client = await getWriteableClient()
-  const sql = `INSERT INTO ${schema.TABLE.audit_attachments} (${cols_sql(
-    schema.TABLE_COLUMNS.audit_attachments
-  )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.audit_attachments)}) RETURNING *`
-  const values = vals_list(schema.TABLE_COLUMNS.audit_attachments, { ...auditAttachment, recorded: now() })
+  const sql = `INSERT INTO "audit_attachments" (${cols_sql(columns)}) VALUES (${vals_sql(columns)}) RETURNING *`
+  const values = vals_list(columns, { ...auditAttachment, recorded: now() })
   await logSql(sql, values)
   const {
     rows: [recordedAuditAttachment]
@@ -47,7 +52,7 @@ export async function writeAuditAttachment(auditAttachment: AuditAttachment): Pr
 
 export async function deleteAttachment(attachment_id: UUID): Promise<Attachment | undefined> {
   const client = await getWriteableClient()
-  const sql = `DELETE FROM ${schema.TABLE.attachments} WHERE attachment_id=$1 RETURNING *`
+  const sql = `DELETE FROM "attachments" WHERE attachment_id=$1 RETURNING *`
   const res = await client.query(sql, [attachment_id])
   if (res.rows.length > 0) {
     return { ...res.rows[0] } as Attachment
@@ -60,7 +65,7 @@ export async function deleteAuditAttachment(
   attachment_id: UUID
 ): Promise<AuditAttachment | undefined> {
   const client = await getWriteableClient()
-  const sql = `DELETE FROM ${schema.TABLE.audit_attachments} WHERE attachment_id=$1 AND audit_trip_id=$2 RETURNING *`
+  const sql = `DELETE FROM "audit_attachments" WHERE attachment_id=$1 AND audit_trip_id=$2 RETURNING *`
   const res = await client.query(sql, [attachment_id, audit_trip_id])
   if (res.rows.length > 0) {
     return { ...res.rows[0] } as AuditAttachment

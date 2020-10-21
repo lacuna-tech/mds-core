@@ -1,6 +1,5 @@
 import logger from '@mds-core/mds-logger'
 import { csv } from '@mds-core/mds-utils'
-import schema from './schema'
 
 import { logSql, configureClient, MDSPostgresClient, SqlVals } from './sql-utils'
 
@@ -39,7 +38,7 @@ async function setupClient(useWriteable: boolean): Promise<MDSPostgresClient> {
     if (useWriteable) {
       if (PG_MIGRATIONS === 'true') {
         // Drop deprecated tables
-        await client.query(`DROP TABLE IF EXISTS ${csv(schema.DEPRECATED_TABLES)};`)
+        await client.query(`DROP TABLE IF EXISTS ${csv(['migrations', 'status_changes', 'stops', 'trips'])};`)
       }
     }
     client.setConnected(true)

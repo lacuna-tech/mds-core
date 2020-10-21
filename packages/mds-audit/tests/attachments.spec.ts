@@ -29,7 +29,6 @@ import fs from 'fs'
 import Sinon from 'sinon'
 import { attachmentSummary, deleteAuditAttachment, readAttachments, writeAttachment } from '../attachments'
 import { getWriteableClient } from '../../mds-db/client'
-import schema from '../../mds-db/schema'
 
 /* eslint-disable-next-line */
 const aws = require('aws-sdk')
@@ -74,7 +73,7 @@ describe('Testing Attachments Service', () => {
 
   beforeEach(async () => {
     const client = await getWriteableClient()
-    await client.query(`TRUNCATE ${schema.TABLE.attachments}, ${schema.TABLE.audit_attachments}`)
+    await client.query(`TRUNCATE "attachments", "audit_attachments"`)
   })
 
   it('verify attachment summary', () => {

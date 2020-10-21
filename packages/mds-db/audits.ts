@@ -4,15 +4,13 @@ import logger from '@mds-core/mds-logger'
 
 import { ReadAuditsQueryParams } from './types'
 
-import schema from './schema'
-
 import { vals_sql, cols_sql, vals_list, logSql, SqlVals } from './sql-utils'
 
 import { getReadOnlyClient, getWriteableClient } from './client'
 
 export async function readAudit(audit_trip_id: UUID) {
   const client = await getReadOnlyClient()
-  const sql = `SELECT * FROM ${schema.TABLE.audits} WHERE deleted IS NULL AND audit_trip_id=$1`
+  const sql = `SELECT * FROM "audits" WHERE deleted IS NULL AND audit_trip_id=$1`
   const values = [audit_trip_id]
   await logSql(sql, values)
   const result = await client.query(sql, values)
@@ -42,7 +40,7 @@ export async function readAudits(query: ReadAuditsQueryParams) {
 
   try {
     const filter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
-    const countSql = `SELECT COUNT(*) FROM ${schema.TABLE.audits} ${filter}`
+    const countSql = `SELECT COUNT(*) FROM "audits" ${filter}`
     const countVals = vals.values()
     await logSql(countSql, countVals)
     const countResult = await client.query(countSql, countVals)
@@ -53,7 +51,7 @@ export async function readAudits(query: ReadAuditsQueryParams) {
         audits: []
       }
     }
-    const selectSql = `SELECT * FROM ${schema.TABLE.audits} ${filter} ORDER BY "timestamp" DESC${
+    const selectSql = `SELECT * FROM "audits" ${filter} ORDER BY "timestamp" DESC${
       typeof skip === 'number' && skip >= 0 ? ` OFFSET ${vals.add(skip)}` : ''
     }${typeof take === 'number' && take >= 0 ? ` LIMIT ${vals.add(take)}` : ''}`
     const selectVals = vals.values()
@@ -70,13 +68,23 @@ export async function readAudits(query: ReadAuditsQueryParams) {
 }
 
 export async function writeAudit(audit: Audit): Promise<Recorded<Audit>> {
+  const columns = [
+    'audit_trip_id',
+    'audit_device_id',
+    'audit_subject_id',
+    'provider_id',
+    'provider_name',
+    'provider_vehicle_id',
+    'provider_device_id',
+    'timestamp',
+    'deleted',
+    'recorded'
+  ]
   // write pg
   const start = now()
   const client = await getWriteableClient()
-  const sql = `INSERT INTO ${schema.TABLE.audits} (${cols_sql(schema.TABLE_COLUMNS.audits)}) VALUES (${vals_sql(
-    schema.TABLE_COLUMNS.audits
-  )}) RETURNING *`
-  const values = vals_list(schema.TABLE_COLUMNS.audits, { ...audit, recorded: now() })
+  const sql = `INSERT INTO "audits" (${cols_sql(columns)}) VALUES (${vals_sql(columns)}) RETURNING *`
+  const values = vals_list(columns, { ...audit, recorded: now() })
   await logSql(sql, values)
   const {
     rows: [recorded_audit]
@@ -88,7 +96,7 @@ export async function writeAudit(audit: Audit): Promise<Recorded<Audit>> {
 
 export async function deleteAudit(audit_trip_id: UUID) {
   const client = await getWriteableClient()
-  const sql = `UPDATE ${schema.TABLE.audits} SET deleted=$1 WHERE audit_trip_id=$2 AND deleted IS NULL`
+  const sql = `UPDATE "audits" SET deleted=$1 WHERE audit_trip_id=$2 AND deleted IS NULL`
   const values = [now(), audit_trip_id]
   await logSql(sql, values)
   const result = await client.query(sql, values)
@@ -99,9 +107,7 @@ export async function readAuditEvents(audit_trip_id: UUID): Promise<Recorded<Aud
   try {
     const client = await getReadOnlyClient()
     const vals = new SqlVals()
-    const sql = `SELECT * FROM ${schema.TABLE.audit_events} WHERE audit_trip_id=${vals.add(
-      audit_trip_id
-    )} ORDER BY "timestamp"`
+    const sql = `SELECT * FROM "audit_events" WHERE audit_trip_id=${vals.add(audit_trip_id)} ORDER BY "timestamp"`
     const sqlVals = vals.values()
     await logSql(sql, sqlVals)
     const result = await client.query(sql, sqlVals)
@@ -113,12 +119,27 @@ export async function readAuditEvents(audit_trip_id: UUID): Promise<Recorded<Aud
 }
 
 export async function writeAuditEvent(audit_event: AuditEvent): Promise<Recorded<AuditEvent>> {
+  const columns = [
+    'audit_trip_id',
+    'audit_event_id',
+    'audit_event_type',
+    'audit_issue_code',
+    'audit_subject_id',
+    'note',
+    'timestamp',
+    'lat',
+    'lng',
+    'speed',
+    'heading',
+    'accuracy',
+    'altitude',
+    'charge',
+    'recorded'
+  ]
   const start = now()
   const client = await getWriteableClient()
-  const sql = `INSERT INTO ${schema.TABLE.audit_events} (${cols_sql(
-    schema.TABLE_COLUMNS.audit_events
-  )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.audit_events)}) RETURNING *`
-  const values = vals_list(schema.TABLE_COLUMNS.audit_events, { ...audit_event, recorded: now() })
+  const sql = `INSERT INTO "audit_events" (${cols_sql(columns)}) VALUES (${vals_sql(columns)}) RETURNING *`
+  const values = vals_list(columns, { ...audit_event, recorded: now() })
   await logSql(sql, values)
   const {
     rows: [recorded_audit_event]

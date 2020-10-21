@@ -8,8 +8,6 @@ import {
 } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 
-import schema from './schema'
-
 import { vals_sql, cols_sql, vals_list, SqlVals } from './sql-utils'
 
 import { getReadOnlyClient, getWriteableClient } from './client'
@@ -18,7 +16,7 @@ import { ReadGeographiesParams, PublishGeographiesParams } from './types'
 export async function readSingleGeography(geography_id: UUID): Promise<Geography> {
   const client = await getReadOnlyClient()
 
-  const sql = `select * from ${schema.TABLE.geographies} where geography_id = '${geography_id}'`
+  const sql = `select * from "geographies" where geography_id = '${geography_id}'`
   const { rows } = await client.query(sql)
 
   if (rows.length === 0) {
@@ -43,7 +41,7 @@ export async function readGeographies(params: Partial<ReadGeographiesParams> = {
       throw new BadParamsError('cannot have get_unpublished and get_published both be true')
     }
 
-    let sql = `SELECT * FROM ${schema.TABLE.geographies}`
+    let sql = `SELECT * FROM "geographies"`
 
     const conditions = []
     const vals = new SqlVals()
@@ -86,7 +84,7 @@ export async function readPublishedGeographies(only_published_after?: Timestamp)
   try {
     const client = await getReadOnlyClient()
 
-    let sql = `SELECT * FROM ${schema.TABLE.geographies}`
+    let sql = `SELECT * FROM "geographies"`
 
     let conditions = ''
     const vals = new SqlVals()
@@ -128,7 +126,7 @@ export async function readBulkGeographyMetadata(params?: ReadGeographiesParams):
     return []
   }
 
-  const sql = `select * from ${schema.TABLE.geography_metadata} where geography_id in (${geography_ids.join(',')})`
+  const sql = `select * from "geography_metadata" where geography_id in (${geography_ids.join(',')})`
 
   const client = await getReadOnlyClient()
   const res = await client.query(sql)
@@ -138,11 +136,18 @@ export async function readBulkGeographyMetadata(params?: ReadGeographiesParams):
 }
 
 export async function writeGeography(geography: Geography): Promise<Recorded<Geography>> {
+  const columns = [
+    'description',
+    'effective_date',
+    'geography_id',
+    'geography_json',
+    'publish_date',
+    'prev_geographies',
+    'name'
+  ]
   const client = await getWriteableClient()
-  const sql = `INSERT INTO ${schema.TABLE.geographies} (${cols_sql(
-    schema.TABLE_COLUMNS.geographies
-  )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.geographies)}) RETURNING *`
-  const values = vals_list(schema.TABLE_COLUMNS.geographies, { ...geography })
+  const sql = `INSERT INTO "geographies" (${cols_sql(columns)}) VALUES (${vals_sql(columns)}) RETURNING *`
+  const values = vals_list(columns, { ...geography })
   try {
     const {
       rows: [recorded_geography]
@@ -158,7 +163,7 @@ export async function writeGeography(geography: Geography): Promise<Recorded<Geo
 
 export async function isGeographyPublished(geography_id: UUID) {
   const client = await getReadOnlyClient()
-  const sql = `SELECT * FROM ${schema.TABLE.geographies} WHERE geography_id='${geography_id}'`
+  const sql = `SELECT * FROM "geographies" WHERE geography_id='${geography_id}'`
   const result = await client.query(sql).catch(err => {
     throw err
   })
@@ -184,7 +189,7 @@ export async function editGeography(geography: Geography): Promise<Geography> {
       conditions.push(`${key} = ${vals.add(value)}`)
     }
   })
-  const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} WHERE geography_id=${vals.add(
+  const sql = `UPDATE "geographies" SET ${conditions} WHERE geography_id=${vals.add(
     geography.geography_id
   )} AND publish_date IS NULL`
 
@@ -199,7 +204,7 @@ export async function deleteGeography(geography_id: UUID) {
   }
 
   const client = await getWriteableClient()
-  const sql = `DELETE FROM ${schema.TABLE.geographies} WHERE geography_id=$1 AND publish_date IS NULL`
+  const sql = `DELETE FROM "geographies" WHERE geography_id=$1 AND publish_date IS NULL`
   await client.query(sql, [geography_id])
   return geography_id
 }
@@ -221,9 +226,7 @@ export async function publishGeography(params: PublishGeographiesParams): Promis
     const vals = new SqlVals()
     const conditions = []
     conditions.push(`publish_date = ${vals.add(publish_date)}`)
-    const sql = `UPDATE ${schema.TABLE.geographies} SET ${conditions} where geography_id=${vals.add(
-      geography_id
-    )} RETURNING *`
+    const sql = `UPDATE "geographies" SET ${conditions} where geography_id=${vals.add(geography_id)} RETURNING *`
     const {
       rows: [recorded_geography]
     }: { rows: Recorded<Geography>[] } = await client.query(sql, vals.values())
@@ -235,13 +238,12 @@ export async function publishGeography(params: PublishGeographiesParams): Promis
 }
 
 export async function writeGeographyMetadata(geography_metadata: GeographyMetadata): Promise<GeographyMetadata> {
+  const columns = ['geography_id', 'geography_metadata']
   try {
     await readSingleGeography(geography_metadata.geography_id)
     const client = await getWriteableClient()
-    const sql = `INSERT INTO ${schema.TABLE.geography_metadata} (${cols_sql(
-      schema.TABLE_COLUMNS.geography_metadata
-    )}) VALUES (${vals_sql(schema.TABLE_COLUMNS.geography_metadata)}) RETURNING *`
-    const values = vals_list(schema.TABLE_COLUMNS.geography_metadata, {
+    const sql = `INSERT INTO "geography_metadata" (${cols_sql(columns)}) VALUES (${vals_sql(columns)}) RETURNING *`
+    const values = vals_list(columns, {
       geography_id: geography_metadata.geography_id,
       geography_metadata: geography_metadata.geography_metadata
     })
@@ -259,7 +261,7 @@ export async function writeGeographyMetadata(geography_metadata: GeographyMetada
 export async function readSingleGeographyMetadata(geography_id: UUID): Promise<GeographyMetadata> {
   const client = await getReadOnlyClient()
   const vals = new SqlVals()
-  const sql = `SELECT * FROM ${schema.TABLE.geography_metadata} WHERE geography_id = ${vals.add(geography_id)}`
+  const sql = `SELECT * FROM "geography_metadata" WHERE geography_id = ${vals.add(geography_id)}`
   const result = await client.query(sql, vals.values())
   if (result.rows.length === 0) {
     throw new NotFoundError(`Metadata for ${geography_id} not found`)
@@ -271,7 +273,7 @@ export async function updateGeographyMetadata(geography_metadata: GeographyMetad
   await readSingleGeographyMetadata(geography_metadata.geography_id)
   const client = await getWriteableClient()
   const vals = new SqlVals()
-  const sql = `UPDATE ${schema.TABLE.geography_metadata}
+  const sql = `UPDATE "geography_metadata"
     SET geography_metadata = ${vals.add(JSON.stringify(geography_metadata.geography_metadata))}
     WHERE geography_id = ${vals.add(geography_metadata.geography_id)}`
   const {
@@ -289,7 +291,7 @@ export async function deleteGeographyMetadata(geography_id: UUID) {
     // Putting this DB call in because the SQL won't throw if the metadata isn't there.
     await readSingleGeographyMetadata(geography_id)
     const vals = new SqlVals()
-    const sql = `DELETE FROM ${schema.TABLE.geography_metadata} WHERE geography_id = ${vals.add(geography_id)}`
+    const sql = `DELETE FROM "geography_metadata" WHERE geography_id = ${vals.add(geography_id)}`
     await client.query(sql, vals.values())
   } catch (err) {
     logger.error(`deleteGeographyMetadata called on non-existent metadata for ${geography_id}`, err.stack)
