@@ -43,7 +43,7 @@ const { writeDevice } = devices
 const { writeTelemetry } = telemetry
 const { writeEvent } = events
 
-async function initialize() {
+async function reinitialize() {
   const client: MDSPostgresClient = await getWriteableClient()
   await dropTables(client)
   await updateSchema(client)
@@ -130,7 +130,7 @@ async function seed(data: {
 }
 
 export default {
-  initialize,
+  reinitialize,
   health,
   seed,
   startup,
