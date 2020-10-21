@@ -4,8 +4,6 @@ import { isDefined, ClientDisconnectedError, ExceptionMessages } from '@mds-core
 import { initClient } from './helpers/client'
 import { OrderedFields } from '../@types'
 
-// /////////////////// start back-ported junk
-
 export const RedisCache = () => {
   let client: Nullable<Redis.Redis> = null
 
@@ -15,7 +13,6 @@ export const RedisCache = () => {
    * @returns same as what the exec returns
    * @throws ClientDisconnectedError
    */
-
   const safelyExec = async <T>(exec: (theClient: Redis.Redis) => T) => {
     if (isDefined(client)) {
       return exec(client)
@@ -36,67 +33,32 @@ export const RedisCache = () => {
       }
       client = null
     },
-    multi: async () => {
-      return safelyExec(theClient => {
-        return theClient.multi()
-      })
-    },
-    get: async (key: KeyType) => {
-      return safelyExec(theClient => {
-        return theClient.get(key)
-      })
-    },
-    set: async (key: KeyType, val: ValueType) => {
-      return safelyExec(theClient => {
-        return theClient.set(key, val)
-      })
-    },
-    expireat: async (key: KeyType, time: Timestamp) => {
-      return safelyExec(theClient => {
-        return theClient.expireat(key, time)
-      })
-    },
-    dbsize: async () => {
-      return safelyExec(theClient => {
-        return theClient.dbsize()
-      })
-    },
+    multi: async () => safelyExec(theClient => theClient.multi()),
+
+    get: async (key: KeyType) => safelyExec(theClient => theClient.get(key)),
+
+    set: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.set(key, val)),
+
+    expireat: async (key: KeyType, time: Timestamp) => safelyExec(theClient => theClient.expireat(key, time)),
+
+    dbsize: async () => safelyExec(theClient => theClient.dbsize()),
+
     del: async (...keys: KeyType[]) => safelyExec(theClient => theClient.del(keys)),
-    flushdb: async () => {
-      return safelyExec(theClient => {
-        return theClient.flushdb()
-      })
-    },
-    sadd: async (key: KeyType, val: ValueType) => {
-      return safelyExec(theClient => {
-        return theClient.sadd(key, val)
-      })
-    },
-    srem: async (key: KeyType, val: ValueType) => {
-      return safelyExec(theClient => {
-        return theClient.srem(key, val)
-      })
-    },
-    smembers: async (key: KeyType) => {
-      return safelyExec(theClient => {
-        return theClient.smembers(key)
-      })
-    },
-    lpush: async (key: KeyType, val: ValueType) => {
-      return safelyExec(theClient => {
-        return theClient.lpush(key, val)
-      })
-    },
-    rpush: async (key: KeyType, val: ValueType) => {
-      return safelyExec(theClient => {
-        return theClient.rpush(key, val)
-      })
-    },
-    lrange: async (key: KeyType, min: number, max: number) => {
-      return safelyExec(theClient => {
-        return theClient.lrange(key, min, max)
-      })
-    },
+
+    flushdb: async () => safelyExec(theClient => theClient.flushdb()),
+
+    sadd: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.sadd(key, val)),
+
+    srem: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.srem(key, val)),
+
+    smembers: async (key: KeyType) => safelyExec(theClient => theClient.smembers(key)),
+
+    lpush: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.lpush(key, val)),
+
+    rpush: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.rpush(key, val)),
+
+    lrange: async (key: KeyType, min: number, max: number) => safelyExec(theClient => theClient.lrange(key, min, max)),
+
     hset: async (
       key: KeyType,
       ...data: [{ [key: string]: ValueType }] | [KeyType, ValueType][] | [KeyType, ValueType]
@@ -122,66 +84,39 @@ export const RedisCache = () => {
         return theClient.hset(...args)
       })
     },
-    hmset: async (key: KeyType, data: { [key: string]: ValueType }) => {
-      return safelyExec(theClient => {
-        return theClient.hmset(key, data)
-      })
-    },
-    hdel: async (key: KeyType, ...fields: KeyType[]) => {
-      return safelyExec(theClient => {
-        return theClient.hdel(key, fields)
-      })
-    },
-    hgetall: async (key: KeyType) => {
-      return safelyExec(theClient => {
-        return theClient.hgetall(key)
-      })
-    },
-    info: async () => {
-      return safelyExec(theClient => {
-        return theClient.info()
-      })
-    },
-    keys: async (pattern: string) => {
-      return safelyExec(theClient => {
-        return theClient.keys(pattern)
-      })
-    },
-    zadd: async (key: KeyType, fields: OrderedFields | (string | number)[]) => {
-      return safelyExec(theClient => {
+    hmset: async (key: KeyType, data: { [key: string]: ValueType }) =>
+      safelyExec(theClient => theClient.hmset(key, data)),
+
+    hdel: async (key: KeyType, ...fields: KeyType[]) => safelyExec(theClient => theClient.hdel(key, fields)),
+
+    hgetall: async (key: KeyType) => safelyExec(theClient => theClient.hgetall(key)),
+
+    info: async () => safelyExec(theClient => theClient.info()),
+
+    keys: async (pattern: string) => safelyExec(theClient => theClient.keys(pattern)),
+
+    zadd: async (key: KeyType, fields: OrderedFields | (string | number)[]) =>
+      safelyExec(theClient => {
         const entries: (string | number)[] = !Array.isArray(fields)
           ? Object.entries(fields).reduce((acc: (number | string)[], [field, value]) => {
               return [...acc, value, field]
             }, [])
           : fields
         return theClient.zadd(key, ...entries)
-      })
-    },
-    zrem: async (key: KeyType, val: ValueType) => {
-      return safelyExec(theClient => {
-        return theClient.zrem(key, val)
-      })
-    },
-    zrangebyscore: async (key: KeyType, min: string | number, max: string | number) => {
-      return safelyExec(theClient => {
-        return theClient.zrangebyscore(key, min, max)
-      })
-    },
-    geoadd: async (key: KeyType, longitude: number, latitude: number, member: KeyType) => {
-      return safelyExec(theClient => {
-        return theClient.geoadd(key, longitude, latitude, member)
-      })
-    },
-    georadius: async (key: KeyType, longitude: number, latitude: number, radius: number, unit: string) => {
-      return safelyExec(theClient => {
-        return theClient.georadius(key, longitude, latitude, radius, unit)
-      })
-    },
+      }),
+
+    zrem: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.zrem(key, val)),
+
+    zrangebyscore: async (key: KeyType, min: string | number, max: string | number) =>
+      safelyExec(theClient => theClient.zrangebyscore(key, min, max)),
+
+    geoadd: async (key: KeyType, longitude: number, latitude: number, member: KeyType) =>
+      safelyExec(theClient => theClient.geoadd(key, longitude, latitude, member)),
+
+    georadius: async (key: KeyType, longitude: number, latitude: number, radius: number, unit: string) =>
+      safelyExec(theClient => theClient.georadius(key, longitude, latitude, radius, unit)),
+
     /* TODO: Improve multi call response structure */
-    multihgetall: async (key: KeyType) => {
-      return safelyExec(theClient => {
-        return theClient.multi().hgetall(key).exec()
-      })
-    }
+    multihgetall: async (key: KeyType) => safelyExec(theClient => theClient.multi().hgetall(key).exec())
   }
 }
