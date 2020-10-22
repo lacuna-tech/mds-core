@@ -13,6 +13,10 @@ export class CreateDevicesTable1603212409274 implements MigrationInterface {
       )
       await queryRunner.query(`CREATE INDEX "idx_recorded_devices" ON "devices" ("recorded") `)
       await queryRunner.query(`CREATE UNIQUE INDEX "idx_id_devices" ON "devices" ("id") `)
+    } else {
+      await queryRunner.query(
+        `ALTER TABLE "devices" ALTER COLUMN "recorded" SET DEFAULT (extract(epoch from now()) * 1000)::bigint`
+      )
     }
   }
 
