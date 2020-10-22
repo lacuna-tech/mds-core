@@ -654,14 +654,12 @@
       "name": "Tests: mds-jurisdiction-service",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/mocha/bin/_mocha",
-      "args": [
-        "--project",
-        "${workspaceFolder}/tsconfig.json",
-        "-r",
-        "ts-node/register",
-        "--timeout",
-        "0"
+      "runtimeArgs": [
+        "--inspect-brk",
+        "${workspaceRoot}/node_modules/.bin/jest",
+        "--runInBand",
+        "--coverage",
+        "false"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
@@ -780,6 +778,26 @@
       "env": {
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
         "npm_package_name": "@mds-core/mds-repository"
+      }
+    },
+    {
+      "name": "Tests: mds-stream",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "${workspaceRoot}/node_modules/.bin/jest",
+        "--runInBand",
+        "--coverage",
+        "false"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-stream",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
+        "npm_package_name": "@mds-core/mds-stream"
       }
     },
     {
