@@ -13,6 +13,10 @@ export class CreateAttachmentsTable1603203608358 implements MigrationInterface {
       )
       await queryRunner.query(`CREATE INDEX "idx_recorded_attachments" ON "attachments" ("recorded") `)
       await queryRunner.query(`CREATE UNIQUE INDEX "idx_id_attachments" ON "attachments" ("id") `)
+    } else {
+      await queryRunner.query(
+        `ALTER TABLE "attachments" ALTER COLUMN "recorded" SET DEFAULT (extract(epoch from now()) * 1000)::bigint`
+      )
     }
   }
 

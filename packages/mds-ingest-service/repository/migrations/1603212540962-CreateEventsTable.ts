@@ -13,6 +13,10 @@ export class CreateEventsTable1603212540962 implements MigrationInterface {
       )
       await queryRunner.query(`CREATE INDEX "idx_recorded_events" ON "events" ("recorded") `)
       await queryRunner.query(`CREATE UNIQUE INDEX "idx_id_events" ON "events" ("id") `)
+    } else {
+      await queryRunner.query(
+        `ALTER TABLE "events" ALTER COLUMN "recorded" SET DEFAULT (extract(epoch from now()) * 1000)::bigint`
+      )
     }
   }
 
