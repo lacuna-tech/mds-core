@@ -17,6 +17,7 @@ export class CreateEventsTable1603212540962 implements MigrationInterface {
       await queryRunner.query(
         `ALTER TABLE "events" ALTER COLUMN "recorded" SET DEFAULT (extract(epoch from now()) * 1000)::bigint`
       )
+      await queryRunner.query(`ALTER TABLE "events" ALTER COLUMN "event_type" SET NOT NULL`)
     }
   }
 
