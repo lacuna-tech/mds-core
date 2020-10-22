@@ -68,13 +68,12 @@ export function processCountPolicy(
     policy.rules.forEach(rule => {
       const maximum = isDefined(rule.maximum) ? rule.maximum : Number.POSITIVE_INFINITY
       const { rule_id } = rule
-      // Think of `i` as indicating the # of matches for this rule seen so far.
-      let i = 0
+      let num_matches = 0
       sortedEvents.forEach(event => {
         if (devicesToCheck[event.device_id]) {
           const device = devicesToCheck[event.device_id]
           if (isCountRuleMatch(rule as CountRule, geographies, device, event)) {
-            if (i < maximum) {
+            if (num_matches < maximum) {
               matchedVehicles[device.device_id] = { device, rule_applied: rule_id, rules_matched: [rule_id] }
               /* eslint-reason need to remove matched vehicles */
               /* eslint-disable-next-line no-param-reassign */
@@ -89,7 +88,7 @@ export function processCountPolicy(
               }
             }
             // Increment whenever there's a match.
-            i += 1
+            num_matches += 1
           }
         }
       })
