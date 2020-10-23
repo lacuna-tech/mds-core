@@ -39,7 +39,7 @@ export async function getComplianceInputs(provider_id: string | undefined) {
    * So we throw old events out and do not consider them.
    * We also don't consider events that have no associated telemetry.
    */
-  const filteredEvents = getRecentEvents(events)
+  const filteredEvents = getEvents(events)
   return { filteredEvents, deviceMap }
 }
 
@@ -89,13 +89,18 @@ export function getSupersedingPolicies(policies: Policy[]): Policy[] {
   })
 }
 
-export function getRecentEvents(events: VehicleEvent[], end_time = now()): VehicleEvent[] {
-  return events.filter((event: VehicleEvent) => {
-    /* Keep events that are less than two days old.
-     * This is a somewhat arbitrary window of time.
-     */
-    return event.telemetry && event.timestamp > end_time - TWO_DAYS_IN_MS
-  })
+export function getEvents(events: VehicleEvent[], end_time = now()): VehicleEvent[] {
+  return events
+    .filter((event: VehicleEvent) => {
+      /* Keep events that are less than two days old.
+       * This is a somewhat arbitrary window of time.
+       * Events with no telemetry are not used to process compliance.
+       */
+      return event.telemetry && event.timestamp > end_time - TWO_DAYS_IN_MS
+    })
+    .sort((e_1, e_2) => {
+      return e_1.timestamp - e_2.timestamp
+    })
 }
 
 export function createMatchedVehicleInformation(
@@ -121,27 +126,28 @@ export function createMatchedVehicleInformation(
 
 export function annotateVehicleMap<T extends Rule>(
   policy: Policy,
-  sortedEvents: VehicleEventWithTelemetry[],
+  events: VehicleEventWithTelemetry[],
   geographies: Geography[],
   vehicleMap: { [d: string]: { device: Device; rule_applied?: UUID; rules_matched?: UUID[] } },
   matcherFunction: (rule: T, geographyArr: Geography[], device: Device, event: VehicleEventWithTelemetry) => boolean
 ): MatchedVehicleInformation[] {
   const vehiclesFoundMap: { [d: string]: MatchedVehicleInformation } = {}
+  const filteredEvents = events.filter(event => {
+    return Boolean(vehicleMap[event.device_id])
+  }) as VehicleEventWithTelemetry[]
   policy.rules.forEach(rule => {
-    sortedEvents.forEach(event => {
-      if (vehicleMap[event.device_id]) {
-        const { device, rule_applied, rules_matched } = vehicleMap[event.device_id]
-        if (matcherFunction(rule as T, geographies, device, event)) {
-          if (!vehiclesFoundMap[device.device_id]) {
-            vehiclesFoundMap[event.device_id] = createMatchedVehicleInformation(
-              device,
-              event,
-              rule_applied,
-              rules_matched
-            )
-          } else {
-            vehiclesFoundMap[event.device_id].rules_matched.push(rule.rule_id)
-          }
+    filteredEvents.forEach(event => {
+      const { device, rule_applied, rules_matched } = vehicleMap[event.device_id]
+      if (matcherFunction(rule as T, geographies, device, event)) {
+        if (!vehiclesFoundMap[device.device_id]) {
+          vehiclesFoundMap[event.device_id] = createMatchedVehicleInformation(
+            device,
+            event,
+            rule_applied,
+            rules_matched
+          )
+        } else {
+          vehiclesFoundMap[event.device_id].rules_matched.push(rule.rule_id)
         }
       }
     })

@@ -18,7 +18,7 @@ import { Device, Geography, Policy, VehicleEvent, UUID, CountRule, Telemetry } f
 
 import { pointInShape, getPolygon, isInStatesOrEvents, isDefined } from '@mds-core/mds-utils'
 import { ComplianceResult } from '../@types'
-import { annotateVehicleMap, isInVehicleTypes, isPolicyActive, isRuleActive } from './helpers'
+import { annotateVehicleMap, isInVehicleTypes, isRuleActive } from './helpers'
 
 export function isCountRuleMatch(
   rule: CountRule,
@@ -61,56 +61,45 @@ export function processCountPolicy(
   const overflowedVehicles: { [d: string]: { device: Device; rules_matched: UUID[] } } = {}
   let countMinimumViolations = 0
   let excess_vehicles_count = 0
-  if (isPolicyActive(policy)) {
-    const sortedEvents = events.sort((e_1, e_2) => {
-      return e_1.timestamp - e_2.timestamp
-    })
-    policy.rules.forEach(rule => {
-      const maximum = isDefined(rule.maximum) ? rule.maximum : Number.POSITIVE_INFINITY
-      const { rule_id } = rule
-      let num_matches = 0
-      sortedEvents.forEach(event => {
-        if (devicesToCheck[event.device_id]) {
-          const device = devicesToCheck[event.device_id]
-          if (isCountRuleMatch(rule as CountRule, geographies, device, event)) {
-            if (num_matches < maximum) {
-              matchedVehicles[device.device_id] = { device, rule_applied: rule_id, rules_matched: [rule_id] }
-              /* eslint-reason need to remove matched vehicles */
-              /* eslint-disable-next-line no-param-reassign */
-              delete devicesToCheck[device.device_id]
-              delete overflowedVehicles[device.device_id]
-            } else if (overflowedVehicles[device.device_id]) {
-              overflowedVehicles[device.device_id].rules_matched.push(rule_id)
-            } else {
-              overflowedVehicles[device.device_id] = {
-                device,
-                rules_matched: [rule.rule_id]
-              }
+  policy.rules.forEach(rule => {
+    const maximum = isDefined(rule.maximum) ? rule.maximum : Number.POSITIVE_INFINITY
+    const { rule_id } = rule
+    let num_matches = 0
+    events.forEach(event => {
+      if (devicesToCheck[event.device_id]) {
+        const device = devicesToCheck[event.device_id]
+        if (isCountRuleMatch(rule as CountRule, geographies, device, event)) {
+          if (num_matches < maximum) {
+            matchedVehicles[device.device_id] = { device, rule_applied: rule_id, rules_matched: [rule_id] }
+            /* eslint-reason need to remove matched vehicles */
+            /* eslint-disable-next-line no-param-reassign */
+            delete devicesToCheck[device.device_id]
+            delete overflowedVehicles[device.device_id]
+          } else if (overflowedVehicles[device.device_id]) {
+            overflowedVehicles[device.device_id].rules_matched.push(rule_id)
+          } else {
+            overflowedVehicles[device.device_id] = {
+              device,
+              rules_matched: [rule.rule_id]
             }
-            // Increment whenever there's a match.
-            num_matches += 1
           }
+          // Increment whenever there's a match.
+          num_matches += 1
         }
-      })
-      const minimum = rule.minimum == null ? Number.NEGATIVE_INFINITY : rule.minimum
-      if (i < minimum) {
-        countMinimumViolations += minimum - i
       }
     })
-    excess_vehicles_count = Object.keys(overflowedVehicles).length
-    const matchedVehiclesArr = annotateVehicleMap(policy, sortedEvents, geographies, matchedVehicles, isCountRuleMatch)
-    const overflowedVehiclesArr = annotateVehicleMap(
-      policy,
-      sortedEvents,
-      geographies,
-      overflowedVehicles,
-      isCountRuleMatch
-    )
-
-    return {
-      vehicles_found: [...matchedVehiclesArr, ...overflowedVehiclesArr],
-      excess_vehicles_count,
-      total_violations: countMinimumViolations + excess_vehicles_count
+    const rule_minimum = rule.minimum == null ? Number.NEGATIVE_INFINITY : rule.minimum
+    if (num_matches < rule_minimum) {
+      countMinimumViolations += rule_minimum - num_matches
     }
+  })
+  excess_vehicles_count = Object.keys(overflowedVehicles).length
+  const matchedVehiclesArr = annotateVehicleMap(policy, events, geographies, matchedVehicles, isCountRuleMatch)
+  const overflowedVehiclesArr = annotateVehicleMap(policy, events, geographies, overflowedVehicles, isCountRuleMatch)
+
+  return {
+    vehicles_found: [...matchedVehiclesArr, ...overflowedVehiclesArr],
+    excess_vehicles_count,
+    total_violations: countMinimumViolations + excess_vehicles_count
   }
 }

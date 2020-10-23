@@ -42,7 +42,6 @@ import {
   TANZANIA_GEO,
   TANZANIA_POLYGON,
   HIGH_COUNT_POLICY,
-  LOW_COUNT_POLICY,
   VENICE_OVERFLOW_POLICY,
   VENICE_MIXED_VIOLATIONS_POLICY,
   MANY_OVERFLOWS_POLICY,
@@ -197,30 +196,6 @@ describe('Tests Compliance Engine Count Functionality:', () => {
       test.assert.deepEqual(result.total_violations, 490)
       test.assert.deepEqual(result.vehicles_found.length, 10)
       done()
-    })
-  })
-
-  describe('Verifies compliance engine processes by vehicle most recent event', () => {
-    it('should process count violation vehicles with the most recent event last', () => {
-      const devices = makeDevices(6, now())
-      const start_time = now() - 10000000
-      const latest_device: Device = devices[0]
-      const events = devices.reduce((events_acc: VehicleEvent[], device: Device, current_index) => {
-        const device_events = makeEventsWithTelemetry([device], start_time - current_index * 10, CITY_OF_LA, {
-          event_types: ['trip_start'],
-          vehicle_state: 'on_trip',
-          speed: 0
-        })
-        events_acc.push(...device_events)
-        return events_acc
-      }, []) as VehicleEventWithTelemetry[]
-      const deviceMap = generateDeviceMap(devices)
-      const result = processCountPolicy(LOW_COUNT_POLICY, events, GEOGRAPHIES, deviceMap) as ComplianceResult
-      test.assert.deepEqual(result.total_violations, 1)
-      const { 0: device } = result.vehicles_found.filter(vehicle => {
-        return !vehicle.rule_applied
-      })
-      test.assert.deepEqual(latest_device.device_id, device.device_id)
     })
   })
 

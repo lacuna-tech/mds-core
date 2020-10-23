@@ -17,7 +17,7 @@
 import { Device, Geography, Policy, VehicleEvent, UUID, TimeRule, Telemetry } from '@mds-core/mds-types'
 
 import { pointInShape, getPolygon, isInStatesOrEvents, now, RULE_UNIT_MAP } from '@mds-core/mds-utils'
-import { annotateVehicleMap, isInVehicleTypes, isPolicyActive, isRuleActive } from './helpers'
+import { annotateVehicleMap, isInVehicleTypes, isRuleActive } from './helpers'
 import { ComplianceResult } from '../@types'
 
 export function isTimeRuleMatch(
@@ -53,32 +53,27 @@ export function processTimePolicy(
   const matchedVehicles: {
     [d: string]: { device: Device; rule_applied: UUID; rules_matched: UUID[] }
   } = {}
-  if (isPolicyActive(policy)) {
-    const sortedEvents = events.sort((e_1, e_2) => {
-      return e_1.timestamp - e_2.timestamp
-    })
-    policy.rules.forEach(rule => {
-      sortedEvents.forEach(event => {
-        if (devicesToCheck[event.device_id]) {
-          const device = devicesToCheck[event.device_id]
-          if (isTimeRuleMatch(rule as TimeRule, geographies, device, event)) {
-            matchedVehicles[device.device_id] = {
-              device,
-              rule_applied: rule.rule_id,
-              rules_matched: [rule.rule_id]
-            }
-            /* eslint-reason need to remove matched vehicles */
-            /* eslint-disable-next-line no-param-reassign */
-            delete devicesToCheck[device.device_id]
+  policy.rules.forEach(rule => {
+    events.forEach(event => {
+      if (devicesToCheck[event.device_id]) {
+        const device = devicesToCheck[event.device_id]
+        if (isTimeRuleMatch(rule as TimeRule, geographies, device, event)) {
+          matchedVehicles[device.device_id] = {
+            device,
+            rule_applied: rule.rule_id,
+            rules_matched: [rule.rule_id]
           }
+          /* eslint-reason need to remove matched vehicles */
+          /* eslint-disable-next-line no-param-reassign */
+          delete devicesToCheck[device.device_id]
         }
-      })
+      }
     })
-    const matchedVehiclesArr = annotateVehicleMap(policy, sortedEvents, geographies, matchedVehicles, isTimeRuleMatch)
-    return {
-      vehicles_found: matchedVehiclesArr,
-      excess_vehicles_count: 0,
-      total_violations: matchedVehiclesArr.length
-    }
+  })
+  const matchedVehiclesArr = annotateVehicleMap(policy, events, geographies, matchedVehicles, isTimeRuleMatch)
+  return {
+    vehicles_found: matchedVehiclesArr,
+    excess_vehicles_count: 0,
+    total_violations: matchedVehiclesArr.length
   }
 }

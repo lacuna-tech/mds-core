@@ -2,7 +2,7 @@ import { Device, Geography, Policy, VehicleEvent, UUID, SpeedRule, Telemetry } f
 
 import { pointInShape, getPolygon, isInStatesOrEvents } from '@mds-core/mds-utils'
 import { ComplianceResult } from '../@types'
-import { annotateVehicleMap, isInVehicleTypes, isPolicyActive, isRuleActive } from './helpers'
+import { annotateVehicleMap, isInVehicleTypes, isRuleActive } from './helpers'
 
 export function isSpeedRuleMatch(
   rule: SpeedRule,
@@ -34,32 +34,27 @@ export function processSpeedPolicy(
   devicesToCheck: { [d: string]: Device }
 ): ComplianceResult | undefined {
   const matchedVehicles: { [d: string]: { device: Device; rule_applied: UUID; rules_matched: UUID[] } } = {}
-  if (isPolicyActive(policy)) {
-    const sortedEvents = events.sort((e_1, e_2) => {
-      return e_1.timestamp - e_2.timestamp
-    })
-    policy.rules.forEach(rule => {
-      sortedEvents.forEach(event => {
-        if (devicesToCheck[event.device_id]) {
-          const device = devicesToCheck[event.device_id]
-          if (isSpeedRuleMatch(rule as SpeedRule, geographies, device, event)) {
-            matchedVehicles[device.device_id] = {
-              device,
-              rule_applied: rule.rule_id,
-              rules_matched: [rule.rule_id]
-            }
-            /* eslint-reason need to remove matched vehicles */
-            /* eslint-disable-next-line no-param-reassign */
-            delete devicesToCheck[device.device_id]
+  policy.rules.forEach(rule => {
+    events.forEach(event => {
+      if (devicesToCheck[event.device_id]) {
+        const device = devicesToCheck[event.device_id]
+        if (isSpeedRuleMatch(rule as SpeedRule, geographies, device, event)) {
+          matchedVehicles[device.device_id] = {
+            device,
+            rule_applied: rule.rule_id,
+            rules_matched: [rule.rule_id]
           }
+          /* eslint-reason need to remove matched vehicles */
+          /* eslint-disable-next-line no-param-reassign */
+          delete devicesToCheck[device.device_id]
         }
-      })
+      }
     })
-    const matchedVehiclesArr = annotateVehicleMap(policy, sortedEvents, geographies, matchedVehicles, isSpeedRuleMatch)
-    return {
-      vehicles_found: matchedVehiclesArr,
-      excess_vehicles_count: 0,
-      total_violations: matchedVehiclesArr.length
-    }
+  })
+  const matchedVehiclesArr = annotateVehicleMap(policy, events, geographies, matchedVehicles, isSpeedRuleMatch)
+  return {
+    vehicles_found: matchedVehiclesArr,
+    excess_vehicles_count: 0,
+    total_violations: matchedVehiclesArr.length
   }
 }

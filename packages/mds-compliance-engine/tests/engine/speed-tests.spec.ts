@@ -13,7 +13,7 @@ import {
   OVERLAPPING_GEOS_SPEED_POLICY
 } from '../../test_data/fixtures'
 import { isSpeedRuleMatch, processSpeedPolicy } from '../../engine/speed_processors'
-import { getRecentEvents } from '../../engine/helpers'
+import { getEvents } from '../../engine/helpers'
 import { generateDeviceMap } from './helpers'
 import { ComplianceResult, MatchedVehicleInformation, VehicleEventWithTelemetry } from '../../@types'
 
@@ -84,7 +84,7 @@ describe('Tests Compliance Engine Speed Violations', () => {
       speed: 1
     })
 
-    const recentEvents = getRecentEvents([...eventsA, ...eventsB])
+    const recentEvents = getEvents([...eventsA, ...eventsB])
     const deviceMap: { [d: string]: Device } = generateDeviceMap([...devicesA, ...devicesB])
 
     const result = processSpeedPolicy(
@@ -122,7 +122,7 @@ describe('Tests Compliance Engine Speed Violations', () => {
       speed: 100
     })
 
-    const recentEvents = getRecentEvents([...eventsA, ...eventsB])
+    const recentEvents = getEvents([...eventsA, ...eventsB])
     const deviceMap: { [d: string]: Device } = generateDeviceMap([...devicesA, ...devicesB])
 
     const result = processSpeedPolicy(

@@ -17,8 +17,8 @@
 import { Device, Geography, Policy, UUID, RULE_TYPES } from '@mds-core/mds-types'
 
 import { now, UnsupportedTypeError, uuid } from '@mds-core/mds-utils'
-import { VehicleEventWithTelemetry, ComplianceResult, NewComplianceResponse } from '../@types'
-import { getProviderIDs, getComplianceInputs } from './helpers'
+import { VehicleEventWithTelemetry, ComplianceResult, ComplianceResponse } from '../@types'
+import { getProviderIDs, getComplianceInputs, isPolicyActive } from './helpers'
 
 import { processCountPolicy } from './count_processors'
 import { processSpeedPolicy } from './speed_processors'
@@ -61,7 +61,7 @@ export async function createComplianceResponse(
     deviceMap
   )
   if (complianceResult) {
-    const complianceResponse: NewComplianceResponse = {
+    const complianceResponse: ComplianceResponse = {
       compliance_as_of,
       compliance_id: uuid(),
       excess_vehicles_count: complianceResult.excess_vehicles_count,
@@ -82,12 +82,15 @@ export async function createComplianceResponse(
  * `await readGeographies({ get_published: true })`
  */
 export async function processPolicy(policy: Policy, geographies: Geography[]) {
-  const provider_ids = getProviderIDs(policy.provider_ids)
-  const processorFunction = getProcessorType(policy.rules[0].rule_type)
-  const complianceResponsePromises = provider_ids.map(async provider_id =>
-    createComplianceResponse(policy, provider_id, geographies, processorFunction)
-  )
-  const results = await Promise.all(complianceResponsePromises)
-  // filter out undefined results
-  return results.filter(result => !!result)
+  if (isPolicyActive(policy)) {
+    const provider_ids = getProviderIDs(policy.provider_ids)
+    const processorFunction = getProcessorType(policy.rules[0].rule_type)
+    const complianceResponsePromises = provider_ids.map(async provider_id =>
+      createComplianceResponse(policy, provider_id, geographies, processorFunction)
+    )
+    const results = await Promise.all(complianceResponsePromises)
+    // filter out undefined results
+    return results.filter(result => !!result)
+  }
+  return []
 }

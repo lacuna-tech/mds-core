@@ -2,6 +2,7 @@ import { Polygon } from 'geojson'
 import { veniceSpecOps, LA_CITY_BOUNDARY, restrictedAreas } from '@mds-core/mds-test-data'
 
 import { Geography, Policy, RULE_TYPES, VEHICLE_TYPES } from '@mds-core/mds-types'
+import { days, now } from '@mds-core/mds-utils'
 
 export const CITY_OF_LA = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 export const LA_GEOGRAPHY = { name: 'la', geography_id: CITY_OF_LA, geography_json: LA_CITY_BOUNDARY }
@@ -237,6 +238,28 @@ export const LOW_COUNT_POLICY: Policy = {
   description: 'Very low count limit',
   start_date: 1552678594428,
   end_date: null,
+  prev_policies: null,
+  rules: [
+    {
+      name: 'Greater LA',
+      rule_id: '2aa6953d-fa8f-4018-9b54-84c8b4b83c6d',
+      rule_type: 'count',
+      geographies: ['1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'],
+      states: {
+        on_trip: []
+      },
+      vehicle_types: ['bicycle', 'scooter'],
+      maximum: 5
+    }
+  ]
+}
+
+export const EXPIRED_POLICY: Policy = {
+  policy_id: '6d7a9c7e-853c-4ff7-a86f-e17c06d3bd80',
+  name: 'i expired',
+  description: 'expired',
+  start_date: now() - days(7),
+  end_date: now() - days(1),
   prev_policies: null,
   rules: [
     {
