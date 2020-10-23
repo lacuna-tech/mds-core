@@ -25,7 +25,7 @@ export interface ComplianceResult {
   excess_vehicles_count: number
   total_violations: number
 }
-export type NewComplianceResponse = ComplianceResult & {
+export type ComplianceResponse = ComplianceResult & {
   compliance_as_of: Timestamp
   compliance_id: UUID
   policy: {

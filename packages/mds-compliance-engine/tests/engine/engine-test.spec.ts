@@ -10,7 +10,7 @@ import db from '@mds-core/mds-db'
 import assert from 'assert'
 import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
 import { EXPIRED_POLICY, LOW_COUNT_POLICY } from '../../test_data/fixtures'
-import { NewComplianceResponse, VehicleEventWithTelemetry } from '../../@types'
+import { ComplianceResponse, VehicleEventWithTelemetry } from '../../@types'
 import { processPolicy } from '../../engine/mds-compliance-engine'
 import { getSupersedingPolicies, getEvents } from '../../engine/helpers'
 import { readJson } from './helpers'
@@ -103,7 +103,7 @@ describe('Verifies compliance engine processes by vehicle most recent event', ()
     const complianceResults = await processPolicy(LOW_COUNT_POLICY, geographies)
     const { 0: result } = complianceResults.filter(
       complianceResult => complianceResult?.provider_id === TEST1_PROVIDER_ID
-    ) as NewComplianceResponse[]
+    ) as ComplianceResponse[]
     test.assert.deepEqual(result.total_violations, 1)
     const { 0: device } = result.vehicles_found.filter(vehicle => {
       return !vehicle.rule_applied
