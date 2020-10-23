@@ -17,16 +17,18 @@
 import { Device, Geography, Policy, VehicleEvent, UUID, CountRule, Telemetry } from '@mds-core/mds-types'
 
 import { pointInShape, getPolygon, isInStatesOrEvents, isDefined } from '@mds-core/mds-utils'
-import { ComplianceResult } from '../@types'
+import { ComplianceEngineResult, VehicleEventWithTelemetry } from '../@types'
 import { annotateVehicleMap, isInVehicleTypes, isRuleActive } from './helpers'
 
+/**
+ * @param event  We throw out events that have no telemetry, so events are guaranteed
+ * to have telemetry.
+ */
 export function isCountRuleMatch(
   rule: CountRule,
   geographies: Geography[],
   device: Device,
-  // We throw out events that have no telemetry, so events are guaranteed
-  // to have telemetry.
-  event: VehicleEvent & { telemetry: Telemetry }
+  event: VehicleEventWithTelemetry
 ) {
   if (isRuleActive(rule)) {
     for (const geography of rule.geographies) {
@@ -41,7 +43,7 @@ export function isCountRuleMatch(
   return false
 }
 
-/*
+/**
  * This one has the trickiest logic to understand. Basically, if a vehicle matches a rule, it is not
  * necessarily in violation of it. This is confusing because when a vehicle matches a speed rule or a
  * time rule, it's in violation of those rules. It's better to think of the vehicle as being captured
@@ -56,11 +58,10 @@ export function processCountPolicy(
   events: (VehicleEvent & { telemetry: Telemetry })[],
   geographies: Geography[],
   devicesToCheck: { [d: string]: Device }
-): ComplianceResult | undefined {
+): ComplianceEngineResult | undefined {
   const matchedVehicles: { [d: string]: { device: Device; rule_applied: UUID; rules_matched?: UUID[] } } = {}
   const overflowedVehicles: { [d: string]: { device: Device; rules_matched: UUID[] } } = {}
   let countMinimumViolations = 0
-  let excess_vehicles_count = 0
   policy.rules.forEach(rule => {
     const maximum = isDefined(rule.maximum) ? rule.maximum : Number.POSITIVE_INFINITY
     const { rule_id } = rule
@@ -93,7 +94,7 @@ export function processCountPolicy(
       countMinimumViolations += rule_minimum - num_matches
     }
   })
-  excess_vehicles_count = Object.keys(overflowedVehicles).length
+  const excess_vehicles_count = Object.keys(overflowedVehicles).length
   const matchedVehiclesArr = annotateVehicleMap(policy, events, geographies, matchedVehicles, isCountRuleMatch)
   const overflowedVehiclesArr = annotateVehicleMap(policy, events, geographies, overflowedVehicles, isCountRuleMatch)
 

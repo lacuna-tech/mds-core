@@ -35,11 +35,11 @@ export async function getComplianceInputs(provider_id: string | undefined) {
     return device ? Object.assign(map, { [device.device_id]: device }) : map
   }, {})
 
-  /* We do not evaluate violations for vehicles that have not sent events within the last 48 hours.
+  /*  We do not evaluate violations for vehicles that have not sent events within the last 48 hours.
    * So we throw old events out and do not consider them.
    * We also don't consider events that have no associated telemetry.
    */
-  const filteredEvents = getEvents(events)
+  const filteredEvents = filterEvents(events)
   return { filteredEvents, deviceMap }
 }
 
@@ -89,13 +89,13 @@ export function getSupersedingPolicies(policies: Policy[]): Policy[] {
   })
 }
 
-export function getEvents(events: VehicleEvent[], end_time = now()): VehicleEvent[] {
+/**  Keep events that are less than two days old.
+ * @param events Events with no telemetry are not used to process compliance and will be filtered out.
+ * @param end_time This is a somewhat arbitrary window of time.
+ */
+export function filterEvents(events: VehicleEvent[], end_time = now()): VehicleEvent[] {
   return events
     .filter((event: VehicleEvent) => {
-      /* Keep events that are less than two days old.
-       * This is a somewhat arbitrary window of time.
-       * Events with no telemetry are not used to process compliance.
-       */
       return event.telemetry && event.timestamp > end_time - TWO_DAYS_IN_MS
     })
     .sort((e_1, e_2) => {
@@ -106,7 +106,8 @@ export function getEvents(events: VehicleEvent[], end_time = now()): VehicleEven
 export function createMatchedVehicleInformation(
   device: Device,
   event: VehicleEventWithTelemetry,
-  rule_applied_id?: UUID | null,
+  speed?: number,
+  rule_applied_id?: UUID,
   rules_matched?: UUID[]
 ): MatchedVehicleInformation {
   return {
@@ -115,8 +116,8 @@ export function createMatchedVehicleInformation(
     event_types: event.event_types,
     timestamp: event.timestamp,
     rules_matched: rules_matched || [],
-    rule_applied: rule_applied_id, // a device can only ever match at most one rule for the purpose of computing compliance
-    speed: event.telemetry.gps.speed,
+    rule_applied: rule_applied_id,
+    speed,
     gps: {
       lat: event.telemetry.gps.lat,
       lng: event.telemetry.gps.lng
@@ -128,7 +129,7 @@ export function annotateVehicleMap<T extends Rule>(
   policy: Policy,
   events: VehicleEventWithTelemetry[],
   geographies: Geography[],
-  vehicleMap: { [d: string]: { device: Device; rule_applied?: UUID; rules_matched?: UUID[] } },
+  vehicleMap: { [d: string]: { device: Device; speed?: number; rule_applied?: UUID; rules_matched?: UUID[] } },
   matcherFunction: (rule: T, geographyArr: Geography[], device: Device, event: VehicleEventWithTelemetry) => boolean
 ): MatchedVehicleInformation[] {
   const vehiclesFoundMap: { [d: string]: MatchedVehicleInformation } = {}
@@ -137,12 +138,13 @@ export function annotateVehicleMap<T extends Rule>(
   }) as VehicleEventWithTelemetry[]
   policy.rules.forEach(rule => {
     filteredEvents.forEach(event => {
-      const { device, rule_applied, rules_matched } = vehicleMap[event.device_id]
+      const { device, speed, rule_applied, rules_matched } = vehicleMap[event.device_id]
       if (matcherFunction(rule as T, geographies, device, event)) {
         if (!vehiclesFoundMap[device.device_id]) {
           vehiclesFoundMap[event.device_id] = createMatchedVehicleInformation(
             device,
             event,
+            speed,
             rule_applied,
             rules_matched
           )

@@ -10,9 +10,9 @@ import db from '@mds-core/mds-db'
 import assert from 'assert'
 import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
 import { EXPIRED_POLICY, LOW_COUNT_POLICY } from '../../test_data/fixtures'
-import { ComplianceResponse, VehicleEventWithTelemetry } from '../../@types'
+import { ComplianceSnapshot, VehicleEventWithTelemetry } from '../../@types'
 import { processPolicy } from '../../engine/mds-compliance-engine'
-import { getSupersedingPolicies, getEvents } from '../../engine/helpers'
+import { getSupersedingPolicies, filterEvents } from '../../engine/helpers'
 import { readJson } from './helpers'
 
 let policies: Policy[] = []
@@ -52,16 +52,16 @@ describe('Tests General Compliance Engine Functionality', () => {
     await Promise.all(devices.map(async device => db.writeDevice(device)))
 
     // make sure this helper works
-    const recentEvents = getEvents(events) as VehicleEventWithTelemetry[]
+    const recentEvents = filterEvents(events) as VehicleEventWithTelemetry[]
     test.assert.deepEqual(recentEvents.length, 0)
 
     // Mimic what we do in the real world to get inputs to feed into the compliance engine.
     const supersedingPolicies = getSupersedingPolicies(policies)
 
     const policyResults = await Promise.all(supersedingPolicies.map(async policy => processPolicy(policy, geographies)))
-    policyResults.forEach(complianceResponses => {
-      complianceResponses.forEach(complianceResponse => {
-        test.assert.deepEqual(complianceResponse?.vehicles_found.length, 0)
+    policyResults.forEach(ComplianceSnapshots => {
+      ComplianceSnapshots.forEach(complianceSnapshot => {
+        test.assert.deepEqual(complianceSnapshot?.vehicles_found.length, 0)
       })
     })
   })
@@ -103,7 +103,7 @@ describe('Verifies compliance engine processes by vehicle most recent event', ()
     const complianceResults = await processPolicy(LOW_COUNT_POLICY, geographies)
     const { 0: result } = complianceResults.filter(
       complianceResult => complianceResult?.provider_id === TEST1_PROVIDER_ID
-    ) as ComplianceResponse[]
+    ) as ComplianceSnapshot[]
     test.assert.deepEqual(result.total_violations, 1)
     const { 0: device } = result.vehicles_found.filter(vehicle => {
       return !vehicle.rule_applied

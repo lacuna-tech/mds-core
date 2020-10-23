@@ -17,7 +17,7 @@
 import { Device, Geography, Policy, UUID, RULE_TYPES } from '@mds-core/mds-types'
 
 import { now, UnsupportedTypeError, uuid } from '@mds-core/mds-utils'
-import { VehicleEventWithTelemetry, ComplianceResult, ComplianceResponse } from '../@types'
+import { VehicleEventWithTelemetry, ComplianceEngineResult, ComplianceSnapshot } from '../@types'
 import { getProviderIDs, getComplianceInputs, isPolicyActive } from './helpers'
 
 import { processCountPolicy } from './count_processors'
@@ -41,7 +41,7 @@ function getProcessorType(rule_type: string) {
   }
 }
 
-export async function createComplianceResponse(
+export async function createComplianceSnapshot(
   policy: Policy,
   provider_id: UUID,
   geographies: Geography[],
@@ -50,7 +50,7 @@ export async function createComplianceResponse(
     events: VehicleEventWithTelemetry[],
     geos: Geography[],
     devicesToCheck: { [d: string]: Device }
-  ) => ComplianceResult | undefined
+  ) => ComplianceEngineResult | undefined
 ) {
   const { filteredEvents, deviceMap } = await getComplianceInputs(provider_id)
   const compliance_as_of = now()
@@ -61,7 +61,7 @@ export async function createComplianceResponse(
     deviceMap
   )
   if (complianceResult) {
-    const complianceResponse: ComplianceResponse = {
+    const complianceSnapshot: ComplianceSnapshot = {
       compliance_as_of,
       compliance_id: uuid(),
       excess_vehicles_count: complianceResult.excess_vehicles_count,
@@ -73,7 +73,7 @@ export async function createComplianceResponse(
       provider_id,
       vehicles_found: complianceResult.vehicles_found
     }
-    return complianceResponse
+    return complianceSnapshot
   }
 }
 
@@ -85,10 +85,10 @@ export async function processPolicy(policy: Policy, geographies: Geography[]) {
   if (isPolicyActive(policy)) {
     const provider_ids = getProviderIDs(policy.provider_ids)
     const processorFunction = getProcessorType(policy.rules[0].rule_type)
-    const complianceResponsePromises = provider_ids.map(async provider_id =>
-      createComplianceResponse(policy, provider_id, geographies, processorFunction)
+    const ComplianceSnapshotPromises = provider_ids.map(async provider_id =>
+      createComplianceSnapshot(policy, provider_id, geographies, processorFunction)
     )
-    const results = await Promise.all(complianceResponsePromises)
+    const results = await Promise.all(ComplianceSnapshotPromises)
     // filter out undefined results
     return results.filter(result => !!result)
   }

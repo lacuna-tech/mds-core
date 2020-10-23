@@ -13,9 +13,9 @@ import {
   OVERLAPPING_GEOS_SPEED_POLICY
 } from '../../test_data/fixtures'
 import { isSpeedRuleMatch, processSpeedPolicy } from '../../engine/speed_processors'
-import { getEvents } from '../../engine/helpers'
+import { filterEvents } from '../../engine/helpers'
 import { generateDeviceMap } from './helpers'
-import { ComplianceResult, MatchedVehicleInformation, VehicleEventWithTelemetry } from '../../@types'
+import { ComplianceEngineResult, MatchedVehicleInformation, VehicleEventWithTelemetry } from '../../@types'
 
 const SPEED_POLICY: Policy = {
   policy_id: '95645117-fd85-463e-a2c9-fc95ea47463e',
@@ -64,7 +64,7 @@ describe('Tests Compliance Engine Speed Violations', () => {
 
     const deviceMap: { [d: string]: Device } = generateDeviceMap(devices)
 
-    const result = processSpeedPolicy(SPEED_POLICY, events, geographies, deviceMap) as ComplianceResult
+    const result = processSpeedPolicy(SPEED_POLICY, events, geographies, deviceMap) as ComplianceEngineResult
     test.assert.deepEqual(result.total_violations, 0)
     test.assert.deepEqual(result.vehicles_found, [])
     done()
@@ -84,7 +84,7 @@ describe('Tests Compliance Engine Speed Violations', () => {
       speed: 1
     })
 
-    const recentEvents = getEvents([...eventsA, ...eventsB])
+    const recentEvents = filterEvents([...eventsA, ...eventsB])
     const deviceMap: { [d: string]: Device } = generateDeviceMap([...devicesA, ...devicesB])
 
     const result = processSpeedPolicy(
@@ -92,7 +92,7 @@ describe('Tests Compliance Engine Speed Violations', () => {
       recentEvents as (VehicleEvent & { telemetry: Telemetry })[],
       geographies,
       deviceMap
-    ) as ComplianceResult
+    ) as ComplianceEngineResult
     test.assert.deepEqual(result.vehicles_found.length, 5)
     test.assert.deepEqual(result.total_violations, 5)
     const { rule_id } = SPEED_POLICY.rules[0]
@@ -122,7 +122,7 @@ describe('Tests Compliance Engine Speed Violations', () => {
       speed: 100
     })
 
-    const recentEvents = getEvents([...eventsA, ...eventsB])
+    const recentEvents = filterEvents([...eventsA, ...eventsB])
     const deviceMap: { [d: string]: Device } = generateDeviceMap([...devicesA, ...devicesB])
 
     const result = processSpeedPolicy(
@@ -130,7 +130,7 @@ describe('Tests Compliance Engine Speed Violations', () => {
       recentEvents as (VehicleEvent & { telemetry: Telemetry })[],
       [INNER_GEO, OUTER_GEO],
       deviceMap
-    ) as ComplianceResult
+    ) as ComplianceEngineResult
     test.assert.deepEqual(result.vehicles_found.length, 8)
     test.assert.deepEqual(result.total_violations, 8)
     const { rule_id } = OVERLAPPING_GEOS_SPEED_POLICY.rules[0]
@@ -143,7 +143,8 @@ describe('Tests Compliance Engine Speed Violations', () => {
         // i.e. `vehicle.rules_matched === [rule_id_1, rule_id_2], if `===` worked for array equality
         vehicle.rules_matched.includes(rule_id) &&
         vehicle.rules_matched.includes(rule_id_2) &&
-        vehicle.rules_matched.length === 2
+        vehicle.rules_matched.length === 2 &&
+        vehicle.speed === 500
       ) {
         // eslint-disable-next-line no-param-reassign
         count += 1
@@ -156,7 +157,8 @@ describe('Tests Compliance Engine Speed Violations', () => {
         vehicle.rule_applied === rule_id_2 &&
         // i.e. `vehicle.rules_matched === [rule_id_2], if `===` worked for array equality
         vehicle.rules_matched.includes(rule_id_2) &&
-        vehicle.rules_matched.length === 1
+        vehicle.rules_matched.length === 1 &&
+        vehicle.speed === 100
       ) {
         // eslint-disable-next-line no-param-reassign
         count += 1

@@ -8,24 +8,23 @@ export interface MatchedVehicleInformation {
   state: VEHICLE_STATE
   event_types: VEHICLE_EVENT[]
   timestamp: Timestamp
-  /* Sometimes a device can match more than one rule, and it's helpful to know all of them,
-     for instance, with a count policy.
-  */
+  /** A vehicle/event pair may match the *logical criteria* for multiple rules within a policy */
   rules_matched: UUID[]
-  rule_applied?: UUID | null // a device can only ever match one rule at most for the purpose of computing compliance, however
-  speed?: number | null
+  /** Only one rule can be *applied* to a vehicle/event pair in the context of compliance */
+  rule_applied?: UUID
+  speed?: number
   gps: {
     lat: number
     lng: number
   }
 }
 
-export interface ComplianceResult {
+export interface ComplianceEngineResult {
   vehicles_found: MatchedVehicleInformation[]
   excess_vehicles_count: number
   total_violations: number
 }
-export type ComplianceResponse = ComplianceResult & {
+export type ComplianceSnapshot = ComplianceEngineResult & {
   compliance_as_of: Timestamp
   compliance_id: UUID
   policy: {

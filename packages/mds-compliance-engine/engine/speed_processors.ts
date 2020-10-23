@@ -1,7 +1,7 @@
 import { Device, Geography, Policy, VehicleEvent, UUID, SpeedRule, Telemetry } from '@mds-core/mds-types'
 
 import { pointInShape, getPolygon, isInStatesOrEvents } from '@mds-core/mds-utils'
-import { ComplianceResult } from '../@types'
+import { ComplianceEngineResult } from '../@types'
 import { annotateVehicleMap, isInVehicleTypes, isRuleActive } from './helpers'
 
 export function isSpeedRuleMatch(
@@ -32,8 +32,10 @@ export function processSpeedPolicy(
   events: (VehicleEvent & { telemetry: Telemetry })[],
   geographies: Geography[],
   devicesToCheck: { [d: string]: Device }
-): ComplianceResult | undefined {
-  const matchedVehicles: { [d: string]: { device: Device; rule_applied: UUID; rules_matched: UUID[] } } = {}
+): ComplianceEngineResult | undefined {
+  const matchedVehicles: {
+    [d: string]: { device: Device; speed?: number; rule_applied: UUID; rules_matched: UUID[] }
+  } = {}
   policy.rules.forEach(rule => {
     events.forEach(event => {
       if (devicesToCheck[event.device_id]) {
@@ -42,7 +44,8 @@ export function processSpeedPolicy(
           matchedVehicles[device.device_id] = {
             device,
             rule_applied: rule.rule_id,
-            rules_matched: [rule.rule_id]
+            rules_matched: [rule.rule_id],
+            speed: event.telemetry.gps.speed as number
           }
           /* eslint-reason need to remove matched vehicles */
           /* eslint-disable-next-line no-param-reassign */

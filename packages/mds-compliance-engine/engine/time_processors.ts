@@ -18,7 +18,7 @@ import { Device, Geography, Policy, VehicleEvent, UUID, TimeRule, Telemetry } fr
 
 import { pointInShape, getPolygon, isInStatesOrEvents, now, RULE_UNIT_MAP } from '@mds-core/mds-utils'
 import { annotateVehicleMap, isInVehicleTypes, isRuleActive } from './helpers'
-import { ComplianceResult } from '../@types'
+import { ComplianceEngineResult } from '../@types'
 
 export function isTimeRuleMatch(
   rule: TimeRule,
@@ -49,7 +49,7 @@ export function processTimePolicy(
   events: (VehicleEvent & { telemetry: Telemetry })[],
   geographies: Geography[],
   devicesToCheck: { [d: string]: Device }
-): ComplianceResult | undefined {
+): ComplianceEngineResult | undefined {
   const matchedVehicles: {
     [d: string]: { device: Device; rule_applied: UUID; rules_matched: UUID[] }
   } = {}
