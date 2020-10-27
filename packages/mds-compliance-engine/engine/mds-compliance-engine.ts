@@ -17,7 +17,8 @@
 import { Device, Geography, Policy, UUID, RULE_TYPES } from '@mds-core/mds-types'
 
 import { now, UnsupportedTypeError, uuid } from '@mds-core/mds-utils'
-import { VehicleEventWithTelemetry, ComplianceEngineResult, ComplianceSnapshot } from '../@types'
+import { ComplianceSnapshot } from '@mds-core/mds-compliance-service/@types'
+import { VehicleEventWithTelemetry, ComplianceEngineResult } from '../@types'
 import { getProviderIDs, getComplianceInputs, isPolicyActive } from './helpers'
 
 import { processCountPolicy } from './count_processors'

@@ -23,6 +23,7 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@mds-core/mds-agency-cache": "0.1.26",
+    "@mds-core/mds-compliance-service": "0.1.0",
     "@mds-core/mds-db": "0.1.26",
     "@mds-core/mds-logger": "0.1.24",
     "@mds-core/mds-providers": "0.1.26",

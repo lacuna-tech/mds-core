@@ -25,7 +25,10 @@ describe('ComplianceSnapshots Service Tests', () => {
   })
 
   it('Post ComplianceSnapshot', async () => {
-    const ComplianceSnapshot = await ComplianceSnapshotServiceClient.createComplianceSnapshot({ name: 'Test ComplianceSnapshot', text: 'This is a test' })
+    const ComplianceSnapshot = await ComplianceSnapshotServiceClient.createComplianceSnapshot({
+      name: 'Test ComplianceSnapshot',
+      text: 'This is a test'
+    })
     expect(ComplianceSnapshot.name).toEqual('Test ComplianceSnapshot')
   })
 

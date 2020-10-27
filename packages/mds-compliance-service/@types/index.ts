@@ -1,5 +1,6 @@
 import { DomainModelCreate } from '@mds-core/mds-repository'
 import { RpcServiceDefinition, RpcRoute } from '@mds-core/mds-rpc-common'
+import { UUID, Timestamp, VEHICLE_STATE, VEHICLE_EVENT } from '@mds-core/mds-types'
 
 export interface MatchedVehicleInformation {
   device_id: UUID
@@ -17,12 +18,7 @@ export interface MatchedVehicleInformation {
   }
 }
 
-export interface ComplianceEngineResult {
-  vehicles_found: MatchedVehicleInformation[]
-  excess_vehicles_count: number
-  total_violations: number
-}
-export type ComplianceSnapshot = ComplianceEngineResult & {
+export type ComplianceSnapshot = {
   compliance_as_of: Timestamp
   compliance_id: UUID
   policy: {
@@ -30,6 +26,9 @@ export type ComplianceSnapshot = ComplianceEngineResult & {
     policy_id: UUID
   }
   provider_id: UUID
+  vehicles_found: MatchedVehicleInformation[]
+  excess_vehicles_count: number
+  total_violations: number
 }
 export interface ComplianceSnapshotDomainModel {
   name: string

@@ -14,7 +14,8 @@ import db from '@mds-core/mds-db'
 import { isDefined, now, RuntimeError } from '@mds-core/mds-utils'
 import moment from 'moment-timezone'
 import { providers } from '@mds-core/mds-providers'
-import { MatchedVehicleInformation, VehicleEventWithTelemetry } from '../@types'
+import { MatchedVehicleInformation } from '@mds-core/mds-compliance-service'
+import { VehicleEventWithTelemetry } from '../@types'
 
 const { env } = process
 

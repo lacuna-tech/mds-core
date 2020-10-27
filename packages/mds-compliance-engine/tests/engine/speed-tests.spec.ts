@@ -5,6 +5,7 @@ import { Geography, Policy, Device, SpeedRule, Telemetry, VehicleEvent } from '@
 
 import { la_city_boundary } from '@mds-core/mds-policy/tests/la-city-boundary'
 import { FeatureCollection } from 'geojson'
+import { MatchedVehicleInformation } from '@mds-core/mds-compliance-service/@types'
 import {
   INNER_GEO,
   OUTER_GEO,
@@ -15,7 +16,7 @@ import {
 import { isSpeedRuleMatch, processSpeedPolicy } from '../../engine/speed_processors'
 import { filterEvents } from '../../engine/helpers'
 import { generateDeviceMap } from './helpers'
-import { ComplianceEngineResult, MatchedVehicleInformation, VehicleEventWithTelemetry } from '../../@types'
+import { ComplianceEngineResult, VehicleEventWithTelemetry } from '../../@types'
 
 const SPEED_POLICY: Policy = {
   policy_id: '95645117-fd85-463e-a2c9-fc95ea47463e',

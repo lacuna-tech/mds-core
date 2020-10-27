@@ -6,7 +6,7 @@ import { Geography, Policy, Device, VehicleEvent, Telemetry, TimeRule } from '@m
 import { la_city_boundary } from '@mds-core/mds-policy/tests/la-city-boundary'
 import { FeatureCollection } from 'geojson'
 import { minutes } from '@mds-core/mds-utils'
-import { ComplianceResult, MatchedVehicleInformation, VehicleEventWithTelemetry } from '../../@types'
+import { MatchedVehicleInformation } from '@mds-core/mds-compliance-service/@types'
 import { generateDeviceMap } from './helpers'
 import { isTimeRuleMatch, processTimePolicy } from '../../engine/time_processors'
 import {
@@ -136,7 +136,6 @@ describe('Tests Compliance Engine Time Functionality', () => {
     test.assert.deepEqual(result.vehicles_found.length, 9)
     test.assert.deepEqual(result.total_violations, 9)
 
-    console.dir(result, { depth: null })
     const { rule_id } = OVERLAPPING_GEOS_TIME_POLICY.rules[0]
     const rule_id_2 = OVERLAPPING_GEOS_TIME_POLICY.rules[1].rule_id
 
