@@ -9,7 +9,7 @@ import { FeatureCollection } from 'geojson'
 import db from '@mds-core/mds-db'
 import assert from 'assert'
 import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
-import { ComplianceSnapshot } from '@mds-core/mds-compliance-service/@types'
+import { ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service/@types'
 import { EXPIRED_POLICY, LOW_COUNT_POLICY } from '../../test_data/fixtures'
 import { VehicleEventWithTelemetry } from '../../@types'
 import { processPolicy } from '../../engine/mds-compliance-engine'
@@ -60,8 +60,8 @@ describe('Tests General Compliance Engine Functionality', () => {
     const supersedingPolicies = getSupersedingPolicies(policies)
 
     const policyResults = await Promise.all(supersedingPolicies.map(async policy => processPolicy(policy, geographies)))
-    policyResults.forEach(ComplianceSnapshots => {
-      ComplianceSnapshots.forEach(complianceSnapshot => {
+    policyResults.forEach(complianceSnapshots => {
+      complianceSnapshots.forEach(complianceSnapshot => {
         test.assert.deepEqual(complianceSnapshot?.vehicles_found.length, 0)
       })
     })
@@ -104,7 +104,7 @@ describe('Verifies compliance engine processes by vehicle most recent event', ()
     const complianceResults = await processPolicy(LOW_COUNT_POLICY, geographies)
     const { 0: result } = complianceResults.filter(
       complianceResult => complianceResult?.provider_id === TEST1_PROVIDER_ID
-    ) as ComplianceSnapshot[]
+    ) as ComplianceSnapshotDomainModel[]
     test.assert.deepEqual(result.total_violations, 1)
     const { 0: device } = result.vehicles_found.filter(vehicle => {
       return !vehicle.rule_applied

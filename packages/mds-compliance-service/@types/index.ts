@@ -1,4 +1,3 @@
-import { DomainModelCreate } from '@mds-core/mds-repository'
 import { RpcServiceDefinition, RpcRoute } from '@mds-core/mds-rpc-common'
 import { UUID, Timestamp, VEHICLE_STATE, VEHICLE_EVENT } from '@mds-core/mds-types'
 
@@ -18,9 +17,9 @@ export interface MatchedVehicleInformation {
   }
 }
 
-export type ComplianceSnapshot = {
+export interface ComplianceSnapshotDomainModel {
   compliance_as_of: Timestamp
-  compliance_id: UUID
+  compliance_snapshot_id: UUID
   policy: {
     name: string
     policy_id: UUID
@@ -30,22 +29,14 @@ export type ComplianceSnapshot = {
   excess_vehicles_count: number
   total_violations: number
 }
-export interface ComplianceSnapshotDomainModel {
-  name: string
-  text: string
-}
-
-export type ComplianceSnapshotDomainCreateModel = DomainModelCreate<ComplianceSnapshotDomainModel>
 
 export interface ComplianceSnapshotService {
-  createComplianceSnapshots: (
-    complianceSnapshots: ComplianceSnapshotDomainCreateModel[]
-  ) => ComplianceSnapshotDomainModel[]
-  createComplianceSnapshot: (ComplianceSnapshot: ComplianceSnapshotDomainCreateModel) => ComplianceSnapshotDomainModel
+  createComplianceSnapshots: (complianceSnapshots: ComplianceSnapshotDomainModel[]) => ComplianceSnapshotDomainModel[]
+  createComplianceSnapshot: (complianceSnapshot: ComplianceSnapshotDomainModel) => ComplianceSnapshotDomainModel
   getComplianceSnapshots: () => ComplianceSnapshotDomainModel[]
-  getComplianceSnapshot: (name: string) => ComplianceSnapshotDomainModel
-  updateComplianceSnapshot: (ComplianceSnapshot: ComplianceSnapshotDomainModel) => ComplianceSnapshotDomainModel
-  deleteComplianceSnapshot: (name: string) => ComplianceSnapshotDomainModel['name']
+  getComplianceSnapshot: (compliance_snapshot_id: string) => ComplianceSnapshotDomainModel
+  updateComplianceSnapshot: (complianceSnapshot: ComplianceSnapshotDomainModel) => ComplianceSnapshotDomainModel
+  deleteComplianceSnapshot: (compliance_snapshot_id: string) => ComplianceSnapshotDomainModel['compliance_snapshot_id']
 }
 
 export const ComplianceSnapshotServiceDefinition: RpcServiceDefinition<ComplianceSnapshotService> = {

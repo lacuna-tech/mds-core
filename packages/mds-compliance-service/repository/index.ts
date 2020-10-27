@@ -2,7 +2,7 @@ import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core
 import { NotFoundError } from '@mds-core/mds-utils'
 import { ComplianceSnapshotDomainModel } from '../@types'
 import { ComplianceSnapshotEntityToDomain, ComplianceSnapshotDomainToEntityCreate } from './mappers'
-import { ComplianceSnapshotEntity, ComplianceSnapshotEntityModel } from './entities/ComplianceSnapshot-entity'
+import { ComplianceSnapshotEntity, ComplianceSnapshotEntityModel } from './entities/compliance-snapshot-entity'
 import migrations from './migrations'
 
 class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
@@ -24,14 +24,18 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
     }
   }
 
-  public updateComplianceSnapshot = async (update: ComplianceSnapshotDomainModel): Promise<ComplianceSnapshotDomainModel> => {
+  public updateComplianceSnapshot = async (
+    update: ComplianceSnapshotDomainModel
+  ): Promise<ComplianceSnapshotDomainModel> => {
     const { connect } = this
     try {
       const connection = await connect('rw')
-      const { name } = update
-      const currentComplianceSnapshot = await connection.getRepository(ComplianceSnapshotEntity).findOne({ where: { name } })
+      const { compliance_snapshot_id } = update
+      const currentComplianceSnapshot = await connection
+        .getRepository(ComplianceSnapshotEntity)
+        .findOne({ where: { compliance_snapshot_id } })
       if (!currentComplianceSnapshot) {
-        throw new NotFoundError(`ComplianceSnapshot ${name} not found`)
+        throw new NotFoundError(`ComplianceSnapshot ${compliance_snapshot_id} not found`)
       }
       const {
         raw: [updated]
@@ -43,7 +47,7 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
           ...currentComplianceSnapshot,
           ...ComplianceSnapshotDomainToEntityCreate.map(update)
         })
-        .where('name = :name', { name })
+        .where('compliance_snapshot_id = :compliance_snapshot_id', { compliance_snapshot_id })
         .returning('*')
         .execute()
       return ComplianceSnapshotEntityToDomain.map(updated)
@@ -63,7 +67,9 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
     }
   }
 
-  public createComplianceSnapshot = async (ComplianceSnapshot: ComplianceSnapshotDomainModel): Promise<ComplianceSnapshotDomainModel> => {
+  public createComplianceSnapshot = async (
+    ComplianceSnapshot: ComplianceSnapshotDomainModel
+  ): Promise<ComplianceSnapshotDomainModel> => {
     const { connect } = this
     try {
       const connection = await connect('rw')
@@ -82,7 +88,9 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
     }
   }
 
-  public createComplianceSnapshots = async (ComplianceSnapshots: ComplianceSnapshotDomainModel[]): Promise<ComplianceSnapshotDomainModel[]> => {
+  public createComplianceSnapshots = async (
+    ComplianceSnapshots: ComplianceSnapshotDomainModel[]
+  ): Promise<ComplianceSnapshotDomainModel[]> => {
     const { connect } = this
     try {
       const connection = await connect('rw')
@@ -99,20 +107,22 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
     }
   }
 
-  public deleteComplianceSnapshot = async (name: ComplianceSnapshotEntityModel['name']): Promise<ComplianceSnapshotEntityModel['name']> => {
+  public deleteComplianceSnapshot = async (
+    compliance_snapshot_id: ComplianceSnapshotEntityModel['compliance_snapshot_id']
+  ): Promise<ComplianceSnapshotEntityModel['compliance_snapshot_id']> => {
     const { connect, getComplianceSnapshot } = this
     // Try to read ComplianceSnapshot first, if not 404
-    await getComplianceSnapshot(name)
+    await getComplianceSnapshot(compliance_snapshot_id)
     try {
       const connection = await connect('rw')
       await connection
         .getRepository(ComplianceSnapshotEntity)
         .createQueryBuilder()
         .delete()
-        .where('name = :name', { name })
+        .where('compliance_snapshot_id = :compliance_snapshot_id', { compliance_snapshot_id })
         .returning('*')
         .execute()
-      return name
+      return compliance_snapshot_id
     } catch (error) {
       throw RepositoryError(error)
     }
