@@ -7,6 +7,7 @@ import { la_city_boundary } from '@mds-core/mds-policy/tests/la-city-boundary'
 import { FeatureCollection } from 'geojson'
 import { minutes } from '@mds-core/mds-utils'
 import { MatchedVehicleInformation } from '@mds-core/mds-compliance-service/@types'
+import { ComplianceEngineResult, VehicleEventWithTelemetry } from '../../@types'
 import { generateDeviceMap } from './helpers'
 import { isTimeRuleMatch, processTimePolicy } from '../../engine/time_processors'
 import {
@@ -63,7 +64,7 @@ describe('Tests Compliance Engine Time Functionality', () => {
 
     const deviceMap: { [d: string]: Device } = generateDeviceMap(devices)
 
-    const result = processTimePolicy(TIME_POLICY, events, geographies, deviceMap) as ComplianceResult
+    const result = processTimePolicy(TIME_POLICY, events, geographies, deviceMap) as ComplianceEngineResult
     test.assert.deepEqual(result.vehicles_found.length, 0)
     test.assert.deepEqual(result.total_violations, 0)
 
@@ -92,7 +93,7 @@ describe('Tests Compliance Engine Time Functionality', () => {
       [...badEvents, ...goodEvents] as (VehicleEvent & { telemetry: Telemetry })[],
       geographies,
       deviceMap
-    ) as ComplianceResult
+    ) as ComplianceEngineResult
     test.assert.deepEqual(result.vehicles_found.length, 400)
     test.assert.deepEqual(result.total_violations, 400)
 
@@ -132,7 +133,7 @@ describe('Tests Compliance Engine Time Functionality', () => {
       [...eventsA, ...eventsB] as (VehicleEvent & { telemetry: Telemetry })[],
       [INNER_GEO, OUTER_GEO],
       deviceMap
-    ) as ComplianceResult
+    ) as ComplianceEngineResult
     test.assert.deepEqual(result.vehicles_found.length, 9)
     test.assert.deepEqual(result.total_violations, 9)
 
