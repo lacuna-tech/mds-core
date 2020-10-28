@@ -136,7 +136,6 @@ describe('Tests Compliance Engine Time Functionality', () => {
     test.assert.deepEqual(result.vehicles_found.length, 9)
     test.assert.deepEqual(result.total_violations, 9)
 
-    console.dir(result, { depth: null })
     const { rule_id } = OVERLAPPING_GEOS_TIME_POLICY.rules[0]
     const rule_id_2 = OVERLAPPING_GEOS_TIME_POLICY.rules[1].rule_id
 

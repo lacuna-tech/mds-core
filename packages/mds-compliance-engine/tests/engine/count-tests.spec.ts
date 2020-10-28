@@ -23,7 +23,7 @@ import {
 
 import MockDate from 'mockdate'
 import { la_city_boundary } from '@mds-core/mds-policy/tests/la-city-boundary'
-import { ComplianceEngineResult, MatchedVehicleInformation, VehicleEventWithTelemetry } from '../../@types'
+import { ComplianceEngineResult, VehicleEventWithTelemetry } from '../../@types'
 import { generateDeviceMap } from './helpers'
 import {
   CITY_OF_LA,
