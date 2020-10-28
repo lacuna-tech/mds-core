@@ -25,7 +25,7 @@ describe('ComplianceSnapshots Service Tests', () => {
   })
 
   it('Post ComplianceSnapshot', async () => {
-    const ComplianceSnapshot = await ComplianceSnapshotServiceClient.createComplianceSnapshot({
+    const complianceSnapshot = await ComplianceSnapshotServiceClient.createComplianceSnapshot({
       policy: {
         name: 'a dummy',
         policy_id: 'afc11dfe-3b0c-473b-9874-0c372909df73'
@@ -68,18 +68,18 @@ describe('ComplianceSnapshots Service Tests', () => {
       excess_vehicles_count: 3,
       total_violations: 3
     })
-    expect(ComplianceSnapshot.compliance_snapshot_id).toEqual('ec3706e4-9cfd-48d7-8330-150fc733e7e0')
-    expect(ComplianceSnapshot.vehicles_found.length).toEqual(3)
+    expect(complianceSnapshot.compliance_snapshot_id).toEqual('ec3706e4-9cfd-48d7-8330-150fc733e7e0')
+    expect(complianceSnapshot.vehicles_found.length).toEqual(3)
+  })
+
+  it('Get All ComplianceSnapshots', async () => {
+    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshots()
+    expect(complianceSnapshots.length).toEqual(1)
+    const [complianceSnapshot] = complianceSnapshots
+    expect(complianceSnapshot.compliance_snapshot_id).toEqual('ec3706e4-9cfd-48d7-8330-150fc733e7e0')
   })
 
   /*
-  it('Get All ComplianceSnapshots', async () => {
-    const ComplianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshots()
-    expect(ComplianceSnapshots.length).toEqual(1)
-    const [ComplianceSnapshot] = ComplianceSnapshots
-    expect(ComplianceSnapshot.name).toEqual('Test ComplianceSnapshot')
-  })
-
   it('Get One ComplianceSnapshot', async () => {
     const ComplianceSnapshot = await ComplianceSnapshotServiceClient.getComplianceSnapshot('Test ComplianceSnapshot')
     expect(ComplianceSnapshot.name).toEqual('Test ComplianceSnapshot')
