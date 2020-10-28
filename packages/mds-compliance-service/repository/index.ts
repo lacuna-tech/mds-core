@@ -1,22 +1,23 @@
 import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core/mds-repository'
 import { NotFoundError } from '@mds-core/mds-utils'
+import { UUID } from '@mds-core/mds-types'
 import { ComplianceSnapshotDomainModel } from '../@types'
 import { ComplianceSnapshotEntityToDomain, ComplianceSnapshotDomainToEntityCreate } from './mappers'
 import { ComplianceSnapshotEntity, ComplianceSnapshotEntityModel } from './entities/compliance-snapshot-entity'
 import migrations from './migrations'
 
 class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
-  public getComplianceSnapshot = async (name: string): Promise<ComplianceSnapshotDomainModel> => {
+  public getComplianceSnapshot = async (compliance_snapshot_id: UUID): Promise<ComplianceSnapshotDomainModel> => {
     const { connect } = this
     try {
       const connection = await connect('ro')
       const entity = await connection.getRepository(ComplianceSnapshotEntity).findOne({
         where: {
-          name
+          compliance_snapshot_id
         }
       })
       if (!entity) {
-        throw new NotFoundError(`ComplianceSnapshot ${name} not found`)
+        throw new NotFoundError(`ComplianceSnapshot ${compliance_snapshot_id} not found`)
       }
       return ComplianceSnapshotEntityToDomain.map(entity)
     } catch (error) {
