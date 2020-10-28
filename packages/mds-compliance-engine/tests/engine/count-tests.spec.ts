@@ -166,7 +166,6 @@ describe('Tests Compliance Engine Count Functionality:', () => {
       test.assert.deepEqual(result.total_violations, 1)
       test.assert.deepEqual(result.vehicles_found.length, 3001)
 
-      //      test.assert.deepEqual(result.vehicles_in_violation.length, 1)
       done()
     })
 

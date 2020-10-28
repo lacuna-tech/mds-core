@@ -1,7 +1,7 @@
 import { Optional, Timestamp } from '@mds-core/mds-types'
 import { IdentityColumn, ModelMapper, RecordedColumn } from '@mds-core/mds-repository'
 import { ComplianceSnapshotEntityModel } from './entities/compliance-snapshot-entity'
-import { ComplianceSnapshotDomainCreateModel, ComplianceSnapshotDomainModel } from '../@types'
+import { ComplianceSnapshotDomainModel } from '../@types'
 
 type ComplianceSnapshotEntityToDomainOptions = Partial<{}>
 
@@ -10,8 +10,14 @@ export const ComplianceSnapshotEntityToDomain = ModelMapper<
   ComplianceSnapshotDomainModel,
   ComplianceSnapshotEntityToDomainOptions
 >((entity, options) => {
-  const { id, recorded, ...domain } = entity
-  return domain
+  const { id, recorded, policy_id, policy_name, ...domain } = entity
+  return {
+    policy: {
+      policy_id,
+      name: policy_name
+    },
+    ...domain
+  }
 })
 
 type ComplianceSnapshotEntityCreateOptions = Partial<{
@@ -24,10 +30,13 @@ export type ComplianceSnapshotEntityCreateModel = Omit<
 >
 
 export const ComplianceSnapshotDomainToEntityCreate = ModelMapper<
-  ComplianceSnapshotDomainCreateModel,
+  ComplianceSnapshotDomainModel,
   ComplianceSnapshotEntityCreateModel,
   ComplianceSnapshotEntityCreateOptions
 >((domain, options) => {
   const { recorded } = options ?? {}
-  return { ...domain, recorded }
+  const { policy, ...entity } = domain
+  const policy_name = policy.name
+  const { policy_id } = domain.policy
+  return { ...entity, policy_name, policy_id, recorded }
 })
