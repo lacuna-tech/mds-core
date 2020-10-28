@@ -10,9 +10,13 @@ const ComplianceSnapshotServiceRpcClient = RpcClient(ComplianceSnapshotServiceDe
 // What the API layer, and any other clients, will invoke.
 export const ComplianceSnapshotServiceClient: ServiceClient<ComplianceSnapshotService> = {
   getComplianceSnapshot: (...args) => RpcRequest(ComplianceSnapshotServiceRpcClient.getComplianceSnapshot, args),
-  getComplianceSnapshots: (...args) => RpcRequest(ComplianceSnapshotServiceRpcClient.getComplianceSnapshots, args),
+  getComplianceSnapshotsByTimeInterval: (...args) =>
+    RpcRequest(ComplianceSnapshotServiceRpcClient.getComplianceSnapshotsByTimeInterval, args),
+  getComplianceSnapshotsByIDs: (...args) =>
+    RpcRequest(ComplianceSnapshotServiceRpcClient.getComplianceSnapshotsByIDs, args),
   createComplianceSnapshot: (...args) => RpcRequest(ComplianceSnapshotServiceRpcClient.createComplianceSnapshot, args),
-  createComplianceSnapshots: (...args) => RpcRequest(ComplianceSnapshotServiceRpcClient.createComplianceSnapshots, args),
+  createComplianceSnapshots: (...args) =>
+    RpcRequest(ComplianceSnapshotServiceRpcClient.createComplianceSnapshots, args),
   deleteComplianceSnapshot: (...args) => RpcRequest(ComplianceSnapshotServiceRpcClient.deleteComplianceSnapshot, args),
   updateComplianceSnapshot: (...args) => RpcRequest(ComplianceSnapshotServiceRpcClient.updateComplianceSnapshot, args)
 }

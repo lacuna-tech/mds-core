@@ -1,4 +1,5 @@
 import { createConnection, ConnectionOptions } from 'typeorm'
+import { now, days } from '@mds-core/mds-utils'
 import { ComplianceSnapshotServiceManager } from '../service/manager'
 import { ComplianceSnapshotServiceClient } from '../client'
 import { ComplianceSnapshotDomainModel } from '../@types'
@@ -11,7 +12,7 @@ const COMPLIANCE_SNAPSHOT: ComplianceSnapshotDomainModel = {
     policy_id: 'afc11dfe-3b0c-473b-9874-0c372909df73'
   },
   provider_id: 'aa777467-be73-4710-9c4c-e0bea5dd3ac8',
-  compliance_as_of: 1603831850,
+  compliance_as_of: now(),
   compliance_snapshot_id: COMPLIANCE_SNAPSHOT_ID,
   vehicles_found: [
     {
@@ -76,15 +77,50 @@ describe('ComplianceSnapshots Service Tests', () => {
     expect(complianceSnapshot.vehicles_found.length).toEqual(3)
   })
 
-  it('Get All ComplianceSnapshots', async () => {
-    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshots()
+  it('Gets ComplianceSnapshots By TimeInterval (start_time, no end_time options)', async () => {
+    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
+      start_time: now() - days(1)
+    })
     expect(complianceSnapshots.length).toEqual(1)
     const [complianceSnapshot] = complianceSnapshots
     expect(complianceSnapshot.compliance_snapshot_id).toEqual(COMPLIANCE_SNAPSHOT_ID)
   })
 
-  it('Get One ComplianceSnapshot', async () => {
-    const complianceSnapshot = await ComplianceSnapshotServiceClient.getComplianceSnapshot(COMPLIANCE_SNAPSHOT_ID)
+  it('Gets ComplianceSnapshots By TimeInterval (start_time, end_time options)', async () => {
+    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
+      start_time: now() - days(2),
+      end_time: now() - days(1)
+    })
+    expect(complianceSnapshots.length).toEqual(0)
+  })
+
+  it('Gets ComplianceSnapshots By TimeInterval (start_time, provider_ids options)', async () => {
+    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
+      start_time: now() - days(2),
+      provider_ids: ['aa777467-be73-4710-9c4c-e0bea5dd3ac8']
+    })
+    expect(complianceSnapshots.length).toEqual(1)
+  })
+
+  it('Gets ComplianceSnapshots By TimeInterval (start_time, policy_ids options)', async () => {
+    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
+      start_time: now() - days(2),
+      policy_ids: ['afc11dfe-3b0c-473b-9874-0c372909df73']
+    })
+    expect(complianceSnapshots.length).toEqual(1)
+  })
+
+  it('Gets ComplianceSnapshots By IDs', async () => {
+    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByIDs([
+      COMPLIANCE_SNAPSHOT_ID
+    ])
+    expect(complianceSnapshots.length).toEqual(1)
+  })
+
+  it('Get One ComplianceSnapshot by ID', async () => {
+    const complianceSnapshot = await ComplianceSnapshotServiceClient.getComplianceSnapshot({
+      compliance_snapshot_id: COMPLIANCE_SNAPSHOT_ID
+    })
     expect(complianceSnapshot.compliance_snapshot_id).toEqual(COMPLIANCE_SNAPSHOT_ID)
     expect(complianceSnapshot.policy.name).toEqual('a dummy')
     expect(complianceSnapshot.vehicles_found.length).toEqual(3)
@@ -92,7 +128,9 @@ describe('ComplianceSnapshots Service Tests', () => {
 
   it('Deletes One ComplianceSnapshot', async () => {
     await ComplianceSnapshotServiceClient.deleteComplianceSnapshot(COMPLIANCE_SNAPSHOT_ID)
-    await expect(ComplianceSnapshotServiceClient.getComplianceSnapshot(COMPLIANCE_SNAPSHOT_ID)).rejects.toMatchObject({
+    await expect(
+      ComplianceSnapshotServiceClient.getComplianceSnapshot({ compliance_snapshot_id: COMPLIANCE_SNAPSHOT_ID })
+    ).rejects.toMatchObject({
       type: 'NotFoundError'
     })
   })

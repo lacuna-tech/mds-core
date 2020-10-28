@@ -30,19 +30,37 @@ export interface ComplianceSnapshotDomainModel {
   total_violations: number
 }
 
+export type GetComplianceSnapshotOptions = Partial<{
+  compliance_as_of: Timestamp
+  provider_id: UUID
+  policy_id: UUID
+  compliance_snapshot_id: UUID
+}>
+
+export type GetComplianceSnapshotsByTimeIntervalOptions = Partial<{
+  start_time: Timestamp
+  end_time: Timestamp
+  policy_ids: UUID[]
+  provider_ids: UUID[]
+}>
+
 export interface ComplianceSnapshotService {
   createComplianceSnapshots: (complianceSnapshots: ComplianceSnapshotDomainModel[]) => ComplianceSnapshotDomainModel[]
   createComplianceSnapshot: (complianceSnapshot: ComplianceSnapshotDomainModel) => ComplianceSnapshotDomainModel
-  getComplianceSnapshots: () => ComplianceSnapshotDomainModel[]
-  getComplianceSnapshot: (compliance_snapshot_id: string) => ComplianceSnapshotDomainModel
+  getComplianceSnapshotsByTimeInterval: (
+    options: GetComplianceSnapshotsByTimeIntervalOptions
+  ) => ComplianceSnapshotDomainModel[]
+  getComplianceSnapshotsByIDs: (ids: UUID[]) => ComplianceSnapshotDomainModel[]
+  getComplianceSnapshot: (options: GetComplianceSnapshotOptions) => ComplianceSnapshotDomainModel
   updateComplianceSnapshot: (complianceSnapshot: ComplianceSnapshotDomainModel) => ComplianceSnapshotDomainModel
-  deleteComplianceSnapshot: (compliance_snapshot_id: string) => ComplianceSnapshotDomainModel['compliance_snapshot_id']
+  deleteComplianceSnapshot: (compliance_snapshot_id: UUID) => ComplianceSnapshotDomainModel['compliance_snapshot_id']
 }
 
 export const ComplianceSnapshotServiceDefinition: RpcServiceDefinition<ComplianceSnapshotService> = {
   createComplianceSnapshots: RpcRoute<ComplianceSnapshotService['createComplianceSnapshots']>(),
   createComplianceSnapshot: RpcRoute<ComplianceSnapshotService['createComplianceSnapshot']>(),
-  getComplianceSnapshots: RpcRoute<ComplianceSnapshotService['getComplianceSnapshots']>(),
+  getComplianceSnapshotsByTimeInterval: RpcRoute<ComplianceSnapshotService['getComplianceSnapshotsByTimeInterval']>(),
+  getComplianceSnapshotsByIDs: RpcRoute<ComplianceSnapshotService['getComplianceSnapshotsByIDs']>(),
   getComplianceSnapshot: RpcRoute<ComplianceSnapshotService['getComplianceSnapshot']>(),
   updateComplianceSnapshot: RpcRoute<ComplianceSnapshotService['updateComplianceSnapshot']>(),
   deleteComplianceSnapshot: RpcRoute<ComplianceSnapshotService['deleteComplianceSnapshot']>()

@@ -1,6 +1,7 @@
 import logger from '@mds-core/mds-logger'
 import { ServiceResult, ServiceException, ServiceProvider, ProcessController } from '@mds-core/mds-service-helpers'
-import { ComplianceSnapshotService } from '../@types'
+import { UUID } from '@mds-core/mds-types'
+import { ComplianceSnapshotService, GetComplianceSnapshotsByTimeIntervalOptions } from '../@types'
 import { ComplianceSnapshotRepository } from '../repository'
 import { ValidateComplianceSnapshotDomainModel } from './validators'
 
@@ -9,7 +10,11 @@ export const ComplianceSnapshotServiceProvider: ServiceProvider<ComplianceSnapsh
   stop: ComplianceSnapshotRepository.shutdown,
   createComplianceSnapshot: async ComplianceSnapshot => {
     try {
-      return ServiceResult(await ComplianceSnapshotRepository.createComplianceSnapshot(ValidateComplianceSnapshotDomainModel(ComplianceSnapshot)))
+      return ServiceResult(
+        await ComplianceSnapshotRepository.createComplianceSnapshot(
+          ValidateComplianceSnapshotDomainModel(ComplianceSnapshot)
+        )
+      )
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Creating ComplianceSnapshot', error)
       logger.error(exception, error)
@@ -18,25 +23,41 @@ export const ComplianceSnapshotServiceProvider: ServiceProvider<ComplianceSnapsh
   },
   createComplianceSnapshots: async ComplianceSnapshots => {
     try {
-      return ServiceResult(await ComplianceSnapshotRepository.createComplianceSnapshots(ComplianceSnapshots.map(ValidateComplianceSnapshotDomainModel)))
+      return ServiceResult(
+        await ComplianceSnapshotRepository.createComplianceSnapshots(
+          ComplianceSnapshots.map(ValidateComplianceSnapshotDomainModel)
+        )
+      )
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Creating ComplianceSnapshots', error)
       logger.error(exception, error)
       return exception
     }
   },
-  getComplianceSnapshot: async name => {
+  getComplianceSnapshot: async options => {
     try {
-      return ServiceResult(await ComplianceSnapshotRepository.getComplianceSnapshot(name))
+      return ServiceResult(await ComplianceSnapshotRepository.getComplianceSnapshot(options))
     } catch (error) /* istanbul ignore next */ {
-      const exception = ServiceException(`Error Getting ComplianceSnapshot: ${name}`, error)
+      const exception = ServiceException(
+        `Error Getting ComplianceSnapshot with these options: ${JSON.stringify(options)}`,
+        error
+      )
       logger.error(exception, error)
       return exception
     }
   },
-  getComplianceSnapshots: async () => {
+  getComplianceSnapshotsByTimeInterval: async (options: GetComplianceSnapshotsByTimeIntervalOptions) => {
     try {
-      return ServiceResult(await ComplianceSnapshotRepository.getComplianceSnapshots())
+      return ServiceResult(await ComplianceSnapshotRepository.getComplianceSnapshotsByTimeInterval(options))
+    } catch (error) /* istanbul ignore next */ {
+      const exception = ServiceException('Error Getting ComplianceSnapshots', error)
+      logger.error(exception, error)
+      return exception
+    }
+  },
+  getComplianceSnapshotsByIDs: async (ids: UUID[]) => {
+    try {
+      return ServiceResult(await ComplianceSnapshotRepository.getComplianceSnapshotsByIDs(ids))
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting ComplianceSnapshots', error)
       logger.error(exception, error)
