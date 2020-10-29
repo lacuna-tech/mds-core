@@ -1,6 +1,7 @@
 import { Device, Geography, Policy, VehicleEvent, UUID, SpeedRule, Telemetry } from '@mds-core/mds-types'
 
 import { pointInShape, getPolygon, isInStatesOrEvents } from '@mds-core/mds-utils'
+import { VehicleEventWithTelemetry } from 'packages/mds-compliance/types'
 import { ComplianceEngineResult } from '../@types'
 import { annotateVehicleMap, isInVehicleTypes, isRuleActive } from './helpers'
 
@@ -8,8 +9,7 @@ export function isSpeedRuleMatch(
   rule: SpeedRule,
   geographies: Geography[],
   device: Device,
-  // We throw out events that have no telemetry.
-  event: VehicleEvent & { telemetry: Telemetry }
+  event: VehicleEventWithTelemetry
 ) {
   if (isRuleActive(rule)) {
     for (const geography of rule.geographies) {
