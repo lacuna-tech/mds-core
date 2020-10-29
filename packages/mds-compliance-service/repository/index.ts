@@ -39,10 +39,11 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
       const query = connection
         .getRepository(ComplianceSnapshotEntity)
         .createQueryBuilder()
-        .where(`provider_id = ${provider_id}`)
-        .andWhere(`policy_id = ${policy_id}`)
-        .andWhere(`compliance_as_of >= ${p_compliance_as_of} LIMIT 1`)
+        .where(`provider_id = '${provider_id}'`)
+        .andWhere(`policy_id = '${policy_id}'`)
+        .andWhere(`compliance_as_of >= ${p_compliance_as_of}`)
         .orderBy('compliance_as_of')
+
       const entity = await query.getOne()
       if (!entity) {
         throw new NotFoundError(
