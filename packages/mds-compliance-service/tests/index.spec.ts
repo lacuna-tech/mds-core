@@ -163,6 +163,12 @@ describe('ComplianceSnapshots Service Tests', () => {
     expect(complianceSnapshot.compliance_snapshot_id).toEqual(COMPLIANCE_SNAPSHOT_ID)
     expect(complianceSnapshot.policy.name).toEqual('a dummy')
     expect(complianceSnapshot.vehicles_found.length).toEqual(3)
+
+    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByIDs([
+      COMPLIANCE_SNAPSHOT_ID,
+      COMPLIANCE_SNAPSHOT_1.compliance_snapshot_id
+    ])
+    expect(complianceSnapshots.length).toEqual(2)
   })
 
   it('Deletes One ComplianceSnapshot', async () => {
