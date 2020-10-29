@@ -299,9 +299,13 @@ export interface SpeedRule extends BaseRule<'speed'> {
 
 export type UserRule = BaseRule<'user'>
 
-export type Rule = CountRule | TimeRule | SpeedRule | UserRule
+export type RateRule = (CountRule | TimeRule | SpeedRule | UserRule) & {
+  rate_amount: number
+}
 
-export interface Policy {
+export type Rule = CountRule | TimeRule | SpeedRule | UserRule | RateRule
+
+export interface BasePolicy {
   name: string
   description: string
   provider_ids?: UUID[]
@@ -310,8 +314,14 @@ export interface Policy {
   start_date: Timestamp
   end_date: Timestamp | null
   prev_policies: UUID[] | null
-  rules: Rule[]
+  rules: Exclude<Rule, RateRule>[]
   publish_date?: Timestamp
+}
+
+export interface RatePolicy extends BasePolicy {
+  rate_recurrence: 'once' | 'each_time_unit' | 'per_complete_time_unit'
+  currency: string
+  rules: RateRule[]
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
