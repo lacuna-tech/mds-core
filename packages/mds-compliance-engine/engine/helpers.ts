@@ -139,7 +139,7 @@ export function annotateVehicleMap<T extends Rule>(
   }) as VehicleEventWithTelemetry[]
   policy.rules.forEach(rule => {
     filteredEvents.forEach(event => {
-      const { device, speed, rule_applied, rules_matched } = vehicleMap[event.device_id]
+      const { device, speed, rule_applied, rules_matched = [] } = vehicleMap[event.device_id]
       const { device_id } = device
       const { rule_id } = rule
       if (matcherFunction(rule as T, geographies, device, event)) {
