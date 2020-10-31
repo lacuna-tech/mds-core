@@ -416,6 +416,33 @@ describe('Tests Compliance Engine Count Functionality:', () => {
         deviceMap
       ) as ComplianceEngineResult
 
+      const rule_0_id = VENICE_OVERFLOW_POLICY.rules[0].rule_id
+      const rule_1_id = VENICE_OVERFLOW_POLICY.rules[1].rule_id
+      const { vehicles_found } = result
+
+      const violatingVehicles = vehicles_found.filter(vehicle => !!vehicle.rule_applied)
+      const vehiclesCapturedByRule0 = vehicles_found.filter(
+        vehicle =>
+          vehicle.rule_applied === rule_0_id &&
+          vehicle.rules_matched.includes(rule_0_id) &&
+          vehicle.rules_matched.includes(rule_1_id)
+      )
+      const vehiclesCapturedByRule1 = vehicles_found.filter(
+        vehicle => vehicle.rule_applied === rule_1_id && vehicle.rules_matched.includes(rule_1_id)
+      )
+
+      test.assert(vehiclesCapturedByRule0.length === 1)
+      test.assert(vehiclesCapturedByRule1.length === 2)
+
+      const vehiclesMatchingBothRules = vehicles_found.filter(
+        vehicle => vehicle.rules_matched.includes(rule_0_id) && vehicle.rules_matched.includes(rule_1_id)
+      )
+      test.assert(vehiclesMatchingBothRules.length === 3)
+
+      violatingVehicles.forEach(vehicle => {
+        test.assert(vehicle.rules_matched.includes(VENICE_OVERFLOW_POLICY.rules[1].rule_id))
+      })
+
       test.assert.equal(result.total_violations, 2)
       done()
     })
