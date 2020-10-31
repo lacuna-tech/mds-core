@@ -57,7 +57,7 @@
     "unit.js": "2.1.1",
     "webpack": "5.3.2",
     "webpack-cli": "4.1.0",
-    "webpack-merge": "5.2.0",
+    "webpack-merge": "5.3.0",
     "wtfnode": "0.8.3"
   },
   "scripts": {

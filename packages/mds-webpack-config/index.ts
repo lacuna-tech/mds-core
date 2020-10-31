@@ -45,7 +45,7 @@ const MergeConfigurations = (name: string, path: string, config: CustomConfigura
   // eslint-disable-next-line no-console
   console.log(`BUNDLE: ${npm_package_name}@${npm_package_version} from ${resolve(entry[name])}`)
 
-  return WebpackMerge(
+  return WebpackMerge<Configuration>(
     {
       entry,
       output: { path: `${dirname}/dist`, filename: `${name}.js`, libraryTarget: 'commonjs' },
