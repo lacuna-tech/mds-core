@@ -144,7 +144,7 @@ export function annotateVehicleMap<T extends Rule>(
       const { rule_id } = rule
       if (matcherFunction(rule as T, geographies, device, event)) {
         if (!vehiclesFoundMap[device_id]) {
-          if (rules_matched && !rules_matched.includes(rule_id)) {
+          if (!rules_matched.includes(rule_id)) {
             rules_matched.push(rule_id)
           }
           vehiclesFoundMap[device_id] = createMatchedVehicleInformation(
