@@ -34,10 +34,10 @@ Let's imagine that there's a city with a park. More scooters are allowed in the 
         "6576f15a-453f-4b49-bfa3-ac2e11724111"
       ],
       "vehicle_types": ['scooter'],
-      "statuses": {
+      "states": {
         "available": [],
         "reserved": [],
-        "trip": []
+        "on_trip": []
       },
       "maximum": 4
     },
@@ -49,10 +49,10 @@ Let's imagine that there's a city with a park. More scooters are allowed in the 
         "a9b00de9-e325-40d9-b34d-3a37c1bd54d7"
       ],
       "vehicle_types": ['scooter'],
-      "statuses": {
+      "states": {
         "available": [],
         "reserved": [],
-        "trip": []
+        "on_trip": []
       },
       "maximum": 1
     }

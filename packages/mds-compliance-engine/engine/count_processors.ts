@@ -94,6 +94,7 @@ export function processCountPolicy(
       countMinimumViolations += rule_minimum - num_matches
     }
   })
+
   const excess_vehicles_count = Object.keys(overflowedVehicles).length
   const matchedVehiclesArr = annotateVehicleMap(policy, events, geographies, matchedVehicles, isCountRuleMatch)
   const overflowedVehiclesArr = annotateVehicleMap(policy, events, geographies, overflowedVehicles, isCountRuleMatch)

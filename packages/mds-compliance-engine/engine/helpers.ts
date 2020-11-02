@@ -133,24 +133,30 @@ export function annotateVehicleMap<T extends Rule>(
   vehicleMap: { [d: string]: { device: Device; speed?: number; rule_applied?: UUID; rules_matched?: UUID[] } },
   matcherFunction: (rule: T, geographyArr: Geography[], device: Device, event: VehicleEventWithTelemetry) => boolean
 ): MatchedVehicleInformation[] {
+  // For holding the final form of the relevant vehicle, event, and matching rule data.
   const vehiclesFoundMap: { [d: string]: MatchedVehicleInformation } = {}
   const filteredEvents = events.filter(event => {
     return Boolean(vehicleMap[event.device_id])
   }) as VehicleEventWithTelemetry[]
   policy.rules.forEach(rule => {
     filteredEvents.forEach(event => {
-      const { device, speed, rule_applied, rules_matched } = vehicleMap[event.device_id]
+      const { device, speed, rule_applied, rules_matched = [] } = vehicleMap[event.device_id]
+      const { device_id } = device
+      const { rule_id } = rule
       if (matcherFunction(rule as T, geographies, device, event)) {
-        if (!vehiclesFoundMap[device.device_id]) {
-          vehiclesFoundMap[event.device_id] = createMatchedVehicleInformation(
+        if (!vehiclesFoundMap[device_id]) {
+          if (!rules_matched.includes(rule_id)) {
+            rules_matched.push(rule_id)
+          }
+          vehiclesFoundMap[device_id] = createMatchedVehicleInformation(
             device,
             event,
             speed,
             rule_applied,
             rules_matched
           )
-        } else {
-          vehiclesFoundMap[event.device_id].rules_matched.push(rule.rule_id)
+        } else if (!vehiclesFoundMap[device_id].rules_matched.includes(rule_id)) {
+          vehiclesFoundMap[device_id].rules_matched.push(rule_id)
         }
       }
     })
