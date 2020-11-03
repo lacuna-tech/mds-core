@@ -3,7 +3,7 @@ module.exports = {
   testEnvironment: 'node',
   globals: {
     'ts-jest': {
-      tsConfig: '../../tsconfig.json'
+      tsconfig: '../../tsconfig.json'
     }
   },
   setupFiles: ['dotenv/config'],
@@ -14,5 +14,7 @@ module.exports = {
     }
   },
   coverageReporters: ['text', 'html'],
-  coverageDirectory: './coverage/.istanbul_output'
+  coverageDirectory: './coverage/',
+  collectCoverage: true,
+  testTimeout: 10000
 }
