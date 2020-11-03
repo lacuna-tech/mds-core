@@ -1,11 +1,10 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
-import { MigrationHelper } from '@mds-core/mds-repository'
 
 export class CreateTelemetryTable1603212619514 implements MigrationInterface {
   name = 'CreateTelemetryTable1603212619514'
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    if (await MigrationHelper(queryRunner).tableNotExists('telemetry')) {
+    if (!(await queryRunner.hasTable('telemetry'))) {
       await queryRunner.query(
         `CREATE TABLE "telemetry" ("recorded" bigint NOT NULL DEFAULT (extract(epoch from now()) * 1000)::bigint, "id" bigint GENERATED ALWAYS AS IDENTITY, "device_id" uuid NOT NULL, "provider_id" uuid NOT NULL, "timestamp" bigint NOT NULL, "lat" double precision NOT NULL, "lng" double precision NOT NULL, "speed" real, "heading" real, "accuracy" real, "altitude" real, "charge" real, CONSTRAINT "telemetry_pkey" PRIMARY KEY ("device_id", "timestamp"))`
       )

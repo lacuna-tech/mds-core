@@ -1,11 +1,10 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
-import { MigrationHelper } from '@mds-core/mds-repository'
 
 export class CreateAttachmentsTable1603203608358 implements MigrationInterface {
   name = 'CreateAttachmentsTable1603203608358'
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    if (await MigrationHelper(queryRunner).tableNotExists('attachments')) {
+    if (!(await queryRunner.hasTable('attachments'))) {
       await queryRunner.query(
         `CREATE TABLE "attachments" ("recorded" bigint NOT NULL DEFAULT (extract(epoch from now()) * 1000)::bigint, "id" bigint GENERATED ALWAYS AS IDENTITY, "attachment_id" uuid NOT NULL, "attachment_filename" character varying(64) NOT NULL, "base_url" character varying(127) NOT NULL, "mimetype" character varying(255) NOT NULL, "thumbnail_filename" character varying(64), "thumbnail_mimetype" character varying(64), CONSTRAINT "attachments_pkey" PRIMARY KEY ("attachment_id"))`
       )

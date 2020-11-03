@@ -1,11 +1,10 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
-import { MigrationHelper } from '@mds-core/mds-repository'
 
 export class CreateGeographyMetadataTable1602790946354 implements MigrationInterface {
   name = 'CreateGeographyMetadataTable1602790946354'
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    if (await MigrationHelper(queryRunner).tableNotExists('geography_metadata')) {
+    if (!(await queryRunner.hasTable('geography_metadata'))) {
       await queryRunner.query(
         `CREATE TABLE "geography_metadata" ("id" bigint GENERATED ALWAYS AS IDENTITY, "geography_id" uuid NOT NULL, "geography_metadata" json, CONSTRAINT "geography_metadata_pkey" PRIMARY KEY ("geography_id"))`
       )

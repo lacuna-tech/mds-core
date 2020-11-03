@@ -1,11 +1,10 @@
 import { MigrationInterface, QueryRunner } from 'typeorm'
-import { MigrationHelper } from '@mds-core/mds-repository'
 
 export class CreatePolicyMetadataTable1603045629619 implements MigrationInterface {
   name = 'CreatePolicyMetadataTable1603045629619'
 
   public async up(queryRunner: QueryRunner): Promise<void> {
-    if (await MigrationHelper(queryRunner).tableNotExists('policy_metadata')) {
+    if (!(await queryRunner.hasTable('policy_metadata'))) {
       await queryRunner.query(
         `CREATE TABLE "policy_metadata" ("id" bigint GENERATED ALWAYS AS IDENTITY, "policy_id" uuid NOT NULL, "policy_metadata" json, CONSTRAINT "policy_metadata_pkey" PRIMARY KEY ("policy_id"))`
       )
