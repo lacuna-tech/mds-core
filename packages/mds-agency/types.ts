@@ -1,6 +1,12 @@
-import { UUID, Device, VehicleEvent, Telemetry, Timestamp, Recorded, VEHICLE_STATUS, Stop } from '@mds-core/mds-types'
+import { UUID, Device, VehicleEvent, Telemetry, Timestamp, Recorded, VEHICLE_STATUS } from '@mds-core/mds-types'
 import { MultiPolygon } from 'geojson'
-import { ApiRequest, ApiClaims, ApiResponse, ApiResponseLocals, ApiRequestParams } from '@mds-core/mds-api-server'
+import {
+  ApiRequest,
+  ApiResponse,
+  ApiResponseLocals,
+  ApiRequestParams,
+  ApiResponseLocalsClaims
+} from '@mds-core/mds-api-server'
 
 export const AGENCY_API_SUPPORTED_VERSIONS = ['0.4.1'] as const
 export type AGENCY_API_SUPPORTED_VERSION = typeof AGENCY_API_SUPPORTED_VERSIONS[number]
@@ -14,17 +20,12 @@ export type AgencyApiGetVehiclesByProviderRequest = AgencyApiRequest
 export type AgencyApiUpdateVehicleRequest = AgencyApiRequest<Device> & ApiRequestParams<'device_id'>
 export type AgencyApiSubmitVehicleEventRequest = AgencyApiRequest<VehicleEvent> & ApiRequestParams<'device_id'>
 export type AgencyApiSubmitVehicleTelemetryRequest = AgencyApiRequest<{ data: Telemetry[] }>
-export type AgencyApiRegisterStopRequest = AgencyApiRequest<Stop>
-export type AgencyApiReadStopRequest = AgencyApiRequest & ApiRequestParams<'stop_id'>
 
 export type AgencyApiAccessTokenScopes = 'admin:all' | 'vehicles:read'
 
 export type AgencyApiResponse<B = {}> = ApiResponse<B> &
-  ApiResponseLocals<
-    ApiClaims<AgencyApiAccessTokenScopes> & {
-      provider_id: UUID
-    }
-  >
+  ApiResponseLocalsClaims<AgencyApiAccessTokenScopes> &
+  ApiResponseLocals<'provider_id', UUID>
 
 export type AgencyApiRegisterVehicleResponse = AgencyApiResponse
 
@@ -41,18 +42,6 @@ export type AgencyApiSubmitVehicleTelemetryResponse = AgencyApiResponse<{
   recorded: Timestamp
   unique: number
   failures: string[]
-}>
-
-export type AgencyApiRegisterStopResponse = AgencyApiResponse<Recorded<Stop>>
-export type AgencyApiReadStopResponse = AgencyApiResponse<Recorded<Stop>>
-export type AgencyApiReadStopsResponse = AgencyApiResponse<{
-  stops: Readonly<
-    Required<
-      Stop & {
-        id: number
-      }
-    >
-  >[]
 }>
 
 export interface ServiceArea {

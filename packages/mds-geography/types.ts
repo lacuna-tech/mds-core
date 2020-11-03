@@ -17,10 +17,9 @@
 import {
   ApiRequest,
   ApiVersionedResponse,
-  ApiClaims,
-  ApiResponseLocals,
   ApiRequestParams,
-  ApiRequestQuery
+  ApiRequestQuery,
+  ApiResponseLocalsClaims
 } from '@mds-core/mds-api-server'
 import { Geography, GeographySummary } from '@mds-core/mds-types'
 
@@ -41,12 +40,16 @@ export type GeographyApiAccessTokenScopes =
   | 'geographies:read:published'
 
 export type GeographyApiResponse<B = {}> = ApiVersionedResponse<GEOGRAPHY_API_SUPPORTED_VERSION, B> &
-  ApiResponseLocals<ApiClaims<GeographyApiAccessTokenScopes>>
+  ApiResponseLocalsClaims<GeographyApiAccessTokenScopes>
 
-export type GeographyApiGetGeographyResponse = GeographyApiResponse<{
-  data: { geographies: Geography[] | GeographySummary[] } | { geography: Geography | GeographySummary }
-}>
+export type GeographyApiGetGeographyResponseBody = {
+  data: { geography: Geography }
+}
 
-export type GeographyApiGetGeographiesResponse = GeographyApiResponse<{
+export type GeographyApiGetGeographyResponse = GeographyApiResponse<GeographyApiGetGeographyResponseBody>
+
+export type GeographyApiGetGeographiesResponseBody = {
   data: { geographies: Geography[] | GeographySummary[] }
-}>
+}
+
+export type GeographyApiGetGeographiesResponse = GeographyApiResponse<GeographyApiGetGeographiesResponseBody>
