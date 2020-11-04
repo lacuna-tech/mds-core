@@ -21,5 +21,6 @@ export {
   JurisdictionApiCreateJurisdictionRequestBody,
   JurisdictionApiCreateJurisdictionResponseBody,
   JurisdictionApiDeleteJurisdictionResponseBody,
+  JurisdictionApiUpdateJurisdictionRequestBody,
   JurisdictionApiUpdateJurisdictionResponseBody
 } from './handlers'
