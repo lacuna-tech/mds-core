@@ -1717,10 +1717,10 @@
   dependencies:
     "@types/node" "*"
 
-"@types/ioredis@4.17.6":
-  version "4.17.6"
-  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.17.6.tgz#b3b8d6e9fed7f494da08d991d8110daab2e273b8"
-  integrity sha512-Vg3vuhveOaQeiubzGpVU9Hn3UJCi7rPe2TOphc3m3Y2EniHmytHp/wj5ZtfqDGBhFJGaSwbJvGQhhqd/Nqfy4Q==
+"@types/ioredis@4.17.7":
+  version "4.17.7"
+  resolved "https://registry.yarnpkg.com/@types/ioredis/-/ioredis-4.17.7.tgz#5007a56380fd387315efabc6c777c050feabb121"
+  integrity sha512-M8/KDSGmNYhPFMn+CxDDpIEHP27b2muEHgnK1UgIQIMEO2KXH9mznHx3epeRlD+AjF94HFh3dy2/9zqO+pPDqQ==
   dependencies:
     "@types/node" "*"
 
@@ -6132,17 +6132,17 @@ interpret@^2.2.0:
   resolved "https://registry.yarnpkg.com/interpret/-/interpret-2.2.0.tgz#1a78a0b5965c40a5416d007ad6f50ad27c417df9"
   integrity sha512-Ju0Bz/cEia55xDwUWEa8+olFpCiQoypjnQySseKtmjNrnps3P+xfpUmGr90T7yjlVJmOtybRvPXhKMbHr+fWnw==
 
-ioredis@4.19.1:
-  version "4.19.1"
-  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-4.19.1.tgz#7e2d32d37a3b8703b88263a35fed4ff6a3797b4f"
-  integrity sha512-3oRPAdmyEkjPaaEaMWDuR085E5AqhcwG7lObcB3BOzWXk9KuxTu5kVRMQcEHgMf7YnPvppMule6ncqQR7uw/SA==
+ioredis@4.19.2:
+  version "4.19.2"
+  resolved "https://registry.yarnpkg.com/ioredis/-/ioredis-4.19.2.tgz#e3eab394c653cea5aea07c0c784d8c772dce8801"
+  integrity sha512-SZSIwMrbd96b7rJvJwyTWSP6XQ0m1kAIIqBnwglJKrIJ6na7TeY4F2EV2vDY0xm/fLrUY8cEg81dR7kVFt2sKA==
   dependencies:
     cluster-key-slot "^1.1.0"
     debug "^4.1.1"
     denque "^1.1.0"
     lodash.defaults "^4.2.0"
     lodash.flatten "^4.4.0"
-    p-map "^4.0.0"
+    p-map "^2.1.0"
     redis-commands "1.6.0"
     redis-errors "^1.2.0"
     redis-parser "^3.0.0"
@@ -8814,13 +8814,6 @@ p-map@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/p-map/-/p-map-3.0.0.tgz#d704d9af8a2ba684e2600d9a215983d4141a979d"
   integrity sha512-d3qXVTF/s+W+CdJ5A29wywV2n8CQQYahlgz2bFiA+4eVNJbHJodPZ+/gXwPGh0bOqA+j8S+6+ckmvLGPk1QpxQ==
-  dependencies:
-    aggregate-error "^3.0.0"
-
-p-map@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/p-map/-/p-map-4.0.0.tgz#bb2f95a5eda2ec168ec9274e06a747c3e2904d2b"
-  integrity sha512-/bjOqmgETBYB5BoEeGVea8dmvHb2m9GLy1E9W43yeyfP6QQCZGFNa+XRceJEuDB6zqr+gKpIAmlLebMpykw/MQ==
   dependencies:
     aggregate-error "^3.0.0"
 
