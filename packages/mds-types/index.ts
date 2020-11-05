@@ -299,6 +299,10 @@ export interface SpeedRule extends BaseRule<'speed'> {
 
 export type UserRule = BaseRule<'user'>
 
+/**
+ * A RateRule is a rule of any type that has a `rate_amount` property.
+ * @alpha Out-of-spec for MDS 0.4.1
+ */
 export type RateRule = (CountRule | TimeRule | SpeedRule | UserRule) & {
   rate_amount: number
 }
@@ -318,6 +322,10 @@ export interface BasePolicy {
   publish_date?: Timestamp
 }
 
+/**
+ * A RatePolicy is a policy whose rules are RateRules.
+ * @alpha Out-of-spec for MDS 0.4.1
+ */
 export interface RatePolicy extends BasePolicy {
   rate_recurrence: 'once' | 'each_time_unit' | 'per_complete_time_unit'
   currency: string
