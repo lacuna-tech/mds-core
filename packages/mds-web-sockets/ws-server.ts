@@ -84,8 +84,7 @@ export const WebSocketServer = async <T extends readonly string[]>(entityTypes?:
             const [entity, payload] = args
             // Limit messages to only supported entities
             if (isSupported(entity)) {
-              await pushToProducers(entity, payload)
-              return
+              return pushToProducers(entity, payload)
             }
             return ws.send(`Invalid entity: ${entity}`)
           }
