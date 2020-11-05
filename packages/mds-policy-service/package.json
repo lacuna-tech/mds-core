@@ -13,6 +13,7 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
+    "pretest:unit": "yarn typeorm schema:drop",
     "start": "yarn watch server",
     "test": "yarn test:eslint && yarn test:unit",
     "test:eslint": "eslint --ignore-path ../../.gitignore '**/*.ts'",
@@ -30,7 +31,7 @@
     "@mds-core/mds-service-helpers": "0.1.0",
     "@mds-core/mds-types": "0.1.23",
     "@mds-core/mds-utils": "0.1.26",
-    "joi": "17.2.1",
+    "joi": "17.3.0",
     "typeorm": "0.2.28"
   }
 }
