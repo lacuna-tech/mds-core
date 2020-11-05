@@ -31,6 +31,7 @@ const goodToken = jwt.sign({ provider_id: MOCHA_PROVIDER_ID, scope: 'admin:all' 
 
 const ADMIN_AUTH = `Bearer ${goodToken}`
 
+/* Callbacks to use for stream operations. Set by consumers, used by producers. */
 const streamCallbacks: Partial<{ [e: string]: ((err: NatsError | null, msg: Msg) => void)[] }> = {}
 
 /* Can't use the existing mock stream producer, because we use unnamed producers in a hash map for the WS Server */
