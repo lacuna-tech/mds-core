@@ -22,12 +22,8 @@ import {
 import { isServiceError } from '@mds-core/mds-service-helpers'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../@types'
 
-export type JurisdictionApiCreateJurisdictionRequestBody =
-  | CreateJurisdictionDomainModel
-  | CreateJurisdictionDomainModel[]
-
 export type JurisdictionApiCreateJurisdictionRequest = JurisdictionApiRequest<
-  JurisdictionApiCreateJurisdictionRequestBody
+  CreateJurisdictionDomainModel | CreateJurisdictionDomainModel[]
 >
 
 export type JurisdictionApiCreateJurisdictionResponseBody =

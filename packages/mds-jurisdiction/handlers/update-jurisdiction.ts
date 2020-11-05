@@ -23,12 +23,12 @@ import { isServiceError } from '@mds-core/mds-service-helpers'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { JurisdictionApiRequest, JurisdictionApiResponse } from '../@types'
 
-export type JurisdictionApiUpdateJurisdictionRequestBody = Partial<JurisdictionDomainModel>
-
 export type JurisdictionApiUpdateJurisdictionRequest = JurisdictionApiRequest<UpdateJurisdictionDomainModel> &
   ApiRequestParams<'jurisdiction_id'>
 
-export type JurisdictionApiUpdateJurisdictionResponseBody = { jurisdiction: JurisdictionDomainModel }
+export type JurisdictionApiUpdateJurisdictionResponseBody = {
+  jurisdiction: JurisdictionDomainModel
+}
 
 export type JurisdictionApiUpdateJurisdictionResponse = JurisdictionApiResponse<
   JurisdictionApiUpdateJurisdictionResponseBody

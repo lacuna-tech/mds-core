@@ -18,9 +18,7 @@ export { api } from './api'
 export {
   JurisdictionApiGetJurisdictionResponseBody,
   JurisdictionApiGetJurisdictionsResponseBody,
-  JurisdictionApiCreateJurisdictionRequestBody,
   JurisdictionApiCreateJurisdictionResponseBody,
-  JurisdictionApiDeleteJurisdictionResponseBody,
-  JurisdictionApiUpdateJurisdictionRequestBody,
-  JurisdictionApiUpdateJurisdictionResponseBody
+  JurisdictionApiUpdateJurisdictionResponseBody,
+  JurisdictionApiDeleteJurisdictionResponseBody
 } from './handlers'
