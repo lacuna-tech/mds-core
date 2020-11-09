@@ -1,5 +1,5 @@
 import logger from '@mds-core/mds-logger'
-import { seconds, getEnvVar } from '@mds-core/mds-utils'
+import { seconds, getEnvVar, AuthorizationError } from '@mds-core/mds-utils'
 import WebSocket from 'ws'
 import { setWsHeartbeat } from 'ws-heartbeat/server'
 import { Nullable } from '@mds-core/mds-types'
@@ -8,7 +8,6 @@ import stream, { StreamProducer } from '@mds-core/mds-stream'
 import { NatsError, Msg } from 'ts-nats'
 import { DEFAULT_ENTITIES, ENTITY_TYPE, SupportedEntities } from './types'
 import { Clients } from './clients'
-
 
 /**
  * Web Socket Server that autosubscribes to Nats stream and allows socket subscription by entity type
@@ -38,7 +37,7 @@ export const WebSocketServer = async <T extends SupportedEntities>(entityTypes?:
 
   const clients = new Clients(supportedEntities)
 
-  const producers = (Object.keys(supportedEntities)).reduce((acc, e) => {
+  const producers = Object.keys(supportedEntities).reduce((acc, e) => {
     return Object.assign(acc, { [e]: stream.NatsStreamProducer(`${TENANT_ID}.${e}`) })
   }, {} as { [s: string]: StreamProducer<unknown> })
 
@@ -80,15 +79,18 @@ export const WebSocketServer = async <T extends SupportedEntities>(entityTypes?:
 
       /* Testing message, also useful in a NATS-less environment */
       if (header === 'PUSH') {
-        if (clients.isAuthenticated(ws)) {
-          if (args.length === 2) {
-            const [entity, payload] = args
-            // Limit messages to only supported entities
-            if (isSupported(entity)) {
+        if (args.length === 2) {
+          const [entity, payload] = args
+          // Limit messages to only supported entities
+          if (isSupported(entity)) {
+            if (clients.isAuthenticated(ws) && clients.hasScopes(supportedEntities[entity].write, ws)) {
               return pushToProducers(entity, payload)
             }
-            return ws.send(`Invalid entity: ${entity}`)
+
+            return ws.send(`PUSH%${entity}%${JSON.stringify({ err: new AuthorizationError("Insufficient access.")})}`)
           }
+
+          return ws.send(`PUSH%${JSON.stringify({ err: "Invalid entity: ${entity}"})}`)
         }
       }
 
@@ -118,8 +120,6 @@ export const WebSocketServer = async <T extends SupportedEntities>(entityTypes?:
   }
 
   await Promise.all(
-    (Object.keys(supportedEntities)).map(e =>
-      stream.NatsStreamConsumer(`${TENANT_ID}.${e}`, processor).initialize()
-    )
+    Object.keys(supportedEntities).map(e => stream.NatsStreamConsumer(`${TENANT_ID}.${e}`, processor).initialize())
   )
 }

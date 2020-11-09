@@ -66,7 +66,7 @@ export class Clients {
     return Promise.all(
       trimmedEntities.map(entity => {
         try {
-          if (this.hasScopes(this.supportedEntities[entity], client)) {
+          if (this.hasScopes(this.supportedEntities[entity].read, client)) {
             this.subList[entity].push(client)
             client.send(`SUB%${entity}%${JSON.stringify({ status: 'Success' })}`)
           } else {
