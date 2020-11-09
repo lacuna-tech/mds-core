@@ -269,7 +269,7 @@ export interface PolicyMessage {
   [key: string]: string
 }
 
-interface BaseRule<RuleType = 'count' | 'speed' | 'time'> {
+interface BaseRule<RuleType extends 'count' | 'speed' | 'time' | 'user'> {
   name: string
   rule_id: UUID
   geographies: UUID[]
@@ -301,7 +301,7 @@ export type UserRule = BaseRule<'user'>
 
 export type Rule = CountRule | TimeRule | SpeedRule | UserRule
 
-export interface Policy {
+export interface BasePolicy {
   name: string
   description: string
   provider_ids?: UUID[]
@@ -310,8 +310,27 @@ export interface Policy {
   start_date: Timestamp
   end_date: Timestamp | null
   prev_policies: UUID[] | null
-  rules: Rule[]
   publish_date?: Timestamp
+}
+
+export interface Policy extends BasePolicy {
+  rules: Rule[]
+}
+
+/**
+ * A RateRule is a rule of any type that has a `rate_amount` property.
+ * @alpha Out-of-spec for MDS 0.4.1
+ */
+export type RateRule = Rule & { rate_amount: number }
+
+/**
+ * A RatePolicy is a policy whose rules are RateRules.
+ * @alpha Out-of-spec for MDS 0.4.1
+ */
+export interface RatePolicy extends BasePolicy {
+  rate_recurrence: 'once' | 'each_time_unit' | 'per_complete_time_unit'
+  currency: string
+  rules: RateRule[]
 }
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
