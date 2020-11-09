@@ -5,11 +5,16 @@ import logger from '@mds-core/mds-logger'
 import jwt from 'jsonwebtoken'
 import jwks from 'jwks-rsa'
 import { promisify } from 'util'
+import { ENTITY_TYPE, SupportedEntities } from './types'
+
+type Client = { scopes: string[]; socket: WebSocket }
 
 export class Clients {
-  authenticatedClients: WebSocket[]
+  authenticatedClients: Client[]
 
   subList: { [key: string]: WebSocket[] }
+
+  supportedEntities: SupportedEntities
 
   public static getKey = async (header: { kid: string }) => {
     const { JWKS_URI } = process.env
@@ -28,31 +33,47 @@ export class Clients {
     return key.publicKey || key.rsaPublicKey
   }
 
-  public constructor(supportedEntities: readonly string[]) {
+  public constructor(supportedEntities: SupportedEntities) {
     // Initialize subscription list with configured entities
-    this.subList = Object.fromEntries(supportedEntities.map(e => [e, []]))
+    this.subList = Object.fromEntries(Object.keys(supportedEntities).map(e => [e, []]))
     this.authenticatedClients = []
     this.saveClient = this.saveClient.bind(this)
+    this.supportedEntities = supportedEntities
+  }
+
+  public hasScopes(neededScopes: string[], client: WebSocket) {
+    const clientEntry = this.authenticatedClients.find(x => x.socket === client)
+
+    if (clientEntry) {
+      const { scopes: clientScopes } = clientEntry
+      return neededScopes.filter(x => clientScopes.includes(x)).length > 0
+    }
+
+    return false
   }
 
   public isAuthenticated(client: WebSocket) {
-    return this.authenticatedClients.includes(client)
+    return !!this.authenticatedClients.find(x => x.socket === client)
   }
 
   public saveClient(entities: string[], client: WebSocket) {
-    if (!this.authenticatedClients.includes(client)) {
+    if (!this.authenticatedClients.find(x => x.socket === client)) {
       return
     }
 
-    const trimmedEntities = entities.map(entity => entity.trim())
+    const trimmedEntities = entities.map(entity => entity.trim()) as ENTITY_TYPE[]
 
     return Promise.all(
       trimmedEntities.map(entity => {
         try {
-          this.subList[entity].push(client)
-          client.send(`SUB%${JSON.stringify({ status: 'Success' })}`)
+          if (this.hasScopes(this.supportedEntities[entity], client)) {
+            this.subList[entity].push(client)
+            client.send(`SUB%${entity}%${JSON.stringify({ status: 'Success' })}`)
+          } else {
+            throw new AuthorizationError("Client is missing proper scopes!")
+          }
         } catch {
-          client.send(`SUB%${JSON.stringify({ status: 'Failure' })}`)
+          client.send(`SUB%${entity}%${JSON.stringify({ status: 'Failure' })}`)
           return logger.error(`failed to push ${entity}`)
         }
       })
@@ -67,18 +88,14 @@ export class Clients {
 
       const validateAuth = await Clients.checkAuth(token)
       if (!validateAuth) {
-        client.send(JSON.stringify({ err: new AuthorizationError() }))
+        client.send(`AUTH%${JSON.stringify({ err: new AuthorizationError() })}`)
         return
       }
 
       const scopes = auth?.scope.split(' ') ?? []
 
-      if (scopes.includes('admin:all')) {
-        this.authenticatedClients.push(client)
-        client.send(`AUTH%${JSON.stringify({ status: 'Success' })}`)
-      } else {
-        client.send(`AUTH%${JSON.stringify({ status: 'Failure' })}`)
-      }
+      this.authenticatedClients.push({ scopes, socket: client })
+      client.send(`AUTH%${JSON.stringify({ status: 'Success' })}`)
     } catch (err) {
       logger.warn(err)
       client.send(JSON.stringify(err))

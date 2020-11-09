@@ -23,7 +23,7 @@ const RSA_PUBLIC_KEY = key.exportKey('public')
 
 const returnRsaPublicKey = async () => RSA_PUBLIC_KEY
 
-const goodToken = jwt.sign({ provider_id: MOCHA_PROVIDER_ID, scope: 'admin:all' }, RSA_PRIVATE_KEY, {
+const goodToken = jwt.sign({ provider_id: MOCHA_PROVIDER_ID, scope: 'events:read telemetry:read' }, RSA_PRIVATE_KEY, {
   algorithm: 'RS256',
   audience: 'https://example.com',
   issuer: 'https://example.com'
@@ -111,7 +111,7 @@ describe('Tests MDS-Web-Sockets', () => {
       }
 
       client.on('message', data => {
-        if (data === '{"err":{"name":"AuthorizationError"}}') {
+        if (data === 'AUTH%{"err":{"name":"AuthorizationError"}}') {
           client.close()
           return done()
         }
@@ -132,7 +132,7 @@ describe('Tests MDS-Web-Sockets', () => {
           return
         }
 
-        if (data === 'SUB%{"status":"Success"}') {
+        if (data === 'SUB%event%{"status":"Success"}') {
           client.send(`PUSH%event%${JSON.stringify({ foo: 'bar' })}`)
           return
         }
@@ -158,7 +158,7 @@ describe('Tests MDS-Web-Sockets', () => {
           return
         }
 
-        if (data === 'SUB%{"status":"Success"}') {
+        if (data === 'SUB%telemetry%{"status":"Success"}') {
           client.send(`PUSH%telemetry%${JSON.stringify({ foo: 'bar' })}`)
           return
         }

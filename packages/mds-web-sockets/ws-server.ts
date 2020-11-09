@@ -6,15 +6,16 @@ import { Nullable } from '@mds-core/mds-types'
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import stream, { StreamProducer } from '@mds-core/mds-stream'
 import { NatsError, Msg } from 'ts-nats'
-import { ENTITY_TYPE, ENTITY_TYPES } from './types'
+import { DEFAULT_ENTITIES, ENTITY_TYPE, SupportedEntities } from './types'
 import { Clients } from './clients'
+
 
 /**
  * Web Socket Server that autosubscribes to Nats stream and allows socket subscription by entity type
  * @param entityTypes - entity names to support
  */
-export const WebSocketServer = async <T extends readonly string[]>(entityTypes?: T) => {
-  const supportedEntities = entityTypes || ENTITY_TYPES
+export const WebSocketServer = async <T extends SupportedEntities>(entityTypes?: T) => {
+  const supportedEntities = entityTypes || DEFAULT_ENTITIES
   const server = HttpServer(ApiServer(app => app))
 
   logger.info('Creating WS server')
@@ -37,7 +38,7 @@ export const WebSocketServer = async <T extends readonly string[]>(entityTypes?:
 
   const clients = new Clients(supportedEntities)
 
-  const producers = (supportedEntities as readonly string[]).reduce((acc, e) => {
+  const producers = (Object.keys(supportedEntities)).reduce((acc, e) => {
     return Object.assign(acc, { [e]: stream.NatsStreamProducer(`${TENANT_ID}.${e}`) })
   }, {} as { [s: string]: StreamProducer<unknown> })
 
@@ -50,7 +51,7 @@ export const WebSocketServer = async <T extends readonly string[]>(entityTypes?:
   }
 
   function isSupported(entity: string): entity is ENTITY_TYPE {
-    return supportedEntities.some(e => e === entity)
+    return Object.keys(supportedEntities).some(e => e === entity)
   }
 
   function pushToClients(entity: string, message: string) {
@@ -117,7 +118,7 @@ export const WebSocketServer = async <T extends readonly string[]>(entityTypes?:
   }
 
   await Promise.all(
-    (supportedEntities as readonly string[]).map(e =>
+    (Object.keys(supportedEntities)).map(e =>
       stream.NatsStreamConsumer(`${TENANT_ID}.${e}`, processor).initialize()
     )
   )
