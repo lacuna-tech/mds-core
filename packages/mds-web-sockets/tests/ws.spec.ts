@@ -87,12 +87,18 @@ const mockConsumer = (topics: string | string[], processor: (err: NatsError | nu
   }
 }
 
+const server = WebSocketServer().controller()
+
 beforeAll(() => {
   jest.spyOn(Clients, 'getKey').mockImplementation(returnRsaPublicKey)
   jest.spyOn(stream, 'NatsStreamProducer').mockImplementation(mockProducer as any) // need to cast cause jest infers StreamProducer<unknown> ¯\_(ツ)_/¯
   jest.spyOn(stream, 'NatsStreamConsumer').mockImplementation(mockConsumer)
   /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-  WebSocketServer()
+  server.start()
+})
+
+afterAll(async () => {
+  await server.stop()
 })
 
 describe('Tests MDS-Web-Sockets', () => {

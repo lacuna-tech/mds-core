@@ -46,7 +46,7 @@ export class Clients {
 
     if (clientEntry) {
       const { scopes: clientScopes } = clientEntry
-      return neededScopes.filter(x => clientScopes.includes(x)).length > 0
+      return neededScopes.some(x => clientScopes.includes(x))
     }
 
     return false
@@ -70,7 +70,7 @@ export class Clients {
             this.subList[entity].push(client)
             client.send(`SUB%${entity}%${JSON.stringify({ status: 'Success' })}`)
           } else {
-            throw new AuthorizationError("Client is missing proper scopes!")
+            throw new AuthorizationError('Client is missing proper scopes!')
           }
         } catch {
           client.send(`SUB%${entity}%${JSON.stringify({ status: 'Failure' })}`)
