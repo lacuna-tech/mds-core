@@ -15,7 +15,7 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
     compliance_snapshot_id,
     provider_id,
     policy_id,
-    compliance_as_of
+    compliance_as_of = now()
   }: GetComplianceSnapshotOptions): Promise<ComplianceSnapshotDomainModel> => {
     const { connect } = this
     try {
@@ -35,13 +35,12 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
         throw RepositoryError('provider_id and policy_id must be given if compliance_snapshot_id is not given')
       }
 
-      const p_compliance_as_of = compliance_as_of || now()
       const query = connection
         .getRepository(ComplianceSnapshotEntity)
         .createQueryBuilder()
         .where(`provider_id = '${provider_id}'`)
         .andWhere(`policy_id = '${policy_id}'`)
-        .andWhere(`compliance_as_of >= ${p_compliance_as_of}`)
+        .andWhere(`compliance_as_of >= ${compliance_as_of}`)
         .orderBy('compliance_as_of')
 
       const entity = await query.getOne()
@@ -50,7 +49,7 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
           `ComplianceSnapshot not found with params ${JSON.stringify({
             policy_id,
             provider_id,
-            p_compliance_as_of
+            compliance_as_of
           })} not found`
         )
       }
@@ -60,72 +59,33 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
     }
   }
 
-  public updateComplianceSnapshot = async (
-    update: ComplianceSnapshotDomainModel
-  ): Promise<ComplianceSnapshotDomainModel> => {
-    const { connect } = this
-    try {
-      const connection = await connect('rw')
-      const { compliance_snapshot_id } = update
-      const currentComplianceSnapshot = await connection
-        .getRepository(ComplianceSnapshotEntity)
-        .findOne({ where: { compliance_snapshot_id } })
-      if (!currentComplianceSnapshot) {
-        throw new NotFoundError(`ComplianceSnapshot ${compliance_snapshot_id} not found`)
-      }
-      const {
-        raw: [updated]
-      } = await connection
-        .getRepository(ComplianceSnapshotEntity)
-        .createQueryBuilder()
-        .update()
-        .set({
-          ...currentComplianceSnapshot,
-          ...ComplianceSnapshotDomainToEntityCreate.map(update)
-        })
-        .where('compliance_snapshot_id = :compliance_snapshot_id', { compliance_snapshot_id })
-        .returning('*')
-        .execute()
-      return ComplianceSnapshotEntityToDomain.map(updated)
-    } catch (error) {
-      throw RepositoryError(error)
-    }
-  }
-
   public getComplianceSnapshotsByTimeInterval = async ({
     start_time,
-    end_time,
+    end_time = now(),
     provider_ids,
     policy_ids
   }: GetComplianceSnapshotsByTimeIntervalOptions): Promise<ComplianceSnapshotDomainModel[]> => {
     const { connect } = this
-    if (isDefined(start_time)) {
-      const p_end_time = end_time || now()
-      if (p_end_time < start_time) {
-        throw RepositoryError(`end_time of ${p_end_time} cannot be smaller than start_time of ${start_time}`)
+    try {
+      const connection = await connect('ro')
+      const query = connection
+        .getRepository(ComplianceSnapshotEntity)
+        .createQueryBuilder()
+        .where(`compliance_as_of >= ${start_time}`)
+        .andWhere(`compliance_as_of <= ${end_time}`)
+      if (isDefined(provider_ids)) {
+        query.andWhere('provider_id IN (:...provider_ids)', { provider_ids })
       }
-      try {
-        const connection = await connect('ro')
-        const query = connection
-          .getRepository(ComplianceSnapshotEntity)
-          .createQueryBuilder()
-          .where(`compliance_as_of >= ${start_time}`)
-          .andWhere(`compliance_as_of <= ${p_end_time}`)
-        if (isDefined(provider_ids)) {
-          query.andWhere('provider_id IN (:...provider_ids)', { provider_ids })
-        }
-        if (isDefined(policy_ids)) {
-          query.andWhere('policy_id IN (:...policy_ids)', { policy_ids })
-        }
+      if (isDefined(policy_ids)) {
+        query.andWhere('policy_id IN (:...policy_ids)', { policy_ids })
+      }
 
-        query.orderBy('compliance_as_of')
-        const entities = await query.getMany()
-        return entities.map(ComplianceSnapshotEntityToDomain.mapper())
-      } catch (error) {
-        throw RepositoryError(error)
-      }
+      query.orderBy('compliance_as_of')
+      const entities = await query.getMany()
+      return entities.map(ComplianceSnapshotEntityToDomain.mapper())
+    } catch (error) {
+      throw RepositoryError(error)
     }
-    throw RepositoryError('start_time not provided')
   }
 
   public getComplianceSnapshotsByIDs = async (ids: UUID[]): Promise<ComplianceSnapshotDomainModel[]> => {

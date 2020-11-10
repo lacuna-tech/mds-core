@@ -52,8 +52,6 @@ export interface ComplianceSnapshotService {
   ) => ComplianceSnapshotDomainModel[]
   getComplianceSnapshotsByIDs: (ids: UUID[]) => ComplianceSnapshotDomainModel[]
   getComplianceSnapshot: (options: GetComplianceSnapshotOptions) => ComplianceSnapshotDomainModel
-  updateComplianceSnapshot: (complianceSnapshot: ComplianceSnapshotDomainModel) => ComplianceSnapshotDomainModel
-  deleteComplianceSnapshot: (compliance_snapshot_id: UUID) => ComplianceSnapshotDomainModel['compliance_snapshot_id']
 }
 
 export const ComplianceSnapshotServiceDefinition: RpcServiceDefinition<ComplianceSnapshotService> = {
@@ -61,7 +59,5 @@ export const ComplianceSnapshotServiceDefinition: RpcServiceDefinition<Complianc
   createComplianceSnapshot: RpcRoute<ComplianceSnapshotService['createComplianceSnapshot']>(),
   getComplianceSnapshotsByTimeInterval: RpcRoute<ComplianceSnapshotService['getComplianceSnapshotsByTimeInterval']>(),
   getComplianceSnapshotsByIDs: RpcRoute<ComplianceSnapshotService['getComplianceSnapshotsByIDs']>(),
-  getComplianceSnapshot: RpcRoute<ComplianceSnapshotService['getComplianceSnapshot']>(),
-  updateComplianceSnapshot: RpcRoute<ComplianceSnapshotService['updateComplianceSnapshot']>(),
-  deleteComplianceSnapshot: RpcRoute<ComplianceSnapshotService['deleteComplianceSnapshot']>()
+  getComplianceSnapshot: RpcRoute<ComplianceSnapshotService['getComplianceSnapshot']>()
 }
