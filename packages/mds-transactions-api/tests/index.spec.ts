@@ -1,4 +1,4 @@
-import { TransactionServiceManager } from '@lacuna-core/lacuna-transaction-service/service/manager'
+import { TransactionServiceManager } from '@mds-core/mds-transactions-service/service/manager'
 
 const TransactionServer = TransactionServiceManager.controller()
 

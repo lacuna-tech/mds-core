@@ -1,4 +1,4 @@
-import { TransactionServiceClient, TransactionDomainModel } from '@lacuna-core/lacuna-transaction-service'
+import { TransactionServiceClient, TransactionDomainModel } from '@mds-core/mds-transactions-service'
 import { isServiceError } from '@mds-core/mds-service-helpers'
 import { TransactionApiRequest, TransactionApiResponse } from '../@types'
 
@@ -6,7 +6,10 @@ export type TransactionApiUpdateTransactionRequest = TransactionApiRequest<Trans
 
 export type TransactionApiUpdateTransactionResponse = TransactionApiResponse<{ transaction: TransactionDomainModel }>
 
-export const UpdateTransactionHandler = async (req: TransactionApiUpdateTransactionRequest, res: TransactionApiUpdateTransactionResponse) => {
+export const UpdateTransactionHandler = async (
+  req: TransactionApiUpdateTransactionRequest,
+  res: TransactionApiUpdateTransactionResponse
+) => {
   try {
     const { body } = req
     const transaction = await TransactionServiceClient.updateTransaction(body)

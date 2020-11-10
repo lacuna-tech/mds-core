@@ -1,4 +1,4 @@
-import { TransactionServiceClient, TransactionDomainModel } from '@lacuna-core/lacuna-transaction-service'
+import { TransactionServiceClient, TransactionDomainModel } from '@mds-core/mds-transactions-service'
 import { isServiceError } from '@mds-core/mds-service-helpers'
 import { TransactionApiRequest, TransactionApiResponse } from '../@types'
 

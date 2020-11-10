@@ -1,4 +1,4 @@
-import { TransactionServiceClient, TransactionDomainModel } from '@lacuna-core/lacuna-transaction-service'
+import { TransactionServiceClient, TransactionDomainModel } from '@mds-core/mds-transactions-service'
 import { isServiceError } from '@mds-core/mds-service-helpers'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { TransactionApiRequest, TransactionApiResponse } from '../@types'
@@ -7,7 +7,10 @@ export type TransactionApiDeleteTransactionRequest = TransactionApiRequest & Api
 
 export type TransactionApiDeleteTransactionResponse = TransactionApiResponse<{ name: TransactionDomainModel['name'] }>
 
-export const DeleteTransactionHandler = async (req: TransactionApiDeleteTransactionRequest, res: TransactionApiDeleteTransactionResponse) => {
+export const DeleteTransactionHandler = async (
+  req: TransactionApiDeleteTransactionRequest,
+  res: TransactionApiDeleteTransactionResponse
+) => {
   try {
     const { name } = req.params
     await TransactionServiceClient.deleteTransaction(name)
