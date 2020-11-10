@@ -121,6 +121,17 @@ describe('ComplianceSnapshots Service Tests', () => {
     expect(complianceSnapshots.length).toEqual(0)
   })
 
+  it('Throws When Getting ComplianceSnapshots By TimeInterval and end_time < start_time (start_time, end_time options)', async () => {
+    try {
+      await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
+        start_time: now() - days(2),
+        end_time: now() - days(3)
+      })
+    } catch (error) {
+      expect(error.details).toMatch('start_time not provided')
+    }
+  })
+
   it('Gets ComplianceSnapshots By TimeInterval (start_time, provider_ids options)', async () => {
     const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
       start_time: now() - days(2),
@@ -169,15 +180,6 @@ describe('ComplianceSnapshots Service Tests', () => {
       COMPLIANCE_SNAPSHOT_1.compliance_snapshot_id
     ])
     expect(complianceSnapshots.length).toEqual(2)
-  })
-
-  it('Deletes One ComplianceSnapshot', async () => {
-    await ComplianceSnapshotServiceClient.deleteComplianceSnapshot(COMPLIANCE_SNAPSHOT_ID)
-    await expect(
-      ComplianceSnapshotServiceClient.getComplianceSnapshot({ compliance_snapshot_id: COMPLIANCE_SNAPSHOT_ID })
-    ).rejects.toMatchObject({
-      type: 'NotFoundError'
-    })
   })
 
   afterAll(async () => {

@@ -15,9 +15,7 @@ export const ComplianceSnapshotServiceManager = RpcServer(
     getComplianceSnapshot: args => ComplianceSnapshotServiceProvider.getComplianceSnapshot(...args),
     getComplianceSnapshotsByTimeInterval: args =>
       ComplianceSnapshotServiceProvider.getComplianceSnapshotsByTimeInterval(...args),
-    getComplianceSnapshotsByIDs: args => ComplianceSnapshotServiceProvider.getComplianceSnapshotsByIDs(...args),
-    updateComplianceSnapshot: args => ComplianceSnapshotServiceProvider.updateComplianceSnapshot(...args),
-    deleteComplianceSnapshot: args => ComplianceSnapshotServiceProvider.deleteComplianceSnapshot(...args)
+    getComplianceSnapshotsByIDs: args => ComplianceSnapshotServiceProvider.getComplianceSnapshotsByIDs(...args)
   },
   {
     port: process.env.COMPLIANCE_SNAPSHOT_SERVICE_RPC_PORT,

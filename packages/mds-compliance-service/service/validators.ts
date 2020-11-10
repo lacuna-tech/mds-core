@@ -1,7 +1,7 @@
 import Joi from 'joi'
-import { ValidationError } from '@mds-core/mds-utils'
-import { numberSchema, vehicleEventTypeSchema, vehicleStatusSchema } from '@mds-core/mds-schema-validators'
-import { ComplianceSnapshotDomainModel } from '../@types'
+import { isDefined, now, ValidationError } from '@mds-core/mds-utils'
+import { numberSchema, uuidSchema, vehicleEventTypeSchema, vehicleStatusSchema } from '@mds-core/mds-schema-validators'
+import { ComplianceSnapshotDomainModel, GetComplianceSnapshotsByTimeIntervalOptions } from '../@types'
 
 const policySchema = Joi.object().keys({
   policy_id: Joi.string().uuid().required(),
@@ -22,7 +22,7 @@ const matchedVehicleInformationSchema = Joi.object().keys({
   speed: Joi.number()
 })
 
-export const ComplianceSnapshotDomainModelSchema = Joi.object().keys({
+export const complianceSnapshotDomainModelSchema = Joi.object().keys({
   compliance_snapshot_id: Joi.string().uuid().required().error(Error('compliance_snapshot_id is missing')),
   compliance_as_of: Joi.number().integer().required().error(Error('compliance_as_of is missing')),
   provider_id: Joi.string().uuid().required().error(Error('provider_id is missing')),
@@ -35,9 +35,31 @@ export const ComplianceSnapshotDomainModelSchema = Joi.object().keys({
 export const ValidateComplianceSnapshotDomainModel = (
   complianceSnapshot: ComplianceSnapshotDomainModel
 ): ComplianceSnapshotDomainModel => {
-  const { error } = ComplianceSnapshotDomainModelSchema.validate(complianceSnapshot)
+  const { error } = complianceSnapshotDomainModelSchema.validate(complianceSnapshot)
   if (error) {
     throw new ValidationError(error.message, complianceSnapshot)
   }
   return complianceSnapshot
+}
+
+const getComplianceSnapshotsByTimeIntervalOptionsSchema = Joi.object().keys({
+  start_time: Joi.number().integer().required().error(Error('start_time not provided')).less(Joi.ref('end_time')),
+  end_time: Joi.number().integer().required().error(Error('end_time not provided')),
+  provider_ids: Joi.array().items(uuidSchema),
+  policy_ids: Joi.array().items(uuidSchema)
+})
+
+export const ValidateGetComplianceSnapshotsByTimeIntervalOptions = (
+  options: GetComplianceSnapshotsByTimeIntervalOptions
+) => {
+  if (!isDefined(options.end_time)) {
+    // eslint-disable-next-line no-param-reassign
+    options.end_time = now()
+  }
+
+  const { error } = getComplianceSnapshotsByTimeIntervalOptionsSchema.validate(options)
+  if (error) {
+    throw new ValidationError(error.message, options)
+  }
+  return options
 }

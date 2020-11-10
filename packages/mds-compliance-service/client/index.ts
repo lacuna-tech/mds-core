@@ -15,8 +15,5 @@ export const ComplianceSnapshotServiceClient: ServiceClient<ComplianceSnapshotSe
   getComplianceSnapshotsByIDs: (...args) =>
     RpcRequest(ComplianceSnapshotServiceRpcClient.getComplianceSnapshotsByIDs, args),
   createComplianceSnapshot: (...args) => RpcRequest(ComplianceSnapshotServiceRpcClient.createComplianceSnapshot, args),
-  createComplianceSnapshots: (...args) =>
-    RpcRequest(ComplianceSnapshotServiceRpcClient.createComplianceSnapshots, args),
-  deleteComplianceSnapshot: (...args) => RpcRequest(ComplianceSnapshotServiceRpcClient.deleteComplianceSnapshot, args),
-  updateComplianceSnapshot: (...args) => RpcRequest(ComplianceSnapshotServiceRpcClient.updateComplianceSnapshot, args)
+  createComplianceSnapshots: (...args) => RpcRequest(ComplianceSnapshotServiceRpcClient.createComplianceSnapshots, args)
 }
