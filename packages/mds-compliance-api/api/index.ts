@@ -2,36 +2,43 @@ import express from 'express'
 import { pathPrefix } from '@mds-core/mds-utils'
 import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import { ComplianceApiVersionMiddleware } from '../middleware'
-import { CreateComplianceHandler, DeleteComplianceHandler, GetComplianceHandler, GetComplianceHandler, UpdateComplianceHandler } from '../handlers'
+import {
+  CreateComplianceHandler,
+  DeleteComplianceHandler,
+  GetCompliancesHandler,
+  GetComplianceHandler,
+  UpdateComplianceHandler
+} from '../handlers'
 import { ComplianceApiAccessTokenScopes } from '../@types'
 
-const checkComplianceApiAccess = (validator: AccessTokenScopeValidator<ComplianceApiAccessTokenScopes>) => checkAccess(validator)
+const checkComplianceApiAccess = (validator: AccessTokenScopeValidator<ComplianceApiAccessTokenScopes>) =>
+  checkAccess(validator)
 
 export const api = (app: express.Express): express.Express =>
   app
     .use(ComplianceApiVersionMiddleware)
     .get(
-      pathPrefix('/compliance'),
-      checkComplianceApiAccess(scopes => scopes.includes('compliance:read')),
-      GetComplianceHandler
+      pathPrefix('/compliances'),
+      checkComplianceApiAccess(scopes => scopes.includes('compliances:read')),
+      GetCompliancesHandler
     )
     .get(
-      pathPrefix('/compliance/:compliance_id'),
-      checkComplianceApiAccess(scopes => scopes.includes('compliance:read')),
+      pathPrefix('/compliances/:compliance_id'),
+      checkComplianceApiAccess(scopes => scopes.includes('compliances:read')),
       GetComplianceHandler
     )
     .post(
-      pathPrefix('/compliance'),
-      checkComplianceApiAccess(scopes => scopes.includes('compliance:write')),
+      pathPrefix('/compliances'),
+      checkComplianceApiAccess(scopes => scopes.includes('compliances:write')),
       CreateComplianceHandler
     )
     .put(
-      pathPrefix('/compliance/:compliance_id'),
-      checkComplianceApiAccess(scopes => scopes.includes('compliance:write')),
+      pathPrefix('/compliances/:compliance_id'),
+      checkComplianceApiAccess(scopes => scopes.includes('compliances:write')),
       UpdateComplianceHandler
     )
     .delete(
-      pathPrefix('/compliance/:compliance_id'),
-      checkComplianceApiAccess(scopes => scopes.includes('compliance:write')),
+      pathPrefix('/compliances/:compliance_id'),
+      checkComplianceApiAccess(scopes => scopes.includes('compliances:write')),
       DeleteComplianceHandler
     )

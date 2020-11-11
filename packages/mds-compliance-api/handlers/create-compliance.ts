@@ -2,11 +2,10 @@ import { ComplianceServiceClient, ComplianceDomainModel } from '@lacuna-core/lac
 import { isServiceError } from '@mds-core/mds-service-helpers'
 import { ComplianceApiRequest, ComplianceApiResponse } from '../@types'
 
-export type ComplianceApiCreateComplianceRequest = ComplianceApiRequest<ComplianceDomainModel[]>
+export type ComplianceApiCreateComplianceRequest = ComplianceApiRequest<ComplianceDomainModel>
 
-export type ComplianceApiCreateComplianceResponse = ComplianceApiResponse<{ compliance: ComplianceDomainModel[] }>
+export type ComplianceApiCreateComplianceResponse = ComplianceApiResponse<{ compliance: ComplianceDomainModel }>
 
-// TODO consolidate with create single
 export const CreateComplianceHandler = async (req: ComplianceApiCreateComplianceRequest, res: ComplianceApiCreateComplianceResponse) => {
   try {
     const compliance = await ComplianceServiceClient.createCompliance(req.body)

@@ -1,8 +1,8 @@
-import { ComplianceServiceManager } from '@lacuna-core/lacuna-compliance-service/service/manager'
+import { ComplianceSnapshotServiceManager } from '@mds-core/mds-compliance-service/service/manager'
 
-const ComplianceServer = ComplianceServiceManager.controller()
+const ComplianceServer = ComplianceSnapshotServiceManager.controller()
 
-describe('Test Compliance API', () => {
+describe('Test Compliances API', () => {
   beforeAll(async () => {
     await ComplianceServer.start()
   })
