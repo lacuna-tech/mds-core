@@ -1,7 +1,7 @@
 import { createConnection, ConnectionOptions } from 'typeorm'
 import { now, days, uuid } from '@mds-core/mds-utils'
-import { ComplianceSnapshotServiceManager } from '../service/manager'
-import { ComplianceSnapshotServiceClient } from '../client'
+import { ComplianceServiceManager } from '../service/manager'
+import { ComplianceServiceClient } from '../client'
 import { ComplianceSnapshotDomainModel } from '../@types'
 import ormconfig = require('../ormconfig')
 
@@ -91,21 +91,21 @@ describe('Test Migrations', () => {
   })
 })
 
-const ComplianceSnapshotServer = ComplianceSnapshotServiceManager.controller()
+const complianceServer = ComplianceServiceManager.controller()
 
 describe('ComplianceSnapshots Service Tests', () => {
   beforeAll(async () => {
-    await ComplianceSnapshotServer.start()
+    await complianceServer.start()
   })
 
   it('Post ComplianceSnapshot', async () => {
-    const complianceSnapshot = await ComplianceSnapshotServiceClient.createComplianceSnapshot(COMPLIANCE_SNAPSHOT)
+    const complianceSnapshot = await ComplianceServiceClient.createComplianceSnapshot(COMPLIANCE_SNAPSHOT)
     expect(complianceSnapshot.compliance_snapshot_id).toEqual(COMPLIANCE_SNAPSHOT_ID)
     expect(complianceSnapshot.vehicles_found.length).toEqual(3)
   })
 
   it('Gets ComplianceSnapshots By TimeInterval (start_time, no end_time options)', async () => {
-    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
+    const complianceSnapshots = await ComplianceServiceClient.getComplianceSnapshotsByTimeInterval({
       start_time: now() - days(1)
     })
     expect(complianceSnapshots.length).toEqual(1)
@@ -114,7 +114,7 @@ describe('ComplianceSnapshots Service Tests', () => {
   })
 
   it('Gets ComplianceSnapshots By TimeInterval (start_time, end_time options)', async () => {
-    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
+    const complianceSnapshots = await ComplianceServiceClient.getComplianceSnapshotsByTimeInterval({
       start_time: now() - days(2),
       end_time: now() - days(1)
     })
@@ -123,7 +123,7 @@ describe('ComplianceSnapshots Service Tests', () => {
 
   it('Throws When Getting ComplianceSnapshots By TimeInterval and end_time < start_time (start_time, end_time options)', async () => {
     try {
-      await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
+      await ComplianceServiceClient.getComplianceSnapshotsByTimeInterval({
         start_time: now() - days(2),
         end_time: now() - days(3)
       })
@@ -133,7 +133,7 @@ describe('ComplianceSnapshots Service Tests', () => {
   })
 
   it('Gets ComplianceSnapshots By TimeInterval (start_time, provider_ids options)', async () => {
-    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
+    const complianceSnapshots = await ComplianceServiceClient.getComplianceSnapshotsByTimeInterval({
       start_time: now() - days(2),
       provider_ids: ['aa777467-be73-4710-9c4c-e0bea5dd3ac8']
     })
@@ -141,7 +141,7 @@ describe('ComplianceSnapshots Service Tests', () => {
   })
 
   it('Gets ComplianceSnapshots By TimeInterval (start_time, policy_ids options)', async () => {
-    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByTimeInterval({
+    const complianceSnapshots = await ComplianceServiceClient.getComplianceSnapshotsByTimeInterval({
       start_time: now() - days(2),
       policy_ids: ['afc11dfe-3b0c-473b-9874-0c372909df73']
     })
@@ -149,14 +149,12 @@ describe('ComplianceSnapshots Service Tests', () => {
   })
 
   it('Gets ComplianceSnapshots By IDs', async () => {
-    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByIDs([
-      COMPLIANCE_SNAPSHOT_ID
-    ])
+    const complianceSnapshots = await ComplianceServiceClient.getComplianceSnapshotsByIDs([COMPLIANCE_SNAPSHOT_ID])
     expect(complianceSnapshots.length).toEqual(1)
   })
 
   it('Get One ComplianceSnapshot by ID', async () => {
-    const complianceSnapshot = await ComplianceSnapshotServiceClient.getComplianceSnapshot({
+    const complianceSnapshot = await ComplianceServiceClient.getComplianceSnapshot({
       compliance_snapshot_id: COMPLIANCE_SNAPSHOT_ID
     })
     expect(complianceSnapshot.compliance_snapshot_id).toEqual(COMPLIANCE_SNAPSHOT_ID)
@@ -165,8 +163,8 @@ describe('ComplianceSnapshots Service Tests', () => {
   })
 
   it('Get One ComplianceSnapshot by provider_id, policy_id', async () => {
-    await ComplianceSnapshotServiceClient.createComplianceSnapshot(COMPLIANCE_SNAPSHOT_1)
-    const complianceSnapshot = await ComplianceSnapshotServiceClient.getComplianceSnapshot({
+    await ComplianceServiceClient.createComplianceSnapshot(COMPLIANCE_SNAPSHOT_1)
+    const complianceSnapshot = await ComplianceServiceClient.getComplianceSnapshot({
       provider_id: PROVIDER_ID,
       policy_id: POLICY_ID,
       compliance_as_of: TIME - 10
@@ -175,7 +173,7 @@ describe('ComplianceSnapshots Service Tests', () => {
     expect(complianceSnapshot.policy.name).toEqual('a dummy')
     expect(complianceSnapshot.vehicles_found.length).toEqual(3)
 
-    const complianceSnapshots = await ComplianceSnapshotServiceClient.getComplianceSnapshotsByIDs([
+    const complianceSnapshots = await ComplianceServiceClient.getComplianceSnapshotsByIDs([
       COMPLIANCE_SNAPSHOT_ID,
       COMPLIANCE_SNAPSHOT_1.compliance_snapshot_id
     ])
@@ -183,6 +181,6 @@ describe('ComplianceSnapshots Service Tests', () => {
   })
 
   afterAll(async () => {
-    await ComplianceSnapshotServer.stop()
+    await complianceServer.stop()
   })
 })

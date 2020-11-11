@@ -1,27 +1,27 @@
 import { RpcServer } from '@mds-core/mds-rpc-common'
-import { ComplianceSnapshotServiceDefinition } from '../@types'
-import { ComplianceSnapshotServiceClient } from '../client'
-import { ComplianceSnapshotServiceProvider } from './provider'
+import { ComplianceServiceDefinition } from '../@types'
+import { ComplianceServiceClient } from '../client'
+import { ComplianceServiceProvider } from './provider'
 
-export const ComplianceSnapshotServiceManager = RpcServer(
-  ComplianceSnapshotServiceDefinition,
+export const ComplianceServiceManager = RpcServer(
+  ComplianceServiceDefinition,
   {
-    onStart: ComplianceSnapshotServiceProvider.start,
-    onStop: ComplianceSnapshotServiceProvider.stop
+    onStart: ComplianceServiceProvider.start,
+    onStop: ComplianceServiceProvider.stop
   },
   {
-    createComplianceSnapshot: args => ComplianceSnapshotServiceProvider.createComplianceSnapshot(...args),
-    createComplianceSnapshots: args => ComplianceSnapshotServiceProvider.createComplianceSnapshots(...args),
-    getComplianceSnapshot: args => ComplianceSnapshotServiceProvider.getComplianceSnapshot(...args),
+    createComplianceSnapshot: args => ComplianceServiceProvider.createComplianceSnapshot(...args),
+    createComplianceSnapshots: args => ComplianceServiceProvider.createComplianceSnapshots(...args),
+    getComplianceSnapshot: args => ComplianceServiceProvider.getComplianceSnapshot(...args),
     getComplianceSnapshotsByTimeInterval: args =>
-      ComplianceSnapshotServiceProvider.getComplianceSnapshotsByTimeInterval(...args),
-    getComplianceSnapshotsByIDs: args => ComplianceSnapshotServiceProvider.getComplianceSnapshotsByIDs(...args)
+      ComplianceServiceProvider.getComplianceSnapshotsByTimeInterval(...args),
+    getComplianceSnapshotsByIDs: args => ComplianceServiceProvider.getComplianceSnapshotsByIDs(...args)
   },
   {
     port: process.env.COMPLIANCE_SNAPSHOT_SERVICE_RPC_PORT,
     repl: {
       port: process.env.COMPLIANCE_SNAPSHOT_SERVICE_REPL_PORT,
-      context: { client: ComplianceSnapshotServiceClient }
+      context: { client: ComplianceServiceClient }
     }
   }
 )

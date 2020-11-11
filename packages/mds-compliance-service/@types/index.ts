@@ -44,7 +44,7 @@ export type GetComplianceSnapshotsByTimeIntervalOptions = Partial<{
   provider_ids: UUID[]
 }>
 
-export interface ComplianceSnapshotService {
+export interface ComplianceService {
   createComplianceSnapshots: (complianceSnapshots: ComplianceSnapshotDomainModel[]) => ComplianceSnapshotDomainModel[]
   createComplianceSnapshot: (complianceSnapshot: ComplianceSnapshotDomainModel) => ComplianceSnapshotDomainModel
   getComplianceSnapshotsByTimeInterval: (
@@ -54,10 +54,10 @@ export interface ComplianceSnapshotService {
   getComplianceSnapshot: (options: GetComplianceSnapshotOptions) => ComplianceSnapshotDomainModel
 }
 
-export const ComplianceSnapshotServiceDefinition: RpcServiceDefinition<ComplianceSnapshotService> = {
-  createComplianceSnapshots: RpcRoute<ComplianceSnapshotService['createComplianceSnapshots']>(),
-  createComplianceSnapshot: RpcRoute<ComplianceSnapshotService['createComplianceSnapshot']>(),
-  getComplianceSnapshotsByTimeInterval: RpcRoute<ComplianceSnapshotService['getComplianceSnapshotsByTimeInterval']>(),
-  getComplianceSnapshotsByIDs: RpcRoute<ComplianceSnapshotService['getComplianceSnapshotsByIDs']>(),
-  getComplianceSnapshot: RpcRoute<ComplianceSnapshotService['getComplianceSnapshot']>()
+export const ComplianceServiceDefinition: RpcServiceDefinition<ComplianceService> = {
+  createComplianceSnapshots: RpcRoute<ComplianceService['createComplianceSnapshots']>(),
+  createComplianceSnapshot: RpcRoute<ComplianceService['createComplianceSnapshot']>(),
+  getComplianceSnapshotsByTimeInterval: RpcRoute<ComplianceService['getComplianceSnapshotsByTimeInterval']>(),
+  getComplianceSnapshotsByIDs: RpcRoute<ComplianceService['getComplianceSnapshotsByIDs']>(),
+  getComplianceSnapshot: RpcRoute<ComplianceService['getComplianceSnapshot']>()
 }

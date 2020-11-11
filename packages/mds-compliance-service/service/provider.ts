@@ -1,14 +1,14 @@
 import logger from '@mds-core/mds-logger'
 import { ServiceResult, ServiceException, ServiceProvider, ProcessController } from '@mds-core/mds-service-helpers'
 import { UUID } from '@mds-core/mds-types'
-import { ComplianceSnapshotService, GetComplianceSnapshotsByTimeIntervalOptions } from '../@types'
+import { ComplianceService, GetComplianceSnapshotsByTimeIntervalOptions } from '../@types'
 import { ComplianceSnapshotRepository } from '../repository'
 import {
   ValidateComplianceSnapshotDomainModel,
   ValidateGetComplianceSnapshotsByTimeIntervalOptions
 } from './validators'
 
-export const ComplianceSnapshotServiceProvider: ServiceProvider<ComplianceSnapshotService> & ProcessController = {
+export const ComplianceServiceProvider: ServiceProvider<ComplianceService> & ProcessController = {
   start: ComplianceSnapshotRepository.initialize,
   stop: ComplianceSnapshotRepository.shutdown,
   createComplianceSnapshot: async complianceSnapshot => {
