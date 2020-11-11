@@ -1,4 +1,4 @@
-import { VehicleEvent, UUID, Timestamp, Recorded } from '@mds-core/mds-types'
+import { VehicleEvent, Device, UUID, Timestamp, Recorded } from '@mds-core/mds-types'
 import { now, isUUID, isTimestamp, seconds, yesterday } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { ReadEventsResult, ReadEventsQueryParams, ReadHistoricalEventsQueryParams } from './types'
@@ -307,7 +307,7 @@ export async function readEventsWithTelemetry({
 // TODO: remove
 // heinous copypasta specifically to provide the VIN with every event, used ONLY by Native.
 // this is to be excised when we dump Native in the garbage in the 1.0 timeframe.
-export async function readEventsWithTelemetryAndVin({
+export async function readEventsWithTelemetryAndVehicleId({
   device_id,
   provider_id,
   start_time,
@@ -323,7 +323,7 @@ export async function readEventsWithTelemetryAndVin({
   order_by: string
   last_id: number
   limit: number
-}>): Promise<Recorded<VehicleEvent>[]> {
+}>): Promise<Recorded<VehicleEvent & Pick<Device, 'vehicle_id'>>[]> {
   const client = await getReadOnlyClient()
   const vals = new SqlVals()
   const exec = SqlExecuter(client)
