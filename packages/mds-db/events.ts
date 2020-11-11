@@ -367,7 +367,7 @@ export async function readEventsWithTelemetryAndVehicleId({
 
   const { rows } = await exec(
     `SELECT E.*, D.vehicle_id, T.lat, T.lng, T.speed, T.heading, T.accuracy, T.altitude, T.charge, T.timestamp AS telemetry_timestamp 
-      FROM (SELECT * FROM ${schema.TABLE.events}${where} LIMIT ${vals.add(limit)}) AS E 
+      FROM (SELECT * FROM ${schema.TABLE.events}${where} ORDER BY ${order_by} LIMIT ${vals.add(limit)}) AS E 
     LEFT JOIN ${schema.TABLE.devices} D ON E.device_id = D.device_id
     LEFT JOIN ${schema.TABLE.telemetry} T ON E.device_id = T.device_id 
       AND CASE WHEN E.telemetry_timestamp IS NULL THEN E.timestamp ELSE E.telemetry_timestamp END = T.timestamp
