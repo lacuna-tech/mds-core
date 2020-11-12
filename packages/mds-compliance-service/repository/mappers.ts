@@ -35,8 +35,9 @@ export const ComplianceSnapshotDomainToEntityCreate = ModelMapper<
   ComplianceSnapshotEntityCreateOptions
 >((domain, options) => {
   const { recorded } = options ?? {}
-  const { policy, ...entity } = domain
-  const policy_name = policy.name
-  const { policy_id } = domain.policy
+  const {
+    policy: { policy_id, name: policy_name },
+    ...entity
+  } = domain
   return { ...entity, policy_name, policy_id, recorded }
 })
