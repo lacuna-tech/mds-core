@@ -107,7 +107,8 @@ const ruleSchema = Joi.object().keys({
   end_time: Joi.string(),
   days: Joi.array().items(Joi.string().valid(...Object.values(DAYS_OF_WEEK))),
   messages: Joi.object(),
-  value_url: Joi.string().uri()
+  value_url: Joi.string().uri(),
+  rate_amount: Joi.number()
 })
 
 export const policySchema = Joi.object().keys({
@@ -118,7 +119,9 @@ export const policySchema = Joi.object().keys({
   end_date: Joi.date().timestamp('javascript').allow(null),
   prev_policies: Joi.array().items(Joi.string().guid()).allow(null),
   provider_ids: Joi.array().items(Joi.string().guid()).allow(null),
-  rules: Joi.array().min(1).items(ruleSchema).required()
+  rules: Joi.array().min(1).items(ruleSchema).required(),
+  rate_recurrence: Joi.string().valid('once', 'each_time_unit', 'per_complete_time_unit'),
+  currency: Joi.string()
 })
 
 const policiesSchema = Joi.array().items(policySchema)
