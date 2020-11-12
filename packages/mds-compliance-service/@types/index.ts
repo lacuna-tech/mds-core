@@ -30,12 +30,19 @@ export interface ComplianceSnapshotDomainModel {
   total_violations: number
 }
 
-export type GetComplianceSnapshotOptions = Partial<{
-  compliance_as_of: Timestamp
-  provider_id: UUID
-  policy_id: UUID
-  compliance_snapshot_id: UUID
-}>
+export type GetComplianceSnapshotOptions =
+  | {
+      compliance_snapshot_id: UUID
+      provider_id?: undefined | null
+      policy_id?: undefined | null
+      compliance_as_of?: undefined | null
+    }
+  | {
+      compliance_snapshot_id?: undefined | null
+      provider_id: UUID
+      policy_id: UUID
+      compliance_as_of: Timestamp
+    }
 
 export type GetComplianceSnapshotsByTimeIntervalOptions = Partial<{
   start_time: Timestamp

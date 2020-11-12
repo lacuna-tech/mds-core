@@ -7,16 +7,14 @@ import {
   GetComplianceSnapshotOptions
 } from '../@types'
 import { ComplianceSnapshotEntityToDomain, ComplianceSnapshotDomainToEntityCreate } from './mappers'
-import { ComplianceSnapshotEntity, ComplianceSnapshotEntityModel } from './entities/compliance-snapshot-entity'
+import { ComplianceSnapshotEntity } from './entities/compliance-snapshot-entity'
 import migrations from './migrations'
 
 class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
-  public getComplianceSnapshot = async ({
-    compliance_snapshot_id,
-    provider_id,
-    policy_id,
-    compliance_as_of = now()
-  }: GetComplianceSnapshotOptions): Promise<ComplianceSnapshotDomainModel> => {
+  public getComplianceSnapshot = async (
+    options: GetComplianceSnapshotOptions
+  ): Promise<ComplianceSnapshotDomainModel> => {
+    const { compliance_snapshot_id, provider_id, policy_id, compliance_as_of = now() } = options
     const { connect } = this
     try {
       const connection = await connect('ro')
@@ -138,27 +136,6 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
         .returning('*')
         .execute()
       return entities.map(ComplianceSnapshotEntityToDomain.map)
-    } catch (error) {
-      throw RepositoryError(error)
-    }
-  }
-
-  public deleteComplianceSnapshot = async (
-    compliance_snapshot_id: ComplianceSnapshotEntityModel['compliance_snapshot_id']
-  ): Promise<ComplianceSnapshotEntityModel['compliance_snapshot_id']> => {
-    const { connect, getComplianceSnapshot } = this
-    // Try to read ComplianceSnapshot first, if not 404
-    await getComplianceSnapshot({ compliance_snapshot_id })
-    try {
-      const connection = await connect('rw')
-      await connection
-        .getRepository(ComplianceSnapshotEntity)
-        .createQueryBuilder()
-        .delete()
-        .where('compliance_snapshot_id = :compliance_snapshot_id', { compliance_snapshot_id })
-        .returning('*')
-        .execute()
-      return compliance_snapshot_id
     } catch (error) {
       throw RepositoryError(error)
     }
