@@ -14,11 +14,12 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
   public getComplianceSnapshot = async (
     options: GetComplianceSnapshotOptions
   ): Promise<ComplianceSnapshotDomainModel> => {
-    const { compliance_snapshot_id, provider_id, policy_id, compliance_as_of = now() } = options
+    //    const { compliance_snapshot_id, provider_id, policy_id, compliance_as_of = now() } = options
     const { connect } = this
     try {
       const connection = await connect('ro')
-      if (isDefined(compliance_snapshot_id)) {
+      if (isDefined(options.compliance_snapshot_id)) {
+        const { compliance_snapshot_id } = options
         const entity = await connection.getRepository(ComplianceSnapshotEntity).findOne({
           where: {
             compliance_snapshot_id
@@ -29,9 +30,11 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
         }
         return ComplianceSnapshotEntityToDomain.map(entity)
       }
-      if (!isDefined(provider_id) || !isDefined(policy_id)) {
+      if (!isDefined(options.provider_id) || !isDefined(options.policy_id)) {
         throw RepositoryError('provider_id and policy_id must be given if compliance_snapshot_id is not given')
       }
+
+      const { provider_id, policy_id, compliance_as_of = now() } = options
 
       const query = connection
         .getRepository(ComplianceSnapshotEntity)
