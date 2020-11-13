@@ -31,7 +31,8 @@ import {
   Telemetry,
   PROPULSION_TYPES,
   VEHICLE_STATUSES,
-  Device
+  Device,
+  RATE_RECURRENCE_VALUES
 } from '@mds-core/mds-types'
 import * as Joi from 'joi'
 import joiToJson from 'joi-to-json'
@@ -120,7 +121,7 @@ export const policySchema = Joi.object().keys({
   prev_policies: Joi.array().items(Joi.string().guid()).allow(null),
   provider_ids: Joi.array().items(Joi.string().guid()).allow(null),
   rules: Joi.array().min(1).items(ruleSchema).required(),
-  rate_recurrence: Joi.string().valid('once', 'each_time_unit', 'per_complete_time_unit'),
+  rate_recurrence: Joi.string().valid(...RATE_RECURRENCE_VALUES),
   currency: Joi.string()
 })
 
