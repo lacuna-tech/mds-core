@@ -10,22 +10,25 @@ const { REDIS_PORT, REDIS_HOST, REDIS_PASS } = cleanEnv(process.env, {
 export const initClient = async () => {
   const client = new Redis({
     lazyConnect: true,
-    maxRetriesPerRequest: 1000, // 20 is default, but that may not be long enough
+    maxRetriesPerRequest: 1000, // 20 is default, but that may not be long enough (thanks istio)
     port: REDIS_PORT,
     host: REDIS_HOST,
     password: REDIS_PASS
   })
+
   client.on('connect', () => {
-    logger.warn('connected, yay')
+    logger.warn('Redis connection established')
   })
+
   try {
-    // try to connect; if fails initially, that's okay; we don't want to throw,
-    // we want it to keep using its retry mechanism
+    /*
+      The ioredis client will attempt to retry establishing a connection, however the `.connect` method will throw upon the first failure...
+      This wrapper attempts to connect; and if fails initially, catches it. IORedis will continue retrying in the background, so no worries.
+    */
     await client.connect()
   } catch (err) {
-    // suppress initial connection failure
-    logger.error('failed initial connect to redis, will keep trying')
-    // log and keep going
+    logger.error('Initial redis connection failure (connection will be retried):', err)
   }
+
   return client
 }
