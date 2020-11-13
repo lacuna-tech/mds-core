@@ -42,7 +42,7 @@ export class Clients {
   }
 
   public hasScopes(neededScopes: string[], client: WebSocket) {
-    const clientEntry = this.authenticatedClients.find(x => x.socket === client)
+    const clientEntry = this.authenticatedClients.find(({ socket }) => socket === client)
 
     if (clientEntry) {
       const { scopes: clientScopes } = clientEntry
@@ -53,11 +53,11 @@ export class Clients {
   }
 
   public isAuthenticated(client: WebSocket) {
-    return !!this.authenticatedClients.find(x => x.socket === client)
+    return !!this.authenticatedClients.find(({ socket }) => socket === client)
   }
 
   public saveClient(entities: string[], client: WebSocket) {
-    if (!this.authenticatedClients.find(x => x.socket === client)) {
+    if (!this.authenticatedClients.find(({ socket }) => socket === client)) {
       return
     }
 
