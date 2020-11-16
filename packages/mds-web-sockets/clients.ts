@@ -6,6 +6,7 @@ import jwt from 'jsonwebtoken'
 import jwks from 'jwks-rsa'
 import { promisify } from 'util'
 import { ENTITY_TYPE, SupportedEntities } from './types'
+import { wsSend } from './ws-helpers'
 
 type Client = { scopes: string[]; socket: WebSocket }
 
@@ -68,12 +69,12 @@ export class Clients {
         try {
           if (this.hasScopes(this.supportedEntities[entity].read, client)) {
             this.subList[entity].push(client)
-            client.send(`SUB%${entity}%${JSON.stringify({ status: 'Success' })}`)
+            wsSend(client).subResponse(entity).success()
           } else {
             throw new AuthorizationError('Client is missing proper scopes!')
           }
         } catch {
-          client.send(`SUB%${entity}%${JSON.stringify({ status: 'Failure' })}`)
+          wsSend(client).subResponse(entity).error()
           return logger.error(`failed to push ${entity}`)
         }
       })
@@ -88,17 +89,17 @@ export class Clients {
 
       const validateAuth = await Clients.checkAuth(token)
       if (!validateAuth) {
-        client.send(`AUTH%${JSON.stringify({ err: new AuthorizationError() })}`)
+        wsSend(client).authResponse().error()
         return
       }
 
       const scopes = auth?.scope.split(' ') ?? []
 
       this.authenticatedClients.set(client, { scopes, socket: client })
-      client.send(`AUTH%${JSON.stringify({ status: 'Success' })}`)
+      wsSend(client).authResponse().success()
     } catch (err) {
       logger.warn(err)
-      client.send(JSON.stringify(err))
+      wsSend(client).authResponse().error()
     }
   }
 

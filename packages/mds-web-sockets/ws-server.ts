@@ -10,6 +10,7 @@ import { ProcessManager } from '@mds-core/mds-service-helpers'
 import { setWsHeartbeat } from './heartbeat'
 import { DEFAULT_ENTITIES, ENTITY_TYPE, SupportedEntities } from './types'
 import { Clients } from './clients'
+import { wsSend } from './ws-helpers'
 
 /**
  * Web Socket Server that autosubscribes to Nats stream and allows socket subscription by entity type
@@ -60,14 +61,16 @@ export const WebSocketServer = <T extends SupportedEntities>(entityTypes?: T) =>
         return Object.keys(supportedEntities).some(e => e === entity)
       }
 
-      function pushToClients(entity: string, message: string) {
+      function pushToClients(entity: string, message: object) {
         const staleClients: WebSocket[] = []
         if (clients.subList[entity]) {
           clients.subList[entity].forEach(client => {
             if (client.readyState !== 1) staleClients.push(client)
             else {
-              client.send(`${entity}%${message}`)
-              client.emit(entity, message)
+              // FIXME: Update all consumers to not use this deprecated portion of the protocol
+              wsSend(client).push(entity).legacy(message)
+
+              wsSend(client).push(entity).success(message)
             }
           })
         }
@@ -84,7 +87,6 @@ export const WebSocketServer = <T extends SupportedEntities>(entityTypes?: T) =>
           const message = data.toString().trim().split('%')
           const [header, ...args] = message
 
-          /* Testing message, also useful in a NATS-less environment */
           if (header === 'PUSH') {
             if (args.length === 2) {
               const [entity, payload] = args
@@ -94,12 +96,12 @@ export const WebSocketServer = <T extends SupportedEntities>(entityTypes?: T) =>
                   return pushToProducers(entity, payload)
                 }
 
-                return ws.send(
-                  `PUSH%${entity}%${JSON.stringify({ err: new AuthorizationError('Insufficient access.') })}`
-                )
+                return wsSend(ws)
+                  .push(entity)
+                  .error({ err: new AuthorizationError('Insufficient access.') })
               }
 
-              return ws.send(`PUSH%${JSON.stringify({ err: `Invalid entity: ${entity}` })}`)
+              return wsSend(ws).push(entity).error({ err: 'Invalid entity' })
             }
           }
 
@@ -113,19 +115,13 @@ export const WebSocketServer = <T extends SupportedEntities>(entityTypes?: T) =>
           if (header === 'SUB') {
             return clients.saveClient(args, ws)
           }
-
-          if (header === 'PING') {
-            return
-          }
-
-          return ws.send('Invalid request!')
         })
       })
 
       const processor = async (err: Nullable<NatsError>, msg: Msg) => {
         const entity = msg.subject.split('.')?.[1]
 
-        await pushToClients(entity, msg.data)
+        await pushToClients(entity, JSON.parse(msg.data))
       }
 
       await Promise.all(
