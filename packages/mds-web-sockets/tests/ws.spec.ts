@@ -197,8 +197,9 @@ describe('Tests MDS-Web-Sockets', () => {
       })
     })
 
-    describe('Tests Read/Write Clients', () => {
-      it('Tests r/w clients can subscribe and send events', done => {
+    // FIXME Remove once legacy push support is removed
+    describe('Tests legacy server -> client emission', () => {
+      it('Tests r/w clients can subscribe and send events (legacy)', done => {
         const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
         client.onopen = () => {
           client.send(`AUTH%${readWriteAuth}`)
@@ -224,7 +225,7 @@ describe('Tests MDS-Web-Sockets', () => {
         })
       })
 
-      it('Tests r/w clients can subscribe and send telemetry', done => {
+      it('Tests r/w clients can subscribe and send telemetry (legacy)', done => {
         const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
         client.onopen = () => {
           client.send(`AUTH%${readWriteAuth}`)
@@ -242,6 +243,60 @@ describe('Tests MDS-Web-Sockets', () => {
           }
 
           if (data === 'telemetry%{"foo":"bar"}') {
+            client.close()
+            return done()
+          }
+
+          return done
+        })
+      })
+    })
+
+    describe('Tests Read/Write Clients', () => {
+      it('Tests r/w clients can subscribe and send events', done => {
+        const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
+        client.onopen = () => {
+          client.send(`AUTH%${readWriteAuth}`)
+        }
+
+        client.on('message', data => {
+          if (data === 'AUTH%{"status":"Success"}') {
+            client.send('SUB%event')
+            return
+          }
+
+          if (data === 'SUB%event%{"status":"Success"}') {
+            client.send(`PUSH%event%${JSON.stringify({ foo: 'bar' })}`)
+            return
+          }
+
+          if (data === 'PUSH%event%{"foo":"bar"}') {
+            client.close()
+            return done()
+          }
+
+          return done
+        })
+      })
+
+      it('Tests r/w clients can subscribe and send telemetry', done => {
+        const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
+        client.onopen = () => {
+          client.send(`AUTH%${readWriteAuth}`)
+        }
+
+        client.on('message', data => {
+          if (data === 'AUTH%{"status":"Success"}') {
+            client.send('SUB%telemetry')
+            return
+          }
+
+          if (data === 'SUB%telemetry%{"status":"Success"}') {
+            client.send(`PUSH%telemetry%${JSON.stringify({ foo: 'bar' })}`)
+            return
+          }
+
+          if (data === 'PUSH%telemetry%{"foo":"bar"}') {
             client.close()
             return done()
           }
