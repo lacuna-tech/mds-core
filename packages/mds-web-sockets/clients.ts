@@ -10,7 +10,7 @@ import { ENTITY_TYPE, SupportedEntities } from './types'
 type Client = { scopes: string[]; socket: WebSocket }
 
 export class Clients {
-  authenticatedClients: Client[]
+  authenticatedClients: Map<Client['socket'], Client>
 
   subList: { [key: string]: WebSocket[] }
 
@@ -36,13 +36,13 @@ export class Clients {
   public constructor(supportedEntities: SupportedEntities) {
     // Initialize subscription list with configured entities
     this.subList = Object.fromEntries(Object.keys(supportedEntities).map(e => [e, []]))
-    this.authenticatedClients = []
+    this.authenticatedClients = new Map()
     this.saveClient = this.saveClient.bind(this)
     this.supportedEntities = supportedEntities
   }
 
   public hasScopes(neededScopes: string[], client: WebSocket) {
-    const clientEntry = this.authenticatedClients.find(({ socket }) => socket === client)
+    const clientEntry = this.authenticatedClients.get(client)
 
     if (clientEntry) {
       const { scopes: clientScopes } = clientEntry
@@ -53,11 +53,11 @@ export class Clients {
   }
 
   public isAuthenticated(client: WebSocket) {
-    return !!this.authenticatedClients.find(({ socket }) => socket === client)
+    return this.authenticatedClients.has(client)
   }
 
   public saveClient(entities: string[], client: WebSocket) {
-    if (!this.authenticatedClients.find(({ socket }) => socket === client)) {
+    if (!this.authenticatedClients.has(client)) {
       return
     }
 
@@ -94,7 +94,7 @@ export class Clients {
 
       const scopes = auth?.scope.split(' ') ?? []
 
-      this.authenticatedClients.push({ scopes, socket: client })
+      this.authenticatedClients.set(client, { scopes, socket: client })
       client.send(`AUTH%${JSON.stringify({ status: 'Success' })}`)
     } catch (err) {
       logger.warn(err)
