@@ -113,6 +113,7 @@ export const policySchema = Joi.object().keys({
   description: Joi.string().required(),
   policy_id: Joi.string().guid().required(),
   start_date: Joi.date().timestamp('javascript').required(),
+  publish_date: Joi.date().timestamp('javascript').allow(null),
   end_date: Joi.date().timestamp('javascript').allow(null),
   prev_policies: Joi.array().items(Joi.string().guid()).allow(null),
   provider_ids: Joi.array().items(Joi.string().guid()).allow(null),
