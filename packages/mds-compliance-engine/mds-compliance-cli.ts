@@ -97,24 +97,11 @@ async function main(): Promise<(ComplianceEngineResult | undefined)[]> {
 }
 
 main()
-  .then(
-    /* eslint-disable-next-line promise/always-return */
-    result => {
-      // eslint-disable-next-line no-console
-      console.dir(result, { depth: null })
-    },
-    failure => {
-      // TODO use payload response type instead of peering into body
-      const reason = failure.slice && failure.slice(0, 2) === '{"' ? JSON.parse(failure) : failure
-      if (reason.error_description) {
-        logger.info(`${reason.error_description} (${reason.error})`)
-      } else if (reason.result) {
-        logger.info(reason.result)
-      } else {
-        logger.info('failure:', reason)
-      }
-    }
-  )
+  /* eslint-disable-next-line promise/always-return */
+  .then(result => {
+    // eslint-disable-next-line no-console
+    console.dir(result, { depth: null })
+  })
   /* eslint-disable-next-line promise/prefer-await-to-callbacks */
   .catch(async err => {
     logger.error('exception:', err.stack)
