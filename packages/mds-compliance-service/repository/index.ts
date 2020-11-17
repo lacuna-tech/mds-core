@@ -7,20 +7,22 @@ import {
   GetComplianceSnapshotOptions
 } from '../@types'
 import { ComplianceSnapshotEntityToDomain, ComplianceSnapshotDomainToEntityCreate } from './mappers'
-import { ComplianceSnapshotEntity, ComplianceSnapshotEntityModel } from './entities/compliance-snapshot-entity'
+import { ComplianceSnapshotEntity } from './entities/compliance-snapshot-entity'
 import migrations from './migrations'
 
 class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
-  public getComplianceSnapshot = async ({
-    compliance_snapshot_id,
-    provider_id,
-    policy_id,
-    compliance_as_of = now()
-  }: GetComplianceSnapshotOptions): Promise<ComplianceSnapshotDomainModel> => {
+  public getComplianceSnapshot = async (
+    options: GetComplianceSnapshotOptions
+  ): Promise<ComplianceSnapshotDomainModel> => {
+    //    const { compliance_snapshot_id, provider_id, policy_id, compliance_as_of = now() } = options
+    const isComplianceIdOption = (option: unknown): option is { compliance_snapshot_id: UUID } =>
+      (option as any).compliance_snapshot_id
+
     const { connect } = this
     try {
       const connection = await connect('ro')
-      if (isDefined(compliance_snapshot_id)) {
+      if (isComplianceIdOption(options)) {
+        const { compliance_snapshot_id } = options
         const entity = await connection.getRepository(ComplianceSnapshotEntity).findOne({
           where: {
             compliance_snapshot_id
@@ -31,6 +33,7 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
         }
         return ComplianceSnapshotEntityToDomain.map(entity)
       }
+      const { provider_id, policy_id, compliance_as_of = now() } = options
       if (!isDefined(provider_id) || !isDefined(policy_id)) {
         throw RepositoryError('provider_id and policy_id must be given if compliance_snapshot_id is not given')
       }
@@ -138,27 +141,6 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
         .returning('*')
         .execute()
       return entities.map(ComplianceSnapshotEntityToDomain.map)
-    } catch (error) {
-      throw RepositoryError(error)
-    }
-  }
-
-  public deleteComplianceSnapshot = async (
-    compliance_snapshot_id: ComplianceSnapshotEntityModel['compliance_snapshot_id']
-  ): Promise<ComplianceSnapshotEntityModel['compliance_snapshot_id']> => {
-    const { connect, getComplianceSnapshot } = this
-    // Try to read ComplianceSnapshot first, if not 404
-    await getComplianceSnapshot({ compliance_snapshot_id })
-    try {
-      const connection = await connect('rw')
-      await connection
-        .getRepository(ComplianceSnapshotEntity)
-        .createQueryBuilder()
-        .delete()
-        .where('compliance_snapshot_id = :compliance_snapshot_id', { compliance_snapshot_id })
-        .returning('*')
-        .execute()
-      return compliance_snapshot_id
     } catch (error) {
       throw RepositoryError(error)
     }
