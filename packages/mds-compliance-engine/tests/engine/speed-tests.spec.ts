@@ -14,8 +14,8 @@ import {
   OVERLAPPING_GEOS_SPEED_POLICY
 } from '../../test_data/fixtures'
 import { isSpeedRuleMatch, processSpeedPolicy } from '../../engine/speed_processors'
-import { filterEvents } from '../../engine/helpers'
-import { generateDeviceMap } from './helpers'
+import { filterEvents, generateDeviceMap } from '../../engine/helpers'
+
 import { ComplianceEngineResult, VehicleEventWithTelemetry } from '../../@types'
 
 const SPEED_POLICY: Policy = {
