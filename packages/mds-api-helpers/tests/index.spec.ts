@@ -65,6 +65,37 @@ describe('mds-api-helpers Tests', () => {
           test.assert(skip === undefined)
         })
       })
+
+      describe('with body parser', () => {
+        it('singleton in body', () => {
+          const req: any = { body: { skip: '10' } }
+          const parser = Number
+
+          const { skip } = parseRequest(req).single({ parser }).body('skip')
+
+          test.assert(parser(req.body.skip) === skip)
+          test.assert(typeof skip === 'number')
+        })
+
+        it('list in body', () => {
+          const req: any = { body: { skip: ['10', '100'] } }
+          const parser = Number
+
+          const { skip } = parseRequest(req).single({ parser }).body('skip')
+
+          test.assert(parser(req.body.skip[0]) === skip)
+          test.assert(typeof skip === 'number')
+        })
+
+        it('nothing in body', () => {
+          const req: any = { body: {} }
+          const parser = Number
+
+          const { skip } = parseRequest(req).single({ parser }).body('skip')
+
+          test.assert(skip === undefined)
+        })
+      })
     })
 
     describe('tests parseRequest(...).list()', () => {

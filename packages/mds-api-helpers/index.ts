@@ -57,6 +57,7 @@ export const asJsonApiLinks = (req: ApiRequest, skip: number, take: number, coun
 export const parseRequest = (req: ApiRequest) => ({
   single: <T = string>(options?: ParseObjectPropertiesOptionsSingle<T>) => ({
     query: parseObjectPropertiesSingle<T>(req.query, options).keys,
+    body: parseObjectPropertiesSingle<T>(req.body, options).keys,
     params: parseObjectPropertiesSingle<T>(req.params, options).keys
   }),
   list: <T = string>(options?: ParseObjectPropertiesOptionsList<T>) => ({
