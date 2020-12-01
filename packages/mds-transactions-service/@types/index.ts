@@ -101,7 +101,7 @@ export interface TransactionService {
   createTransactions: (transactions: TransactionDomainCreateModel[]) => TransactionDomainModel[]
   createTransaction: (transaction: TransactionDomainCreateModel) => TransactionDomainModel
   getTransactions: () => TransactionDomainModel[]
-  getTransaction: (id: UUID) => TransactionDomainModel
+  getTransaction: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionDomainModel
   updateTransaction: (transaction: TransactionDomainModel) => TransactionDomainModel
   deleteTransaction: (id: UUID) => TransactionDomainModel['transaction_id']
 }
