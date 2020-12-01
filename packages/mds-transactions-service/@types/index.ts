@@ -40,7 +40,7 @@ export type FEE_TYPE = typeof FEE_TYPES[number]
 
 export interface ReceiptDomainModel {
   receipt_id: UUID
-  timestamp: Timestamp // could be any time before the Transaction 'created'
+  timestamp: Timestamp // could be any time before the Transaction was created
   origin_url: URL // where can I go to dig into the details of the receipt, given this receipt_id?
   receipt_details: Object // JSON blob with free-form supporting evidence, DO NOT INCLUDE PII
 }
@@ -110,7 +110,7 @@ export interface TransactionService {
   getTransaction: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionDomainModel
 
   // create an 'operation', e.g. for dispute-handling, etc.
-  addTransactionOperation: (status: TransactionOperationDomainCreateModel) => TransactionOperationDomainModel
+  addTransactionOperation: (operation: TransactionOperationDomainCreateModel) => TransactionOperationDomainModel
   // read back operations for a transaction
   getTransactionOperations: (
     transaction_id: TransactionDomainModel['transaction_id']
