@@ -40,7 +40,7 @@ export type FEE_TYPE = typeof FEE_TYPES[number]
 
 export interface ReceiptDomainModel {
   receipt_id: UUID
-  created: Timestamp // could be any time before the Transaction 'created'
+  timestamp: Timestamp // could be any time before the Transaction 'created'
   origin_url: URL // where can I go to dig into the details of the receipt, given this receipt_id?
   receipt_details: Object // JSON blob with free-form supporting evidence, DO NOT INCLUDE PII
 }
@@ -49,11 +49,12 @@ export interface TransactionDomainModel {
   transaction_id: UUID
   provider_id: UUID
   device_id: Nullable<UUID> // optional
-  created: Timestamp
+  timestamp: Timestamp
   fee_type: FEE_TYPE
   amount: Number // pennies
   receipt: ReceiptDomainModel // is this how you specify a JSON blob?
 }
+export type TransactionDomainCreateModel = DomainModelCreate<TransactionDomainModel>
 
 export const TRANSACTION_OPERATION_TYPES = [
   'transaction_posted',
@@ -70,12 +71,12 @@ export interface TransactionOperationDomainModel {
   operation_id: UUID
   transaction_id: UUID
   // when was this change made
-  created: Timestamp
+  timestamp: Timestamp
   operation_type: TRANSACTION_OPERATION_TYPE
-  // who made this change
+  // who made this change (TODO work out authorship representation; could be human, could be api, etc.)
   author: string
 }
-export type TransactionDomainCreateModel = DomainModelCreate<TransactionDomainModel>
+export type TransactionOperationDomainCreateModel = DomainModelCreate<TransactionOperationDomainModel>
 
 export const TRANSACTION_STATUS_TYPES = [
   'order_submitted',
@@ -90,20 +91,20 @@ export interface TransactionStatusDomainModel {
   status_id: UUID
   transaction_id: UUID
   // when was this change made
-  created: Timestamp
+  timestamp: Timestamp
   status_type: TRANSACTION_OPERATION_TYPE
-  // who made this change
+  // who made this change (TODO work out authorship representation; could be human, could be api, etc.)
   author: string
 }
-export type TransactionStatusCreateModel = DomainModelCreate<TransactionDomainModel>
+export type TransactionStatusCreateModel = DomainModelCreate<TransactionStatusDomainModel>
 
 export interface TransactionService {
   createTransactions: (transactions: TransactionDomainCreateModel[]) => TransactionDomainModel[]
   createTransaction: (transaction: TransactionDomainCreateModel) => TransactionDomainModel
   getTransactions: () => TransactionDomainModel[]
   getTransaction: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionDomainModel
-  updateTransaction: (transaction: TransactionDomainModel) => TransactionDomainModel
-  deleteTransaction: (id: UUID) => TransactionDomainModel['transaction_id']
+  addTransactionOperation: (status: TransactionOperationDomainCreateModel) => TransactionOperationDomainModel
+  setTransactionStatus: (status: TransactionDomainCreateModel) => TransactionDomainModel
 }
 
 export const TransactionServiceDefinition: RpcServiceDefinition<TransactionService> = {
@@ -111,6 +112,6 @@ export const TransactionServiceDefinition: RpcServiceDefinition<TransactionServi
   createTransaction: RpcRoute<TransactionService['createTransaction']>(),
   getTransactions: RpcRoute<TransactionService['getTransactions']>(),
   getTransaction: RpcRoute<TransactionService['getTransaction']>(),
-  updateTransaction: RpcRoute<TransactionService['updateTransaction']>(),
-  deleteTransaction: RpcRoute<TransactionService['deleteTransaction']>()
+  addTransactionOperation: RpcRoute<TransactionService['addTransactionOperation']>(),
+  setTransactionStatus: RpcRoute<TransactionService['setTransactionStatus']>()
 }
