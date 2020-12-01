@@ -96,22 +96,39 @@ export interface TransactionStatusDomainModel {
   // who made this change (TODO work out authorship representation; could be human, could be api, etc.)
   author: string
 }
-export type TransactionStatusCreateModel = DomainModelCreate<TransactionStatusDomainModel>
+export type TransactionStatusDomainCreateModel = DomainModelCreate<TransactionStatusDomainModel>
 
 export interface TransactionService {
-  createTransactions: (transactions: TransactionDomainCreateModel[]) => TransactionDomainModel[]
+  // single
   createTransaction: (transaction: TransactionDomainCreateModel) => TransactionDomainModel
+  // bulk
+  createTransactions: (transactions: TransactionDomainCreateModel[]) => TransactionDomainModel[]
+
+  // read-back bulk TODO search criteria
   getTransactions: () => TransactionDomainModel[]
+  // read back single
   getTransaction: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionDomainModel
+
+  // create an 'operation', e.g. for dispute-handling, etc.
   addTransactionOperation: (status: TransactionOperationDomainCreateModel) => TransactionOperationDomainModel
-  setTransactionStatus: (status: TransactionDomainCreateModel) => TransactionDomainModel
+  // read back operations for a transaction
+  getTransactionOperations: (
+    transaction_id: TransactionDomainModel['transaction_id']
+  ) => TransactionOperationDomainModel[]
+
+  getTransactionStatuses: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionStatusDomainModel[]
+  setTransactionStatus: (status: TransactionStatusDomainCreateModel) => TransactionStatusDomainModel
 }
 
 export const TransactionServiceDefinition: RpcServiceDefinition<TransactionService> = {
-  createTransactions: RpcRoute<TransactionService['createTransactions']>(),
   createTransaction: RpcRoute<TransactionService['createTransaction']>(),
+  createTransactions: RpcRoute<TransactionService['createTransactions']>(),
+
   getTransactions: RpcRoute<TransactionService['getTransactions']>(),
   getTransaction: RpcRoute<TransactionService['getTransaction']>(),
+
   addTransactionOperation: RpcRoute<TransactionService['addTransactionOperation']>(),
+  getTransactionOperations: RpcRoute<TransactionService['getTransactionOperations']>(),
+  getTransactionStatuses: RpcRoute<TransactionService['getTransactionStatuses']>(),
   setTransactionStatus: RpcRoute<TransactionService['setTransactionStatus']>()
 }
