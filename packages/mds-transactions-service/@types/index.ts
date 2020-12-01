@@ -42,7 +42,7 @@ export interface ReceiptDomainModel {
   receipt_id: UUID
   timestamp: Timestamp // could be any time before the Transaction was created
   origin_url: URL // where can I go to dig into the details of the receipt, given this receipt_id?
-  receipt_details: Object // JSON blob with free-form supporting evidence, DO NOT INCLUDE PII
+  receipt_details: TripReceiptDetailsDomainModel | CurbUseDetailsDomainModel | Object // JSON blob with free-form supporting evidence, DO NOT INCLUDE PII
 }
 
 export interface TransactionDomainModel {
@@ -116,7 +116,9 @@ export interface TransactionService {
     transaction_id: TransactionDomainModel['transaction_id']
   ) => TransactionOperationDomainModel[]
 
+  // get all the status changes for this transaction (typically we won't have a ton I expect)
   getTransactionStatuses: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionStatusDomainModel[]
+  // add a new status change
   setTransactionStatus: (status: TransactionStatusDomainCreateModel) => TransactionStatusDomainModel
 }
 
@@ -129,6 +131,7 @@ export const TransactionServiceDefinition: RpcServiceDefinition<TransactionServi
 
   addTransactionOperation: RpcRoute<TransactionService['addTransactionOperation']>(),
   getTransactionOperations: RpcRoute<TransactionService['getTransactionOperations']>(),
+
   getTransactionStatuses: RpcRoute<TransactionService['getTransactionStatuses']>(),
   setTransactionStatus: RpcRoute<TransactionService['setTransactionStatus']>()
 }
