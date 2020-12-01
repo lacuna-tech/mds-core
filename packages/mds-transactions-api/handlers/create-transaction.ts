@@ -6,7 +6,10 @@ export type TransactionApiCreateTransactionRequest = TransactionApiRequest<Trans
 
 export type TransactionApiCreateTransactionResponse = TransactionApiResponse<{ transaction: TransactionDomainModel }>
 
-export const CreateTransactionHandler = async (req: TransactionApiCreateTransactionRequest, res: TransactionApiCreateTransactionResponse) => {
+export const CreateTransactionHandler = async (
+  req: TransactionApiCreateTransactionRequest,
+  res: TransactionApiCreateTransactionResponse
+) => {
   try {
     const transaction = await TransactionServiceClient.createTransaction(req.body)
     const { version } = res.locals

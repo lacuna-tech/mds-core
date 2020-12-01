@@ -2,10 +2,17 @@ import express from 'express'
 import { pathPrefix } from '@mds-core/mds-utils'
 import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import { TransactionApiVersionMiddleware } from '../middleware'
-import { CreateTransactionHandler, DeleteTransactionHandler, GetTransactionsHandler, GetTransactionHandler, UpdateTransactionHandler } from '../handlers'
+import {
+  CreateTransactionHandler,
+  DeleteTransactionHandler,
+  GetTransactionsHandler,
+  GetTransactionHandler,
+  UpdateTransactionHandler
+} from '../handlers'
 import { TransactionApiAccessTokenScopes } from '../@types'
 
-const checkTransactionApiAccess = (validator: AccessTokenScopeValidator<TransactionApiAccessTokenScopes>) => checkAccess(validator)
+const checkTransactionApiAccess = (validator: AccessTokenScopeValidator<TransactionApiAccessTokenScopes>) =>
+  checkAccess(validator)
 
 export const api = (app: express.Express): express.Express =>
   app
