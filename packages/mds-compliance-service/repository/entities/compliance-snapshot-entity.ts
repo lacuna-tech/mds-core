@@ -20,10 +20,10 @@ export class ComplianceSnapshotEntity
   @Column('uuid', { primary: true })
   compliance_snapshot_id: ComplianceSnapshotEntityModel['compliance_snapshot_id']
 
-  @Column('bigint', { transformer: BigintTransformer, primary: true })
+  @Column('bigint', { transformer: BigintTransformer })
   compliance_as_of: ComplianceSnapshotEntityModel['compliance_as_of']
 
-  @Column('uuid', { primary: true })
+  @Column('uuid')
   provider_id: ComplianceSnapshotEntityModel['provider_id']
 
   @Column('varchar', { length: 255 })

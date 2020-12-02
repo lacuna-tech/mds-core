@@ -14,7 +14,6 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
   public getComplianceSnapshot = async (
     options: GetComplianceSnapshotOptions
   ): Promise<ComplianceSnapshotDomainModel> => {
-    //    const { compliance_snapshot_id, provider_id, policy_id, compliance_as_of = now() } = options
     const isComplianceIdOption = (option: unknown): option is { compliance_snapshot_id: UUID } =>
       (option as any).compliance_snapshot_id
 

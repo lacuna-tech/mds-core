@@ -3,8 +3,8 @@ import { RpcClient, RpcRequest } from '@mds-core/mds-rpc-common'
 import { ComplianceService, ComplianceServiceDefinition } from '../@types'
 
 const ComplianceServiceRpcClient = RpcClient(ComplianceServiceDefinition, {
-  host: process.env.COMPLIANCESNAPSHOT_SERVICE_RPC_HOST,
-  port: process.env.MCOMPLIANCESNAPSHOT_SERVICE_RPC_PORT
+  host: process.env.COMPLIANCE_SERVICE_RPC_HOST,
+  port: process.env.COMPLIANCE_SERVICE_RPC_PORT
 })
 
 // What the API layer, and any other clients, will invoke.

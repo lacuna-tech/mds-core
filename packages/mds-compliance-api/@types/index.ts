@@ -7,7 +7,7 @@ export const [COMPLIANCE_API_DEFAULT_VERSION] = COMPLIANCE_API_SUPPORTED_VERSION
 // Allow adding type definitions for Express Request objects
 export type ComplianceApiRequest<B = {}> = ApiRequest<B>
 
-export type ComplianceApiAccessTokenScopes = 'compliances:read' | 'compliances:read:claim' | 'compliances:write'
+export type ComplianceApiAccessTokenScopes = 'compliance:read' | 'compliance:read:provider'
 
 export type ComplianceApiResponse<B = {}> = ApiVersionedResponse<COMPLIANCE_API_SUPPORTED_VERSION, B> &
   ApiResponseLocalsClaims<ComplianceApiAccessTokenScopes>

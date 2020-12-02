@@ -102,6 +102,7 @@ describe('Verifies compliance engine processes by vehicle most recent event', ()
     await cache.seed({ devices, events, telemetry: [] })
     await Promise.all(devices.map(async device => db.writeDevice(device)))
     const complianceResults = await processPolicy(LOW_COUNT_POLICY, geographies)
+    console.dir(complianceResults, { depth: null })
     const { 0: result } = complianceResults.filter(
       complianceResult => complianceResult?.provider_id === TEST1_PROVIDER_ID
     ) as ComplianceSnapshotDomainModel[]

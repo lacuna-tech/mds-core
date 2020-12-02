@@ -1,16 +1,19 @@
-import { ComplianceServiceClient, ComplianceDomainModel } from '@lacuna-core/lacuna-compliance-service'
+import { ComplianceServiceClient, ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service'
 import { isServiceError } from '@mds-core/mds-service-helpers'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { ComplianceApiResponse, ComplianceApiRequest } from '../@types'
 
-export type ComplianceApiGetComplianceRequest = ComplianceApiRequest & ApiRequestParams<'name'>
+export type ComplianceApiGetComplianceRequest = ComplianceApiRequest & ApiRequestParams<'compliance_snapshot_id'>
 
-export type ComplianceApiGetComplianceResponse = ComplianceApiResponse<{ compliance: ComplianceDomainModel }>
+export type ComplianceApiGetComplianceResponse = ComplianceApiResponse<{ compliance: ComplianceSnapshotDomainModel }>
 
-export const GetComplianceHandler = async (req: ComplianceApiGetComplianceRequest, res: ComplianceApiGetComplianceResponse) => {
+export const GetComplianceHandler = async (
+  req: ComplianceApiGetComplianceRequest,
+  res: ComplianceApiGetComplianceResponse
+) => {
   try {
-    const { name } = req.params
-    const compliance = await ComplianceServiceClient.getCompliance(name)
+    const { compliance_snapshot_id } = req.params
+    const compliance = await ComplianceServiceClient.getComplianceSnapshot({ compliance_snapshot_id })
     const { version } = res.locals
     return res.status(200).send({ version, compliance })
   } catch (error) {
