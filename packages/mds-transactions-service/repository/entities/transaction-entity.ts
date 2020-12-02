@@ -1,5 +1,5 @@
 import { Entity, Column } from 'typeorm'
-import { IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
+import { BigintTransformer, IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
 import { TransactionDomainModel } from '../../@types'
 
 export interface TransactionEntityModel extends IdentityColumn, RecordedColumn {
@@ -23,15 +23,15 @@ export class TransactionEntity extends IdentityColumn(RecordedColumn(class {})) 
   @Column('uuid', { nullable: true })
   device_id: TransactionEntityModel['device_id']
 
-  @Column('timestamp')
+  @Column('bigint', { transformer: BigintTransformer })
   timestamp: TransactionEntityModel['timestamp']
 
-  @Column('varchar')
+  @Column('varchar', { length: 127 })
   fee_type: TransactionEntityModel['fee_type']
 
   @Column('int')
-  amount: TransactionEntityModel['amount'] // pennies
+  amount: TransactionEntityModel['amount'] // pennies or equivalent
 
-  @Column('json')
-  receipt: TransactionEntityModel['receipt'] // is this how you specify a JSON blob?
+  @Column('jsonb')
+  receipt: TransactionEntityModel['receipt']
 }

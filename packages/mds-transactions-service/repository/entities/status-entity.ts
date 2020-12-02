@@ -1,5 +1,5 @@
 import { Entity, Column } from 'typeorm'
-import { IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
+import { BigintTransformer, IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
 import { TransactionStatusDomainModel } from '../../@types'
 
 export interface TransactionStatusEntityModel extends IdentityColumn, RecordedColumn {
@@ -10,7 +10,7 @@ export interface TransactionStatusEntityModel extends IdentityColumn, RecordedCo
   author: TransactionStatusDomainModel['author']
 }
 
-@Entity('operations')
+@Entity('transaction_statuses')
 export class TransactionStatusEntity
   extends IdentityColumn(RecordedColumn(class {}))
   implements TransactionStatusDomainModel {
@@ -20,12 +20,12 @@ export class TransactionStatusEntity
   @Column('uuid', { primary: true })
   transaction_id: TransactionStatusDomainModel['transaction_id']
 
-  @Column('timestamp')
+  @Column('bigint', { transformer: BigintTransformer })
   timestamp: TransactionStatusDomainModel['timestamp']
 
-  @Column('varchar')
+  @Column('varchar', { length: 127 })
   status_type: TransactionStatusDomainModel['status_type']
 
-  @Column('varchar')
+  @Column('varchar', { length: 127 })
   author: TransactionStatusDomainModel['author'] // is this how you specify a JSON blob?
 }
