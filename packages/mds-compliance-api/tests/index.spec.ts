@@ -28,6 +28,7 @@ describe('Test Compliances API', () => {
     const result = await request
       .get(pathPrefix(`/violation_periods?start_time=${TIME}`))
       .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
+      .expect(HttpStatus.OK, { COMPLIANCE_SNAPSHOTS })
 
     console.log('rezz', result.error)
   })

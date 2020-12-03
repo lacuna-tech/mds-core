@@ -1,3 +1,3 @@
-import { ComplianceSnapshotServiceManager } from '../service/manager'
+import { ComplianceServiceManager } from '../service/manager'
 
-ComplianceSnapshotServiceManager.monitor()
+ComplianceServiceManager.monitor()
