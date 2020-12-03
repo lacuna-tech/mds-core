@@ -4,6 +4,6 @@
     "outDir": "dist"
   },
   "references": [
-    { "path": "../../packages/lacuna-compliance-service/tsconfig.build.json" }
+    { "path": "../../packages/mds-compliance-service/tsconfig.build.json" }
   ]
 }

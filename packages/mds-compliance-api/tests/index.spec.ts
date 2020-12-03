@@ -1,7 +1,8 @@
 import supertest from 'supertest'
 import HttpStatus from 'http-status-codes'
 import { ApiServer } from '@mds-core/mds-api-server'
-import { ComplianceServiceClient } from '@mds-core/mds-compliance-service/client'
+import { ComplianceServiceClient, ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service'
+
 import { ComplianceServiceManager } from '@mds-core/mds-compliance-service/service/manager'
 import { pathPrefix, uuid } from '@mds-core/mds-utils'
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
