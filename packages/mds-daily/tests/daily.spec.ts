@@ -78,7 +78,8 @@ before(done => {
     {
       provider_id: TEST1_PROVIDER_ID,
       device_id: devices[0].device_id,
-      event_type: VEHICLE_EVENTS.provider_pick_up,
+      event_types: ['maintenance_pick_up'],
+      vehicle_state: 'removed',
       recorded: testTimestampNow - 90,
       timestamp: testTimestampNow - 90,
       telemetry: TEST_TELEMETRY
@@ -86,7 +87,8 @@ before(done => {
     {
       provider_id: TEST1_PROVIDER_ID,
       device_id: devices[0].device_id,
-      event_type: VEHICLE_EVENTS.trip_enter,
+      event_types: ['trip_enter_jurisdiction'],
+      vehicle_state: 'on_trip',
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 80,
       timestamp: testTimestampNow - 80,
@@ -95,7 +97,8 @@ before(done => {
     {
       provider_id: TEST1_PROVIDER_ID,
       device_id: devices[0].device_id,
-      event_type: VEHICLE_EVENTS.trip_leave,
+      event_types: ['trip_leave_jurisdiction'],
+      vehicle_state: 'elsewhere',
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 70,
       timestamp: testTimestampNow - 70,
@@ -104,7 +107,8 @@ before(done => {
     {
       provider_id: TEST1_PROVIDER_ID,
       device_id: devices[0].device_id,
-      event_type: VEHICLE_EVENTS.provider_pick_up,
+      event_types: ['maintenance_pick_up'],
+      vehicle_state: 'removed',
       recorded: testTimestampNow - 60,
       timestamp: testTimestampNow - 60,
       telemetry: TEST_TELEMETRY
@@ -112,7 +116,8 @@ before(done => {
     {
       provider_id: TEST1_PROVIDER_ID,
       device_id: devices[0].device_id,
-      event_type: VEHICLE_EVENTS.service_start,
+      event_types: ['on_hours'],
+      vehicle_state: 'available',
       recorded: testTimestampNow - 50,
       timestamp: testTimestampNow - 50,
       telemetry: TEST_TELEMETRY
@@ -120,7 +125,8 @@ before(done => {
     {
       provider_id: TEST1_PROVIDER_ID,
       device_id: devices[0].device_id,
-      event_type: VEHICLE_EVENTS.trip_leave,
+      event_types: ['trip_leave_jurisdiction'],
+      vehicle_state: 'elsewhere',
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 40,
       timestamp: testTimestampNow - 40,
@@ -129,7 +135,8 @@ before(done => {
     {
       provider_id: TEST1_PROVIDER_ID,
       device_id: devices[0].device_id,
-      event_type: VEHICLE_EVENTS.trip_start,
+      event_types: ['trip_start'],
+      vehicle_state: 'on_trip',
       trip_id: TRIP_UUID,
       recorded: testTimestampNow - 30,
       timestamp: testTimestampNow - 30,
@@ -138,7 +145,8 @@ before(done => {
     {
       provider_id: TEST1_PROVIDER_ID,
       device_id: devices[0].device_id,
-      event_type: VEHICLE_EVENTS.provider_pick_up,
+      event_types: ['maintenance_pick_up'],
+      vehicle_state: 'removed',
       recorded: testTimestampNow - 20,
       timestamp: testTimestampNow - 20,
       telemetry: TEST_TELEMETRY
