@@ -14,11 +14,11 @@
     limitations under the License.
  */
 
-import { Device, Geography, Policy, UUID, RULE_TYPES } from '@mds-core/mds-types'
+import { Device, Geography, Policy, UUID, RULE_TYPES, VehicleEvent } from '@mds-core/mds-types'
 
 import { now, UnsupportedTypeError, uuid } from '@mds-core/mds-utils'
 import { ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service/@types'
-import { VehicleEventWithTelemetry, ComplianceEngineResult } from '../@types'
+import { VehicleEventWithTelemetry } from '../@types'
 import { getProviderIDs, getComplianceInputs, isPolicyActive } from './helpers'
 
 import { processCountPolicy } from './count_processors'
@@ -43,17 +43,13 @@ function getProcessorType(rule_type: string) {
 }
 
 export async function createComplianceSnapshot(
-  policy: Policy,
   provider_id: UUID,
+  policy: Policy,
   geographies: Geography[],
-  processorFunction: (
-    p: Policy,
-    events: VehicleEventWithTelemetry[],
-    geos: Geography[],
-    devicesToCheck: { [d: string]: Device }
-  ) => ComplianceEngineResult | undefined
+  filteredEvents: VehicleEvent[],
+  deviceMap: { [d: string]: Device }
 ): Promise<ComplianceSnapshotDomainModel | undefined> {
-  const { filteredEvents, deviceMap } = await getComplianceInputs(provider_id)
+  const processorFunction = getProcessorType(policy.rules[0].rule_type)
   const compliance_as_of = now()
   const complianceResult = processorFunction(
     policy,
@@ -85,10 +81,10 @@ export async function createComplianceSnapshot(
 export async function processPolicy(policy: Policy, geographies: Geography[]) {
   if (isPolicyActive(policy)) {
     const provider_ids = getProviderIDs(policy.provider_ids)
-    const processorFunction = getProcessorType(policy.rules[0].rule_type)
-    const ComplianceSnapshotPromises = provider_ids.map(async provider_id =>
-      createComplianceSnapshot(policy, provider_id, geographies, processorFunction)
-    )
+    const ComplianceSnapshotPromises = provider_ids.map(async provider_id => {
+      const { filteredEvents, deviceMap } = await getComplianceInputs(provider_id)
+      return createComplianceSnapshot(provider_id, policy, geographies, filteredEvents, deviceMap)
+    })
     const results = await Promise.all(ComplianceSnapshotPromises)
     // filter out undefined results
     return results.filter(result => !!result)

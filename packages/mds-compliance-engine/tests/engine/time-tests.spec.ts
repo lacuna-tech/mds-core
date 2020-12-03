@@ -8,7 +8,7 @@ import { FeatureCollection } from 'geojson'
 import { minutes } from '@mds-core/mds-utils'
 import { MatchedVehicleInformation } from '@mds-core/mds-compliance-service/@types'
 import { ComplianceEngineResult, VehicleEventWithTelemetry } from '../../@types'
-import { generateDeviceMap } from './helpers'
+import { generateDeviceMap } from '../../engine/helpers'
 import { isTimeRuleMatch, processTimePolicy } from '../../engine/time_processors'
 import {
   INNER_POLYGON_2,

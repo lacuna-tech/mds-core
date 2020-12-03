@@ -24,7 +24,7 @@ import {
 import MockDate from 'mockdate'
 import { la_city_boundary } from '@mds-core/mds-policy/tests/la-city-boundary'
 import { ComplianceEngineResult, VehicleEventWithTelemetry } from '../../@types'
-import { generateDeviceMap } from './helpers'
+import { generateDeviceMap } from '../../engine/helpers'
 import {
   CITY_OF_LA,
   COUNT_POLICY_JSON,
@@ -395,18 +395,19 @@ describe('Tests Compliance Engine Count Functionality:', () => {
        for the second rule.
        */
       const devices_a: Device[] = makeDevices(3, now())
-      const events_a: VehicleEvent[] = makeEventsWithTelemetry(devices_a, now() - 10, INNER_POLYGON, {
+      const events_a: VehicleEvent[] = makeEventsWithTelemetry(devices_a, now(), INNER_POLYGON, {
         event_types: ['provider_drop_off'],
         vehicle_state: 'available',
         speed: 0
       })
 
       const devices_b: Device[] = makeDevices(2, now())
-      const events_b: VehicleEvent[] = makeEventsWithTelemetry(devices_b, now() - 10, INNER_POLYGON_2, {
+      const events_b: VehicleEvent[] = makeEventsWithTelemetry(devices_b, now(), INNER_POLYGON_2, {
         event_types: ['provider_drop_off'],
         vehicle_state: 'available',
         speed: 0
       })
+
       const deviceMap: { [d: string]: Device } = generateDeviceMap([...devices_a, ...devices_b])
       const result = processCountPolicy(
         VENICE_OVERFLOW_POLICY,

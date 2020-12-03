@@ -21,6 +21,12 @@ const { env } = process
 
 const TWO_DAYS_IN_MS = 172800000
 
+export function generateDeviceMap(devices: Device[]): { [d: string]: Device } {
+  return [...devices].reduce((deviceMapAcc: { [d: string]: Device }, device: Device) => {
+    return Object.assign(deviceMapAcc, { [device.device_id]: device })
+  }, {})
+}
+
 export function isPolicyUniversal(policy: Policy) {
   return !policy.provider_ids || policy.provider_ids.length === 0
 }
