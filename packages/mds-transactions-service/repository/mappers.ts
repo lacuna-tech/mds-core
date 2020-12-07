@@ -58,9 +58,9 @@ export const TransactionDomainToEntityCreate = ModelMapper<
   TransactionDomainCreateModel,
   TransactionEntityCreateModel,
   TransactionEntityCreateOptions
->((domain, options) => {
+>(({ device_id = null, ...domain }, options) => {
   const { recorded } = options ?? {}
-  return { ...domain, recorded }
+  return { ...domain, device_id, recorded }
 })
 
 export type TransactionOperationEntityCreateModel = Omit<

@@ -8,7 +8,7 @@ export const { validate: validateTransactionDomainModel, isValid: isValidTransac
   Joi.object<TransactionDomainModel>().keys({
     transaction_id: Joi.string().uuid().required(),
     provider_id: Joi.string().uuid().required(),
-    device_id: Joi.string().uuid().required(),
+    device_id: Joi.string().uuid().optional(),
     timestamp: Joi.number().integer().required(),
     fee_type: Joi.string().required(),
     amount: Joi.number().integer().required(),
