@@ -2,7 +2,11 @@ import logger from '@mds-core/mds-logger'
 import { ServiceResult, ServiceException, ServiceProvider, ProcessController } from '@mds-core/mds-service-helpers'
 import { TransactionService } from '../@types'
 import { TransactionRepository } from '../repository'
-import { validateTransactionDomainModel } from './validators'
+import {
+  validateTransactionDomainModel,
+  validateTransactionOperationDomainModel,
+  validateTransactionStatusDomainModel
+} from './validators'
 
 export const TransactionServiceProvider: ServiceProvider<TransactionService> & ProcessController = {
   start: TransactionRepository.initialize,
@@ -18,22 +22,25 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
   },
   createTransactions: async transactions => {
     try {
-      return ServiceResult(await TransactionRepository.createTransactions(transactions.map(validateTransactionDomainModel)))
+      return ServiceResult(
+        await TransactionRepository.createTransactions(transactions.map(validateTransactionDomainModel))
+      )
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Creating Transactions', error)
       logger.error(exception, error)
       return exception
     }
   },
-  getTransaction: async name => {
+  getTransaction: async transaction_id => {
     try {
-      return ServiceResult(await TransactionRepository.getTransaction(name))
+      return ServiceResult(await TransactionRepository.getTransaction(transaction_id))
     } catch (error) /* istanbul ignore next */ {
-      const exception = ServiceException(`Error Getting Transaction: ${name}`, error)
+      const exception = ServiceException(`Error Getting Transaction: ${transaction_id}`, error)
       logger.error(exception, error)
       return exception
     }
   },
+  // TODO search params
   getTransactions: async () => {
     try {
       return ServiceResult(await TransactionRepository.getTransactions())
@@ -43,20 +50,46 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
       return exception
     }
   },
-  updateTransaction: async transaction => {
+  addTransactionOperation: async transactionOperation => {
     try {
-      return ServiceResult(await TransactionRepository.updateTransaction(transaction))
+      return ServiceResult(
+        await TransactionRepository.addTransactionOperation(
+          validateTransactionOperationDomainModel(transactionOperation)
+        )
+      )
     } catch (error) /* istanbul ignore next */ {
-      const exception = ServiceException('Error Updating Transaction', error)
+      const exception = ServiceException('Error Creating Transaction Operation', error)
       logger.error(exception, error)
       return exception
     }
   },
-  deleteTransaction: async name => {
+  // TODO search params
+  getTransactionOperations: async () => {
     try {
-      return ServiceResult(await TransactionRepository.deleteTransaction(name))
+      return ServiceResult(await TransactionRepository.getTransactionOperations())
     } catch (error) /* istanbul ignore next */ {
-      const exception = ServiceException(`Error Deleting Transaction: ${name}`, error)
+      const exception = ServiceException('Error Getting Transaction Operations', error)
+      logger.error(exception, error)
+      return exception
+    }
+  },
+  setTransactionStatus: async transactionStatus => {
+    try {
+      return ServiceResult(
+        await TransactionRepository.setTransactionStatus(validateTransactionStatusDomainModel(transactionStatus))
+      )
+    } catch (error) /* istanbul ignore next */ {
+      const exception = ServiceException('Error Creating Transaction Status', error)
+      logger.error(exception, error)
+      return exception
+    }
+  },
+  // TODO search params
+  getTransactionStatuses: async () => {
+    try {
+      return ServiceResult(await TransactionRepository.getTransactionStatuses())
+    } catch (error) /* istanbul ignore next */ {
+      const exception = ServiceException('Error Getting Transaction Operations', error)
       logger.error(exception, error)
       return exception
     }

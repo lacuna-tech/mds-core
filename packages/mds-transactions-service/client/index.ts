@@ -9,10 +9,12 @@ const TransactionServiceRpcClient = RpcClient(TransactionServiceDefinition, {
 
 // What the API layer, and any other clients, will invoke.
 export const TransactionServiceClient: ServiceClient<TransactionService> = {
-  getTransaction: (...args) => RpcRequest(TransactionServiceRpcClient.getTransaction, args),
-  getTransactions: (...args) => RpcRequest(TransactionServiceRpcClient.getTransactions, args),
   createTransaction: (...args) => RpcRequest(TransactionServiceRpcClient.createTransaction, args),
   createTransactions: (...args) => RpcRequest(TransactionServiceRpcClient.createTransactions, args),
-  deleteTransaction: (...args) => RpcRequest(TransactionServiceRpcClient.deleteTransaction, args),
-  updateTransaction: (...args) => RpcRequest(TransactionServiceRpcClient.updateTransaction, args)
+  getTransaction: (...args) => RpcRequest(TransactionServiceRpcClient.getTransaction, args),
+  getTransactions: (...args) => RpcRequest(TransactionServiceRpcClient.getTransactions, args),
+  addTransactionOperation: (...args) => RpcRequest(TransactionServiceRpcClient.addTransactionOperation, args),
+  getTransactionOperations: (...args) => RpcRequest(TransactionServiceRpcClient.getTransactionOperations, args),
+  setTransactionStatus: (...args) => RpcRequest(TransactionServiceRpcClient.setTransactionStatus, args),
+  getTransactionStatuses: (...args) => RpcRequest(TransactionServiceRpcClient.getTransactionStatuses, args)
 }

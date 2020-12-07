@@ -15,10 +15,10 @@ export class TransactionStatusEntity
   extends IdentityColumn(RecordedColumn(class {}))
   implements TransactionStatusDomainModel {
   @Column('uuid', { primary: true })
-  status_id: TransactionStatusDomainModel['status_id']
+  transaction_id: TransactionStatusDomainModel['transaction_id']
 
   @Column('uuid', { primary: true })
-  transaction_id: TransactionStatusDomainModel['transaction_id']
+  status_id: TransactionStatusDomainModel['status_id']
 
   @Column('bigint', { transformer: BigintTransformer })
   timestamp: TransactionStatusDomainModel['timestamp']

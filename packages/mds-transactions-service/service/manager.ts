@@ -14,8 +14,10 @@ export const TransactionServiceManager = RpcServer(
     createTransactions: args => TransactionServiceProvider.createTransactions(...args),
     getTransaction: args => TransactionServiceProvider.getTransaction(...args),
     getTransactions: args => TransactionServiceProvider.getTransactions(...args),
-    updateTransaction: args => TransactionServiceProvider.updateTransaction(...args),
-    deleteTransaction: args => TransactionServiceProvider.deleteTransaction(...args)
+    addTransactionOperation: args => TransactionServiceProvider.addTransactionOperation(...args),
+    getTransactionOperations: args => TransactionServiceProvider.getTransactionOperations(...args),
+    setTransactionStatus: args => TransactionServiceProvider.setTransactionStatus(...args),
+    getTransactionStatuses: args => TransactionServiceProvider.getTransactionStatuses(...args)
   },
   {
     port: process.env.TRANSACTION_SERVICE_RPC_PORT,

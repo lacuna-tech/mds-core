@@ -4,10 +4,8 @@ import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server
 import { TransactionApiVersionMiddleware } from '../middleware'
 import {
   CreateTransactionHandler,
-  DeleteTransactionHandler,
   GetTransactionsHandler,
   GetTransactionHandler,
-  UpdateTransactionHandler
 } from '../handlers'
 import { TransactionApiAccessTokenScopes } from '../@types'
 
@@ -31,14 +29,4 @@ export const api = (app: express.Express): express.Express =>
       pathPrefix('/transactions'),
       checkTransactionApiAccess(scopes => scopes.includes('transactions:write')),
       CreateTransactionHandler
-    )
-    .put(
-      pathPrefix('/transactions/:transaction_id'),
-      checkTransactionApiAccess(scopes => scopes.includes('transactions:write')),
-      UpdateTransactionHandler
-    )
-    .delete(
-      pathPrefix('/transactions/:transaction_id'),
-      checkTransactionApiAccess(scopes => scopes.includes('transactions:write')),
-      DeleteTransactionHandler
     )

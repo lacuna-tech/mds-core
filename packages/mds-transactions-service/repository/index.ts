@@ -1,22 +1,32 @@
 import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core/mds-repository'
 import { NotFoundError } from '@mds-core/mds-utils'
-import { TransactionDomainModel } from '../@types'
-import { TransactionEntityToDomain, TransactionDomainToEntityCreate } from './mappers'
-import { TransactionEntity, TransactionEntityModel } from './entities/transaction-entity'
+import { UUID } from '@mds-core/mds-types'
+import { TransactionDomainModel, TransactionOperationDomainModel, TransactionStatusDomainModel } from '../@types'
+import {
+  TransactionEntityToDomain,
+  TransactionDomainToEntityCreate,
+  TransactionOperationEntityToDomain,
+  TransactionOperationDomainToEntityCreate,
+  TransactionStatusEntityToDomain,
+  TransactionStatusDomainToEntityCreate
+} from './mappers'
+import { TransactionEntity } from './entities/transaction-entity'
+import { TransactionOperationEntity } from './entities/operation-entity'
+import { TransactionStatusEntity } from './entities/status-entity'
 import migrations from './migrations'
 
 class TransactionReadWriteRepository extends ReadWriteRepository {
-  public getTransaction = async (name: string): Promise<TransactionDomainModel> => {
+  public getTransaction = async (transaction_id: UUID): Promise<TransactionDomainModel> => {
     const { connect } = this
     try {
       const connection = await connect('ro')
       const entity = await connection.getRepository(TransactionEntity).findOne({
         where: {
-          name
+          transaction_id
         }
       })
       if (!entity) {
-        throw new NotFoundError(`Transaction ${name} not found`)
+        throw new NotFoundError(`Transaction ${transaction_id} not found`)
       }
       return TransactionEntityToDomain.map(entity)
     } catch (error) {
@@ -24,34 +34,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
     }
   }
 
-  public updateTransaction = async (update: TransactionDomainModel): Promise<TransactionDomainModel> => {
-    const { connect } = this
-    try {
-      const connection = await connect('rw')
-      const { name } = update
-      const currentTransaction = await connection.getRepository(TransactionEntity).findOne({ where: { name } })
-      if (!currentTransaction) {
-        throw new NotFoundError(`Transaction ${name} not found`)
-      }
-      const {
-        raw: [updated]
-      } = await connection
-        .getRepository(TransactionEntity)
-        .createQueryBuilder()
-        .update()
-        .set({
-          ...currentTransaction,
-          ...TransactionDomainToEntityCreate.map(update)
-        })
-        .where('name = :name', { name })
-        .returning('*')
-        .execute()
-      return TransactionEntityToDomain.map(updated)
-    } catch (error) {
-      throw RepositoryError(error)
-    }
-  }
-
+  // TODO search criteria, paging
   public getTransactions = async (): Promise<TransactionDomainModel[]> => {
     const { connect } = this
     try {
@@ -99,20 +82,67 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
     }
   }
 
-  public deleteTransaction = async (name: TransactionEntityModel['name']): Promise<TransactionEntityModel['name']> => {
-    const { connect, getTransaction } = this
-    // Try to read transaction first, if not 404
-    await getTransaction(name)
+  public addTransactionOperation = async (
+    transactionOperation: TransactionOperationDomainModel
+  ): Promise<TransactionOperationDomainModel> => {
+    const { connect } = this
     try {
       const connection = await connect('rw')
-      await connection
-        .getRepository(TransactionEntity)
+      const {
+        raw: [entity]
+      }: InsertReturning<TransactionOperationEntity> = await connection
+        .getRepository(TransactionOperationEntity)
         .createQueryBuilder()
-        .delete()
-        .where('name = :name', { name })
+        .insert()
+        .values([TransactionOperationDomainToEntityCreate.map(transactionOperation)])
         .returning('*')
         .execute()
-      return name
+      return TransactionOperationEntityToDomain.map(entity)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  // TODO search criteria, paging
+  public getTransactionOperations = async (): Promise<TransactionOperationDomainModel[]> => {
+    const { connect } = this
+    try {
+      const connection = await connect('ro')
+      const entities = await connection.getRepository(TransactionOperationEntity).find()
+      return entities.map(TransactionOperationEntityToDomain.mapper())
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  public setTransactionStatus = async (
+    transactionStatus: TransactionStatusDomainModel
+  ): Promise<TransactionStatusDomainModel> => {
+    const { connect } = this
+    try {
+      const connection = await connect('rw')
+      const {
+        raw: [entity]
+      }: InsertReturning<TransactionStatusEntity> = await connection
+        .getRepository(TransactionStatusEntity)
+        .createQueryBuilder()
+        .insert()
+        .values([TransactionStatusDomainToEntityCreate.map(transactionStatus)])
+        .returning('*')
+        .execute()
+      return TransactionStatusEntityToDomain.map(entity)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  // TODO search criteria, paging
+  public getTransactionStatuses = async (): Promise<TransactionStatusDomainModel[]> => {
+    const { connect } = this
+    try {
+      const connection = await connect('ro')
+      const entities = await connection.getRepository(TransactionStatusEntity).find()
+      return entities.map(TransactionStatusEntityToDomain.mapper())
     } catch (error) {
       throw RepositoryError(error)
     }
