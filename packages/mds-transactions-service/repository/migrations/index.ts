@@ -1,3 +1,3 @@
-import { CreateTransactionsTable1590524762011 } from './1590524762011-CreateTransactionsTable'
+import { CreateTransactionTables1607356036132 } from './1607356036132-CreateTransactionTables'
 
-export default [CreateTransactionsTable1590524762011]
+export default [CreateTransactionTables1607356036132]
