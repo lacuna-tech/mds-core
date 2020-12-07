@@ -150,7 +150,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
 
   constructor() {
     super('transactions', {
-      entities: [TransactionEntity],
+      entities: [TransactionEntity, TransactionOperationEntity, TransactionStatusEntity],
       migrations
     })
   }
