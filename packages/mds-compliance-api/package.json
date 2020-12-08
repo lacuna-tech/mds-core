@@ -2,8 +2,8 @@
   "name": "@mds-core/mds-compliance-api",
   "description": "MDS Compliance API",
   "version": "0.1.0",
-  "author": "Lacuna Technologies",
-  "license": "UNLICENSED",
+  "author": "City of Los Angeles",
+  "license": "Apache-2.0",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@mds-core/mds-api-helpers": "0.1.26",
+    "@mds-core/mds-providers": "0.1.26",
+    "@mds-core/mds-db": "0.1.26",
     "@mds-core/mds-api-server": "0.1.26",
     "@mds-core/mds-logger": "0.1.24",
     "@mds-core/mds-service-helpers": "0.1.0",
