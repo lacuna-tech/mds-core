@@ -116,13 +116,11 @@ export interface TransactionService {
   addTransactionOperation: (operation: TransactionOperationDomainCreateModel) => TransactionOperationDomainModel
   // read back operations for a transaction
   // if auth token has a provider_id, it must match the provider_id in the transaction
-  getTransactionOperations: (
-    transaction_id: TransactionDomainModel['transaction_id']
-  ) => TransactionOperationDomainModel[]
+  getTransactionOperations: () => TransactionOperationDomainModel[]
 
   // get all the status changes for this transaction (typically we won't have a ton I expect)
   // if auth token has a provider_id, it must match the provider_id in the transaction
-  getTransactionStatuses: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionStatusDomainModel[]
+  getTransactionStatuses: () => TransactionStatusDomainModel[]
   // add a new status change
   setTransactionStatus: (status: TransactionStatusDomainCreateModel) => TransactionStatusDomainModel
 }
