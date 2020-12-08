@@ -2,10 +2,12 @@
 /* eslint-disable no-multi-str */
 import WebSocket from 'ws'
 import { MOCHA_PROVIDER_ID } from '@mds-core/mds-providers'
-import { PROVIDER_SCOPES } from '@mds-core/mds-test-data'
-import Sinon from 'sinon'
 import jwt from 'jsonwebtoken'
 import NodeRSA from 'node-rsa'
+import stream, { StreamProducer } from '@mds-core/mds-stream'
+import { Msg, NatsError } from 'ts-nats'
+import { SingleOrArray } from '@mds-core/mds-types'
+import { AuthorizationError } from '@mds-core/mds-utils'
 import { WebSocketServer } from '../ws-server'
 import { Clients } from '../clients'
 
@@ -22,26 +24,89 @@ const RSA_PUBLIC_KEY = key.exportKey('public')
 
 const returnRsaPublicKey = async () => RSA_PUBLIC_KEY
 
-const goodToken = jwt.sign({ provider_id: MOCHA_PROVIDER_ID, scope: PROVIDER_SCOPES }, RSA_PRIVATE_KEY, {
-  algorithm: 'RS256',
-  audience: 'https://example.com',
-  issuer: 'https://example.com'
+const readOnlyToken = jwt.sign(
+  { provider_id: MOCHA_PROVIDER_ID, scope: 'events:read telemetry:read' },
+  RSA_PRIVATE_KEY,
+  {
+    algorithm: 'RS256',
+    audience: 'https://example.com',
+    issuer: 'https://example.com'
+  }
+)
+
+const readOnlyAuth = `Bearer ${readOnlyToken}`
+
+const readWriteToken = jwt.sign(
+  { provider_id: MOCHA_PROVIDER_ID, scope: 'events:read events:write telemetry:read telemetry:write' },
+  RSA_PRIVATE_KEY,
+  {
+    algorithm: 'RS256',
+    audience: 'https://example.com',
+    issuer: 'https://example.com'
+  }
+)
+
+const readWriteAuth = `Bearer ${readWriteToken}`
+
+/* Callbacks to use for stream operations. Set by consumers, used by producers. */
+const streamCallbacks: Partial<{ [e: string]: ((err: NatsError | null, msg: Msg) => void)[] }> = {}
+
+/* Can't use the existing mock stream producer, because we use unnamed producers in a hash map for the WS Server */
+const mockProducer: (topic: string) => StreamProducer<object> = topic => {
+  return {
+    write: async (message: SingleOrArray<object>) => {
+      const callbacks = streamCallbacks[topic]
+      if (callbacks) {
+        const messages = (Array.isArray(message) ? message : [message]).map(msg => {
+          return JSON.stringify(msg)
+        })
+
+        /* eslint-disable promise/prefer-await-to-callbacks */
+        await Promise.all(
+          messages.map(msg => callbacks.map(cb => cb(null, { subject: topic, data: msg, sid: 0, size: 1 })))
+        )
+        /* eslint-enable promise/prefer-await-to-callbacks */
+      }
+    },
+    initialize: async () => undefined,
+    shutdown: async () => undefined
+  }
+}
+
+const mockConsumer = (topics: string | string[], processor: (err: NatsError | null, msg: Msg) => void) => {
+  if (Array.isArray(topics)) {
+    topics.forEach(topic => {
+      streamCallbacks[topic] = (streamCallbacks[topic] ?? []).concat(processor)
+    })
+  } else {
+    streamCallbacks[topics] = (streamCallbacks[topics] ?? []).concat(processor)
+  }
+  return {
+    initialize: async () => undefined,
+    shutdown: async () => undefined
+  }
+}
+
+const server = WebSocketServer().controller()
+
+beforeAll(() => {
+  jest.spyOn(Clients, 'getKey').mockImplementation(returnRsaPublicKey)
+  jest.spyOn(stream, 'NatsStreamProducer').mockImplementation(mockProducer as any) // need to cast cause jest infers StreamProducer<unknown> ¯\_(ツ)_/¯
+  jest.spyOn(stream, 'NatsStreamConsumer').mockImplementation(mockConsumer)
+  /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
+  server.start()
 })
 
-const ADMIN_AUTH = `Bearer ${goodToken}`
-
-before(() => {
-  Sinon.stub(Clients, 'getKey').returns(returnRsaPublicKey())
-  /* eslint-disable-next-line @typescript-eslint/no-floating-promises */
-  WebSocketServer()
+afterAll(async () => {
+  await server.stop()
 })
 
 describe('Tests MDS-Web-Sockets', () => {
   describe('Tests Authentication', () => {
-    it('Tests admin:all scoped tokens can authenticate successfully', done => {
+    it('Tests readonly tokens can authenticate successfully', done => {
       const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
       client.onopen = () => {
-        client.send(`AUTH%${ADMIN_AUTH}`)
+        client.send(`AUTH%${readOnlyAuth}`)
       }
 
       client.on('message', data => {
@@ -55,7 +120,7 @@ describe('Tests MDS-Web-Sockets', () => {
     })
 
     it('Tests invalid audience tokens cannot authenticate successfully', done => {
-      const badToken = jwt.sign({ provider_id: MOCHA_PROVIDER_ID, scope: PROVIDER_SCOPES }, RSA_PRIVATE_KEY, {
+      const badToken = jwt.sign({ provider_id: MOCHA_PROVIDER_ID, scope: 'admin:all' }, RSA_PRIVATE_KEY, {
         algorithm: 'RS256',
         audience: 'https://foo.com',
         issuer: 'https://foo.com'
@@ -69,7 +134,7 @@ describe('Tests MDS-Web-Sockets', () => {
       }
 
       client.on('message', data => {
-        if (data === '{"err":{"name":"AuthorizationError"}}') {
+        if (data === 'AUTH%{"err":{"name":"AuthorizationError"}}') {
           client.close()
           return done()
         }
@@ -78,55 +143,166 @@ describe('Tests MDS-Web-Sockets', () => {
       })
     })
 
-    it('Subscribe and send event', done => {
-      const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
-      client.onopen = () => {
-        client.send(`AUTH%${ADMIN_AUTH}`)
-      }
-
-      client.on('message', data => {
-        if (data === 'AUTH%{"status":"Success"}') {
-          client.send('SUB%event')
-          return
+    describe('Tests Readonly Client Access', () => {
+      it('Tests readonly clients can subscribe, but cannot send events', done => {
+        const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
+        client.onopen = () => {
+          client.send(`AUTH%${readOnlyAuth}`)
         }
 
-        if (data === 'SUB%{"status":"Success"}') {
-          client.send(`PUSH%event%${JSON.stringify({ foo: 'bar' })}`)
-          return
+        client.on('message', data => {
+          if (data === 'AUTH%{"status":"Success"}') {
+            client.send('SUB%event')
+            return
+          }
+
+          if (data === 'SUB%event%{"status":"Success"}') {
+            client.send(`PUSH%event%${JSON.stringify({ foo: 'bar' })}`)
+            return
+          }
+
+          if (data === `PUSH%event%${JSON.stringify({ err: new AuthorizationError('Insufficient access.') })}`) {
+            client.close()
+            return done()
+          }
+
+          return done
+        })
+      })
+
+      it('Tests readonly clients can subscribe, but cannot send telemetry', done => {
+        const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
+        client.onopen = () => {
+          client.send(`AUTH%${readOnlyAuth}`)
         }
 
-        if (data === 'event%{"foo":"bar"}') {
-          client.close()
-          return done()
-        }
+        client.on('message', data => {
+          if (data === 'AUTH%{"status":"Success"}') {
+            client.send('SUB%telemetry')
+            return
+          }
 
-        return done
+          if (data === 'SUB%telemetry%{"status":"Success"}') {
+            client.send(`PUSH%telemetry%${JSON.stringify({ foo: 'bar' })}`)
+            return
+          }
+
+          if (data === `PUSH%telemetry%${JSON.stringify({ err: new AuthorizationError('Insufficient access.') })}`) {
+            client.close()
+            return done()
+          }
+
+          return done
+        })
       })
     })
 
-    it('Subscribe and send telemetry', done => {
-      const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
-      client.onopen = () => {
-        client.send(`AUTH%${ADMIN_AUTH}`)
-      }
-
-      client.on('message', data => {
-        if (data === 'AUTH%{"status":"Success"}') {
-          client.send('SUB%telemetry')
-          return
+    // FIXME Remove once legacy push support is removed
+    describe('Tests legacy server -> client emission', () => {
+      it('Tests r/w clients can subscribe and send events (legacy)', done => {
+        const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
+        client.onopen = () => {
+          client.send(`AUTH%${readWriteAuth}`)
         }
 
-        if (data === 'SUB%{"status":"Success"}') {
-          client.send(`PUSH%telemetry%${JSON.stringify({ foo: 'bar' })}`)
-          return
+        client.on('message', data => {
+          if (data === 'AUTH%{"status":"Success"}') {
+            client.send('SUB%event')
+            return
+          }
+
+          if (data === 'SUB%event%{"status":"Success"}') {
+            client.send(`PUSH%event%${JSON.stringify({ foo: 'bar' })}`)
+            return
+          }
+
+          if (data === 'event%{"foo":"bar"}') {
+            client.close()
+            return done()
+          }
+
+          return done
+        })
+      })
+
+      it('Tests r/w clients can subscribe and send telemetry (legacy)', done => {
+        const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
+        client.onopen = () => {
+          client.send(`AUTH%${readWriteAuth}`)
         }
 
-        if (data === 'telemetry%{"foo":"bar"}') {
-          client.close()
-          return done()
+        client.on('message', data => {
+          if (data === 'AUTH%{"status":"Success"}') {
+            client.send('SUB%telemetry')
+            return
+          }
+
+          if (data === 'SUB%telemetry%{"status":"Success"}') {
+            client.send(`PUSH%telemetry%${JSON.stringify({ foo: 'bar' })}`)
+            return
+          }
+
+          if (data === 'telemetry%{"foo":"bar"}') {
+            client.close()
+            return done()
+          }
+
+          return done
+        })
+      })
+    })
+
+    describe('Tests Read/Write Clients', () => {
+      it('Tests r/w clients can subscribe and send events', done => {
+        const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
+        client.onopen = () => {
+          client.send(`AUTH%${readWriteAuth}`)
         }
 
-        return done
+        client.on('message', data => {
+          if (data === 'AUTH%{"status":"Success"}') {
+            client.send('SUB%event')
+            return
+          }
+
+          if (data === 'SUB%event%{"status":"Success"}') {
+            client.send(`PUSH%event%${JSON.stringify({ foo: 'bar' })}`)
+            return
+          }
+
+          if (data === 'PUSH%event%{"foo":"bar"}') {
+            client.close()
+            return done()
+          }
+
+          return done
+        })
+      })
+
+      it('Tests r/w clients can subscribe and send telemetry', done => {
+        const client = new WebSocket(`ws://localhost:${process.env.PORT || 4000}`)
+        client.onopen = () => {
+          client.send(`AUTH%${readWriteAuth}`)
+        }
+
+        client.on('message', data => {
+          if (data === 'AUTH%{"status":"Success"}') {
+            client.send('SUB%telemetry')
+            return
+          }
+
+          if (data === 'SUB%telemetry%{"status":"Success"}') {
+            client.send(`PUSH%telemetry%${JSON.stringify({ foo: 'bar' })}`)
+            return
+          }
+
+          if (data === 'PUSH%telemetry%{"foo":"bar"}') {
+            client.close()
+            return done()
+          }
+
+          return done
+        })
       })
     })
   })

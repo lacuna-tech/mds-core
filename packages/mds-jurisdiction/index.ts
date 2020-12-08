@@ -15,3 +15,12 @@
  */
 
 export { api } from './api'
+export {
+  JurisdictionApiGetJurisdictionResponseBody,
+  JurisdictionApiGetJurisdictionsResponseBody,
+  JurisdictionApiCreateJurisdictionResponseBody,
+  JurisdictionApiCreateJurisdictionRequest,
+  JurisdictionApiUpdateJurisdictionRequest,
+  JurisdictionApiUpdateJurisdictionResponseBody,
+  JurisdictionApiDeleteJurisdictionResponseBody
+} from './handlers'
