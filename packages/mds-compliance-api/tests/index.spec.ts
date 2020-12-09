@@ -19,7 +19,8 @@ import {
   POLICY1,
   POLICY2,
   COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2,
-  COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1
+  COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1,
+  COMPLIANCE_SNAPSHOT_ID
 } from './fixtures'
 import { api } from '../api'
 
@@ -213,6 +214,93 @@ describe('Test Compliances API', () => {
             }
           ]
         })
+    })
+  })
+
+  describe.only('GET /violation_details_snapshot', () => {
+    it.only('successfully uses the compliance_snapshot_id if provided', async () => {
+      const clientSpy = jest
+        .spyOn(ComplianceServiceClient, 'getComplianceSnapshot')
+        .mockImplementation(async () => COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1[0])
+      const result = await request
+        .get(
+          pathPrefix(
+            `/violation_details_snapshot?compliance_snapshot_id=${COMPLIANCE_SNAPSHOT_ID}&policy_id=${POLICY_ID_1}`
+          )
+        )
+        .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
+      console.log('rezz', result.error)
+      //        .expect(HttpStatus.OK)
+
+      expect(clientSpy).toHaveBeenCalledWith({
+        compliance_snapshot_id: COMPLIANCE_SNAPSHOT_ID
+      })
+    })
+
+    it('successfully uses a combo of compliance_as_of, provider_id, and policy_id', async () => {
+      const clientSpy = jest
+        .spyOn(ComplianceServiceClient, 'getComplianceSnapshot')
+        .mockImplementation(async () => COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1[0])
+      await request
+        .get(
+          pathPrefix(
+            `/violation_details_snapshot?policy_id=${POLICY_ID_1}&provider_id=${PROVIDER_ID_1}&compliance_as_of=${TIME}`
+          )
+        )
+        .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
+        .expect(HttpStatus.OK)
+
+      expect(clientSpy).toHaveBeenCalledWith({
+        policy_id: POLICY_ID_1,
+        provider_id: PROVIDER_ID_1,
+        compliance_as_of: TIME
+      })
+    })
+
+    it('compliance_as_of defaults to now()', async () => {
+      const clientSpy = jest
+        .spyOn(ComplianceServiceClient, 'getComplianceSnapshot')
+        .mockImplementation(async () => COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1[0])
+      await request
+        .get(pathPrefix(`/violation_details_snapshot?policy_id=${POLICY_ID_1}&provider_id=${PROVIDER_ID_1}`))
+        .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
+        .expect(HttpStatus.OK)
+
+      expect(clientSpy).toHaveBeenCalledWith({
+        policy_id: POLICY_ID_1,
+        provider_id: PROVIDER_ID_1,
+        compliance_as_of: TIME + 500
+      })
+    })
+
+    it('uses the provider_id in the JWT claim with compliance:read:provider scope', async () => {
+      const clientSpy = jest
+        .spyOn(ComplianceServiceClient, 'getComplianceSnapshot')
+        .mockImplementation(async () => COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1[0])
+      await request
+        .get(pathPrefix(`/violation_details_snapshot?policy_id=${POLICY_ID_1}&provider_id=${PROVIDER_ID_2}`))
+        .set('Authorization', SCOPED_AUTH(['compliance:read:provider'], PROVIDER_ID_1))
+        .expect(HttpStatus.OK)
+
+      expect(clientSpy).toHaveBeenCalledWith({
+        policy_id: POLICY_ID_1,
+        provider_id: PROVIDER_ID_1,
+        compliance_as_of: TIME + 500
+      })
+    })
+
+    it('returns an error if the provider_id in the JWT claim is missing', async () => {
+      await request
+        .get(pathPrefix(`/violation_details_snapshot?policy_id=${POLICY_ID_1}&provider_id=${PROVIDER_ID_2}`))
+        .set('Authorization', SCOPED_AUTH(['compliance:read:provider'], ''))
+        .expect(HttpStatus.BAD_REQUEST)
+    })
+
+    it('returns an error if the policy_id and compliance_snapshot_id are both missing', async () => {
+      await request
+        .get(pathPrefix(`/violation_details_snapshot?`))
+        .set('Authorization', SCOPED_AUTH(['compliance:read:provider'], PROVIDER_ID_1))
+        .expect(HttpStatus.BAD_REQUEST)
     })
   })
 })

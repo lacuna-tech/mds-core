@@ -6,6 +6,7 @@ import express from 'express'
 import { parseRequest } from '@mds-core/mds-api-helpers'
 import { Policy, Timestamp } from '@mds-core/mds-types'
 import { isDefined, now } from '@mds-core/mds-utils'
+import { isValidProviderId } from '@mds-core/mds-schema-validators'
 import { ComplianceAggregate, ComplianceApiRequest, ComplianceApiResponse, ComplianceViolationPeriod } from '../@types'
 
 export type ComplianceApiGetViolationPeriodsRequest = ComplianceApiRequest &
@@ -44,7 +45,7 @@ export const GetViolationPeriodsHandler = async (
       .single({ parser: Number })
       .query('start_time', 'end_time')
     if (!isDefined(start_time)) {
-      return res.status(400).send({ error: 'Missing required query param geography_id' })
+      return res.status(400).send({ error: 'Missing required query param start_time' })
     }
     const { provider_ids, policy_ids } = parseRequest(req)
       .single({ parser: (str: string | undefined | null) => str?.split(',') })
@@ -52,11 +53,11 @@ export const GetViolationPeriodsHandler = async (
 
     let p_provider_ids
     if (scopes.includes('compliance:read:provider')) {
-      if (res.locals.claims && res.locals.claims.provider_id) {
+      if (res.locals.claims && isValidProviderId(res.locals.claims.provider_id)) {
         const { provider_id } = res.locals.claims
         p_provider_ids = [provider_id]
       } else {
-        return res.status(403).send({ error: 'compliance:read:provider token missing provider_id' })
+        return res.status(403).send({ error: 'compliance:read:provider token missing valid provider_id' })
       }
     } else if (scopes.includes('compliance:read')) {
       p_provider_ids = provider_ids ?? Object.keys(providers)

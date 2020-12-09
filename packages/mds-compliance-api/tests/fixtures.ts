@@ -9,10 +9,12 @@ export const PROVIDER_ID_2 = '63f13c48-34ff-49d2-aca7-cf6a5b6171c3'
 
 export const TIME = 1605821758034
 
+export const COMPLIANCE_SNAPSHOT_ID = '243e1209-61ad-4d7c-8464-db551f1f8c21'
+
 export const COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1: ComplianceSnapshotDomainModel[] = [
   {
     compliance_as_of: TIME,
-    compliance_snapshot_id: '243e1209-61ad-4d7c-8464-db551f1f8c21',
+    compliance_snapshot_id: COMPLIANCE_SNAPSHOT_ID,
     excess_vehicles_count: 1,
     total_violations: 1,
     policy: {

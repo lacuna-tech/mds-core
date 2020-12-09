@@ -2,7 +2,7 @@ import express from 'express'
 import { pathPrefix } from '@mds-core/mds-utils'
 import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import { ComplianceApiVersionMiddleware } from '../middleware'
-import { GetCompliancesHandler, GetViolationPeriodsHandler } from '../handlers'
+import { GetViolationDetailsSnapshotHandler, GetViolationPeriodsHandler } from '../handlers'
 import { ComplianceApiAccessTokenScopes } from '../@types'
 
 const checkComplianceApiAccess = (validator: AccessTokenScopeValidator<ComplianceApiAccessTokenScopes>) =>
@@ -19,7 +19,9 @@ export const api = (app: express.Express): express.Express =>
       GetViolationPeriodsHandler
     )
     .get(
-      pathPrefix('/compliances'),
-      checkComplianceApiAccess(scopes => scopes.includes('compliance:read')),
-      GetCompliancesHandler
+      pathPrefix('/violation_details_snapshot'),
+      checkComplianceApiAccess(
+        scopes => scopes.includes('compliance:read') || scopes.includes('compliance:read:provider')
+      ),
+      GetViolationDetailsSnapshotHandler
     )

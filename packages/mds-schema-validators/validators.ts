@@ -263,6 +263,8 @@ export const isValidNumber = (value: unknown, options: Partial<NumberValidatorOp
     options
   )
 
+export const isValidUUID = (value: unknown): value is string => ValidateSchema(value, uuidSchema)
+
 export const isValidAuditTripId = (
   audit_trip_id: unknown,
   options: Partial<ValidatorOptions> = {}
