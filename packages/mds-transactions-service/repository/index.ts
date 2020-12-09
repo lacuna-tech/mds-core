@@ -104,11 +104,11 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
   }
 
   // TODO search criteria, paging
-  public getTransactionOperations = async (): Promise<TransactionOperationDomainModel[]> => {
+  public getTransactionOperations = async (transaction_id: UUID): Promise<TransactionOperationDomainModel[]> => {
     const { connect } = this
     try {
       const connection = await connect('ro')
-      const entities = await connection.getRepository(TransactionOperationEntity).find()
+      const entities = await connection.getRepository(TransactionOperationEntity).find({ where: { transaction_id } })
       return entities.map(TransactionOperationEntityToDomain.mapper())
     } catch (error) {
       throw RepositoryError(error)
@@ -137,11 +137,11 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
   }
 
   // TODO search criteria, paging
-  public getTransactionStatuses = async (): Promise<TransactionStatusDomainModel[]> => {
+  public getTransactionStatuses = async (transaction_id: UUID): Promise<TransactionStatusDomainModel[]> => {
     const { connect } = this
     try {
       const connection = await connect('ro')
-      const entities = await connection.getRepository(TransactionStatusEntity).find()
+      const entities = await connection.getRepository(TransactionStatusEntity).find({ where: { transaction_id } })
       return entities.map(TransactionStatusEntityToDomain.mapper())
     } catch (error) {
       throw RepositoryError(error)

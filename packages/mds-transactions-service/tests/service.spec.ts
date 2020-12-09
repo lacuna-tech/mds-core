@@ -26,6 +26,7 @@ const TransactionServer = TransactionServiceManager.controller()
 const device_id = 'ee6bf5c7-bce0-46c9-a5c9-8652724059d7'
 const provider_id = '3452fa87-bfd7-42c5-9c53-5e07bde13671'
 const transaction_id = '37bd96ac-69bd-4634-9b22-ff081d7a5a09'
+const unknown_transaction_id = '822415eb-baaa-40ff-b219-a5ed214e2114'
 const receipt_id = 'a5eb612e-a154-4339-a760-aee95908dc51'
 const operation_id = '4fcbbd4f-c0cb-46b7-b7dd-55ebae535493'
 const status_id = '15c99c65-cf78-46a9-9055-c9973e43f061'
@@ -71,7 +72,6 @@ describe('Transaction Service Tests', () => {
 
   it('Post Transaction with missing fee_type', async () => {
     try {
-      // @ts-ignore
       await TransactionServiceClient.createTransaction({
         transaction_id: malformed_uuid,
         provider_id,
@@ -79,7 +79,8 @@ describe('Transaction Service Tests', () => {
         timestamp: Date.now(),
         amount: 100, // "I'd buy THAT for a dollar!"
         receipt
-      })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any)
       expect('did not happen').toBe('happened')
     } catch (err) {
       expect(err.type).toBe('ValidationError')
@@ -115,8 +116,6 @@ describe('Transaction Service Tests', () => {
     expect(transaction.transaction_id).toEqual(transaction_id)
   })
 
-  // post trans with missing fields (how??  TS blocks it)
-
   // operations
   it('Post Good Transaction Operation', async () => {
     const operation = await TransactionServiceClient.addTransactionOperation({
@@ -146,14 +145,21 @@ describe('Transaction Service Tests', () => {
     }
   })
 
-  it('Get All Transaction Operations', async () => {
-    const operations = await TransactionServiceClient.getTransactionOperations()
+  it('Get All Transaction Operations for One Transaction', async () => {
+    const operations = await TransactionServiceClient.getTransactionOperations(transaction_id)
     expect(operations.length).toEqual(1)
     const [operation] = operations
     expect(operation.operation_id).toEqual(operation_id)
   })
 
-  // post op with missing fields (how?)
+  it('Get All Transaction Operations for One Nonexistant Transaction', async () => {
+    const operations = await TransactionServiceClient.getTransactionOperations(unknown_transaction_id)
+    expect(operations.length).toEqual(0)
+  })
+
+  // search with non-existant-transaction-id
+
+  // post op with missing fields
   // post op with bad op
   // post op with non-UUID
   // post op on non-existant transaction id
@@ -173,11 +179,18 @@ describe('Transaction Service Tests', () => {
   })
 
   it('Get All Transaction Statuses', async () => {
-    const statuses = await TransactionServiceClient.getTransactionStatuses()
+    const statuses = await TransactionServiceClient.getTransactionStatuses(transaction_id)
     expect(statuses.length).toEqual(1)
     const [status] = statuses
     expect(status.status_id).toEqual(status_id)
   })
+
+  it('Get All Transaction Statuses for One Nonexistant Transaction', async () => {
+    const statuses = await TransactionServiceClient.getTransactionStatuses(unknown_transaction_id)
+    expect(statuses.length).toEqual(0)
+  })
+
+  // search with non-existant-transaction-id
 
   // post dup stat id
   // post stat with missing fields

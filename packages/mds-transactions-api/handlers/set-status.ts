@@ -5,11 +5,13 @@ import { TransactionApiRequest, TransactionApiResponse } from '../@types'
 
 export type TransactionApiSetTransactionStatusRequest = TransactionApiRequest<TransactionStatusDomainModel>
 
-export type TransactionApiCreateTransactionResponse = TransactionApiResponse<{ status: TransactionStatusDomainModel }>
+export type TransactionApiSetTransactionStatusResponse = TransactionApiResponse<{
+  status: TransactionStatusDomainModel
+}>
 
 export const SetTransactionStatusHandler = async (
   req: TransactionApiSetTransactionStatusRequest,
-  res: TransactionApiCreateTransactionResponse
+  res: TransactionApiSetTransactionStatusResponse
 ) => {
   try {
     const status = await TransactionServiceClient.setTransactionStatus(req.body)

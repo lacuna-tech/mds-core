@@ -1,5 +1,6 @@
 import logger from '@mds-core/mds-logger'
 import { ServiceResult, ServiceException, ServiceProvider, ProcessController } from '@mds-core/mds-service-helpers'
+import { UUID } from '@mds-core/mds-types'
 import { TransactionService } from '../@types'
 import { TransactionRepository } from '../repository'
 import {
@@ -31,9 +32,10 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
       return exception
     }
   },
-  getTransaction: async transaction_id => {
+  getTransaction: async (transaction_id: UUID) => {
     try {
-      return ServiceResult(await TransactionRepository.getTransaction(transaction_id))
+      const transaction = await TransactionRepository.getTransaction(transaction_id)
+      return ServiceResult(transaction)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException(`Error Getting Transaction: ${transaction_id}`, error)
       logger.error(exception, error)
@@ -43,7 +45,8 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
   // TODO search params
   getTransactions: async () => {
     try {
-      return ServiceResult(await TransactionRepository.getTransactions())
+      const transactions = await TransactionRepository.getTransactions()
+      return ServiceResult(transactions)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Transactions', error)
       logger.error(exception, error)
@@ -52,11 +55,10 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
   },
   addTransactionOperation: async transactionOperation => {
     try {
-      return ServiceResult(
-        await TransactionRepository.addTransactionOperation(
-          validateTransactionOperationDomainModel(transactionOperation)
-        )
+      const operation = await TransactionRepository.addTransactionOperation(
+        validateTransactionOperationDomainModel(transactionOperation)
       )
+      return ServiceResult(operation)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Creating Transaction Operation', error)
       logger.error(exception, error)
@@ -64,9 +66,10 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
     }
   },
   // TODO search params
-  getTransactionOperations: async () => {
+  getTransactionOperations: async (transaction_id: UUID) => {
     try {
-      return ServiceResult(await TransactionRepository.getTransactionOperations())
+      const operations = await TransactionRepository.getTransactionOperations(transaction_id)
+      return ServiceResult(operations)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Transaction Operations', error)
       logger.error(exception, error)
@@ -75,9 +78,10 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
   },
   setTransactionStatus: async transactionStatus => {
     try {
-      return ServiceResult(
-        await TransactionRepository.setTransactionStatus(validateTransactionStatusDomainModel(transactionStatus))
+      const status = await TransactionRepository.setTransactionStatus(
+        validateTransactionStatusDomainModel(transactionStatus)
       )
+      return ServiceResult(status)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Creating Transaction Status', error)
       logger.error(exception, error)
@@ -85,9 +89,10 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
     }
   },
   // TODO search params
-  getTransactionStatuses: async () => {
+  getTransactionStatuses: async (transaction_id: UUID) => {
     try {
-      return ServiceResult(await TransactionRepository.getTransactionStatuses())
+      const statuses = await TransactionRepository.getTransactionStatuses(transaction_id)
+      return ServiceResult(statuses)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Transaction Operations', error)
       logger.error(exception, error)
