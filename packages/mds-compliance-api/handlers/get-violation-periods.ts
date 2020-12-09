@@ -53,11 +53,11 @@ export const GetViolationPeriodsHandler = async (
 
     let p_provider_ids
     if (scopes.includes('compliance:read:provider')) {
-      if (res.locals.claims && isValidProviderId(res.locals.claims.provider_id)) {
+      if (res.locals.claims && res.locals.claims.provider_id) {
         const { provider_id } = res.locals.claims
         p_provider_ids = [provider_id]
       } else {
-        return res.status(403).send({ error: 'compliance:read:provider token missing valid provider_id' })
+        return res.status(403).send({ error: 'compliance:read:provider token missing provider_id' })
       }
     } else if (scopes.includes('compliance:read')) {
       p_provider_ids = provider_ids ?? Object.keys(providers)
