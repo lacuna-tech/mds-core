@@ -1,8 +1,9 @@
 import { createConnection, ConnectionOptions } from 'typeorm'
 import { now, days, uuid } from '@mds-core/mds-utils'
+import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
 import { ComplianceServiceManager } from '../service/manager'
 import { ComplianceServiceClient } from '../client'
-import { ComplianceSnapshotDomainModel } from '../@types'
+import { ComplianceArrayResponseDomainModel, ComplianceSnapshotDomainModel } from '../@types'
 import ormconfig = require('../ormconfig')
 
 const TIME = now()
@@ -91,6 +92,12 @@ describe('Test Migrations', () => {
   })
 })
 
+const COMPLIANCE_ARRAY_RESPONSE: ComplianceArrayResponseDomainModel = {
+  provider_id: TEST1_PROVIDER_ID,
+  compliance_array_response_id: 'f9faaf44-22e3-46f1-9ffd-603f27dcea01',
+  compliance_snapshot_ids: ['f9faaf44-22e3-46f1-9ffd-603f27dcea01', 'd9240a7a-b0e3-44cc-a62f-809bb6ec7791']
+}
+
 const complianceServer = ComplianceServiceManager.controller()
 
 describe('ComplianceSnapshots Service Tests', () => {
@@ -178,6 +185,15 @@ describe('ComplianceSnapshots Service Tests', () => {
       COMPLIANCE_SNAPSHOT_1.compliance_snapshot_id
     ])
     expect(complianceSnapshots.length).toEqual(2)
+  })
+
+  it('creates and gets a ComplianceArrayResponseDomainModel', async () => {
+    await ComplianceServiceClient.createComplianceArrayResponse(COMPLIANCE_ARRAY_RESPONSE)
+    const result = await ComplianceServiceClient.getComplianceArrayResponse(
+      COMPLIANCE_ARRAY_RESPONSE.compliance_array_response_id
+    )
+    expect(result.compliance_snapshot_ids).toEqual(COMPLIANCE_ARRAY_RESPONSE.compliance_snapshot_ids)
+    expect(result.provider_id).toEqual(COMPLIANCE_ARRAY_RESPONSE.provider_id)
   })
 
   afterAll(async () => {

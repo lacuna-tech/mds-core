@@ -14,5 +14,8 @@ export const ComplianceServiceClient: ServiceClient<ComplianceService> = {
     RpcRequest(ComplianceServiceRpcClient.getComplianceSnapshotsByTimeInterval, args),
   getComplianceSnapshotsByIDs: (...args) => RpcRequest(ComplianceServiceRpcClient.getComplianceSnapshotsByIDs, args),
   createComplianceSnapshot: (...args) => RpcRequest(ComplianceServiceRpcClient.createComplianceSnapshot, args),
-  createComplianceSnapshots: (...args) => RpcRequest(ComplianceServiceRpcClient.createComplianceSnapshots, args)
+  createComplianceSnapshots: (...args) => RpcRequest(ComplianceServiceRpcClient.createComplianceSnapshots, args),
+  createComplianceArrayResponse: (...args) =>
+    RpcRequest(ComplianceServiceRpcClient.createComplianceArrayResponse, args),
+  getComplianceArrayResponse: (...args) => RpcRequest(ComplianceServiceRpcClient.getComplianceArrayResponse, args)
 }

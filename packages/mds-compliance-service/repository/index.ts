@@ -4,13 +4,20 @@ import { UUID } from '@mds-core/mds-types'
 import {
   ComplianceSnapshotDomainModel,
   GetComplianceSnapshotsByTimeIntervalOptions,
-  GetComplianceSnapshotOptions
+  GetComplianceSnapshotOptions,
+  ComplianceArrayResponseDomainModel
 } from '../@types'
-import { ComplianceSnapshotEntityToDomain, ComplianceSnapshotDomainToEntityCreate } from './mappers'
+import {
+  ComplianceSnapshotEntityToDomain,
+  ComplianceSnapshotDomainToEntityCreate,
+  ComplianceArrayResponseEntityToDomain,
+  ComplianceArrayResponseDomainToEntityCreate
+} from './mappers'
 import { ComplianceSnapshotEntity } from './entities/compliance-snapshot-entity'
 import migrations from './migrations'
+import { ComplianceArrayResponseEntity } from './entities/compliance-array-response-entity'
 
-class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
+class ComplianceReadWriteRepository extends ReadWriteRepository {
   public getComplianceSnapshot = async (
     options: GetComplianceSnapshotOptions
   ): Promise<ComplianceSnapshotDomainModel> => {
@@ -145,12 +152,53 @@ class ComplianceSnapshotReadWriteRepository extends ReadWriteRepository {
     }
   }
 
+  public getComplianceArrayResponse = async (
+    complianceArrayResponseID: UUID
+  ): Promise<ComplianceArrayResponseDomainModel> => {
+    const { connect } = this
+    try {
+      const connection = await connect('ro')
+      const entity = await connection.getRepository(ComplianceArrayResponseEntity).findOne({
+        where: {
+          compliance_array_response_id: complianceArrayResponseID
+        }
+      })
+      if (!entity) {
+        throw new NotFoundError(`ComplianceArrayResponse ${complianceArrayResponseID} not found`)
+      }
+      return ComplianceArrayResponseEntityToDomain.map(entity)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  public createComplianceArrayResponse = async (
+    complianceArrayResponseEntity: ComplianceArrayResponseDomainModel
+  ): Promise<ComplianceArrayResponseDomainModel> => {
+    const { connect } = this
+    try {
+      const connection = await connect('rw')
+      const {
+        raw: [entity]
+      }: InsertReturning<ComplianceArrayResponseEntity> = await connection
+        .getRepository(ComplianceArrayResponseEntity)
+        .createQueryBuilder()
+        .insert()
+        .values([ComplianceArrayResponseDomainToEntityCreate.map(complianceArrayResponseEntity)])
+        .returning('*')
+        .execute()
+      return ComplianceArrayResponseEntityToDomain.map(entity)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
   constructor() {
-    super('ComplianceSnapshots', {
-      entities: [ComplianceSnapshotEntity],
+    super('Compliance', {
+      entities: [ComplianceSnapshotEntity, ComplianceArrayResponseEntity],
       migrations
     })
   }
 }
 
-export const ComplianceSnapshotRepository = new ComplianceSnapshotReadWriteRepository()
+export const ComplianceRepository = new ComplianceReadWriteRepository()

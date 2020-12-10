@@ -1,4 +1,4 @@
-import { ComplianceSnapshotRepository } from './repository'
+import { ComplianceRepository } from './repository'
 
 // Make connection options available to TypeORM CLI
-module.exports = ComplianceSnapshotRepository.cli({ migrationsDir: 'repository/migrations' })
+module.exports = ComplianceRepository.cli({ migrationsDir: 'repository/migrations' })
