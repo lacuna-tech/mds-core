@@ -5,8 +5,7 @@ import { ApiRequestQuery } from '@mds-core/mds-api-server'
 import express from 'express'
 import { parseRequest } from '@mds-core/mds-api-helpers'
 import { Policy, Timestamp } from '@mds-core/mds-types'
-import { isDefined, now } from '@mds-core/mds-utils'
-import { isValidProviderId } from '@mds-core/mds-schema-validators'
+import { isDefined, now, uuid } from '@mds-core/mds-utils'
 import { ComplianceAggregate, ComplianceApiRequest, ComplianceApiResponse, ComplianceViolationPeriod } from '../@types'
 
 export type ComplianceApiGetViolationPeriodsRequest = ComplianceApiRequest &
@@ -20,17 +19,24 @@ export type ComplianceApiGetViolationPeriodsResponse = ComplianceApiResponse<{
 
 interface ComplianceAggregateMap {
   [k: string]: {
-    complianceViolationPeriods: ComplianceViolationPeriod[]
+    complianceSnapshotViolationGroupings: ComplianceSnapshotDomainModel[][]
     complianceSnapshots: null | ComplianceSnapshotDomainModel[]
   }
 }
 
-function convertSnapshotsToViolationPeriod(snapshots: ComplianceSnapshotDomainModel[]): ComplianceViolationPeriod {
+async function convertComplianceSnapshotsArrayToComplianceViolationPeriod(
+  snapshots: ComplianceSnapshotDomainModel[]
+): Promise<ComplianceViolationPeriod> {
+  const compliance_array_response_id = uuid()
+  await ComplianceServiceClient.createComplianceArrayResponse({
+    compliance_array_response_id,
+    compliance_snapshot_ids: snapshots.map(s => s.compliance_snapshot_id),
+    provider_id: snapshots[0].provider_id
+  })
   return {
     start_time: snapshots[0].compliance_as_of,
     end_time: snapshots[snapshots.length - 1].compliance_as_of,
-    // TODO finish rest of URL
-    snapshots_uri: snapshots.map(s => s.compliance_snapshot_id).join(',')
+    snapshots_uri: `/compliance_snapshot_ids?token=${compliance_array_response_id}`
   }
 }
 
@@ -73,13 +79,21 @@ export const GetViolationPeriodsHandler = async (
 
     const complianceAggregateMap: ComplianceAggregateMap = {}
 
+    /**
+     * Iterate through all compliance snapshots. For each policy-provider pair, build up arrays of
+     * contiguous compliance snapshots that contain violations. End the array when a compliance snapshot
+     * is encountered that has no violations. E.g. if for Jump and policy A, there are snapshots B, C, D, E,
+     * and F, and B, C, E and F contain violations, B and C get grouped together and eventually put into the
+     * same instance of a ComplianceViolationPeriod, and E and F get grouped together. D is basically ignored.
+     *
+     */
     complianceSnapshots.forEach(complianceSnapshot => {
       const { provider_id } = complianceSnapshot
       const { policy_id } = complianceSnapshot.policy
       const key = `${provider_id},${policy_id}`
       if (!isDefined(complianceAggregateMap[key])) {
         complianceAggregateMap[key] = {
-          complianceViolationPeriods: [],
+          complianceSnapshotViolationGroupings: [],
           complianceSnapshots: null
         }
       }
@@ -92,27 +106,35 @@ export const GetViolationPeriodsHandler = async (
           mapEntry.complianceSnapshots.push(complianceSnapshot)
         }
       } else if (mapEntry.complianceSnapshots !== null) {
-        const mapEntrySnapshots = mapEntry.complianceSnapshots
-        const complianceViolationPeriod = convertSnapshotsToViolationPeriod(mapEntrySnapshots)
-        mapEntry.complianceViolationPeriods.push(complianceViolationPeriod)
+        mapEntry.complianceSnapshotViolationGroupings.push(mapEntry.complianceSnapshots)
         mapEntry.complianceSnapshots = null
       }
     })
 
-    const results: ComplianceAggregate[] = []
     Object.keys(complianceAggregateMap).forEach(key => {
-      const { 0: provider_id, 1: policy_id } = key.split(',')
       const mapEntry = complianceAggregateMap[key]
       if (mapEntry.complianceSnapshots !== null) {
-        mapEntry.complianceViolationPeriods.push(convertSnapshotsToViolationPeriod(mapEntry.complianceSnapshots))
+        mapEntry.complianceSnapshotViolationGroupings.push(mapEntry.complianceSnapshots)
       }
-      results.push({
-        provider_id,
-        policy_id,
-        provider_name: providerName(provider_id),
-        violation_periods: mapEntry.complianceViolationPeriods
-      })
     })
+
+    const results: ComplianceAggregate[] = await Promise.all(
+      Object.keys(complianceAggregateMap).map(async key => {
+        const { 0: provider_id, 1: policy_id } = key.split(',')
+        const violationPeriods: ComplianceViolationPeriod[] = await Promise.all(
+          complianceAggregateMap[key].complianceSnapshotViolationGroupings.map(complianceGroup => {
+            return convertComplianceSnapshotsArrayToComplianceViolationPeriod(complianceGroup)
+          })
+        )
+
+        return {
+          provider_id,
+          policy_id,
+          provider_name: providerName(provider_id),
+          violation_periods: violationPeriods
+        }
+      })
+    )
 
     const { version } = res.locals
     return res.status(200).send({ version, start_time, end_time, results })

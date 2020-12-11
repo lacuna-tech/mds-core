@@ -1,4 +1,4 @@
-import { ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service'
+import { ComplianceArrayResponseDomainModel, ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service'
 import { days } from '@mds-core/mds-utils'
 import { Policy, VEHICLE_TYPES } from '@mds-core/mds-types'
 
@@ -266,4 +266,10 @@ export const POLICY2: Policy = {
       minimum: 500
     }
   ]
+}
+
+export const COMPLIANCE_ARRAY_RESPONSE_1: ComplianceArrayResponseDomainModel = {
+  compliance_array_response_id: 'af86bb89-2d87-4b57-8c3b-3be1093cdac8',
+  compliance_snapshot_ids: [COMPLIANCE_SNAPSHOT_ID],
+  provider_id: PROVIDER_ID_1
 }

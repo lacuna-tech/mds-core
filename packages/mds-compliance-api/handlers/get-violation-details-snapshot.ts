@@ -5,10 +5,8 @@ import {
 } from '@mds-core/mds-compliance-service'
 import { isServiceError } from '@mds-core/mds-service-helpers'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
-import { isDefined, now, ValidationError } from '@mds-core/mds-utils'
+import { isDefined, now } from '@mds-core/mds-utils'
 import { parseRequest } from '@mds-core/mds-api-helpers'
-import { isValidProviderId, isValidUUID } from '@mds-core/mds-schema-validators'
-import { ValidateGetComplianceSnapshotsByTimeIntervalOptions } from '@mds-core/mds-compliance-service/service/validators'
 import { ComplianceApiResponse, ComplianceApiRequest } from '../@types'
 
 export type ComplianceApiGetViolationDetailsSnapshotRequest = ComplianceApiRequest &

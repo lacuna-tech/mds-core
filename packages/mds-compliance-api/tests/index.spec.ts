@@ -2,10 +2,9 @@ import supertest from 'supertest'
 import HttpStatus from 'http-status-codes'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { Policy } from '@mds-core/mds-types'
-import { ComplianceServiceClient, ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service'
+import { ComplianceServiceClient } from '@mds-core/mds-compliance-service'
 import db from '@mds-core/mds-db'
 
-import { ComplianceServiceManager } from '@mds-core/mds-compliance-service/service/manager'
 import { pathPrefix, uuid } from '@mds-core/mds-utils'
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { providers } from '@mds-core/mds-providers'
@@ -41,6 +40,11 @@ describe('Test Compliances API', () => {
         return [POLICY1, POLICY2]
       }
     )
+    jest
+      .spyOn(ComplianceServiceClient, 'createComplianceArrayResponse')
+      .mockImplementation(async complianceArrayResponse => {
+        return complianceArrayResponse
+      })
   })
 
   afterEach(() => {
@@ -49,9 +53,10 @@ describe('Test Compliances API', () => {
 
   describe('GET /violation_periods', () => {
     it('parses all query params successfully, and users with the compliance:read scope can query for arbitrary providers', async () => {
-      const clientSpy = jest
+      const getComplianceSnapshotsSpy = jest
         .spyOn(ComplianceServiceClient, 'getComplianceSnapshotsByTimeInterval')
         .mockImplementation(async () => COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1)
+
       await request
         .get(
           pathPrefix(
@@ -61,7 +66,8 @@ describe('Test Compliances API', () => {
           )
         )
         .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
-      expect(clientSpy).toHaveBeenCalledWith({
+        .expect(HttpStatus.OK)
+      expect(getComplianceSnapshotsSpy).toHaveBeenCalledWith({
         start_time: TIME,
         provider_ids: [PROVIDER_ID_1, PROVIDER_ID_2],
         policy_ids: [POLICY_ID_1, POLICY_ID_2],
@@ -82,6 +88,7 @@ describe('Test Compliances API', () => {
           )
         )
         .set('Authorization', SCOPED_AUTH(['compliance:read:provider'], PROVIDER_ID_1))
+        .expect(HttpStatus.OK)
       expect(clientSpy).toHaveBeenCalledWith({
         start_time: TIME,
         provider_ids: [PROVIDER_ID_1],
@@ -101,6 +108,7 @@ describe('Test Compliances API', () => {
           )
         )
         .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
+        .expect(HttpStatus.OK)
       expect(clientSpy).toHaveBeenCalledWith({
         start_time: TIME,
         provider_ids: Object.keys(providers),
@@ -124,6 +132,7 @@ describe('Test Compliances API', () => {
       jest
         .spyOn(ComplianceServiceClient, 'getComplianceSnapshotsByTimeInterval')
         .mockImplementation(async () => COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2)
+      jest.spyOn(utils, 'uuid').mockImplementation(() => '1234')
       await request
         .get(pathPrefix(`/violation_periods?start_time=${TIME}`))
         .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
@@ -140,12 +149,12 @@ describe('Test Compliances API', () => {
                 {
                   start_time: 1605821758035,
                   end_time: 1605821758036,
-                  snapshots_uri: 'ba636406-1898-49a0-b937-6f825b789ee0,8cb4d0a8-5edc-46f6-a4e4-a40f5a5f4558'
+                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 },
                 {
                   start_time: 1605821758038,
                   end_time: 1605821758038,
-                  snapshots_uri: '3a11150b-5d64-4638-bd2d-745905ed8294'
+                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 }
               ]
             }
@@ -157,6 +166,7 @@ describe('Test Compliances API', () => {
       jest
         .spyOn(ComplianceServiceClient, 'getComplianceSnapshotsByTimeInterval')
         .mockImplementation(async () => COMPLIANCE_SNAPSHOTS)
+      jest.spyOn(utils, 'uuid').mockImplementation(() => '1234')
       await request
         .get(pathPrefix(`/violation_periods?start_time=${TIME}`))
         .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
@@ -173,7 +183,7 @@ describe('Test Compliances API', () => {
                 {
                   start_time: 1605821758034,
                   end_time: 1605821758034,
-                  snapshots_uri: '243e1209-61ad-4d7c-8464-db551f1f8c21'
+                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 }
               ]
             },
@@ -191,12 +201,12 @@ describe('Test Compliances API', () => {
                 {
                   start_time: 1605821758035,
                   end_time: 1605821758036,
-                  snapshots_uri: 'ba636406-1898-49a0-b937-6f825b789ee0,8cb4d0a8-5edc-46f6-a4e4-a40f5a5f4558'
+                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 },
                 {
                   start_time: 1605821758038,
                   end_time: 1605821758038,
-                  snapshots_uri: '3a11150b-5d64-4638-bd2d-745905ed8294'
+                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 }
               ]
             },
@@ -208,7 +218,7 @@ describe('Test Compliances API', () => {
                 {
                   start_time: 1605821758036,
                   end_time: 1605821758036,
-                  snapshots_uri: '39e2171b-a9df-417c-b218-2a82b491a0cc'
+                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 }
               ]
             }
@@ -307,6 +317,67 @@ describe('Test Compliances API', () => {
         .get(pathPrefix(`/violation_details_snapshot`))
         .set('Authorization', SCOPED_AUTH(['compliance:read:provider'], PROVIDER_ID_1))
         .expect(HttpStatus.BAD_REQUEST)
+    })
+  })
+
+  describe('GET /compliance_snapshot_ids', () => {
+    it('gets compliance snapshot ids with the compliance:read scope', async () => {
+      const id = uuid()
+      const snapshot_ids = COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1.map(snapshot => snapshot.compliance_snapshot_id)
+
+      const clientSpy = jest
+        .spyOn(ComplianceServiceClient, 'getComplianceArrayResponse')
+        .mockImplementation(async () => {
+          return {
+            provider_id: PROVIDER_ID_1,
+            compliance_array_response_id: id,
+            compliance_snapshot_ids: snapshot_ids
+          }
+        })
+      await request
+        .get(pathPrefix(`/compliance_snapshot_ids?token=${id}`))
+        .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
+        .expect(HttpStatus.OK, { version: '1.1.0', data: snapshot_ids })
+
+      expect(clientSpy).toHaveBeenCalledWith(id)
+    })
+
+    it('gets compliance snapshot ids with the compliance:read:provider scope', async () => {
+      const id = uuid()
+      const snapshot_ids = COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1.map(snapshot => snapshot.compliance_snapshot_id)
+
+      const clientSpy = jest
+        .spyOn(ComplianceServiceClient, 'getComplianceArrayResponse')
+        .mockImplementation(async () => {
+          return {
+            provider_id: PROVIDER_ID_1,
+            compliance_array_response_id: id,
+            compliance_snapshot_ids: snapshot_ids
+          }
+        })
+      await request
+        .get(pathPrefix(`/compliance_snapshot_ids?token=${id}`))
+        .set('Authorization', SCOPED_AUTH(['compliance:read:provider'], PROVIDER_ID_1))
+        .expect(HttpStatus.OK, { version: '1.1.0', data: snapshot_ids })
+
+      expect(clientSpy).toHaveBeenCalledWith(id)
+    })
+
+    it('cannot get compliance snapshot ids with the compliance:read:provider scope and having a provider_id that does not match', async () => {
+      const id = uuid()
+      const snapshot_ids = COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1.map(snapshot => snapshot.compliance_snapshot_id)
+
+      jest.spyOn(ComplianceServiceClient, 'getComplianceArrayResponse').mockImplementation(async () => {
+        return {
+          provider_id: PROVIDER_ID_2,
+          compliance_array_response_id: id,
+          compliance_snapshot_ids: snapshot_ids
+        }
+      })
+      await request
+        .get(pathPrefix(`/compliance_snapshot_ids?token=${id}`))
+        .set('Authorization', SCOPED_AUTH(['compliance:read:provider'], PROVIDER_ID_1))
+        .expect(HttpStatus.FORBIDDEN)
     })
   })
 })
