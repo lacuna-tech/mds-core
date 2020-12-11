@@ -20,9 +20,9 @@ export const ComplianceServiceManager = RpcServer(
     getComplianceArrayResponse: args => ComplianceServiceProvider.getComplianceArrayResponse(...args)
   },
   {
-    port: process.env.COMPLIANCE_SNAPSHOT_SERVICE_RPC_PORT,
+    port: process.env.COMPLIANCE_SERVICE_RPC_PORT,
     repl: {
-      port: process.env.COMPLIANCE_SNAPSHOT_SERVICE_REPL_PORT,
+      port: process.env.COMPLIANCE_SERVICE_REPL_PORT,
       context: { client: ComplianceServiceClient }
     }
   }
