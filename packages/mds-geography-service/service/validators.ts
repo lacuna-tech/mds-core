@@ -1,13 +1,18 @@
 import Joi from 'joi'
 import gjv from 'geojson-validation'
 import { schemaValidator } from '@mds-core/mds-schema-validators'
-import { GeographyDomainModel, GeographyMetadataDomainModel } from '../@types'
+import {
+  GeographyDomainCreateModel,
+  GeographyMetadataDomainCreateModel,
+  GeographyStatus,
+  FindGeographiesOptions
+} from '../@types'
 
 export const {
-  validate: validateGeographyDomainModel,
-  isValid: isValidGeographyDomainModel
-} = schemaValidator<GeographyDomainModel>(
-  Joi.object<GeographyDomainModel>()
+  validate: validateGeographyDomainCreateModel,
+  isValid: isValidGeographyDomainCreateModel
+} = schemaValidator<GeographyDomainCreateModel>(
+  Joi.object<GeographyDomainCreateModel>()
     .keys({
       geography_id: Joi.string().uuid().required(),
       name: Joi.string().max(255).allow(null),
@@ -31,13 +36,24 @@ export const {
 )
 
 export const {
-  validate: validateGeographyMetadataDomainModel,
-  isValid: isValidGeographyMetadataDomainModel
-} = schemaValidator<GeographyMetadataDomainModel>(
-  Joi.object<GeographyMetadataDomainModel>()
+  validate: validateGeographyMetadataDomainCreateModel,
+  isValid: isValidGeographyMetadataDomainCreateModel
+} = schemaValidator<GeographyMetadataDomainCreateModel>(
+  Joi.object<GeographyMetadataDomainCreateModel>()
     .keys({
       geography_id: Joi.string().uuid().required(),
       geography_metadata: Joi.any().allow(null)
+    })
+    .unknown(false)
+)
+
+export const {
+  validate: validateReadPublishedGeographiesOptions,
+  isValid: isValidReadPublishedGeographiesOptions
+} = schemaValidator<FindGeographiesOptions>(
+  Joi.object<FindGeographiesOptions>()
+    .keys({
+      status: Joi.string().allow(...GeographyStatus)
     })
     .unknown(false)
 )
