@@ -25,7 +25,7 @@ export type GeographyMetadataDomainCreateModel = DomainModelCreate<GeographyMeta
 export const GeographyStatus = ['draft', 'published'] as const
 export type GeographyStatus = typeof GeographyStatus[number]
 
-export type FindGeographiesOptions = Partial<{
+export type GetGeographiesOptions = Partial<{
   status: GeographyStatus
 }>
 
@@ -33,8 +33,8 @@ export type GeographyWithMetadataDomainModel<M extends {} = {}> = GeographyDomai
   Pick<GeographyMetadataDomainModel<M>, 'geography_metadata'>
 
 export interface GeographyService {
-  getGeographies: (options?: FindGeographiesOptions) => GeographyDomainModel[]
-  getGeographiesWithMetadata: (options?: FindGeographiesOptions) => GeographyWithMetadataDomainModel[]
+  getGeographies: (options?: GetGeographiesOptions) => GeographyDomainModel[]
+  getGeographiesWithMetadata: (options?: GetGeographiesOptions) => GeographyWithMetadataDomainModel[]
   getGeography: (geography_id: GeographyDomainModel['geography_id']) => GeographyDomainModel
   getGeographyWithMetadata: (geography_id: GeographyDomainModel['geography_id']) => GeographyWithMetadataDomainModel
   writeGeographies: (geographies: GeographyDomainCreateModel[]) => GeographyDomainModel[]

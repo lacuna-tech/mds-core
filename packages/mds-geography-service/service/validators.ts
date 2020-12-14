@@ -5,7 +5,7 @@ import {
   GeographyDomainCreateModel,
   GeographyMetadataDomainCreateModel,
   GeographyStatus,
-  FindGeographiesOptions
+  GetGeographiesOptions
 } from '../@types'
 
 export const {
@@ -50,8 +50,8 @@ export const {
 export const {
   validate: validateReadPublishedGeographiesOptions,
   isValid: isValidReadPublishedGeographiesOptions
-} = schemaValidator<FindGeographiesOptions>(
-  Joi.object<FindGeographiesOptions>()
+} = schemaValidator<GetGeographiesOptions>(
+  Joi.object<GetGeographiesOptions>()
     .keys({
       status: Joi.string().allow(...GeographyStatus)
     })

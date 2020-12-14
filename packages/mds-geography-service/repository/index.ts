@@ -5,7 +5,7 @@ import {
   GeographyMetadataDomainCreateModel,
   GeographyMetadataDomainModel,
   GeographyWithMetadataDomainModel,
-  FindGeographiesOptions
+  GetGeographiesOptions
 } from '../@types'
 import { GeographyMetadataEntity } from './entities/geography-metadata-entity'
 import {
@@ -92,7 +92,7 @@ class GeographyReadWriteRepository extends ReadWriteRepository {
     return []
   }
 
-  public getGeographies = async ({ status }: FindGeographiesOptions = {}): Promise<GeographyDomainModel[]> => {
+  public getGeographies = async ({ status }: GetGeographiesOptions = {}): Promise<GeographyDomainModel[]> => {
     const { connect } = this
     try {
       const connection = await connect('ro')
@@ -112,7 +112,7 @@ class GeographyReadWriteRepository extends ReadWriteRepository {
   }
 
   public getGeographiesWithMetadata = async (
-    options: FindGeographiesOptions = {}
+    options: GetGeographiesOptions = {}
   ): Promise<GeographyWithMetadataDomainModel[]> => {
     const { getGeographies, attachMetadata } = this
     const geographies = await getGeographies(options)
