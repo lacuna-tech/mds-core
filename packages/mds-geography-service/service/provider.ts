@@ -1,6 +1,5 @@
 import { ServiceProvider, ProcessController, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
 import logger from '@mds-core/mds-logger'
-import { NotFoundError } from '@mds-core/mds-utils'
 import { GeographyService } from '../@types'
 import { GeographyRepository } from '../repository'
 import {
@@ -40,9 +39,6 @@ export const GeographyServiceProvider: ServiceProvider<GeographyService> & Proce
   getGeography: async geography_id => {
     try {
       const geography = await GeographyRepository.getGeography(geography_id)
-      if (geography === undefined) {
-        throw new NotFoundError(`${geography_id} not found`)
-      }
       return ServiceResult(geography)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Geography', error)
@@ -54,9 +50,6 @@ export const GeographyServiceProvider: ServiceProvider<GeographyService> & Proce
   getGeographyWithMetadata: async geography_id => {
     try {
       const geography = await GeographyRepository.getGeographyWithMetadata(geography_id)
-      if (geography === undefined) {
-        throw new NotFoundError(`${geography_id} not found`)
-      }
       return ServiceResult(geography)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException(`Error Getting Geography ${geography_id} with Metadata`, error)

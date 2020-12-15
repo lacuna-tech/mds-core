@@ -35,8 +35,10 @@ export type GeographyWithMetadataDomainModel<M extends {} = {}> = GeographyDomai
 export interface GeographyService {
   getGeographies: (options?: GetGeographiesOptions) => GeographyDomainModel[]
   getGeographiesWithMetadata: (options?: GetGeographiesOptions) => GeographyWithMetadataDomainModel[]
-  getGeography: (geography_id: GeographyDomainModel['geography_id']) => GeographyDomainModel
-  getGeographyWithMetadata: (geography_id: GeographyDomainModel['geography_id']) => GeographyWithMetadataDomainModel
+  getGeography: (geography_id: GeographyDomainModel['geography_id']) => GeographyDomainModel | undefined
+  getGeographyWithMetadata: (
+    geography_id: GeographyDomainModel['geography_id']
+  ) => GeographyWithMetadataDomainModel | undefined
   writeGeographies: (geographies: GeographyDomainCreateModel[]) => GeographyDomainModel[]
   writeGeographiesMetadata: (metadata: GeographyMetadataDomainCreateModel[]) => GeographyMetadataDomainModel[]
 }

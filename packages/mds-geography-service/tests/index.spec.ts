@@ -92,28 +92,24 @@ describe('Geography Service Tests', () => {
   it('Test Get Geography', async () => {
     const geography = await GeographyServiceClient.getGeography(geography_id)
     expect(geography).not.toBeUndefined()
-    expect(geography.geography_id).toEqual(geography_id)
+    expect(geography?.geography_id).toEqual(geography_id)
   })
 
   it('Test Get Geography with Metadata', async () => {
     const geography = await GeographyServiceClient.getGeographyWithMetadata(geography_id)
     expect(geography).not.toBeUndefined()
-    expect(geography.geography_id).toEqual(geography_id)
-    expect(geography.geography_metadata).toEqual({ status: 'modified' })
+    expect(geography?.geography_id).toEqual(geography_id)
+    expect(geography?.geography_metadata).toEqual({ status: 'modified' })
   })
 
   it('Test Get Geography (Not Found)', async () => {
-    await expect(GeographyServiceClient.getGeography(uuid())).rejects.toMatchObject({
-      isServiceError: true,
-      type: 'NotFoundError'
-    })
+    const geography = await GeographyServiceClient.getGeography(uuid())
+    expect(geography).toBeUndefined()
   })
 
   it('Test Get Geography with Metadata (Not Found)', async () => {
-    await expect(GeographyServiceClient.getGeographyWithMetadata(uuid())).rejects.toMatchObject({
-      isServiceError: true,
-      type: 'NotFoundError'
-    })
+    const geography = await GeographyServiceClient.getGeographyWithMetadata(uuid())
+    expect(geography).toBeUndefined()
   })
 
   afterAll(async () => {
