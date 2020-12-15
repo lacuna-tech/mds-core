@@ -23,9 +23,8 @@ class GeographyReadWriteRepository extends ReadWriteRepository {
   protected getGeographyMetadataMap = async (
     geographies: GeographyDomainModel[]
   ): Promise<Map<GeographyDomainModel['geography_id'], GeographyMetadataDomainModel['geography_metadata']>> => {
-    const { connect } = this
     try {
-      const connection = await connect('ro')
+      const connection = await this.connect('ro')
       return new Map(
         geographies.length > 0
           ? (
@@ -86,9 +85,8 @@ class GeographyReadWriteRepository extends ReadWriteRepository {
 
   public writeGeographies = async (geographies: GeographyDomainCreateModel[]): Promise<GeographyDomainModel[]> => {
     if (geographies.length > 0) {
-      const { connect } = this
       try {
-        const connection = await connect('rw')
+        const connection = await this.connect('rw')
 
         const { raw: entities = [] }: InsertReturning<GeographyEntity> = await connection
           .getRepository(GeographyEntity)
@@ -109,10 +107,8 @@ class GeographyReadWriteRepository extends ReadWriteRepository {
     metadata: GeographyMetadataDomainCreateModel[]
   ): Promise<GeographyMetadataDomainModel[]> => {
     if (metadata.length > 0) {
-      const { connect } = this
-
       try {
-        const connection = await connect('rw')
+        const connection = await this.connect('rw')
         const { raw: entities = [] }: InsertReturning<GeographyMetadataEntity> = await connection
           .getRepository(GeographyMetadataEntity)
           .createQueryBuilder()
