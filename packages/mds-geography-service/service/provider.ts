@@ -5,7 +5,8 @@ import { GeographyRepository } from '../repository'
 import {
   validateGeographyDomainCreateModel,
   validateGeographyMetadataDomainCreateModel,
-  validateGetGeographiesOptions
+  validateGetGeographiesOptions,
+  validateGetPublishedGeographiesOptions
 } from './validators'
 
 export const GeographyServiceProvider: ServiceProvider<GeographyService> & ProcessController = {
@@ -14,7 +15,7 @@ export const GeographyServiceProvider: ServiceProvider<GeographyService> & Proce
 
   getGeographies: async options => {
     try {
-      const geographies = await GeographyRepository.getGeographies(validateGetGeographiesOptions(options))
+      const geographies = await GeographyRepository.readGeographies(validateGetGeographiesOptions(options))
       return ServiceResult(geographies)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Geographies', error)
@@ -23,34 +24,36 @@ export const GeographyServiceProvider: ServiceProvider<GeographyService> & Proce
     }
   },
 
-  getGeographiesWithMetadata: async options => {
+  getUnpublishedGeographies: async options => {
     try {
-      const geographies = await GeographyRepository.getGeographiesWithMetadata(validateGetGeographiesOptions(options))
+      const geographies = await GeographyRepository.readUnpublishedGeographies(validateGetGeographiesOptions(options))
       return ServiceResult(geographies)
     } catch (error) /* istanbul ignore next */ {
-      const exception = ServiceException('Error Getting Geographies with Metadata', error)
+      const exception = ServiceException('Error Getting Unpublished Geographies', error)
       logger.error(exception, error)
       return exception
     }
   },
 
-  getGeography: async geography_id => {
+  getPublishedGeographies: async options => {
     try {
-      const geography = await GeographyRepository.getGeography(geography_id)
+      const geographies = await GeographyRepository.readPublishedGeographies(
+        validateGetPublishedGeographiesOptions(options)
+      )
+      return ServiceResult(geographies)
+    } catch (error) /* istanbul ignore next */ {
+      const exception = ServiceException('Error Getting Published Geographies', error)
+      logger.error(exception, error)
+      return exception
+    }
+  },
+
+  getGeography: async (geography_id, options) => {
+    try {
+      const geography = await GeographyRepository.readGeography(geography_id, validateGetGeographiesOptions(options))
       return ServiceResult(geography)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Geography', error)
-      logger.error(exception, error)
-      return exception
-    }
-  },
-
-  getGeographyWithMetadata: async geography_id => {
-    try {
-      const geography = await GeographyRepository.getGeographyWithMetadata(geography_id)
-      return ServiceResult(geography)
-    } catch (error) /* istanbul ignore next */ {
-      const exception = ServiceException(`Error Getting Geography ${geography_id} with Metadata`, error)
       logger.error(exception, error)
       return exception
     }

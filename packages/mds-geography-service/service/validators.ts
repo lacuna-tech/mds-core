@@ -4,8 +4,8 @@ import { schemaValidator } from '@mds-core/mds-schema-validators'
 import {
   GeographyDomainCreateModel,
   GeographyMetadataDomainCreateModel,
-  GeographyStatus,
-  GetGeographiesOptions
+  GetGeographiesOptions,
+  GetPublishedGeographiesOptions
 } from '../@types'
 
 export const {
@@ -53,7 +53,19 @@ export const {
 } = schemaValidator<GetGeographiesOptions>(
   Joi.object<GetGeographiesOptions>()
     .keys({
-      status: Joi.string().allow(...GeographyStatus)
+      includeMetadata: Joi.boolean().default(false)
+    })
+    .unknown(false)
+)
+
+export const {
+  validate: validateGetPublishedGeographiesOptions,
+  isValid: isValidGetPublishedGeographiesOptions
+} = schemaValidator<GetPublishedGeographiesOptions>(
+  Joi.object<GetPublishedGeographiesOptions>()
+    .keys({
+      includeMetadata: Joi.boolean().default(false),
+      publishedAfter: Joi.number().integer()
     })
     .unknown(false)
 )

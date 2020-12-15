@@ -22,32 +22,35 @@ export interface GeographyMetadataDomainModel<M extends {} = {}> {
 
 export type GeographyMetadataDomainCreateModel = DomainModelCreate<GeographyMetadataDomainModel>
 
-export const GeographyStatus = ['draft', 'published'] as const
-export type GeographyStatus = typeof GeographyStatus[number]
-
 export type GetGeographiesOptions = Partial<{
-  status: GeographyStatus
+  includeMetadata: boolean
 }>
 
+export type GetPublishedGeographiesOptions = GetGeographiesOptions &
+  Partial<{
+    publishedAfter: Timestamp
+  }>
+
 export type GeographyWithMetadataDomainModel<M extends {} = {}> = GeographyDomainModel &
-  Pick<GeographyMetadataDomainModel<M>, 'geography_metadata'>
+  Partial<Pick<GeographyMetadataDomainModel<M>, 'geography_metadata'>>
 
 export interface GeographyService {
-  getGeographies: (options?: GetGeographiesOptions) => GeographyDomainModel[]
-  getGeographiesWithMetadata: (options?: GetGeographiesOptions) => GeographyWithMetadataDomainModel[]
-  getGeography: (geography_id: GeographyDomainModel['geography_id']) => GeographyDomainModel | undefined
-  getGeographyWithMetadata: (
-    geography_id: GeographyDomainModel['geography_id']
+  getGeography: (
+    geography_id: GeographyDomainModel['geography_id'],
+    options?: GetGeographiesOptions
   ) => GeographyWithMetadataDomainModel | undefined
+  getGeographies: (options?: GetGeographiesOptions) => GeographyWithMetadataDomainModel[]
+  getUnpublishedGeographies: (options?: GetGeographiesOptions) => GeographyWithMetadataDomainModel[]
+  getPublishedGeographies: (options?: GetPublishedGeographiesOptions) => GeographyWithMetadataDomainModel[]
   writeGeographies: (geographies: GeographyDomainCreateModel[]) => GeographyDomainModel[]
   writeGeographiesMetadata: (metadata: GeographyMetadataDomainCreateModel[]) => GeographyMetadataDomainModel[]
 }
 
 export const GeographyServiceDefinition: RpcServiceDefinition<GeographyService> = {
-  getGeographies: RpcRoute<GeographyService['getGeographies']>(),
-  getGeographiesWithMetadata: RpcRoute<GeographyService['getGeographiesWithMetadata']>(),
   getGeography: RpcRoute<GeographyService['getGeography']>(),
-  getGeographyWithMetadata: RpcRoute<GeographyService['getGeographyWithMetadata']>(),
+  getGeographies: RpcRoute<GeographyService['getGeographies']>(),
+  getUnpublishedGeographies: RpcRoute<GeographyService['getUnpublishedGeographies']>(),
+  getPublishedGeographies: RpcRoute<GeographyService['getPublishedGeographies']>(),
   writeGeographies: RpcRoute<GeographyService['writeGeographies']>(),
   writeGeographiesMetadata: RpcRoute<GeographyService['writeGeographiesMetadata']>()
 }

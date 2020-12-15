@@ -1,11 +1,13 @@
 import { InsertReturning, ReadWriteRepository, RepositoryError } from '@mds-core/mds-repository'
+import { In, IsNull, MoreThan, Not } from 'typeorm'
 import {
   GeographyDomainCreateModel,
   GeographyDomainModel,
   GeographyMetadataDomainCreateModel,
   GeographyMetadataDomainModel,
   GeographyWithMetadataDomainModel,
-  GetGeographiesOptions
+  GetGeographiesOptions,
+  GetPublishedGeographiesOptions
 } from '../@types'
 import { GeographyMetadataEntity } from './entities/geography-metadata-entity'
 import {
@@ -18,33 +20,129 @@ import { GeographyEntity } from './entities/geography-entity'
 import migrations from './migrations'
 
 class GeographyReadWriteRepository extends ReadWriteRepository {
-  protected attachMetadata = async (
+  protected getGeographyMetadata = async (
     geographies: GeographyDomainModel[]
-  ): Promise<GeographyWithMetadataDomainModel[]> => {
-    if (geographies.length > 0) {
-      const { connect } = this
-      try {
-        const connection = await connect('ro')
-        const metadata = new Map(
-          (
-            await connection
-              .getRepository(GeographyMetadataEntity)
-              .createQueryBuilder('geography_metadata')
-              .where('geography_id IN (:...geography_ids)', {
-                geography_ids: geographies.map(geography => geography.geography_id)
+  ): Promise<Map<GeographyDomainModel['geography_id'], GeographyMetadataDomainModel['geography_metadata']>> => {
+    const { connect } = this
+    try {
+      const connection = await connect('ro')
+      return new Map(
+        geographies.length > 0
+          ? (
+              await connection.getRepository(GeographyMetadataEntity).find({
+                where: { geography_id: In(geographies.map(geography => geography.geography_id)) }
               })
-              .getMany()
-          ).map(entity => [entity.geography_id, entity.geography_metadata])
-        )
+            ).map(entity => [entity.geography_id, entity.geography_metadata])
+          : []
+      )
+    } catch (error) /* istanbul ignore next */ {
+      throw RepositoryError(error)
+    }
+  }
+
+  public readGeography = async (
+    geography_id: GeographyDomainModel['geography_id'],
+    { includeMetadata = false }: GetGeographiesOptions = {}
+  ): Promise<GeographyWithMetadataDomainModel | undefined> => {
+    const { connect, getGeographyMetadata } = this
+    try {
+      const connection = await connect('ro')
+
+      const entity = await connection.getRepository(GeographyEntity).findOne({ where: { geography_id } })
+
+      const geography = entity && GeographyEntityToDomain.map(entity)
+
+      if (geography && includeMetadata) {
+        const metadata = await getGeographyMetadata([geography])
+        return { ...geography, geography_metadata: metadata.get(geography_id) ?? null }
+      }
+
+      return geography
+    } catch (error) /* istanbul ignore next */ {
+      throw RepositoryError(error)
+    }
+  }
+
+  public readGeographies = async ({ includeMetadata = false }: GetGeographiesOptions = {}): Promise<
+    GeographyWithMetadataDomainModel[]
+  > => {
+    const { connect, getGeographyMetadata } = this
+    try {
+      const connection = await connect('ro')
+
+      const entities = await connection.getRepository(GeographyEntity).find()
+
+      const geographies = entities.map(GeographyEntityToDomain.mapper())
+
+      if (includeMetadata) {
+        const metadata = await getGeographyMetadata(geographies)
         return geographies.map(geography => ({
           ...geography,
           geography_metadata: metadata.get(geography.geography_id) ?? null
         }))
-      } catch (error) /* istanbul ignore next */ {
-        throw RepositoryError(error)
       }
+
+      return geographies
+    } catch (error) /* istanbul ignore next */ {
+      throw RepositoryError(error)
     }
-    return []
+  }
+
+  public readUnpublishedGeographies = async ({ includeMetadata = false }: GetGeographiesOptions = {}): Promise<
+    GeographyWithMetadataDomainModel[]
+  > => {
+    const { connect, getGeographyMetadata } = this
+    try {
+      const connection = await connect('ro')
+
+      const entities = await connection.getRepository(GeographyEntity).find({
+        where: {
+          publish_date: IsNull()
+        }
+      })
+
+      const geographies = entities.map(GeographyEntityToDomain.mapper())
+
+      if (includeMetadata) {
+        const metadata = await getGeographyMetadata(geographies)
+        return geographies.map(geography => ({
+          ...geography,
+          geography_metadata: metadata.get(geography.geography_id) ?? null
+        }))
+      }
+
+      return geographies
+    } catch (error) /* istanbul ignore next */ {
+      throw RepositoryError(error)
+    }
+  }
+
+  public readPublishedGeographies = async ({
+    includeMetadata = false,
+    publishedAfter
+  }: GetPublishedGeographiesOptions = {}): Promise<GeographyWithMetadataDomainModel[]> => {
+    const { connect, getGeographyMetadata } = this
+    try {
+      const connection = await connect('ro')
+
+      const entities = await connection
+        .getRepository(GeographyEntity)
+        .find({ where: { publish_date: publishedAfter ? MoreThan(publishedAfter) : Not(IsNull()) } })
+
+      const geographies = entities.map(GeographyEntityToDomain.mapper())
+
+      if (includeMetadata) {
+        const metadata = await getGeographyMetadata(geographies)
+        return geographies.map(geography => ({
+          ...geography,
+          geography_metadata: metadata.get(geography.geography_id) ?? null
+        }))
+      }
+
+      return geographies
+    } catch (error) /* istanbul ignore next */ {
+      throw RepositoryError(error)
+    }
   }
 
   public writeGeographies = async (geographies: GeographyDomainCreateModel[]): Promise<GeographyDomainModel[]> => {
@@ -90,63 +188,6 @@ class GeographyReadWriteRepository extends ReadWriteRepository {
       }
     }
     return []
-  }
-
-  public getGeographies = async ({ status }: GetGeographiesOptions = {}): Promise<GeographyDomainModel[]> => {
-    const { connect } = this
-    try {
-      const connection = await connect('ro')
-
-      const query = connection.getRepository(GeographyEntity).createQueryBuilder('geographies')
-
-      if (status) {
-        query.where(`"geographies"."publish_date" ${status === 'draft' ? 'IS NULL' : 'IS NOT NULL'}`)
-      }
-
-      const entities = await query.getMany()
-
-      return entities.map(GeographyEntityToDomain.mapper())
-    } catch (error) /* istanbul ignore next */ {
-      throw RepositoryError(error)
-    }
-  }
-
-  public getGeographiesWithMetadata = async (
-    options: GetGeographiesOptions = {}
-  ): Promise<GeographyWithMetadataDomainModel[]> => {
-    const { getGeographies, attachMetadata } = this
-    const geographies = await getGeographies(options)
-    return attachMetadata(geographies)
-  }
-
-  public getGeography = async (
-    geography_id: GeographyDomainModel['geography_id']
-  ): Promise<GeographyDomainModel | undefined> => {
-    const { connect } = this
-    try {
-      const connection = await connect('ro')
-
-      const geography = await connection
-        .getRepository(GeographyEntity)
-        .createQueryBuilder('geographies')
-        .where('"geography_id" = :geography_id', { geography_id })
-        .getOne()
-
-      return geography && GeographyEntityToDomain.map(geography)
-    } catch (error) /* istanbul ignore next */ {
-      throw RepositoryError(error)
-    }
-  }
-
-  public getGeographyWithMetadata = async (
-    geography_id: GeographyDomainModel['geography_id']
-  ): Promise<GeographyWithMetadataDomainModel | undefined> => {
-    const { getGeography, attachMetadata } = this
-    const geography = await getGeography(geography_id)
-    if (geography) {
-      const [result] = await attachMetadata([geography])
-      return result
-    }
   }
 
   constructor() {

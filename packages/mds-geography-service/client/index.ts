@@ -9,10 +9,10 @@ const GeographyServiceRpcClient = RpcClient(GeographyServiceDefinition, {
 
 // What the API layer, and any other clients, will invoke.
 export const GeographyServiceClient: ServiceClient<GeographyService> = {
-  getGeographies: (...args) => RpcRequest(GeographyServiceRpcClient.getGeographies, args),
-  getGeographiesWithMetadata: (...args) => RpcRequest(GeographyServiceRpcClient.getGeographiesWithMetadata, args),
   getGeography: (...args) => RpcRequest(GeographyServiceRpcClient.getGeography, args),
-  getGeographyWithMetadata: (...args) => RpcRequest(GeographyServiceRpcClient.getGeographyWithMetadata, args),
+  getGeographies: (...args) => RpcRequest(GeographyServiceRpcClient.getGeographies, args),
+  getUnpublishedGeographies: (...args) => RpcRequest(GeographyServiceRpcClient.getUnpublishedGeographies, args),
+  getPublishedGeographies: (...args) => RpcRequest(GeographyServiceRpcClient.getPublishedGeographies, args),
   writeGeographies: (...args) => RpcRequest(GeographyServiceRpcClient.writeGeographies, args),
   writeGeographiesMetadata: (...args) => RpcRequest(GeographyServiceRpcClient.writeGeographiesMetadata, args)
 }
