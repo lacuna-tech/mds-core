@@ -15,7 +15,7 @@ export const GeographyServiceProvider: ServiceProvider<GeographyService> & Proce
 
   getGeographies: async options => {
     try {
-      const geographies = await GeographyRepository.readGeographies(validateGetGeographiesOptions(options))
+      const geographies = await GeographyRepository.getGeographies(validateGetGeographiesOptions(options ?? {}))
       return ServiceResult(geographies)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Geographies', error)
@@ -26,7 +26,9 @@ export const GeographyServiceProvider: ServiceProvider<GeographyService> & Proce
 
   getUnpublishedGeographies: async options => {
     try {
-      const geographies = await GeographyRepository.readUnpublishedGeographies(validateGetGeographiesOptions(options))
+      const geographies = await GeographyRepository.getUnpublishedGeographies(
+        validateGetGeographiesOptions(options ?? {})
+      )
       return ServiceResult(geographies)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Unpublished Geographies', error)
@@ -37,8 +39,8 @@ export const GeographyServiceProvider: ServiceProvider<GeographyService> & Proce
 
   getPublishedGeographies: async options => {
     try {
-      const geographies = await GeographyRepository.readPublishedGeographies(
-        validateGetPublishedGeographiesOptions(options)
+      const geographies = await GeographyRepository.getPublishedGeographies(
+        validateGetPublishedGeographiesOptions(options ?? {})
       )
       return ServiceResult(geographies)
     } catch (error) /* istanbul ignore next */ {
@@ -50,7 +52,10 @@ export const GeographyServiceProvider: ServiceProvider<GeographyService> & Proce
 
   getGeography: async (geography_id, options) => {
     try {
-      const geography = await GeographyRepository.readGeography(geography_id, validateGetGeographiesOptions(options))
+      const geography = await GeographyRepository.getGeography(
+        geography_id,
+        validateGetGeographiesOptions(options ?? {})
+      )
       return ServiceResult(geography)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Geography', error)

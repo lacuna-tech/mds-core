@@ -68,13 +68,19 @@ describe('Geography Service Tests', () => {
     geographies.forEach(geography => expect(geography.geography_metadata).toBeUndefined())
   })
 
+  it('Get All Geographies With Metadata', async () => {
+    const geographies = await GeographyServiceClient.getGeographies({ includeMetadata: true })
+    expect(geographies).toHaveLength(2)
+    geographies.forEach(geography => expect(geography.geography_metadata).not.toBeUndefined())
+  })
+
   it('Get Unpublished Geographies', async () => {
     const geographies = await GeographyServiceClient.getUnpublishedGeographies()
     expect(geographies).toHaveLength(1)
     geographies.forEach(geography => expect(geography.geography_metadata).toBeUndefined())
   })
 
-  it('Get Unpublished Geographies with Metadata', async () => {
+  it('Get Unpublished Geographies With Metadata', async () => {
     const [geography, ...others] = await GeographyServiceClient.getUnpublishedGeographies({ includeMetadata: true })
     expect(others).toHaveLength(0)
     expect(geography.geography_metadata).toBeNull()
@@ -86,15 +92,15 @@ describe('Geography Service Tests', () => {
     geographies.forEach(geography => expect(geography.geography_metadata).toBeUndefined())
   })
 
-  it('Get Geographies Published After Date', async () => {
-    const geographies = await GeographyServiceClient.getPublishedGeographies({ publishedAfter: now() + days(1) })
-    expect(geographies).toHaveLength(0)
-  })
-
-  it('Get Published Geographies with Metadata', async () => {
+  it('Get Published Geographies With Metadata', async () => {
     const [geography, ...others] = await GeographyServiceClient.getPublishedGeographies({ includeMetadata: true })
     expect(others).toHaveLength(0)
     expect(geography.geography_metadata).toEqual({ status: 'modified' })
+  })
+
+  it('Get Geographies Published After Date', async () => {
+    const geographies = await GeographyServiceClient.getPublishedGeographies({ publishedAfter: now() + days(1) })
+    expect(geographies).toHaveLength(0)
   })
 
   it('Get Single Geography', async () => {
@@ -104,7 +110,7 @@ describe('Geography Service Tests', () => {
     expect(geography?.geography_metadata).toBeUndefined()
   })
 
-  it('Get Single Geography with Metadata', async () => {
+  it('Get Single Geography With Metadata', async () => {
     const geography = await GeographyServiceClient.getGeography(geography_id, { includeMetadata: true })
     expect(geography).not.toBeUndefined()
     expect(geography?.geography_id).toEqual(geography_id)
@@ -116,7 +122,7 @@ describe('Geography Service Tests', () => {
     expect(geography).toBeUndefined()
   })
 
-  it('Get Single Geography with Metadata (Not Found)', async () => {
+  it('Get Single Geography With Metadata (Not Found)', async () => {
     const geography = await GeographyServiceClient.getGeography(uuid(), { includeMetadata: true })
     expect(geography).toBeUndefined()
   })
