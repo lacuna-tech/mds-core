@@ -48,8 +48,8 @@ export const {
 )
 
 export const {
-  validate: validateReadPublishedGeographiesOptions,
-  isValid: isValidReadPublishedGeographiesOptions
+  validate: validateGetGeographiesOptions,
+  isValid: isValidGetGeographiesOptions
 } = schemaValidator<GetGeographiesOptions>(
   Joi.object<GetGeographiesOptions>()
     .keys({

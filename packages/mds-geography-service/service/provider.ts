@@ -5,7 +5,7 @@ import { GeographyRepository } from '../repository'
 import {
   validateGeographyDomainCreateModel,
   validateGeographyMetadataDomainCreateModel,
-  validateReadPublishedGeographiesOptions
+  validateGetGeographiesOptions
 } from './validators'
 
 export const GeographyServiceProvider: ServiceProvider<GeographyService> & ProcessController = {
@@ -14,7 +14,7 @@ export const GeographyServiceProvider: ServiceProvider<GeographyService> & Proce
 
   getGeographies: async options => {
     try {
-      const geographies = await GeographyRepository.getGeographies(validateReadPublishedGeographiesOptions(options))
+      const geographies = await GeographyRepository.getGeographies(validateGetGeographiesOptions(options))
       return ServiceResult(geographies)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Geographies', error)
@@ -25,9 +25,7 @@ export const GeographyServiceProvider: ServiceProvider<GeographyService> & Proce
 
   getGeographiesWithMetadata: async options => {
     try {
-      const geographies = await GeographyRepository.getGeographiesWithMetadata(
-        validateReadPublishedGeographiesOptions(options)
-      )
+      const geographies = await GeographyRepository.getGeographiesWithMetadata(validateGetGeographiesOptions(options))
       return ServiceResult(geographies)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Geographies with Metadata', error)
