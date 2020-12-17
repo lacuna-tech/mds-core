@@ -24,6 +24,9 @@ import {
 import { api } from '../api'
 
 const request = supertest(ApiServer(api))
+const SNAPSHOT_IDS = COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2.map(snapshot => snapshot.compliance_snapshot_id)
+const TOKEN =
+  'YmE2MzY0MDYtMTg5OC00OWEwLWI5MzctNmY4MjViNzg5ZWUwLDhjYjRkMGE4LTVlZGMtNDZmNi1hNGU0LWE0MGY1YTVmNDU1OCw1OGZiZWZjMi1mNjRmLTQ3NDAtOTRhNi0yNDRjNzIzM2M3ZGEsM2ExMTE1MGItNWQ2NC00NjM4LWJkMmQtNzQ1OTA1ZWQ4Mjk0'
 
 jest.mock('@mds-core/mds-utils', () => ({
   ...(jest.requireActual('@mds-core/mds-utils') as object)
@@ -324,62 +327,17 @@ describe('Test Compliances API', () => {
 
   describe('GET /compliance_snapshot_ids', () => {
     it('gets compliance snapshot ids with the compliance:read scope', async () => {
-      const id = uuid()
-      const snapshot_ids = COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1.map(snapshot => snapshot.compliance_snapshot_id)
-
-      const clientSpy = jest
-        .spyOn(ComplianceServiceClient, 'getComplianceArrayResponse')
-        .mockImplementation(async () => {
-          return {
-            provider_id: PROVIDER_ID_1,
-            compliance_array_response_id: id,
-            compliance_snapshot_ids: snapshot_ids
-          }
-        })
       await request
-        .get(pathPrefix(`/compliance_snapshot_ids?token=${id}`))
+        .get(pathPrefix(`/compliance_snapshot_ids?token=${TOKEN}`))
         .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
-        .expect(HttpStatus.OK, { version: '1.1.0', data: snapshot_ids })
-
-      expect(clientSpy).toHaveBeenCalledWith(id)
+        .expect(HttpStatus.OK, { version: '1.1.0', data: SNAPSHOT_IDS })
     })
 
     it('gets compliance snapshot ids with the compliance:read:provider scope', async () => {
-      const id = uuid()
-      const snapshot_ids = COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1.map(snapshot => snapshot.compliance_snapshot_id)
-
-      const clientSpy = jest
-        .spyOn(ComplianceServiceClient, 'getComplianceArrayResponse')
-        .mockImplementation(async () => {
-          return {
-            provider_id: PROVIDER_ID_1,
-            compliance_array_response_id: id,
-            compliance_snapshot_ids: snapshot_ids
-          }
-        })
       await request
-        .get(pathPrefix(`/compliance_snapshot_ids?token=${id}`))
+        .get(pathPrefix(`/compliance_snapshot_ids?token=${TOKEN}`))
         .set('Authorization', SCOPED_AUTH(['compliance:read:provider'], PROVIDER_ID_1))
-        .expect(HttpStatus.OK, { version: '1.1.0', data: snapshot_ids })
-
-      expect(clientSpy).toHaveBeenCalledWith(id)
-    })
-
-    it('cannot get compliance snapshot ids with the compliance:read:provider scope and having a provider_id that does not match', async () => {
-      const id = uuid()
-      const snapshot_ids = COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1.map(snapshot => snapshot.compliance_snapshot_id)
-
-      jest.spyOn(ComplianceServiceClient, 'getComplianceArrayResponse').mockImplementation(async () => {
-        return {
-          provider_id: PROVIDER_ID_2,
-          compliance_array_response_id: id,
-          compliance_snapshot_ids: snapshot_ids
-        }
-      })
-      await request
-        .get(pathPrefix(`/compliance_snapshot_ids?token=${id}`))
-        .set('Authorization', SCOPED_AUTH(['compliance:read:provider'], PROVIDER_ID_1))
-        .expect(HttpStatus.FORBIDDEN)
+        .expect(HttpStatus.OK, { version: '1.1.0', data: SNAPSHOT_IDS })
     })
   })
 })
