@@ -5,7 +5,7 @@ import { ApiRequestQuery } from '@mds-core/mds-api-server'
 import express from 'express'
 import { parseRequest } from '@mds-core/mds-api-helpers'
 import { Policy, Timestamp } from '@mds-core/mds-types'
-import { isDefined, now, uuid } from '@mds-core/mds-utils'
+import { BadParamsError, isDefined, now, uuid } from '@mds-core/mds-utils'
 import { ComplianceAggregate, ComplianceApiRequest, ComplianceApiResponse, ComplianceViolationPeriod } from '../@types'
 
 export type ComplianceApiGetViolationPeriodsRequest = ComplianceApiRequest &
@@ -53,28 +53,29 @@ export const GetViolationPeriodsHandler = async (
     if (!isDefined(start_time)) {
       return res.status(400).send({ error: 'Missing required query param start_time' })
     }
-    const { provider_ids, policy_ids } = parseRequest(req)
-      .single({ parser: (str: string | undefined | null) => str?.split(',') })
-      .query('provider_ids', 'policy_ids')
+    const { policy_id: policy_ids, provider_id: provider_ids } = parseRequest(req)
+      .list()
+      .query('provider_id', 'policy_id')
 
-    let p_provider_ids
-    if (scopes.includes('compliance:read:provider')) {
-      if (res.locals.claims && res.locals.claims.provider_id) {
-        const { provider_id } = res.locals.claims
-        p_provider_ids = [provider_id]
-      } else {
-        return res.status(403).send({ error: 'compliance:read:provider token missing provider_id' })
+    const providerIDsOptionValue = (() => {
+      if (scopes.includes('compliance:read')) {
+        return provider_ids ?? Object.keys(providers)
       }
-    } else if (scopes.includes('compliance:read')) {
-      p_provider_ids = provider_ids ?? Object.keys(providers)
-    }
+      if (scopes.includes('compliance:read:provider')) {
+        if (res.locals.claims && res.locals.claims.provider_id) {
+          const { provider_id } = res.locals.claims
+          return [provider_id]
+        }
+        throw new BadParamsError('provider_id missing from token with compliance:read:provider scope')
+      }
+    })()
 
-    const p_policy_ids = policy_ids ?? (await db.readActivePolicies()).map((p: Policy) => p.policy_id)
+    const policyIDsOptionValue = policy_ids ?? (await db.readActivePolicies()).map((p: Policy) => p.policy_id)
     const complianceSnapshots = await ComplianceServiceClient.getComplianceSnapshotsByTimeInterval({
       start_time,
       end_time,
-      provider_ids: p_provider_ids,
-      policy_ids: p_policy_ids
+      provider_ids: providerIDsOptionValue,
+      policy_ids: policyIDsOptionValue
     })
 
     const complianceAggregateMap: ComplianceAggregateMap = {}
@@ -139,6 +140,9 @@ export const GetViolationPeriodsHandler = async (
     const { version } = res.locals
     return res.status(200).send({ version, start_time, end_time, results })
   } catch (error) {
+    if (error instanceof BadParamsError) {
+      return res.status(403).send({ error })
+    }
     res.status(500).send({ error })
   }
 }

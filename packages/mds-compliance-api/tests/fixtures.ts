@@ -257,7 +257,7 @@ export const POLICY2: Policy = {
   rules: [
     {
       rule_type: 'count',
-      rule_id: '7ea0d16e-ad15-4337-9722-9924e3af9146',
+      rule_id: 'c29bff02-b260-4dfa-b7de-4b9a38a74cd9',
       name: 'Greater LA',
       geographies: [GEOGRAPHY_UUID],
       states: { available: [], removed: [], reserved: [], on_trip: [] },

@@ -60,7 +60,7 @@ describe('Test Compliances API', () => {
       await request
         .get(
           pathPrefix(
-            `/violation_periods?start_time=${TIME}&provider_ids=${PROVIDER_ID_1},${PROVIDER_ID_2}&policy_ids=${POLICY_ID_1},${POLICY_ID_2}&end_time=${
+            `/violation_periods?start_time=${TIME}&provider_id=${PROVIDER_ID_1}&provider_id=${PROVIDER_ID_2}&policy_id=${POLICY_ID_1}&policy_id=${POLICY_ID_2}&end_time=${
               TIME + 500
             }`
           )
@@ -82,7 +82,7 @@ describe('Test Compliances API', () => {
       await request
         .get(
           pathPrefix(
-            `/violation_periods?start_time=${TIME}&provider_ids=${PROVIDER_ID_1},${PROVIDER_ID_2}&policy_ids=${POLICY_ID_1},${POLICY_ID_2}&end_time=${
+            `/violation_periods?start_time=${TIME}&provider_id=${PROVIDER_ID_1}&provider_id=${PROVIDER_ID_2}&policy_id=${POLICY_ID_1}&policy_id=${POLICY_ID_2}&end_time=${
               TIME + 500
             }`
           )
@@ -104,7 +104,9 @@ describe('Test Compliances API', () => {
       await request
         .get(
           pathPrefix(
-            `/violation_periods?start_time=${TIME}&policy_ids=${POLICY_ID_1},${POLICY_ID_2}&end_time=${TIME + 500}`
+            `/violation_periods?start_time=${TIME}&policy_id=${POLICY_ID_1}&policy_id=${POLICY_ID_2}&end_time=${
+              TIME + 500
+            }`
           )
         )
         .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))

@@ -28,6 +28,7 @@ export const GetComplianceSnapshotIDsHandler = async (
     const compliance_array_response = await ComplianceServiceClient.getComplianceArrayResponse(token as string)
     const { provider_id } = compliance_array_response
     if (
+      !res.locals.scopes.includes('compliance:read') &&
       res.locals.scopes.includes('compliance:read:provider') &&
       res.locals.claims &&
       res.locals.claims.provider_id &&
