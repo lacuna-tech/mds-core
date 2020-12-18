@@ -1,4 +1,3 @@
-import { ComplianceServiceClient } from '@mds-core/mds-compliance-service'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { UUID } from '@mds-core/mds-types'
 import { parseRequest } from '@mds-core/mds-api-helpers'
