@@ -14,9 +14,13 @@ export interface AttachmentDomainModel {
 export type AttachmentDomainCreateModel = DomainModelCreate<AttachmentDomainModel>
 
 export interface AttachmentService {
+  deleteAttachment: (attachment_id: UUID) => AttachmentDomainModel
   name: () => string
+  writeAttachment: (file: Express.Multer.File) => AttachmentDomainModel
 }
 
 export const AttachmentServiceDefinition: RpcServiceDefinition<AttachmentService> = {
-  name: RpcRoute<AttachmentService['name']>()
+  deleteAttachment: RpcRoute<AttachmentService['deleteAttachment']>(),
+  name: RpcRoute<AttachmentService['name']>(),
+  writeAttachment: RpcRoute<AttachmentService['writeAttachment']>()
 }
