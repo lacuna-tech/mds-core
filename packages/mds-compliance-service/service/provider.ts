@@ -1,14 +1,9 @@
 import logger from '@mds-core/mds-logger'
 import { ServiceResult, ServiceException, ServiceProvider, ProcessController } from '@mds-core/mds-service-helpers'
 import { UUID } from '@mds-core/mds-types'
-import {
-  ComplianceArrayResponseDomainModel,
-  ComplianceService,
-  GetComplianceSnapshotsByTimeIntervalOptions
-} from '../@types'
+import { ComplianceService, GetComplianceSnapshotsByTimeIntervalOptions } from '../@types'
 import { ComplianceRepository } from '../repository'
 import {
-  ValidateComplianceArrayResponse,
   ValidateComplianceSnapshotDomainModel,
   ValidateGetComplianceSnapshotsByTimeIntervalOptions
 } from './validators'
@@ -70,28 +65,6 @@ export const ComplianceServiceProvider: ServiceProvider<ComplianceService> & Pro
       return ServiceResult(await ComplianceRepository.getComplianceSnapshotsByIDs(ids))
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting ComplianceSnapshots', error)
-      logger.error(exception, error)
-      return exception
-    }
-  },
-  getComplianceArrayResponse: async (id: UUID) => {
-    try {
-      return ServiceResult(await ComplianceRepository.getComplianceArrayResponse(id))
-    } catch (error) /* istanbul ignore next */ {
-      const exception = ServiceException(`Error Getting ComplianceArrayResponse with this ID: ${id}`, error)
-      logger.error(exception, error)
-      return exception
-    }
-  },
-  createComplianceArrayResponse: async (complianceArrayResponse: ComplianceArrayResponseDomainModel) => {
-    try {
-      return ServiceResult(
-        await ComplianceRepository.createComplianceArrayResponse(
-          ValidateComplianceArrayResponse(complianceArrayResponse)
-        )
-      )
-    } catch (error) /* istanbul ignore next */ {
-      const exception = ServiceException('Error Creating ComplianceArrayResponse', error)
       logger.error(exception, error)
       return exception
     }

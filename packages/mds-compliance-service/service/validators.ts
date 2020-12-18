@@ -1,11 +1,7 @@
 import Joi from 'joi'
 import { isDefined, now, ValidationError } from '@mds-core/mds-utils'
 import { numberSchema, uuidSchema, vehicleEventTypeSchema, vehicleStatusSchema } from '@mds-core/mds-schema-validators'
-import {
-  ComplianceArrayResponseDomainModel,
-  ComplianceSnapshotDomainModel,
-  GetComplianceSnapshotsByTimeIntervalOptions
-} from '../@types'
+import { ComplianceSnapshotDomainModel, GetComplianceSnapshotsByTimeIntervalOptions } from '../@types'
 
 const policySchema = Joi.object().keys({
   policy_id: Joi.string().uuid().required(),
@@ -66,22 +62,4 @@ export const ValidateGetComplianceSnapshotsByTimeIntervalOptions = (
     throw new ValidationError(error.message, options)
   }
   return options
-}
-
-export const complianceArrayResponseSchema = Joi.object().keys({
-  compliance_array_response_id: Joi.string().uuid().required().error(Error('compliance_array_response_id is missing')),
-  compliance_snapshot_ids: Joi.array().items(
-    Joi.string().uuid().required().error(Error('compliance_snapshot_ids missing'))
-  ),
-  provider_id: Joi.string().uuid().required().error(Error('provider_id is missing'))
-})
-
-export const ValidateComplianceArrayResponse = (
-  complianceArrayResponse: ComplianceArrayResponseDomainModel
-): ComplianceArrayResponseDomainModel => {
-  const { error } = complianceArrayResponseSchema.validate(complianceArrayResponse)
-  if (error) {
-    throw new ValidationError(error.message, complianceArrayResponse)
-  }
-  return complianceArrayResponse
 }
