@@ -17,15 +17,12 @@
 import db from '@mds-core/mds-db'
 import logger from '@mds-core/mds-logger'
 import aws from 'aws-sdk'
-import path from 'path'
-import { UnsupportedTypeError, ValidationError } from '@mds-core/mds-utils'
 import { Attachment, AttachmentSummary, AuditAttachment, Recorded, UUID } from '@mds-core/mds-types'
 import { AttachmentServiceClient } from '@mds-core/mds-attachment-service'
 
 /* eslint-disable-next-line */
 const multer = require('multer')
 const { env } = process
-const supportedMimetypes = ['image/png', 'image/jpeg']
 const s3Region = String(env.ATTACHMENTS_REGION)
 const memoryStorage = multer.memoryStorage()
 
@@ -52,16 +49,6 @@ export function attachmentSummary(attachment: Attachment): AttachmentSummary {
     attachment_id: attachment.attachment_id,
     attachment_url: attachment.base_url + attachment.attachment_filename,
     thumbnail_url: thumbnailUrl
-  }
-}
-
-export function validateFile(file: Express.Multer.File) {
-  if (!file || file.buffer.byteLength === 0) {
-    throw new ValidationError('No attachment found')
-  } else if (path.extname(file.originalname).replace('.', '') === '') {
-    throw new ValidationError(`Missing file extension in filename ${file.originalname}`)
-  } else if (!supportedMimetypes.includes(file.mimetype)) {
-    throw new UnsupportedTypeError(`Unsupported mime type ${file.mimetype}`)
   }
 }
 

@@ -19,9 +19,7 @@ import aws from 'aws-sdk'
 import path from 'path'
 import sharp from 'sharp'
 import { uuid, UnsupportedTypeError, ValidationError } from '@mds-core/mds-utils'
-import { Attachment, AttachmentSummary, UUID } from '@mds-core/mds-types'
-import { ServiceResult } from '@mds-core/mds-service-helpers'
-import { AttachmentRepository } from '../../repository'
+import { Attachment, AttachmentSummary } from '@mds-core/mds-types'
 
 /* eslint-disable-next-line */
 const multer = require('multer')
@@ -71,7 +69,7 @@ export function validateFile(file: Express.Multer.File) {
   }
 }
 
-async function writeAttachmentS3(file: Express.Multer.File) {
+export async function writeAttachmentS3(file: Express.Multer.File) {
   // Process attachment and thumbnail and output to Buffers
   const [attachmentBuf, thumbnailBuf] = await Promise.all([
     sharp(file.buffer)
@@ -119,12 +117,6 @@ async function writeAttachmentS3(file: Express.Multer.File) {
   }
 }
 
-export async function writeAttachment(file: Express.Multer.File) {
-  const attachment = await writeAttachmentS3(file)
-  await AttachmentRepository.writeAttachment(attachment)
-  return ServiceResult(attachment)
-}
-
 export async function deleteAttachmentS3(attachment: Attachment) {
   const deletePromises = [
     s3
@@ -145,17 +137,4 @@ export async function deleteAttachmentS3(attachment: Attachment) {
     )
   }
   await Promise.all(deletePromises)
-}
-
-export async function deleteAttachment(attachment_id: UUID) {
-  try {
-    const attachment = await AttachmentRepository.deleteAttachment(attachment_id)
-    if (attachment) {
-      await deleteAttachmentS3(attachment)
-    }
-    return ServiceResult(attachment)
-  } catch (err) {
-    logger.error('deleteAttachment error', err.stack || err)
-    throw err
-  }
 }
