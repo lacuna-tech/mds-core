@@ -45,6 +45,9 @@ export interface ServiceResultType<R> {
  * Over-the-wire, Javascript Buffers are serialized into JSON, but then not converted back into Javascript Buffers when deserializing.
  * This helper type aims to mitigate type differences that could arise between a ServiceClient and ServiceProvider.
  *
+ * Note: Prettier doesn't like parens around nested ternaries in typedefs. This is a two-level-deep ternary, where the outer ternary
+ * is checking if we've bottomed out (important for recursive typing), and the second ternary is where the main logic for the type lives.
+ *
  * @example ```typescript
             type Foo = { x: string; y: { z: Buffer } }
 
