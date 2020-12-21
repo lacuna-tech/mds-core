@@ -43,6 +43,8 @@ import { ApiServer } from '@mds-core/mds-api-server'
 import db from '@mds-core/mds-db'
 import { MOCHA_PROVIDER_ID } from '@mds-core/mds-providers'
 import Sinon from 'sinon'
+import { AttachmentServiceClient } from '@mds-core/mds-attachment-service'
+import { ServiceError } from '@mds-core/mds-service-helpers'
 import { api } from '../api'
 import * as attachments from '../attachments'
 import { AUDIT_API_DEFAULT_VERSION } from '../types'
@@ -802,6 +804,13 @@ describe('Testing API', () => {
 
     attachmentTests.forEach(testCase =>
       it(`verify post bad attachment (${testCase.name})`, done => {
+        Sinon.stub(AttachmentServiceClient, 'writeAttachment').rejects(
+          ServiceError({
+            type: testCase.errName,
+            message: 'Error Writing Attachment',
+            details: testCase.errReason
+          }).error
+        )
         request
           .post(pathPrefix(`/trips/${audit_trip_id}/attach/image%2Fpng`))
           .set('Authorization', SCOPED_AUTH(['audits:write'], audit_subject_id))

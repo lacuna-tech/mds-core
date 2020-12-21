@@ -23,23 +23,7 @@ import { AttachmentServiceClient } from '@mds-core/mds-attachment-service'
 /* eslint-disable-next-line */
 const multer = require('multer')
 const { env } = process
-const s3Region = String(env.ATTACHMENTS_REGION)
 const memoryStorage = multer.memoryStorage()
-
-if (env.ATTACHMENTS_BUCKET) {
-  /* eslint-disable-next-line */
-  aws.config.getCredentials(async err => {
-    if (err) {
-      logger.error('Error getting AWS credentials', err.stack || err)
-    } else if (aws.config.credentials) {
-      aws.config.update({
-        secretAccessKey: aws.config.credentials.secretAccessKey,
-        accessKeyId: aws.config.credentials.accessKeyId,
-        region: s3Region
-      })
-    }
-  })
-}
 
 export const multipartFormUpload = multer({ storage: memoryStorage }).single('file')
 
