@@ -808,8 +808,8 @@ describe('Testing API', () => {
           .attach('file', `./tests/${testCase.file}`)
           .expect(testCase.status)
           .end((err, result) => {
-            test.value(result.body.error.name).is(testCase.errName)
-            test.value(result.body.error.reason).is(testCase.errReason)
+            test.value(result.body.error.type).is(testCase.errName)
+            test.value(result.body.error.details).is(testCase.errReason)
             done(err)
           })
       })

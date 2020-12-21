@@ -20,6 +20,7 @@ import path from 'path'
 import sharp from 'sharp'
 import { uuid, UnsupportedTypeError, ValidationError } from '@mds-core/mds-utils'
 import { Attachment, AttachmentSummary } from '@mds-core/mds-types'
+import { RpcFile } from '../../@types'
 
 /* eslint-disable-next-line */
 const multer = require('multer')
@@ -59,14 +60,16 @@ export function attachmentSummary(attachment: Attachment): AttachmentSummary {
   }
 }
 
-export function validateFile(file: Express.Multer.File) {
-  if (!file || file.buffer.byteLength === 0) {
+export function validateFile(file: RpcFile) {
+  if (!file || file.buffer.data.length === 0) {
     throw new ValidationError('No attachment found')
   } else if (path.extname(file.originalname).replace('.', '') === '') {
     throw new ValidationError(`Missing file extension in filename ${file.originalname}`)
   } else if (!supportedMimetypes.includes(file.mimetype)) {
     throw new UnsupportedTypeError(`Unsupported mime type ${file.mimetype}`)
   }
+
+  return { ...file, buffer: Buffer.from(file.buffer.data) }
 }
 
 export async function writeAttachmentS3(file: Express.Multer.File) {

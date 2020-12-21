@@ -1,21 +1,21 @@
 import { ServiceProvider, ProcessController, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
 import { UUID } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
-import { AttachmentService } from '../@types'
+import { AttachmentService, RpcFile } from '../@types'
 import { AttachmentRepository } from '../repository'
 import { writeAttachmentS3, deleteAttachmentS3, validateFile } from './helpers'
 
 export const AttachmentServiceProvider: ServiceProvider<AttachmentService> & ProcessController = {
   start: AttachmentRepository.initialize,
   stop: AttachmentRepository.shutdown,
-  writeAttachment: async (file: Express.Multer.File) => {
+  writeAttachment: async (rpc_file: RpcFile) => {
     try {
-      validateFile(file)
+      const file = validateFile(rpc_file)
       const attachment = await writeAttachmentS3(file)
       await AttachmentRepository.writeAttachment(attachment)
       return ServiceResult(attachment)
     } catch (error) {
-      const exception = ServiceException('Error writing attachment', error)
+      const exception = ServiceException('Error Writing Attachment', error)
       logger.error(exception, error)
       return exception
     }
@@ -28,7 +28,7 @@ export const AttachmentServiceProvider: ServiceProvider<AttachmentService> & Pro
       }
       return ServiceResult(attachment)
     } catch (error) {
-      const exception = ServiceException('Error deleting attachment', error)
+      const exception = ServiceException('Error Deleting Attachment', error)
       logger.error(exception, error)
       return exception
     }
