@@ -49,10 +49,10 @@ export interface ServiceResultType<R> {
  * @example ```typescript
             type Foo = { x: string; y: { z: Buffer } }
 
-            type DeserializedFoo = DeserializeBuffers<Foo>
+            type SerializedFoo = SerializedBuffers<Foo>
 
             const example: Foo = { x: 'hi', y: { z: Buffer.from([1, 2, 3]) } }
-            const exampleDeserialized: DeserializedFoo = { x: 'hi', y: { z: { type: 'Buffer', data: [1, 2, 3] } } }
+            const exampleSerialized: SerializedFoo = { x: 'hi', y: { z: { type: 'Buffer', data: [1, 2, 3] } } }
             ```
  */
 export type SerializedBuffers<T> = {
