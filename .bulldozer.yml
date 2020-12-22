@@ -10,25 +10,7 @@ merge:
   trigger:
     # Pull requests with any of these labels (case-insensitive) are added to
     # the trigger.
-    labels: ["merge when ready", "bulldozer-merge"]
-
-    # Pull requests where the body or any comment contains any of these
-    # substrings are added to the trigger.
-    comment_substrings: ["==MERGE_WHEN_READY==", "merge when ready"]
-
-    # Pull requests where any comment matches one of these exact strings are
-    # added to the trigger.
-    comments:
-      [
-        "Please merge this pull request!",
-        "Mr. Bulldozer, please merge",
-        "@bulldozer merge",
-        "ready to merge",
-      ]
-
-    # Pull requests where the body contains any of these substrings are added
-    # to the trigger.
-    pr_body_substrings: ["==MERGE_WHEN_READY=="]
+    labels: ["bulldozer-merge"]
 
     # Pull requests targeting branches matching any of these regular expressions are added to the trigger.
     # branch_patterns: ["feature/.*"]
@@ -38,7 +20,6 @@ merge:
   # same keys as the "trigger" section.
   ignore:
     labels: ["do not merge"]
-    comment_substrings: ["==DO_NOT_MERGE=="]
 
   # "method" defines the merge method. The available options are "merge",
   # "rebase", "squash", and "ff-only".
@@ -87,12 +68,9 @@ update:
   # "trigger" defines the set of pull requests that should be updated by
   # bulldozer. It accepts the same keys as the trigger in the "merge" block.
   trigger:
-    labels: ["Update Me", "bulldozer-update"]
-
-    comments: ["@bulldozer update", "keep updated"]
+    labels: ["bulldozer-update"]
 
   # "ignore" defines the set of pull requests that should not be updated by
   # bulldozer. It accepts the same keys as the ignore in the "merge" block.
   ignore:
     labels: ["Do Not Update"]
-
