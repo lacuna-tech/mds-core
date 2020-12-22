@@ -3,7 +3,7 @@ import { RpcClient, RpcRequest } from '@mds-core/mds-rpc-common'
 import { TransactionService, TransactionServiceDefinition } from '../@types'
 
 const TransactionServiceRpcClient = RpcClient(TransactionServiceDefinition, {
-  host: process.env.TRANSACTION_SERVICE_RPC_HOST,
+  host: process.env.TRANSACTIONS_SERVICE_RPC_HOST,
   port: process.env.MTRANSACTION_SERVICE_RPC_PORT
 })
 
