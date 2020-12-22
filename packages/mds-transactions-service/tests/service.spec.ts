@@ -25,6 +25,7 @@ const TransactionServer = TransactionServiceManager.controller()
 
 const device_id = 'ee6bf5c7-bce0-46c9-a5c9-8652724059d7'
 const provider_id = '3452fa87-bfd7-42c5-9c53-5e07bde13671'
+const unknown_provider_id = '654b106d-5706-495f-8c89-64e17a5a3ed8'
 const transaction_id = '37bd96ac-69bd-4634-9b22-ff081d7a5a09'
 const unknown_transaction_id = '822415eb-baaa-40ff-b219-a5ed214e2114'
 const receipt_id = 'a5eb612e-a154-4339-a760-aee95908dc51'
@@ -105,10 +106,22 @@ describe('Transaction Service Tests', () => {
   })
 
   it('Get All Transactions', async () => {
-    const transactions = await TransactionServiceClient.getTransactions()
+    const transactions = await TransactionServiceClient.getTransactions({})
     expect(transactions.length).toEqual(1)
     const [transaction] = transactions
     expect(transaction.transaction_id).toEqual(transaction_id)
+  })
+
+  it('Get All Transactions with provider serach', async () => {
+    const transactions = await TransactionServiceClient.getTransactions({ provider_id })
+    expect(transactions.length).toEqual(1)
+    const [transaction] = transactions
+    expect(transaction.transaction_id).toEqual(transaction_id)
+  })
+
+  it('Get All Transactions with bogus provider serach', async () => {
+    const transactions = await TransactionServiceClient.getTransactions({ provider_id: unknown_provider_id })
+    expect(transactions.length).toEqual(0)
   })
 
   it('Get One Transaction', async () => {

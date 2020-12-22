@@ -1,7 +1,14 @@
 import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core/mds-repository'
 import { NotFoundError } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'
-import { TransactionDomainModel, TransactionOperationDomainModel, TransactionStatusDomainModel } from '../@types'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { LessThan, MoreThan, Between } from 'typeorm'
+import {
+  TransactionDomainModel,
+  TransactionOperationDomainModel,
+  TransactionSearchParams,
+  TransactionStatusDomainModel
+} from '../@types'
 import {
   TransactionEntityToDomain,
   TransactionDomainToEntityCreate,
@@ -35,11 +42,22 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
   }
 
   // TODO search criteria, paging
-  public getTransactions = async (): Promise<TransactionDomainModel[]> => {
+  public getTransactions = async (search: TransactionSearchParams): Promise<TransactionDomainModel[]> => {
     const { connect } = this
     try {
       const connection = await connect('ro')
-      const entities = await connection.getRepository(TransactionEntity).find()
+      const where: any = {}
+      if (search.provider_id) {
+        where.provider_id = search.provider_id
+      }
+      if (search.start_timestamp && search.end_timestamp) {
+        where.timestamp = Between(search.start_timestamp, search.end_timestamp)
+      } else if (search.start_timestamp) {
+        where.timestamp = MoreThan(search.start_timestamp)
+      } else if (search.end_timestamp) {
+        where.timestamp = LessThan(search.end_timestamp)
+      }
+      const entities = await connection.getRepository(TransactionEntity).find({ where })
       return entities.map(TransactionEntityToDomain.mapper())
     } catch (error) {
       throw RepositoryError(error)

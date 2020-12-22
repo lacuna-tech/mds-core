@@ -44,22 +44,22 @@ export const api = (app: express.Express): express.Express =>
       CreateTransactionsHandler
     )
     .get(
-      pathPrefix('/transactions/operations'),
+      pathPrefix('/transactions/:transaction_id/operations'),
       checkTransactionApiAccess(scopes => scopes.includes('transactions:read')),
       GetTransactionOperationsHandler
     )
     .post(
-      pathPrefix('/transactions/operations/:transaction_id'),
+      pathPrefix('/transactions/:transaction_id/operations'),
       checkTransactionApiAccess(scopes => scopes.includes('transactions:write')),
       AddTransactionOperationHandler
     )
     .post(
-      pathPrefix('/transaction/statuses'),
+      pathPrefix('/transaction/:transaction_id/statuses'),
       checkTransactionApiAccess(scopes => scopes.includes('transactions:write')),
       SetTransactionStatusHandler
     )
     .get(
-      pathPrefix('/transactions/statuses'),
+      pathPrefix('/transactions/:transaction_id/statuses'),
       checkTransactionApiAccess(scopes => scopes.includes('transactions:write')),
       GetTransactionStatusesHandler
     )

@@ -52,7 +52,7 @@ export interface TransactionDomainModel {
   timestamp: Timestamp
   fee_type: FEE_TYPE
   amount: Number // pennies
-  receipt: ReceiptDomainModel // is this how you specify a JSON blob?
+  receipt: ReceiptDomainModel // JSON blob
 }
 export type TransactionDomainCreateModel = DomainModelCreate<TransactionDomainModel>
 
@@ -87,6 +87,12 @@ export const TRANSACTION_STATUS_TYPES = [
 
 export type TRANSACTION_STATUS_TYPE = typeof TRANSACTION_STATUS_TYPES[number]
 
+export interface TransactionSearchParams {
+  provider_id?: UUID
+  start_timestamp?: Timestamp
+  end_timestamp?: Timestamp
+}
+
 export interface TransactionStatusDomainModel {
   status_id: UUID
   transaction_id: UUID
@@ -107,7 +113,7 @@ export interface TransactionService {
 
   // if auth token has a provider_id, it must match
   // read-back bulk TODO search criteria
-  getTransactions: () => TransactionDomainModel[]
+  getTransactions: (params: TransactionSearchParams) => TransactionDomainModel[]
   // if auth token has a provider_id, it must match
   // read back single
   getTransaction: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionDomainModel

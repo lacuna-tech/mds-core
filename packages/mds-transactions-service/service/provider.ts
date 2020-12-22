@@ -1,7 +1,7 @@
 import logger from '@mds-core/mds-logger'
 import { ServiceResult, ServiceException, ServiceProvider, ProcessController } from '@mds-core/mds-service-helpers'
 import { UUID } from '@mds-core/mds-types'
-import { TransactionService } from '../@types'
+import { TransactionSearchParams, TransactionService } from '../@types'
 import { TransactionRepository } from '../repository'
 import {
   validateTransactionDomainModel,
@@ -43,9 +43,9 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
     }
   },
   // TODO search params
-  getTransactions: async () => {
+  getTransactions: async (search: TransactionSearchParams) => {
     try {
-      const transactions = await TransactionRepository.getTransactions()
+      const transactions = await TransactionRepository.getTransactions(search)
       return ServiceResult(transactions)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Transactions', error)
