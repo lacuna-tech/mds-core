@@ -69,6 +69,10 @@ apis:
     enabled: true
     version: latest
     migration: false
+  mds-transactions-api:
+    enabled: true
+    version: latest
+    migration: false
   mds-attachment-service:
     enabled: true
     version: latest
