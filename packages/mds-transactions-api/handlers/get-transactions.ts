@@ -1,6 +1,7 @@
 import { TransactionServiceClient, TransactionDomainModel } from '@mds-core/mds-transactions-service'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { parseRequest } from '@mds-core/mds-api-helpers'
+import { ServerError } from '@mds-core/mds-utils'
 import { TransactionApiRequest, TransactionApiResponse } from '../@types'
 
 export type TransactionApiGetTransactionsRequest = TransactionApiRequest &

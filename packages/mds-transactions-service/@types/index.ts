@@ -105,10 +105,9 @@ export interface TransactionStatusDomainModel {
 export type TransactionStatusDomainCreateModel = DomainModelCreate<TransactionStatusDomainModel>
 
 export interface TransactionService {
-  // if auth token has a provider_id, it must match
-  // single
+  /**  if auth token has a provider_id, it must match */
   createTransaction: (transaction: TransactionDomainCreateModel) => TransactionDomainModel
-  // bulk
+  /**  if auth token has a provider_id, it must match */
   createTransactions: (transactions: TransactionDomainCreateModel[]) => TransactionDomainModel[]
 
   // if auth token has a provider_id, it must match
@@ -118,9 +117,9 @@ export interface TransactionService {
   // read back single
   getTransaction: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionDomainModel
 
-  // create an 'operation', e.g. for dispute-handling, etc.
+  /** create an 'operation', e.g. for dispute-handling, etc. */
   addTransactionOperation: (operation: TransactionOperationDomainCreateModel) => TransactionOperationDomainModel
-  // read back operations for a transaction
+  /** read back operations for a transaction */
   // if auth token has a provider_id, it must match the provider_id in the transaction
   getTransactionOperations: (
     transaction_id: TransactionDomainModel['transaction_id']
