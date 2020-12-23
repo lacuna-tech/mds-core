@@ -20,6 +20,6 @@ export const GetTransactionsHandler = async (
     const { version } = res.locals
     return res.status(200).send({ version, transactions })
   } catch (error) {
-    return res.status(500).send({ error })
+    return res.status(500).send({ error: new ServerError(error) })
   }
 }

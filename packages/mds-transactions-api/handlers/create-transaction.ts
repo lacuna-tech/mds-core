@@ -23,6 +23,6 @@ export const CreateTransactionHandler = async (
         return res.status(409).send({ error })
       }
     }
-    return res.status(500).send({ error })
+    return res.status(500).send({ error: new ServerError(error) })
   }
 }
