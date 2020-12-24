@@ -2,7 +2,7 @@ import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core
 import { NotFoundError } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { LessThan, MoreThan, Between } from 'typeorm'
+import { LessThan, MoreThan, Between, FindOperator } from 'typeorm'
 import {
   TransactionDomainModel,
   TransactionOperationDomainModel,
@@ -46,18 +46,19 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
     const { connect } = this
     try {
       const connection = await connect('ro')
-      const where: any = {}
-      if (search.provider_id) {
-        where.provider_id = search.provider_id
-      }
-      if (search.start_timestamp && search.end_timestamp) {
-        where.timestamp = Between(search.start_timestamp, search.end_timestamp)
-      } else if (search.start_timestamp) {
-        where.timestamp = MoreThan(search.start_timestamp)
-      } else if (search.end_timestamp) {
-        where.timestamp = LessThan(search.end_timestamp)
-      }
-      const entities = await connection.getRepository(TransactionEntity).find({ where })
+      function where() : {provider_id?:UUID, timestamp?: FindOperator<number>} {
+        const { provider_id, start_timestamp, end_timestamp} = search
+        let timestamp
+        if (start_timestamp && end_timestamp) {
+          timestamp = Between(start_timestamp, end_timestamp)
+        } else if (start_timestamp) {
+          timestamp = MoreThan(start_timestamp)
+        } else if (end_timestamp) {
+          timestamp = LessThan(end_timestamp)
+        }
+        return { provider_id, timestamp }
+    }
+      const entities = await connection.getRepository(TransactionEntity).find({ where: where() })
       return entities.map(TransactionEntityToDomain.mapper())
     } catch (error) {
       throw RepositoryError(error)
