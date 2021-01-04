@@ -5,7 +5,7 @@ import { Policy } from '@mds-core/mds-types'
 import { ComplianceServiceClient } from '@mds-core/mds-compliance-service'
 import db from '@mds-core/mds-db'
 
-import { pathPrefix, uuid } from '@mds-core/mds-utils'
+import { pathPrefix } from '@mds-core/mds-utils'
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
 import { providers } from '@mds-core/mds-providers'
 import {
@@ -43,11 +43,6 @@ describe('Test Compliances API', () => {
         return [POLICY1, POLICY2]
       }
     )
-    jest
-      .spyOn(ComplianceServiceClient, 'createComplianceArrayResponse')
-      .mockImplementation(async complianceArrayResponse => {
-        return complianceArrayResponse
-      })
   })
 
   afterEach(() => {

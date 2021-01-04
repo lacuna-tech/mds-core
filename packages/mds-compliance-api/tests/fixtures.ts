@@ -1,4 +1,4 @@
-import { ComplianceArrayResponseDomainModel, ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service'
+import { ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service'
 import { days } from '@mds-core/mds-utils'
 import { Policy, VEHICLE_TYPES } from '@mds-core/mds-types'
 
