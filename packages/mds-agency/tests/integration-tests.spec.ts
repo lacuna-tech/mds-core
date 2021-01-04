@@ -125,7 +125,7 @@ before(async () => {
 })
 
 after(async () => {
-  await Promise.all([db.shutdown(), cache.shutdown(), stream.shutdown(), socketShutdown()])
+  await Promise.all([db.shutdown(), cache.shutdown(), stream.shutdown()])
 })
 
 describe('Tests API', () => {
