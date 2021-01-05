@@ -742,10 +742,7 @@ function api(app: express.Express): express.Express {
     pathPrefix('/trips/:audit_trip_id/attach/:mimetype'),
     multipartFormUpload,
     async (req, res: PostAuditAttachmentResponse) => {
-      const { audit, audit_trip_id } = res.locals
-      if (!audit) {
-        return res.status(404).send({ error: new NotFoundError('audit not found', { audit_trip_id }) })
-      }
+      const { audit_trip_id } = res.locals
       try {
         const attachment = await writeAttachment(req.file, audit_trip_id)
         res.status(200).send({

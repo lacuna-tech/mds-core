@@ -1,5 +1,4 @@
 import { RpcServer } from '@mds-core/mds-rpc-common'
-import { SerializedBuffers } from '@mds-core/mds-service-helpers'
 import { AttachmentServiceDefinition } from '../@types'
 import { AttachmentServiceClient } from '../client'
 import { AttachmentServiceProvider } from './provider'
@@ -12,8 +11,7 @@ export const AttachmentServiceManager = RpcServer(
   },
   {
     name: args => AttachmentServiceProvider.name(...args),
-    writeAttachment: args =>
-      AttachmentServiceProvider.writeAttachment(...((args as unknown) as [SerializedBuffers<Express.Multer.File>])),
+    writeAttachment: args => AttachmentServiceProvider.writeAttachment(...args),
     deleteAttachment: args => AttachmentServiceProvider.deleteAttachment(...args)
   },
   {
