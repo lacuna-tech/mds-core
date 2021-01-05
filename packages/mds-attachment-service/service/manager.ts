@@ -10,7 +10,6 @@ export const AttachmentServiceManager = RpcServer(
     onStop: AttachmentServiceProvider.stop
   },
   {
-    name: args => AttachmentServiceProvider.name(...args),
     writeAttachment: args => AttachmentServiceProvider.writeAttachment(...args),
     deleteAttachment: args => AttachmentServiceProvider.deleteAttachment(...args)
   },

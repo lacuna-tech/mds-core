@@ -32,6 +32,5 @@ export const AttachmentServiceProvider: ServiceProvider<AttachmentService> & Pro
       logger.error(exception, error)
       return exception
     }
-  },
-  name: async () => ServiceResult('mds-attachment-service')
+  }
 }
