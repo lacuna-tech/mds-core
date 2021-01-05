@@ -20,7 +20,7 @@ import path from 'path'
 import sharp from 'sharp'
 import { uuid, UnsupportedTypeError, ValidationError } from '@mds-core/mds-utils'
 import { Attachment, AttachmentSummary } from '@mds-core/mds-types'
-import { RpcFile } from '../../@types'
+import { SerializedBuffers } from '@mds-core/mds-service-helpers'
 
 /* eslint-disable-next-line */
 const multer = require('multer')
@@ -60,7 +60,7 @@ export function attachmentSummary(attachment: Attachment): AttachmentSummary {
   }
 }
 
-export function validateFile(file: RpcFile) {
+export function validateFile(file: SerializedBuffers<Express.Multer.File>) {
   if (!file || file.buffer.data.length === 0) {
     throw new ValidationError('No attachment found')
   } else if (path.extname(file.originalname).replace('.', '') === '') {
@@ -72,7 +72,7 @@ export function validateFile(file: RpcFile) {
   return { ...file, buffer: Buffer.from(file.buffer.data) }
 }
 
-export async function writeAttachmentS3(file: Express.Multer.File) {
+export async function writeAttachmentS3(file: Omit<Express.Multer.File, 'stream'>) {
   // Process attachment and thumbnail and output to Buffers
   const [attachmentBuf, thumbnailBuf] = await Promise.all([
     sharp(file.buffer)

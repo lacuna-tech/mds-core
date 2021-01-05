@@ -13,12 +13,10 @@ export interface AttachmentDomainModel {
 
 export type AttachmentDomainCreateModel = DomainModelCreate<AttachmentDomainModel>
 
-export type RpcFile = Express.Multer.File & { buffer: { type: 'Buffer'; data: [] } }
-
 export interface AttachmentService {
   deleteAttachment: (attachment_id: UUID) => AttachmentDomainModel
   name: () => string
-  writeAttachment: (file: RpcFile) => AttachmentDomainModel
+  writeAttachment: (file: Express.Multer.File) => AttachmentDomainModel
 }
 
 export const AttachmentServiceDefinition: RpcServiceDefinition<AttachmentService> = {

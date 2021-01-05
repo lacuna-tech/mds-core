@@ -1,14 +1,14 @@
 import { ServiceProvider, ProcessController, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
 import { UUID } from '@mds-core/mds-types'
 import logger from '@mds-core/mds-logger'
-import { AttachmentService, RpcFile } from '../@types'
+import { AttachmentService } from '../@types'
 import { AttachmentRepository } from '../repository'
 import { writeAttachmentS3, deleteAttachmentS3, validateFile } from './helpers'
 
 export const AttachmentServiceProvider: ServiceProvider<AttachmentService> & ProcessController = {
   start: AttachmentRepository.initialize,
   stop: AttachmentRepository.shutdown,
-  writeAttachment: async (rpc_file: RpcFile) => {
+  writeAttachment: async rpc_file => {
     try {
       const file = validateFile(rpc_file)
       const attachment = await writeAttachmentS3(file)

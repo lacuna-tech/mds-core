@@ -37,9 +37,7 @@ export function attachmentSummary(attachment: Attachment): AttachmentSummary {
 }
 
 export async function writeAttachment(file: Express.Multer.File, auditTripId: UUID) {
-  const attachment = await AttachmentServiceClient.writeAttachment(
-    file as Express.Multer.File & { buffer: { type: 'Buffer'; data: [] } }
-  )
+  const attachment = await AttachmentServiceClient.writeAttachment(file)
   await db.writeAuditAttachment({
     attachment_id: attachment.attachment_id,
     audit_trip_id: auditTripId
