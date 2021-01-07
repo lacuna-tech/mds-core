@@ -65,11 +65,7 @@ class AttachmentReadWriteRepository extends ReadWriteRepository {
   }
 
   public readAttachments = async (options: ReadAttachmentsOptions): Promise<AttachmentDomainModel[]> => {
-    const isAttachmentListIdOption = (opts: ReadAttachmentsOptions): opts is { attachment_list_id: UUID } => {
-      if ('attachment_list_id' in opts) return true
-
-      return false
-    }
+    const isAttachmentListIdOption = (opts: ReadAttachmentsOptions): opts is { attachment_list_id: UUID } => 'attachment_list_id' in opts
 
     const isAttachmentIdsOption = (opts: ReadAttachmentsOptions): opts is { attachment_ids: UUID[] } => {
       if ('attachment_ids' in opts) return true
