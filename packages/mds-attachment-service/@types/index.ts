@@ -30,9 +30,13 @@ export interface AttachmentService {
     file: SerializedBuffers<Express.Multer.File>,
     attachment_list_is: Nullable<UUID>
   ) => AttachmentDomainModel
+  readAttachment: (attachment_id: UUID) => AttachmentDomainModel | undefined
+  readAttachments: (options: ReadAttachmentsOptions) => AttachmentDomainModel[]
 }
 
 export const AttachmentServiceDefinition: RpcServiceDefinition<AttachmentService> = {
   deleteAttachment: RpcRoute<AttachmentService['deleteAttachment']>(),
-  writeAttachment: RpcRoute<AttachmentService['writeAttachment']>()
+  writeAttachment: RpcRoute<AttachmentService['writeAttachment']>(),
+  readAttachment: RpcRoute<AttachmentService['readAttachment']>(),
+  readAttachments: RpcRoute<AttachmentService['readAttachments']>()
 }
