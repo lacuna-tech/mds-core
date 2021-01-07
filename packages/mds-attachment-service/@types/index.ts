@@ -3,6 +3,11 @@ import { RpcServiceDefinition, RpcRoute } from '@mds-core/mds-rpc-common'
 import { Nullable, UUID } from '@mds-core/mds-types'
 import { SerializedBuffers } from '@mds-core/mds-service-helpers'
 
+/** You can either provide a list of `attachment_id` values to get each of those attachments,
+ * or you can provide an `attachment_list_id` to get a group of attachments which share the same origin
+ */
+export type ReadAttachmentsOptions = { attachment_ids: UUID[] } | { attachment_list_id: UUID }
+
 export interface AttachmentDomainModel {
   attachment_id: UUID
   attachment_filename: string
@@ -12,7 +17,8 @@ export interface AttachmentDomainModel {
   thumbnail_mimetype: Nullable<string>
   /** A way to link attachments together, intended to serve as a foreign key to the original owner.
    * E.g, if an audit has multiple attachments uploaded for it, the `attachment_list_id` for
-   * each of them would be the `audit_trip_id` so they could easily be searched for. */
+   * each of them would be the `audit_trip_id` so they could easily be searched for.
+   */
   attachment_list_id: Nullable<UUID>
 }
 
