@@ -28,11 +28,6 @@ async function convertComplianceSnapshotsArrayToComplianceViolationPeriod(
   snapshots: ComplianceSnapshotDomainModel[]
 ): Promise<ComplianceViolationPeriod> {
   const compliance_array_response_id = uuid()
-  await ComplianceServiceClient.createComplianceArrayResponse({
-    compliance_array_response_id,
-    compliance_snapshot_ids: snapshots.map(s => s.compliance_snapshot_id),
-    provider_id: snapshots[0].provider_id
-  })
   return {
     start_time: snapshots[0].compliance_as_of,
     end_time: snapshots[snapshots.length - 1].compliance_as_of,
