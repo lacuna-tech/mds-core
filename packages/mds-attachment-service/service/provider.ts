@@ -8,10 +8,10 @@ import { writeAttachmentS3, deleteAttachmentS3, validateFile } from './helpers'
 export const AttachmentServiceProvider: ServiceProvider<AttachmentService> & ProcessController = {
   start: AttachmentRepository.initialize,
   stop: AttachmentRepository.shutdown,
-  writeAttachment: async rpc_file => {
+  writeAttachment: async (rpc_file, attachment_list_id) => {
     try {
       const file = validateFile(rpc_file)
-      const attachment = await writeAttachmentS3(file)
+      const attachment = { ...(await writeAttachmentS3(file)), attachment_list_id }
       await AttachmentRepository.writeAttachment(attachment)
       return ServiceResult(attachment)
     } catch (error) {
