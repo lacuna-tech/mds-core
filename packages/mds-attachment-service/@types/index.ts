@@ -9,6 +9,10 @@ export interface AttachmentDomainModel {
   mimetype: string
   thumbnail_filename: Nullable<string>
   thumbnail_mimetype: Nullable<string>
+  /** A way to link attachments together, intended to serve as a foreign key to the original owner.
+   * E.g, if an audit has multiple attachments uploaded for it, the `attachment_list_id` for
+   * each of them would be the `audit_trip_id` so they could easily be searched for. */
+  attachment_list_id: Nullable<UUID>
 }
 
 export type AttachmentDomainCreateModel = DomainModelCreate<AttachmentDomainModel>
