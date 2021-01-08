@@ -16,7 +16,7 @@ export type ComplianceApiResponse<B = {}> = ApiVersionedResponse<COMPLIANCE_API_
 export interface ComplianceViolationPeriod {
   snapshots_uri?: string
   start_time: Timestamp
-  end_time: Timestamp
+  end_time: Timestamp | null
 }
 
 export interface ComplianceAggregate {

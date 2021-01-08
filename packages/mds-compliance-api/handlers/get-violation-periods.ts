@@ -17,6 +17,7 @@ export type ComplianceApiGetViolationPeriodsResponse = ComplianceApiResponse<{
   results: ComplianceAggregate[]
 }>
 
+// The keys take the format `${provider_id},${policy_id}`
 interface ComplianceAggregateMap {
   [k: string]: {
     complianceSnapshotViolationGroupings: ComplianceSnapshotDomainModel[][]
@@ -28,9 +29,11 @@ async function convertComplianceSnapshotsArrayToComplianceViolationPeriod(
   snapshots: ComplianceSnapshotDomainModel[]
 ): Promise<ComplianceViolationPeriod> {
   const compliance_array_response_id = uuid()
+  const finalSnapshot = snapshots[snapshots.length - 1]
+  const end_time = finalSnapshot.total_violations === 0 ? finalSnapshot.compliance_as_of : null
   return {
     start_time: snapshots[0].compliance_as_of,
-    end_time: snapshots[snapshots.length - 1].compliance_as_of,
+    end_time,
     snapshots_uri: `/compliance_snapshot_ids?token=${compliance_array_response_id}`
   }
 }
@@ -81,7 +84,9 @@ export const GetViolationPeriodsHandler = async (
      * is encountered that has no violations. E.g. if for Jump and policy A, there are snapshots B, C, D, E,
      * and F, and B, C, E and F contain violations, B and C get grouped together and eventually put into the
      * same instance of a ComplianceViolationPeriod, and E and F get grouped together. D is basically ignored.
-     *
+     * Add the first compliance snapshot that has zero violations. The timestamp on that snapshot is when the
+     * violation period ended. If the snapshot have violations till the end of the query period, the end time
+     * of the violation period is unknown, and therefore set to null.
      */
     complianceSnapshots.forEach(complianceSnapshot => {
       const { provider_id } = complianceSnapshot
@@ -102,6 +107,7 @@ export const GetViolationPeriodsHandler = async (
           mapEntry.complianceSnapshots.push(complianceSnapshot)
         }
       } else if (mapEntry.complianceSnapshots !== null) {
+        mapEntry.complianceSnapshots.push(complianceSnapshot)
         mapEntry.complianceSnapshotViolationGroupings.push(mapEntry.complianceSnapshots)
         mapEntry.complianceSnapshots = null
       }

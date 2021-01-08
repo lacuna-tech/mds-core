@@ -148,12 +148,12 @@ describe('Test Compliances API', () => {
               violation_periods: [
                 {
                   start_time: 1605821758035,
-                  end_time: 1605821758036,
+                  end_time: 1605821758037,
                   snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 },
                 {
                   start_time: 1605821758038,
-                  end_time: 1605821758038,
+                  end_time: null,
                   snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 }
               ]
@@ -182,7 +182,7 @@ describe('Test Compliances API', () => {
               violation_periods: [
                 {
                   start_time: 1605821758034,
-                  end_time: 1605821758034,
+                  end_time: null,
                   snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 }
               ]
@@ -200,12 +200,12 @@ describe('Test Compliances API', () => {
               violation_periods: [
                 {
                   start_time: 1605821758035,
-                  end_time: 1605821758036,
+                  end_time: 1605821758037,
                   snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 },
                 {
                   start_time: 1605821758038,
-                  end_time: 1605821758038,
+                  end_time: null,
                   snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 }
               ]
@@ -217,7 +217,7 @@ describe('Test Compliances API', () => {
               violation_periods: [
                 {
                   start_time: 1605821758036,
-                  end_time: 1605821758036,
+                  end_time: null,
                   snapshots_uri: '/compliance_snapshot_ids?token=1234'
                 }
               ]
