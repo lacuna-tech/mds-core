@@ -10,8 +10,8 @@ export interface TripReceiptDetailsDomainModel {
   vehicle_type: VEHICLE_TYPE
   start_geography_id: Nullable<UUID>
   end_geography_id: Nullable<UUID>
-  duration: Number // seconds
-  distance: Number // meters
+  duration: number // seconds
+  distance: number // meters
   trip_events: VehicleEvent[]
 }
 
@@ -21,7 +21,7 @@ export interface CurbUseDetailsDomainModel {
   end_timestamp: Timestamp
   vehicle_type: VEHICLE_TYPE
   geography_id: Nullable<UUID>
-  duration: Number // seconds
+  duration: number // seconds
   trip_events: VehicleEvent[]
 }
 
@@ -42,7 +42,7 @@ export interface ReceiptDomainModel {
   receipt_id: UUID
   timestamp: Timestamp // could be any time before the Transaction was created
   origin_url: string // where can I go to dig into the details of the receipt, given this receipt_id?
-  receipt_details: TripReceiptDetailsDomainModel | CurbUseDetailsDomainModel | Object // JSON blob with free-form supporting evidence, DO NOT INCLUDE PII
+  receipt_details: TripReceiptDetailsDomainModel | CurbUseDetailsDomainModel | object // JSON blob with free-form supporting evidence, DO NOT INCLUDE PII
 }
 
 export interface TransactionDomainModel {
@@ -51,7 +51,7 @@ export interface TransactionDomainModel {
   device_id: Nullable<UUID> // optional
   timestamp: Timestamp
   fee_type: FEE_TYPE
-  amount: Number // pennies
+  amount: number // pennies
   receipt: ReceiptDomainModel // JSON blob
 }
 export type TransactionDomainCreateModel = DomainModelCreate<TransactionDomainModel>
@@ -126,7 +126,7 @@ export interface TransactionService {
   ) => TransactionOperationDomainModel[]
 
   /** get all the status changes for this transaction (typically we won't have a ton I expect) */
-   // if auth token has a provider_id, it must match the provider_id in the transaction
+  // if auth token has a provider_id, it must match the provider_id in the transaction
   getTransactionStatuses: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionStatusDomainModel[]
   /** add a new status change */
   setTransactionStatus: (status: TransactionStatusDomainCreateModel) => TransactionStatusDomainModel
