@@ -44,21 +44,24 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
   // TODO search criteria, paging
   public getTransactions = async (search: TransactionSearchParams): Promise<TransactionDomainModel[]> => {
     const { connect } = this
+    const { provider_id, start_timestamp, end_timestamp } = search
+    function when(): FindOperator<number> | undefined {
+      if (start_timestamp && end_timestamp) {
+        return Between(start_timestamp, end_timestamp)
+      }
+      if (start_timestamp) {
+        return MoreThan(start_timestamp)
+      }
+      if (end_timestamp) {
+        return LessThan(end_timestamp)
+      }
+      return undefined
+    }
     try {
       const connection = await connect('ro')
-      function where() : {provider_id?:UUID, timestamp?: FindOperator<number>} {
-        const { provider_id, start_timestamp, end_timestamp} = search
-        let timestamp
-        if (start_timestamp && end_timestamp) {
-          timestamp = Between(start_timestamp, end_timestamp)
-        } else if (start_timestamp) {
-          timestamp = MoreThan(start_timestamp)
-        } else if (end_timestamp) {
-          timestamp = LessThan(end_timestamp)
-        }
-        return { provider_id, timestamp }
-    }
-      const entities = await connection.getRepository(TransactionEntity).find({ where: where() })
+      const entities = await connection
+        .getRepository(TransactionEntity)
+        .find({ where: { provider_id, timestamp: when() } })
       return entities.map(TransactionEntityToDomain.mapper())
     } catch (error) {
       throw RepositoryError(error)
