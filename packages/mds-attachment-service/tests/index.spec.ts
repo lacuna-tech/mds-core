@@ -1,5 +1,4 @@
 import { AttachmentServiceManager } from '../service/manager'
-import { AttachmentServiceClient } from '../client'
 import { AttachmentRepository } from '../repository'
 
 describe('Attachment Repository Tests', () => {
@@ -25,11 +24,6 @@ const AttachmentServer = AttachmentServiceManager.controller()
 describe('Attachment Service Tests', () => {
   beforeAll(async () => {
     await AttachmentServer.start()
-  })
-
-  it('Test Name Method', async () => {
-    const name = await AttachmentServiceClient.name()
-    expect(name).toEqual('mds-attachment-service')
   })
 
   afterAll(async () => {
