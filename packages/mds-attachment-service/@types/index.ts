@@ -28,7 +28,7 @@ export interface AttachmentService {
   deleteAttachment: (attachment_id: UUID) => AttachmentDomainModel
   writeAttachment: (
     file: SerializedBuffers<Express.Multer.File>,
-    attachment_list_is: Nullable<UUID>
+    attachment_list_id: Nullable<UUID>
   ) => AttachmentDomainModel
   readAttachment: (attachment_id: UUID) => AttachmentDomainModel | undefined
   readAttachments: (options: ReadAttachmentsOptions) => AttachmentDomainModel[]
