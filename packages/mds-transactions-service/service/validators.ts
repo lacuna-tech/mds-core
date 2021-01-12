@@ -2,9 +2,10 @@ import Joi from 'joi'
 import { schemaValidator } from '@mds-core/mds-schema-validators'
 import { TransactionDomainModel, TransactionOperationDomainModel, TransactionStatusDomainModel } from '../@types'
 
-export const { validate: validateTransactionDomainModel, isValid: isValidTransactionDomainModel } = schemaValidator<
-  TransactionDomainModel
->(
+export const {
+  validate: validateTransactionDomainModel,
+  isValid: isValidTransactionDomainModel
+} = schemaValidator<TransactionDomainModel>(
   Joi.object<TransactionDomainModel>().keys({
     transaction_id: Joi.string().uuid().required(),
     provider_id: Joi.string().uuid().required(),
