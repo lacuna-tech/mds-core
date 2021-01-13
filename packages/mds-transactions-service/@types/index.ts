@@ -1,6 +1,14 @@
 import { DomainModelCreate } from '@mds-core/mds-repository'
 import { RpcServiceDefinition, RpcRoute } from '@mds-core/mds-rpc-common'
 import { Nullable, Timestamp, UUID, VEHICLE_TYPE, VehicleEvent } from '@mds-core/mds-types'
+import { Cursor } from 'typeorm-cursor-pagination'
+
+export interface PaginationLinks {
+  first: string
+  last: string
+  prev: string | null
+  next: string | null
+}
 
 // one example -- many others are possible
 export interface TripReceiptDetailsDomainModel {
@@ -91,6 +99,8 @@ export interface TransactionSearchParams {
   provider_id?: UUID
   start_timestamp?: Timestamp
   end_timestamp?: Timestamp
+  before?: string
+  after?: string
 }
 
 export interface TransactionStatusDomainModel {
@@ -112,7 +122,7 @@ export interface TransactionService {
 
   // if auth token has a provider_id, it must match
   // read-back bulk TODO search criteria
-  getTransactions: (params: TransactionSearchParams) => TransactionDomainModel[]
+  getTransactions: (params: TransactionSearchParams) => { transactions: TransactionDomainModel[]; cursor: Cursor }
   // if auth token has a provider_id, it must match
   // read back single
   getTransaction: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionDomainModel

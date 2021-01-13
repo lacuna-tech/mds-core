@@ -1,7 +1,7 @@
 import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core/mds-repository'
 import { NotFoundError } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { buildPaginator, Cursor, PagingQuery } from 'typeorm-cursor-pagination'
 import { LessThan, MoreThan, Between, FindOperator } from 'typeorm'
 import {
   TransactionDomainModel,
@@ -42,9 +42,11 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
   }
 
   // TODO search criteria, paging
-  public getTransactions = async (search: TransactionSearchParams): Promise<TransactionDomainModel[]> => {
+  public getTransactions = async (
+    search: TransactionSearchParams
+  ): Promise<{ transactions: TransactionDomainModel[]; cursor: Cursor }> => {
     const { connect } = this
-    const { provider_id, start_timestamp, end_timestamp } = search
+    const { provider_id, start_timestamp, end_timestamp, before, after } = search
     function when(): { timestamp?: FindOperator<number> } {
       if (start_timestamp && end_timestamp) {
         return { timestamp: Between(start_timestamp, end_timestamp) }
@@ -58,15 +60,27 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
       return {}
     }
     function who(): { provider_id?: UUID } {
-      if (provider_id) {
-        return { provider_id }
-      }
-      return {}
+      return provider_id ? { provider_id } : {}
     }
     try {
       const connection = await connect('ro')
-      const entities = await connection.getRepository(TransactionEntity).find({ where: { ...who(), ...when() } })
-      return entities.map(TransactionEntityToDomain.mapper())
+      const queryBuilder = connection
+        .getRepository(TransactionEntity)
+        .createQueryBuilder('transactionentity') // yuk!
+        .where({ ...who(), ...when() })
+      const query: PagingQuery = {
+        limit: 10,
+        order: 'ASC'
+      }
+      // probably cleaner way to do this? not sure.
+      // also i'm tolerating both before and after and using just after in that case.
+      if (after) {
+        query.afterCursor = after
+      } else if (before) {
+        query.beforeCursor = after
+      }
+      const { data, cursor } = await buildPaginator({ entity: TransactionEntity, query }).paginate(queryBuilder)
+      return { transactions: data.map(TransactionEntityToDomain.mapper()), cursor }
     } catch (error) {
       throw RepositoryError(error)
     }

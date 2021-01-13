@@ -1,7 +1,9 @@
+/* eslint-disable no-bitwise */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
 import { TransactionServiceManager } from '../service/manager'
 import { TransactionServiceClient } from '../client'
 import { TransactionRepository } from '../repository'
+import { TransactionDomainModel } from '../@types'
 
 describe('Transaction Repository Tests', () => {
   beforeAll(async () => {
@@ -45,7 +47,7 @@ describe('Transaction Service Tests', () => {
       transaction_id,
       provider_id,
       device_id,
-      timestamp: Date.now(),
+      timestamp: Date.now() - 100000,
       amount: 100, // "I'd buy THAT for a dollar!"
       fee_type: 'base_fee',
       receipt
@@ -105,22 +107,64 @@ describe('Transaction Service Tests', () => {
     }
   })
 
+  function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+      const r = (Math.random() * 16) | 0
+      const v = c === 'x' ? r : (r & 0x3) | 0x8
+      return v.toString(16)
+    })
+  }
+
+  it('Bulk Post 20 Transactions', async () => {
+    const payloads: TransactionDomainModel[] = []
+    let timestamp = Date.now() - 20 * 1000
+    for (let i = 0; i < 20; i++) {
+      payloads.push({
+        transaction_id: uuidv4(),
+        provider_id,
+        device_id,
+        timestamp,
+        amount: 100, // "I'd buy THAT for a dollar!"
+        fee_type: 'base_fee',
+        receipt
+      })
+      timestamp += 1000
+    }
+    const transactions = await TransactionServiceClient.createTransactions(payloads)
+    expect(transactions[0].device_id).toEqual(device_id)
+    // TODO more checks
+  })
+
   it('Get All Transactions', async () => {
-    const transactions = await TransactionServiceClient.getTransactions({})
-    expect(transactions.length).toEqual(1)
+    const { transactions } = await TransactionServiceClient.getTransactions({})
+    expect(transactions.length).toEqual(10)
     const [transaction] = transactions
     expect(transaction.transaction_id).toEqual(transaction_id)
   })
 
-  it('Get All Transactions with provider serach', async () => {
-    const transactions = await TransactionServiceClient.getTransactions({ provider_id })
-    expect(transactions.length).toEqual(1)
+  it('Get All Transactions with provider search and paging', async () => {
+    const { transactions, cursor } = await TransactionServiceClient.getTransactions({ provider_id })
+    expect(transactions.length).toEqual(10) // page size
     const [transaction] = transactions
     expect(transaction.transaction_id).toEqual(transaction_id)
+    const { transactions: transactions2, cursor: cursor2 } = await TransactionServiceClient.getTransactions({
+      provider_id,
+      after: cursor.afterCursor || undefined
+      // before: cursor.beforeCursor || undefined
+    })
+    expect(transactions2.length).toEqual(10) // page siz
+    const { transactions: transactions3 } = await TransactionServiceClient.getTransactions({
+      provider_id,
+      after: cursor2.afterCursor || undefined
+      // before: cursor2.beforeCursor || undefined
+    })
+    expect(transactions3.length).toEqual(1) // page siz
   })
 
   it('Get All Transactions with bogus provider serach', async () => {
-    const transactions = await TransactionServiceClient.getTransactions({ provider_id: unknown_provider_id })
+    const { transactions } = await TransactionServiceClient.getTransactions({
+      provider_id: unknown_provider_id
+    })
     expect(transactions.length).toEqual(0)
   })
 
