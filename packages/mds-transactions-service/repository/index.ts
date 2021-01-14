@@ -77,7 +77,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
       if (after) {
         query.afterCursor = after
       } else if (before) {
-        query.beforeCursor = after
+        query.beforeCursor = before
       }
       const { data, cursor } = await buildPaginator({ entity: TransactionEntity, query }).paginate(queryBuilder)
       return { transactions: data.map(TransactionEntityToDomain.mapper()), cursor }
