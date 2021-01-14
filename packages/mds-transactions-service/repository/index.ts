@@ -1,8 +1,10 @@
+import Joi from 'joi'
 import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core/mds-repository'
 import { NotFoundError } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'
 import { buildPaginator, Cursor } from 'typeorm-cursor-pagination'
 import { LessThan, MoreThan, Between, FindOperator } from 'typeorm'
+import { schemaValidator } from '@mds-core/mds-schema-validators'
 import {
   TransactionDomainModel,
   TransactionOperationDomainModel,
@@ -21,6 +23,19 @@ import { TransactionEntity } from './entities/transaction-entity'
 import { TransactionOperationEntity } from './entities/operation-entity'
 import { TransactionStatusEntity } from './entities/status-entity'
 import migrations from './migrations'
+
+const { validate: validateTransactionSearchParams } = schemaValidator<TransactionSearchParams>(
+  Joi.object<TransactionSearchParams>()
+    .keys({
+      provider_id: Joi.string().uuid(),
+      start_timestamp: Joi.number().integer(),
+      end_timestamp: Joi.number().integer(),
+      before: Joi.string(),
+      after: Joi.string(),
+      limit: Joi.number().integer().min(1).max(1000).default(10)
+    })
+    .unknown(false)
+)
 
 class TransactionReadWriteRepository extends ReadWriteRepository {
   public getTransaction = async (transaction_id: UUID): Promise<TransactionDomainModel> => {
@@ -46,15 +61,9 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
     search: TransactionSearchParams
   ): Promise<{ transactions: TransactionDomainModel[]; cursor: Cursor }> => {
     const { connect } = this
-    const { provider_id, start_timestamp, end_timestamp, before, after } = search
-    let { limit } = search
-    limit = limit || 1
-    if (Number.isSafeInteger(limit)) {
-      limit = Math.max(1, limit)
-      limit = Math.min(1000, limit)
-    } else {
-      limit = 10
-    }
+    const { provider_id, start_timestamp, end_timestamp, before, after, limit } = validateTransactionSearchParams(
+      search
+    )
     function when(): { timestamp?: FindOperator<number> } {
       if (start_timestamp && end_timestamp) {
         return { timestamp: Between(start_timestamp, end_timestamp) }
@@ -79,7 +88,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
       const { data, cursor } = await buildPaginator({
         entity: TransactionEntity,
         query: {
-          limit: 10,
+          limit,
           order: 'ASC',
           afterCursor: after,
           beforeCursor: after ? undefined : before

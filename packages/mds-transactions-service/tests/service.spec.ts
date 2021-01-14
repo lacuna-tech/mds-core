@@ -156,6 +156,15 @@ describe('Transaction Service Tests', () => {
     expect(transactions3.length).toEqual(1) // page siz
   })
 
+  it('Verify that asking for too many items will fail (i.e. is Joi doing its job)', async () => {
+    try {
+      await TransactionServiceClient.getTransactions({ limit: 10000 })
+      expect('did not happen').toBe('happened')
+    } catch (err) {
+      expect(err.type).toBe('ValidationError')
+    }
+  })
+
   it('Get All Transactions with bogus provider serach', async () => {
     const { transactions } = await TransactionServiceClient.getTransactions({
       provider_id: unknown_provider_id
