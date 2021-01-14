@@ -29,6 +29,24 @@ export interface ComplianceSnapshotDomainModel {
   excess_vehicles_count: number
   total_violations: number
 }
+export interface ComplianceViolationPeriod {
+  snapshots_uri?: string
+  start_time: Timestamp
+  end_time: Timestamp | null
+}
+
+export interface ComplianceAggregate {
+  policy_id: UUID
+  provider_id: UUID
+  provider_name: string
+  violation_periods: ComplianceViolationPeriod[]
+}
+
+export interface ComplianceAggregateResponse {
+  start_time: Timestamp
+  end_time: Timestamp
+  results: ComplianceAggregate[]
+}
 
 export type GetComplianceSnapshotOptions =
   | {
@@ -47,6 +65,13 @@ export type GetComplianceSnapshotsByTimeIntervalOptions = Partial<{
   provider_ids: UUID[]
 }>
 
+export type GetComplianceViolationPeriodsOptions = {
+  start_time: Timestamp
+  provider_ids: UUID[]
+  policy_ids: UUID[]
+  end_time: Timestamp | undefined
+}
+
 export interface ComplianceService {
   createComplianceSnapshots: (complianceSnapshots: ComplianceSnapshotDomainModel[]) => ComplianceSnapshotDomainModel[]
   createComplianceSnapshot: (complianceSnapshot: ComplianceSnapshotDomainModel) => ComplianceSnapshotDomainModel
@@ -55,6 +80,7 @@ export interface ComplianceService {
   ) => ComplianceSnapshotDomainModel[]
   getComplianceSnapshotsByIDs: (ids: UUID[]) => ComplianceSnapshotDomainModel[]
   getComplianceSnapshot: (options: GetComplianceSnapshotOptions) => ComplianceSnapshotDomainModel
+  getComplianceViolationPeriods: (options: GetComplianceViolationPeriodsOptions) => ComplianceAggregate[]
 }
 
 export const ComplianceServiceDefinition: RpcServiceDefinition<ComplianceService> = {
@@ -62,5 +88,6 @@ export const ComplianceServiceDefinition: RpcServiceDefinition<ComplianceService
   createComplianceSnapshot: RpcRoute<ComplianceService['createComplianceSnapshot']>(),
   getComplianceSnapshotsByTimeInterval: RpcRoute<ComplianceService['getComplianceSnapshotsByTimeInterval']>(),
   getComplianceSnapshotsByIDs: RpcRoute<ComplianceService['getComplianceSnapshotsByIDs']>(),
-  getComplianceSnapshot: RpcRoute<ComplianceService['getComplianceSnapshot']>()
+  getComplianceSnapshot: RpcRoute<ComplianceService['getComplianceSnapshot']>(),
+  getComplianceViolationPeriods: RpcRoute<ComplianceService['getComplianceViolationPeriods']>()
 }

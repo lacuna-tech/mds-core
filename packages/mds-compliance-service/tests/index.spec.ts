@@ -4,12 +4,18 @@ import { ComplianceServiceManager } from '../service/manager'
 import { ComplianceServiceClient } from '../client'
 import {
   COMPLIANCE_SNAPSHOT,
+  COMPLIANCE_SNAPSHOTS,
   COMPLIANCE_SNAPSHOT_1,
   COMPLIANCE_SNAPSHOT_ID,
   POLICY_ID,
+  POLICY_ID_1,
+  POLICY_ID_2,
   PROVIDER_ID,
+  PROVIDER_ID_1,
+  PROVIDER_ID_2,
   TIME
 } from './fixtures'
+import { ComplianceAggregate } from '../@types'
 import ormconfig = require('../ormconfig')
 
 describe('Test Migrations', () => {
@@ -41,8 +47,9 @@ describe('ComplianceSnapshots Service Tests', () => {
 
   it('Gets ComplianceSnapshots By TimeInterval (start_time, no end_time options)', async () => {
     const complianceSnapshots = await ComplianceServiceClient.getComplianceSnapshotsByTimeInterval({
-      start_time: now() - days(1)
+      start_time: TIME - days(1)
     })
+
     expect(complianceSnapshots.length).toEqual(1)
     const [complianceSnapshot] = complianceSnapshots
     expect(complianceSnapshot.compliance_snapshot_id).toEqual(COMPLIANCE_SNAPSHOT_ID)
@@ -50,8 +57,8 @@ describe('ComplianceSnapshots Service Tests', () => {
 
   it('Gets ComplianceSnapshots By TimeInterval (start_time, end_time options)', async () => {
     const complianceSnapshots = await ComplianceServiceClient.getComplianceSnapshotsByTimeInterval({
-      start_time: now() - days(2),
-      end_time: now() - days(1)
+      start_time: TIME - days(2),
+      end_time: TIME - days(1)
     })
     expect(complianceSnapshots.length).toEqual(0)
   })
@@ -70,7 +77,7 @@ describe('ComplianceSnapshots Service Tests', () => {
   it('Gets ComplianceSnapshots By TimeInterval (start_time, provider_ids options)', async () => {
     const complianceSnapshots = await ComplianceServiceClient.getComplianceSnapshotsByTimeInterval({
       start_time: now() - days(2),
-      provider_ids: ['aa777467-be73-4710-9c4c-e0bea5dd3ac8']
+      provider_ids: [PROVIDER_ID]
     })
     expect(complianceSnapshots.length).toEqual(1)
   })
@@ -113,6 +120,102 @@ describe('ComplianceSnapshots Service Tests', () => {
       COMPLIANCE_SNAPSHOT_1.compliance_snapshot_id
     ])
     expect(complianceSnapshots.length).toEqual(2)
+  })
+
+  it('Accurately breaks compliance snapshots into violation periods for one provider and policy', async () => {
+    await ComplianceServiceClient.createComplianceSnapshots(COMPLIANCE_SNAPSHOTS)
+    const results: ComplianceAggregate[] = await ComplianceServiceClient.getComplianceViolationPeriods({
+      start_time: TIME,
+      end_time: undefined,
+      provider_ids: [PROVIDER_ID_2],
+      policy_ids: [POLICY_ID_2]
+    })
+    expect(results).toEqual([
+      {
+        provider_id: '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
+        provider_name: 'Lime',
+        policy_id: 'dfe3f757-c43a-4eb6-b85e-abc00f3e8387',
+        violation_periods: [
+          {
+            start_time: 1605821758035,
+            end_time: 1605821758037,
+            snapshots_uri:
+              '/compliance_snapshot_ids?token=YmE2MzY0MDYtMTg5OC00OWEwLWI5MzctNmY4MjViNzg5ZWUwLDhjYjRkMGE4LTVlZGMtNDZmNi1hNGU0LWE0MGY1YTVmNDU1OA=='
+          },
+          {
+            start_time: 1605821758038,
+            end_time: null,
+            snapshots_uri: '/compliance_snapshot_ids?token=M2ExMTE1MGItNWQ2NC00NjM4LWJkMmQtNzQ1OTA1ZWQ4Mjk0'
+          }
+        ]
+      }
+    ])
+  })
+
+  it('Accurately breaks compliance snapshots into violation periods for multiple providers and policies', async () => {
+    const results: ComplianceAggregate[] = await ComplianceServiceClient.getComplianceViolationPeriods({
+      start_time: TIME,
+      end_time: undefined,
+      provider_ids: [PROVIDER_ID_1, PROVIDER_ID_2],
+      policy_ids: [POLICY_ID_1, POLICY_ID_2]
+    })
+    expect(results).toEqual([
+      {
+        provider_id: 'c20e08cf-8488-46a6-a66c-5d8fb827f7e0',
+        policy_id: '6d7a9c7e-853c-4ff7-a86f-e17c06d3bd80',
+        provider_name: 'JUMP',
+        violation_periods: [
+          {
+            start_time: 1605821758034,
+            end_time: null,
+            // snapshot ids: ['243e1209-61ad-4d7c-8464-db551f1f8c21']
+            snapshots_uri: '/compliance_snapshot_ids?token=MjQzZTEyMDktNjFhZC00ZDdjLTg0NjQtZGI1NTFmMWY4YzIx'
+          }
+        ]
+      },
+      {
+        provider_id: 'c20e08cf-8488-46a6-a66c-5d8fb827f7e0',
+        policy_id: 'dfe3f757-c43a-4eb6-b85e-abc00f3e8387',
+        provider_name: 'JUMP',
+        violation_periods: []
+      },
+      {
+        provider_id: '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
+        policy_id: 'dfe3f757-c43a-4eb6-b85e-abc00f3e8387',
+        provider_name: 'Lime',
+        violation_periods: [
+          {
+            start_time: 1605821758035,
+            end_time: 1605821758037,
+            // snapshot ids:
+            // ['ba636406-1898-49a0-b937-6f825b789ee0', '8cb4d0a8-5edc-46f6-a4e4-a40f5a5f4558']
+            snapshots_uri:
+              '/compliance_snapshot_ids?token=YmE2MzY0MDYtMTg5OC00OWEwLWI5MzctNmY4MjViNzg5ZWUwLDhjYjRkMGE4LTVlZGMtNDZmNi1hNGU0LWE0MGY1YTVmNDU1OA=='
+          },
+          {
+            start_time: 1605821758038,
+            end_time: null,
+            // snapshot ids:
+            // ['3a11150b-5d64-4638-bd2d-745905ed8294']
+            snapshots_uri: '/compliance_snapshot_ids?token=M2ExMTE1MGItNWQ2NC00NjM4LWJkMmQtNzQ1OTA1ZWQ4Mjk0'
+          }
+        ]
+      },
+      {
+        provider_id: '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
+        policy_id: '6d7a9c7e-853c-4ff7-a86f-e17c06d3bd80',
+        provider_name: 'Lime',
+        violation_periods: [
+          {
+            start_time: 1605821758036,
+            end_time: null,
+            // snapshot ids:
+            // ['39e2171b-a9df-417c-b218-2a82b491a0cc']
+            snapshots_uri: '/compliance_snapshot_ids?token=MzllMjE3MWItYTlkZi00MTdjLWIyMTgtMmE4MmI0OTFhMGNj'
+          }
+        ]
+      }
+    ])
   })
 
   afterAll(async () => {
