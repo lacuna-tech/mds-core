@@ -101,6 +101,7 @@ export interface TransactionSearchParams {
   end_timestamp?: Timestamp
   before?: string
   after?: string
+  limit?: number
 }
 
 export interface TransactionStatusDomainModel {

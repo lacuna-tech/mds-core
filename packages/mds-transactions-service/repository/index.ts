@@ -1,7 +1,7 @@
 import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core/mds-repository'
 import { NotFoundError } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'
-import { buildPaginator, Cursor, PagingQuery } from 'typeorm-cursor-pagination'
+import { buildPaginator, Cursor } from 'typeorm-cursor-pagination'
 import { LessThan, MoreThan, Between, FindOperator } from 'typeorm'
 import {
   TransactionDomainModel,
@@ -41,12 +41,20 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
     }
   }
 
-  // TODO search criteria, paging
+  // TODO search criteria
   public getTransactions = async (
     search: TransactionSearchParams
   ): Promise<{ transactions: TransactionDomainModel[]; cursor: Cursor }> => {
     const { connect } = this
     const { provider_id, start_timestamp, end_timestamp, before, after } = search
+    let { limit } = search
+    limit = limit || 1
+    if (Number.isSafeInteger(limit)) {
+      limit = Math.max(1, limit)
+      limit = Math.min(1000, limit)
+    } else {
+      limit = 10
+    }
     function when(): { timestamp?: FindOperator<number> } {
       if (start_timestamp && end_timestamp) {
         return { timestamp: Between(start_timestamp, end_timestamp) }
@@ -68,17 +76,6 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
         .getRepository(TransactionEntity)
         .createQueryBuilder('transactionentity') // yuk!
         .where({ ...who(), ...when() })
-      const query: PagingQuery = {
-        limit: 10,
-        order: 'ASC'
-      }
-      // probably cleaner way to do this? not sure.
-      // also i'm tolerating both before and after and using just after in that case.
-      if (after) {
-        query.afterCursor = after
-      } else if (before) {
-        query.beforeCursor = before
-      }
       const { data, cursor } = await buildPaginator({
         entity: TransactionEntity,
         query: {

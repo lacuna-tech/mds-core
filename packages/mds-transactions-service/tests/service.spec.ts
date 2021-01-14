@@ -1,5 +1,6 @@
 /* eslint-disable no-bitwise */
 /* eslint-disable @typescript-eslint/ban-ts-comment */
+import { uuid } from '@mds-core/mds-utils'
 import { TransactionServiceManager } from '../service/manager'
 import { TransactionServiceClient } from '../client'
 import { TransactionRepository } from '../repository'
@@ -107,30 +108,24 @@ describe('Transaction Service Tests', () => {
     }
   })
 
-  function uuidv4() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
-      const r = (Math.random() * 16) | 0
-      const v = c === 'x' ? r : (r & 0x3) | 0x8
-      return v.toString(16)
-    })
-  }
-
-  it('Bulk Post 20 Transactions', async () => {
-    const payloads: TransactionDomainModel[] = []
+  function* bulkTransactions(): Generator<TransactionDomainModel> {
     let timestamp = Date.now() - 20 * 1000
     for (let i = 0; i < 20; i++) {
-      payloads.push({
-        transaction_id: uuidv4(),
+      yield {
+        transaction_id: uuid(),
         provider_id,
         device_id,
         timestamp,
         amount: 100, // "I'd buy THAT for a dollar!"
         fee_type: 'base_fee',
         receipt
-      })
+      }
       timestamp += 1000
     }
-    const transactions = await TransactionServiceClient.createTransactions(payloads)
+  }
+
+  it('Bulk Post 20 Transactions', async () => {
+    const transactions = await TransactionServiceClient.createTransactions([...bulkTransactions()])
     expect(transactions[0].device_id).toEqual(device_id)
     // TODO more checks
   })
