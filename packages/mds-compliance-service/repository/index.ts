@@ -1,10 +1,14 @@
+import { getManager } from 'typeorm'
+
 import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core/mds-repository'
 import { isDefined, NotFoundError, now } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'
 import {
   ComplianceSnapshotDomainModel,
   GetComplianceSnapshotsByTimeIntervalOptions,
-  GetComplianceSnapshotOptions
+  GetComplianceSnapshotOptions,
+  GetComplianceViolationPeriodsOptions,
+  ComplianceViolationPeriodEntityModel
 } from '../@types'
 import { ComplianceSnapshotEntityToDomain, ComplianceSnapshotDomainToEntityCreate } from './mappers'
 import { ComplianceSnapshotEntity } from './entities/compliance-snapshot-entity'
@@ -141,6 +145,61 @@ class ComplianceReadWriteRepository extends ReadWriteRepository {
         .execute()
       return entities.map(ComplianceSnapshotEntityToDomain.map)
     } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  public getComplianceViolationPeriods = async (
+    options: GetComplianceViolationPeriodsOptions
+  ): Promise<ComplianceViolationPeriodEntityModel[]> => {
+    const { start_time, end_time = now(), policy_ids, provider_ids } = options
+    const { connect } = this
+    try {
+      const connection = await connect('ro')
+      const entityManager = getManager(connection.name)
+      const mainQuery = `select
+      provider_id, policy_id,
+      start_time,
+      end_time,
+      LEAD(end_time, 1, NULL) OVER (partition by provider_id, policy_id order by start_time) as real_end_time,
+      compliance_snapshot_ids,
+      sum_total_violations
+      from (
+        select
+          provider_id, policy_id,
+          min(compliance_as_of) as start_time,
+          max(compliance_as_of) as end_time,
+          array_agg(compliance_snapshot_id) as compliance_snapshot_ids,
+          sum(total_violations) as sum_total_violations
+          from (
+            select
+            provider_id, policy_id,
+            max(group_number) OVER (partition BY provider_id, policy_id order by compliance_as_of) as group_number,
+            compliance_as_of, compliance_snapshot_id, total_violations
+            from (
+                select
+                provider_id, policy_id, compliance_as_of, compliance_snapshot_id, total_violations,
+                CASE WHEN
+                LAG(total_violations) OVER (partition BY provider_id, policy_id order by compliance_as_of) > 0
+                  AND total_violations > 0
+                  THEN NULL
+                ELSE
+                  row_number() OVER (partition BY provider_id, policy_id order by compliance_as_of)
+                END group_number
+                from ${entityManager.getRepository(ComplianceSnapshotEntity).metadata.tableName}
+                where
+                  compliance_as_of >= $1
+                  and compliance_as_of <= $2
+                  and policy_id in ($3)
+                  and provider_id in ($4)
+                order by provider_id, policy_id, compliance_as_of
+            ) s1
+          ) s2
+          group by provider_id, policy_id, group_number
+        ) s3; `
+      return await entityManager.query(mainQuery, [start_time, end_time, policy_ids.join(','), provider_ids.join(',')])
+    } catch (error) {
+      // ${getManager().getRepository(ComplianceSnapshotEntity).metadata.tableName}
       throw RepositoryError(error)
     }
   }

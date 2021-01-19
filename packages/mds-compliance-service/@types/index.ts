@@ -29,24 +29,37 @@ export interface ComplianceSnapshotDomainModel {
   excess_vehicles_count: number
   total_violations: number
 }
-export interface ComplianceViolationPeriod {
-  snapshots_uri?: string
+export interface ComplianceViolationPeriodDomainModel {
+  //  snapshots_uri?: string
+  compliance_snapshot_ids: UUID[]
   start_time: Timestamp
   end_time: Timestamp | null
 }
 
-export interface ComplianceAggregate {
+export interface ComplianceAggregateDomainModel {
   policy_id: UUID
   provider_id: UUID
   provider_name: string
-  violation_periods: ComplianceViolationPeriod[]
+  violation_periods: ComplianceViolationPeriodDomainModel[]
 }
 
+export interface ComplianceViolationPeriodEntityModel {
+  provider_id: UUID
+  policy_id: UUID
+  start_time: Timestamp
+  end_time: Timestamp
+  real_end_time: Timestamp | null
+  compliance_snapshot_ids: UUID[]
+  sum_total_violations: number
+}
+
+/*
 export interface ComplianceAggregateResponse {
   start_time: Timestamp
   end_time: Timestamp
   results: ComplianceAggregate[]
 }
+*/
 
 export type GetComplianceSnapshotOptions =
   | {
@@ -80,7 +93,7 @@ export interface ComplianceService {
   ) => ComplianceSnapshotDomainModel[]
   getComplianceSnapshotsByIDs: (ids: UUID[]) => ComplianceSnapshotDomainModel[]
   getComplianceSnapshot: (options: GetComplianceSnapshotOptions) => ComplianceSnapshotDomainModel
-  getComplianceViolationPeriods: (options: GetComplianceViolationPeriodsOptions) => ComplianceAggregate[]
+  getComplianceViolationPeriods: (options: GetComplianceViolationPeriodsOptions) => ComplianceAggregateDomainModel[]
 }
 
 export const ComplianceServiceDefinition: RpcServiceDefinition<ComplianceService> = {

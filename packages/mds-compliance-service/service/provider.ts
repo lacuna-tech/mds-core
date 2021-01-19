@@ -7,21 +7,19 @@ import {
   ComplianceService,
   GetComplianceSnapshotsByTimeIntervalOptions,
   GetComplianceViolationPeriodsOptions,
-  ComplianceAggregate,
+  ComplianceAggregateDomainModel,
   ComplianceSnapshotDomainModel,
-  ComplianceViolationPeriod
+  ComplianceViolationPeriodEntityModel,
+  ComplianceViolationPeriodDomainModel
 } from '../@types'
 import { ComplianceRepository } from '../repository'
 import {
   ValidateComplianceSnapshotDomainModel,
   ValidateGetComplianceSnapshotsByTimeIntervalOptions
 } from './validators'
+import { ComplianceViolationPeriodEntityToDomainCreate } from '../repository/mappers'
 
-function encodeToken(ids: string[]): string {
-  const buffer = Buffer.from(ids.join(','))
-  return buffer.toString('base64')
-}
-
+/*
 async function convertComplianceSnapshotsArrayToComplianceViolationPeriod(
   snapshots: ComplianceSnapshotDomainModel[]
 ): Promise<ComplianceViolationPeriod> {
@@ -37,13 +35,11 @@ async function convertComplianceSnapshotsArrayToComplianceViolationPeriod(
     )}`
   }
 }
+*/
 
 // The keys take the format `${provider_id},${policy_id}`
 interface ComplianceAggregateMap {
-  [k: string]: {
-    complianceSnapshotViolationGroupings: ComplianceSnapshotDomainModel[][]
-    complianceSnapshots: null | ComplianceSnapshotDomainModel[]
-  }
+  [k: string]: ComplianceViolationPeriodDomainModel[]
 }
 
 export const ComplianceServiceProvider: ServiceProvider<ComplianceService> & ProcessController = {
@@ -112,6 +108,7 @@ export const ComplianceServiceProvider: ServiceProvider<ComplianceService> & Pro
     try {
       const { start_time, end_time, provider_ids, policy_ids } = options
 
+      /*
       const complianceSnapshots = await ComplianceRepository.getComplianceSnapshotsByTimeInterval({
         start_time,
         end_time,
@@ -120,6 +117,7 @@ export const ComplianceServiceProvider: ServiceProvider<ComplianceService> & Pro
       })
 
       const complianceAggregateMap: ComplianceAggregateMap = {}
+      */
 
       /**
        * Iterate through all compliance snapshots. For each policy-provider pair, build up arrays of
@@ -131,6 +129,7 @@ export const ComplianceServiceProvider: ServiceProvider<ComplianceService> & Pro
        * violation period ended. If the snapshot have violations till the end of the query period, the end time
        * of the violation period is unknown, and therefore set to null.
        */
+      /*
       complianceSnapshots.forEach(complianceSnapshot => {
         const { provider_id } = complianceSnapshot
         const { policy_id } = complianceSnapshot.policy
@@ -152,9 +151,8 @@ export const ComplianceServiceProvider: ServiceProvider<ComplianceService> & Pro
         } else if (mapEntry.complianceSnapshots !== null) {
           mapEntry.complianceSnapshots.push(complianceSnapshot)
           mapEntry.complianceSnapshotViolationGroupings.push(mapEntry.complianceSnapshots)
-          /* Reset the current array of violating snapshots to null in preparation for starting
-             a new grouping of violating snapshots
-          */
+          // Reset the current array of violating snapshots to null in preparation for starting
+          //  a new grouping of violating snapshots
           mapEntry.complianceSnapshots = null
         }
       })
@@ -183,6 +181,32 @@ export const ComplianceServiceProvider: ServiceProvider<ComplianceService> & Pro
           }
         })
       )
+      */
+      const violationPeriodEntities = await ComplianceRepository.getComplianceViolationPeriods(options)
+      const complianceAggregateMap: ComplianceAggregateMap = {}
+      violationPeriodEntities.forEach(violationPeriodEntity => {
+        const { provider_id, policy_id } = violationPeriodEntity
+        const key = `${provider_id},${policy_id}`
+
+        if (!isDefined(complianceAggregateMap[key])) {
+          complianceAggregateMap[key] = []
+        }
+        if (violationPeriodEntity.sum_total_violations > 0) {
+          complianceAggregateMap[key].push(ComplianceViolationPeriodEntityToDomainCreate.map(violationPeriodEntity))
+        }
+      })
+
+      const results: ComplianceAggregateDomainModel[] = Object.keys(complianceAggregateMap).map(key => {
+        const { 0: provider_id, 1: policy_id } = key.split(',')
+
+        return {
+          provider_id,
+          policy_id,
+          provider_name: providerName(provider_id),
+          violation_periods: complianceAggregateMap[key]
+        }
+      })
+
       return ServiceResult(results)
     } catch (error) {
       const exception = ServiceException('Error Getting ComplianceSnapshots', error)

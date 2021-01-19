@@ -5,6 +5,7 @@ import { ComplianceServiceClient } from '../client'
 import {
   COMPLIANCE_SNAPSHOT,
   COMPLIANCE_SNAPSHOTS,
+  COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2,
   COMPLIANCE_SNAPSHOT_1,
   COMPLIANCE_SNAPSHOT_ID,
   POLICY_ID,
@@ -15,7 +16,8 @@ import {
   PROVIDER_ID_2,
   TIME
 } from './fixtures'
-import { ComplianceAggregate } from '../@types'
+import { ComplianceAggregateDomainModel } from '../@types'
+import { ComplianceRepository } from '../repository'
 import ormconfig = require('../ormconfig')
 
 describe('Test Migrations', () => {
@@ -122,14 +124,16 @@ describe('ComplianceSnapshots Service Tests', () => {
     expect(complianceSnapshots.length).toEqual(2)
   })
 
-  it('Accurately breaks compliance snapshots into violation periods for one provider and policy', async () => {
+  it.only('Accurately breaks compliance snapshots into violation periods for one provider and policy', async () => {
     await ComplianceServiceClient.createComplianceSnapshots(COMPLIANCE_SNAPSHOTS)
-    const results: ComplianceAggregate[] = await ComplianceServiceClient.getComplianceViolationPeriods({
+    //    /*
+    const results: ComplianceAggregateDomainModel[] = await ComplianceServiceClient.getComplianceViolationPeriods({
       start_time: TIME,
       end_time: undefined,
       provider_ids: [PROVIDER_ID_2],
       policy_ids: [POLICY_ID_2]
     })
+    console.log('rezz', JSON.stringify(results))
     expect(results).toEqual([
       {
         provider_id: '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
@@ -139,13 +143,12 @@ describe('ComplianceSnapshots Service Tests', () => {
           {
             start_time: 1605821758035,
             end_time: 1605821758037,
-            snapshots_uri:
-              '/compliance_snapshot_ids?token=YmE2MzY0MDYtMTg5OC00OWEwLWI5MzctNmY4MjViNzg5ZWUwLDhjYjRkMGE4LTVlZGMtNDZmNi1hNGU0LWE0MGY1YTVmNDU1OA=='
+            compliance_snapshot_ids: ['ba636406-1898-49a0-b937-6f825b789ee0', '8cb4d0a8-5edc-46f6-a4e4-a40f5a5f4558']
           },
           {
             start_time: 1605821758038,
             end_time: null,
-            snapshots_uri: '/compliance_snapshot_ids?token=M2ExMTE1MGItNWQ2NC00NjM4LWJkMmQtNzQ1OTA1ZWQ4Mjk0'
+            compliance_snapshot_ids: ['3a11150b-5d64-4638-bd2d-745905ed8294']
           }
         ]
       }
@@ -153,12 +156,13 @@ describe('ComplianceSnapshots Service Tests', () => {
   })
 
   it('Accurately breaks compliance snapshots into violation periods for multiple providers and policies', async () => {
-    const results: ComplianceAggregate[] = await ComplianceServiceClient.getComplianceViolationPeriods({
+    const results = await ComplianceRepository.getComplianceViolationPeriods({
       start_time: TIME,
       end_time: undefined,
       provider_ids: [PROVIDER_ID_1, PROVIDER_ID_2],
       policy_ids: [POLICY_ID_1, POLICY_ID_2]
     })
+    console.log('rezz2', JSON.stringify(results))
     expect(results).toEqual([
       {
         provider_id: 'c20e08cf-8488-46a6-a66c-5d8fb827f7e0',
@@ -168,8 +172,7 @@ describe('ComplianceSnapshots Service Tests', () => {
           {
             start_time: 1605821758034,
             end_time: null,
-            // snapshot ids: ['243e1209-61ad-4d7c-8464-db551f1f8c21']
-            snapshots_uri: '/compliance_snapshot_ids?token=MjQzZTEyMDktNjFhZC00ZDdjLTg0NjQtZGI1NTFmMWY4YzIx'
+            compliance_snapshot_ids: ['243e1209-61ad-4d7c-8464-db551f1f8c21']
           }
         ]
       },
@@ -187,17 +190,12 @@ describe('ComplianceSnapshots Service Tests', () => {
           {
             start_time: 1605821758035,
             end_time: 1605821758037,
-            // snapshot ids:
-            // ['ba636406-1898-49a0-b937-6f825b789ee0', '8cb4d0a8-5edc-46f6-a4e4-a40f5a5f4558']
-            snapshots_uri:
-              '/compliance_snapshot_ids?token=YmE2MzY0MDYtMTg5OC00OWEwLWI5MzctNmY4MjViNzg5ZWUwLDhjYjRkMGE4LTVlZGMtNDZmNi1hNGU0LWE0MGY1YTVmNDU1OA=='
+            compliance_snapshot_ids: ['ba636406-1898-49a0-b937-6f825b789ee0', '8cb4d0a8-5edc-46f6-a4e4-a40f5a5f4558']
           },
           {
             start_time: 1605821758038,
             end_time: null,
-            // snapshot ids:
-            // ['3a11150b-5d64-4638-bd2d-745905ed8294']
-            snapshots_uri: '/compliance_snapshot_ids?token=M2ExMTE1MGItNWQ2NC00NjM4LWJkMmQtNzQ1OTA1ZWQ4Mjk0'
+            compliance_snapshot_ids: ['3a11150b-5d64-4638-bd2d-745905ed8294']
           }
         ]
       },
@@ -209,9 +207,7 @@ describe('ComplianceSnapshots Service Tests', () => {
           {
             start_time: 1605821758036,
             end_time: null,
-            // snapshot ids:
-            // ['39e2171b-a9df-417c-b218-2a82b491a0cc']
-            snapshots_uri: '/compliance_snapshot_ids?token=MzllMjE3MWItYTlkZi00MTdjLWIyMTgtMmE4MmI0OTFhMGNj'
+            compliance_snapshot_ids: ['39e2171b-a9df-417c-b218-2a82b491a0cc']
           }
         ]
       }
