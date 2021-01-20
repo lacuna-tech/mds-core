@@ -60,4 +60,8 @@ describe('Schema Validation', () => {
     expect(validate(data)).toBeFalsy()
     expect(validate.errors?.find(error => error.dataPath === '/zip')).toMatchObject({ keyword: 'pattern' })
   })
+
+  it('Returns JSON schema', () => {
+    expect(validate.schema).toMatchObject(TestSchema)
+  })
 })
