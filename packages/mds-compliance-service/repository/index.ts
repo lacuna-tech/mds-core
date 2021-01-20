@@ -190,20 +190,15 @@ class ComplianceReadWriteRepository extends ReadWriteRepository {
                 where
                   compliance_as_of >= $1
                   and compliance_as_of <= $2
-                  and policy_id in ($3)
-                  and provider_id in ($4)
+                  and policy_id = ANY ($3)
+                  and provider_id = ANY ($4)
                 order by provider_id, policy_id, compliance_as_of
             ) s1
           ) s2
           group by provider_id, policy_id, group_number
         ) s3; `
 
-      return await entityManager.query(mainQuery, [
-        start_time,
-        end_time,
-        policy_ids, // .map(i => `'${i}'`).join(','),
-        provider_ids // .map(i => `'${i}'`).join(',')
-      ])
+      return await entityManager.query(mainQuery, [start_time, end_time, policy_ids, provider_ids])
     } catch (error) {
       // ${getManager().getRepository(ComplianceSnapshotEntity).metadata.tableName}
       throw RepositoryError(error)

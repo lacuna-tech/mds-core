@@ -156,7 +156,7 @@ describe('ComplianceSnapshots Service Tests', () => {
   })
 
   it.only('Accurately breaks compliance snapshots into violation periods for multiple providers and policies', async () => {
-    const results = await ComplianceRepository.getComplianceViolationPeriods({
+    const results = await ComplianceServiceClient.getComplianceViolationPeriods({
       start_time: TIME,
       end_time: undefined,
       provider_ids: [PROVIDER_ID_1, PROVIDER_ID_2],
