@@ -32,7 +32,7 @@ describe('Schema Validation', () => {
     })
   })
 
-  it('Fails Validation (invalid email)', () => {
+  it('Fails Validation (invalid format)', () => {
     const data = { ...TestData, email: 'invalid' }
     expect(validate(data)).toBeFalsy()
     expect(validate.errors?.find(error => error.dataPath === '/email')).toMatchObject({ keyword: 'format' })
@@ -44,18 +44,15 @@ describe('Schema Validation', () => {
     expect(validate.errors?.find(error => error.dataPath === '/country')).toMatchObject({
       keyword: 'enum'
     })
-    expect(validate.errors?.find(error => error.dataPath === '/zip')).toMatchObject({
-      keyword: 'pattern'
-    })
   })
 
-  it('Fails Validation (invalid US zip)', () => {
-    const data = { ...TestData, zip: 99999 }
+  it('Fails Validation (invalid type)', () => {
+    const data = { ...TestData, zip: true }
     expect(validate(data)).toBeFalsy()
     expect(validate.errors?.find(error => error.dataPath === '/zip')).toMatchObject({ keyword: 'type' })
   })
 
-  it('Fails Validation (invalid CA postal code)', () => {
+  it('Fails Validation (invalid pattern)', () => {
     const data = { ...TestData, country: 'CA' }
     expect(validate(data)).toBeFalsy()
     expect(validate.errors?.find(error => error.dataPath === '/zip')).toMatchObject({ keyword: 'pattern' })
