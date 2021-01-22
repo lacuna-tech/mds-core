@@ -14,7 +14,7 @@
     limitations under the License.
  */
 
-import express from 'express'
+import type { Express } from 'express'
 import { pathPrefix } from '@mds-core/mds-utils'
 import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
 import { CollectorApiVersionMiddleware } from './middleware/collector-api-version'
@@ -24,9 +24,11 @@ import { CollectorApiAccessTokenScopes } from './@types'
 const checkCollectorApiAccess = (validator: AccessTokenScopeValidator<CollectorApiAccessTokenScopes>) =>
   checkAccess(validator)
 
-export const api = (app: express.Express): express.Express =>
+export const api = (app: Express): Express =>
   app.use(CollectorApiVersionMiddleware).get(
     pathPrefix('/schema/:name'),
-    checkCollectorApiAccess(scopes => scopes.includes('collector:schema:read') || true),
+    checkCollectorApiAccess(
+      (scopes, claims) => true // TODO: properly check scopes and claims
+    ),
     GetSchemaHandler
   )
