@@ -1,5 +1,5 @@
 import { SchemaValidator } from '../schema-validator'
-import TestSchema from './test.schema'
+import TestSchema from '../schemas/test.schema'
 
 const TestData = {
   country: 'US',

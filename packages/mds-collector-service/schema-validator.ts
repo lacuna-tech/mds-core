@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import Ajv, { Options } from 'ajv'
 import withFormats from 'ajv-formats'
 
