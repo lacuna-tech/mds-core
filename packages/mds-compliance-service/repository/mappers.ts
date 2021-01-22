@@ -46,11 +46,6 @@ export const ComplianceSnapshotDomainToEntityCreate = ModelMapper<
   return { ...entity, policy_name, policy_id, recorded }
 })
 
-function encodeToken(ids: string[]): string {
-  const buffer = Buffer.from(ids.join(','))
-  return buffer.toString('base64')
-}
-
 export const ComplianceViolationPeriodEntityToDomainCreate = ModelMapper<
   ComplianceViolationPeriodEntityModel,
   ComplianceViolationPeriodDomainModel

@@ -30,7 +30,6 @@ export interface ComplianceSnapshotDomainModel {
   total_violations: number
 }
 export interface ComplianceViolationPeriodDomainModel {
-  //  snapshots_uri?: string
   compliance_snapshot_ids: UUID[]
   start_time: Timestamp
   end_time: Timestamp | null
@@ -53,14 +52,6 @@ export interface ComplianceViolationPeriodEntityModel {
   sum_total_violations: number
 }
 
-/*
-export interface ComplianceAggregateResponse {
-  start_time: Timestamp
-  end_time: Timestamp
-  results: ComplianceAggregate[]
-}
-*/
-
 export type GetComplianceSnapshotOptions =
   | {
       compliance_snapshot_id: UUID
@@ -80,9 +71,9 @@ export type GetComplianceSnapshotsByTimeIntervalOptions = Partial<{
 
 export type GetComplianceViolationPeriodsOptions = {
   start_time: Timestamp
-  provider_ids: UUID[]
-  policy_ids: UUID[]
-  end_time: Timestamp | undefined
+  provider_ids?: UUID[]
+  policy_ids?: UUID[]
+  end_time?: Timestamp
 }
 
 export interface ComplianceService {

@@ -2,7 +2,7 @@ import { getManager } from 'typeorm'
 
 import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core/mds-repository'
 import { isDefined, NotFoundError, now } from '@mds-core/mds-utils'
-import { UUID } from '@mds-core/mds-types'
+import { Timestamp, UUID } from '@mds-core/mds-types'
 import {
   ComplianceSnapshotDomainModel,
   GetComplianceSnapshotsByTimeIntervalOptions,
@@ -152,12 +152,12 @@ class ComplianceReadWriteRepository extends ReadWriteRepository {
   public getComplianceViolationPeriods = async (
     options: GetComplianceViolationPeriodsOptions
   ): Promise<ComplianceViolationPeriodEntityModel[]> => {
-    const { start_time, end_time = now(), policy_ids, provider_ids } = options
+    const { start_time, end_time = now(), policy_ids = [], provider_ids = [] } = options
     const { connect } = this
     try {
       const connection = await connect('ro')
       const entityManager = getManager(connection.name)
-      const mainQuery = `select
+      const mainQueryPart1 = `select
       provider_id, policy_id,
       start_time,
       end_time,
@@ -190,15 +190,31 @@ class ComplianceReadWriteRepository extends ReadWriteRepository {
                 where
                   compliance_as_of >= $1
                   and compliance_as_of <= $2
-                  and policy_id = ANY ($3)
-                  and provider_id = ANY ($4)
+                  `
+      const mainQueryPart2 = `
                 order by provider_id, policy_id, compliance_as_of
             ) s1
           ) s2
           group by provider_id, policy_id, group_number
         ) s3; `
 
-      return await entityManager.query(mainQuery, [start_time, end_time, policy_ids, provider_ids])
+      const queryParams: (Timestamp | UUID[])[] = [start_time, end_time]
+      const queryPolicyIDs = policy_ids.length > 0
+      const queryProviderIDs = provider_ids.length > 0
+      const queryArray = [mainQueryPart1]
+
+      if (queryPolicyIDs) {
+        queryParams.push(policy_ids)
+        queryArray.push(`and policy_id = ANY($${queryParams.length})`)
+      }
+
+      if (queryProviderIDs) {
+        queryParams.push(provider_ids)
+        queryArray.push(`and provider_id = ANY($${queryParams.length})`)
+      }
+      queryArray.push(mainQueryPart2)
+
+      return await entityManager.query(queryArray.join('\n'), queryParams)
     } catch (error) {
       // ${getManager().getRepository(ComplianceSnapshotEntity).metadata.tableName}
       throw RepositoryError(error)

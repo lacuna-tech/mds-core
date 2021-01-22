@@ -5,7 +5,6 @@ import { ComplianceServiceClient } from '../client'
 import {
   COMPLIANCE_SNAPSHOT,
   COMPLIANCE_SNAPSHOTS,
-  COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2,
   COMPLIANCE_SNAPSHOT_1,
   COMPLIANCE_SNAPSHOT_ID,
   POLICY_ID,
@@ -17,7 +16,6 @@ import {
   TIME
 } from './fixtures'
 import { ComplianceAggregateDomainModel } from '../@types'
-import { ComplianceRepository } from '../repository'
 import ormconfig = require('../ormconfig')
 
 describe('Test Migrations', () => {
@@ -124,16 +122,14 @@ describe('ComplianceSnapshots Service Tests', () => {
     expect(complianceSnapshots.length).toEqual(2)
   })
 
-  it.only('Accurately breaks compliance snapshots into violation periods for one provider and policy', async () => {
+  it('Accurately breaks compliance snapshots into violation periods for one provider and policy', async () => {
     await ComplianceServiceClient.createComplianceSnapshots(COMPLIANCE_SNAPSHOTS)
-    //    /*
     const results: ComplianceAggregateDomainModel[] = await ComplianceServiceClient.getComplianceViolationPeriods({
       start_time: TIME,
       end_time: undefined,
       provider_ids: [PROVIDER_ID_2],
       policy_ids: [POLICY_ID_2]
     })
-    console.log('rezz', JSON.stringify(results))
     expect(results).toEqual([
       {
         provider_id: '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
@@ -155,15 +151,15 @@ describe('ComplianceSnapshots Service Tests', () => {
     ])
   })
 
-  it.only('Accurately breaks compliance snapshots into violation periods for multiple providers and policies', async () => {
-    const results = await ComplianceServiceClient.getComplianceViolationPeriods({
+  it('Accurately breaks compliance snapshots into violation periods for multiple providers and policies', async () => {
+    const resultsWithSpecifiedParams = await ComplianceServiceClient.getComplianceViolationPeriods({
       start_time: TIME,
       end_time: undefined,
       provider_ids: [PROVIDER_ID_1, PROVIDER_ID_2],
       policy_ids: [POLICY_ID_1, POLICY_ID_2]
     })
-    console.log('rezz2', JSON.stringify(results))
-    expect(results).toEqual([
+
+    const expectedResults = [
       {
         provider_id: 'c20e08cf-8488-46a6-a66c-5d8fb827f7e0',
         policy_id: '6d7a9c7e-853c-4ff7-a86f-e17c06d3bd80',
@@ -211,7 +207,19 @@ describe('ComplianceSnapshots Service Tests', () => {
           }
         ]
       }
-    ])
+    ]
+
+    expectedResults.forEach(aggregateViolationPeriod => {
+      expect(resultsWithSpecifiedParams).toEqual(expect.arrayContaining([aggregateViolationPeriod]))
+    })
+
+    const resultsWithUnspecifiedParams = await ComplianceServiceClient.getComplianceViolationPeriods({
+      start_time: TIME
+    })
+
+    expectedResults.forEach(aggregateViolationPeriod => {
+      expect(resultsWithUnspecifiedParams).toEqual(expect.arrayContaining([aggregateViolationPeriod]))
+    })
   })
 
   afterAll(async () => {
