@@ -1,4 +1,4 @@
-import { ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service'
+import { ComplianceAggregateDomainModel, ComplianceSnapshotDomainModel } from '@mds-core/mds-compliance-service'
 import { days } from '@mds-core/mds-utils'
 import { Policy, VEHICLE_TYPES } from '@mds-core/mds-types'
 
@@ -212,14 +212,90 @@ export const COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2: ComplianceSnapshotDomainM
   }
 ]
 
-export const COMPLIANCE_SNAPSHOTS = [
-  ...COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1,
-  ...COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_2,
-  ...COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_1,
-  ...COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2
-].sort((c1, c2) => {
-  return c1.compliance_as_of - c2.compliance_as_of
-})
+export const COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1: ComplianceAggregateDomainModel[] = [
+  {
+    policy_id: POLICY_ID_1,
+    provider_id: PROVIDER_ID_1,
+    provider_name: 'JUMP',
+    violation_periods: [
+      {
+        start_time: TIME,
+        end_time: null,
+        compliance_snapshot_ids: [COMPLIANCE_SNAPSHOT_ID]
+      }
+    ]
+  }
+]
+
+export const COMPLIANCE_VIOLATION_PERIOD_AGGREGATE_PROVIDER_2_POLICY_2: ComplianceAggregateDomainModel[] = [
+  {
+    provider_id: '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
+    provider_name: 'Lime',
+    policy_id: 'dfe3f757-c43a-4eb6-b85e-abc00f3e8387',
+    violation_periods: [
+      {
+        start_time: 1605821758035,
+        end_time: 1605821758037,
+        compliance_snapshot_ids: ['ba636406-1898-49a0-b937-6f825b789ee0', '8cb4d0a8-5edc-46f6-a4e4-a40f5a5f4558']
+      },
+      {
+        start_time: 1605821758038,
+        end_time: null,
+        compliance_snapshot_ids: ['3a11150b-5d64-4638-bd2d-745905ed8294']
+      }
+    ]
+  }
+]
+
+export const ALL_COMPLIANCE_VIOLATION_PERIOD_AGGREGATES: ComplianceAggregateDomainModel[] = [
+  {
+    provider_id: 'c20e08cf-8488-46a6-a66c-5d8fb827f7e0',
+    policy_id: '6d7a9c7e-853c-4ff7-a86f-e17c06d3bd80',
+    provider_name: 'JUMP',
+    violation_periods: [
+      {
+        start_time: 1605821758034,
+        end_time: null,
+        compliance_snapshot_ids: ['243e1209-61ad-4d7c-8464-db551f1f8c21']
+      }
+    ]
+  },
+  {
+    provider_id: 'c20e08cf-8488-46a6-a66c-5d8fb827f7e0',
+    policy_id: 'dfe3f757-c43a-4eb6-b85e-abc00f3e8387',
+    provider_name: 'JUMP',
+    violation_periods: []
+  },
+  {
+    provider_id: '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
+    policy_id: 'dfe3f757-c43a-4eb6-b85e-abc00f3e8387',
+    provider_name: 'Lime',
+    violation_periods: [
+      {
+        start_time: 1605821758035,
+        end_time: 1605821758037,
+        compliance_snapshot_ids: ['ba636406-1898-49a0-b937-6f825b789ee0', '8cb4d0a8-5edc-46f6-a4e4-a40f5a5f4558']
+      },
+      {
+        start_time: 1605821758038,
+        end_time: null,
+        compliance_snapshot_ids: ['3a11150b-5d64-4638-bd2d-745905ed8294']
+      }
+    ]
+  },
+  {
+    provider_id: '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
+    policy_id: '6d7a9c7e-853c-4ff7-a86f-e17c06d3bd80',
+    provider_name: 'Lime',
+    violation_periods: [
+      {
+        start_time: 1605821758036,
+        end_time: null,
+        compliance_snapshot_ids: ['39e2171b-a9df-417c-b218-2a82b491a0cc']
+      }
+    ]
+  }
+]
 
 const GEOGRAPHY_UUID = '1f943d59-ccc9-4d91-b6e2-0c5e771cbc49'
 export const POLICY1: Policy = {

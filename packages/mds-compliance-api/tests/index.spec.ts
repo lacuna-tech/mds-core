@@ -7,9 +7,7 @@ import db from '@mds-core/mds-db'
 
 import { pathPrefix } from '@mds-core/mds-utils'
 import { SCOPED_AUTH } from '@mds-core/mds-test-data'
-import { providers } from '@mds-core/mds-providers'
 import {
-  COMPLIANCE_SNAPSHOTS,
   TIME,
   PROVIDER_ID_2,
   PROVIDER_ID_1,
@@ -19,7 +17,9 @@ import {
   POLICY2,
   COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2,
   COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1,
-  COMPLIANCE_SNAPSHOT_ID
+  COMPLIANCE_SNAPSHOT_ID,
+  ALL_COMPLIANCE_VIOLATION_PERIOD_AGGREGATES,
+  COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1
 } from './fixtures'
 import { api } from '../api'
 
@@ -52,8 +52,8 @@ describe('Test Compliances API', () => {
   describe('GET /violation_periods', () => {
     it('parses all query params successfully, and users with the compliance:read scope can query for arbitrary providers', async () => {
       const getComplianceSnapshotsSpy = jest
-        .spyOn(ComplianceServiceClient, 'getComplianceSnapshotsByTimeInterval')
-        .mockImplementation(async () => COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1)
+        .spyOn(ComplianceServiceClient, 'getComplianceViolationPeriods')
+        .mockImplementation(async () => COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1)
 
       await request
         .get(
@@ -75,8 +75,8 @@ describe('Test Compliances API', () => {
 
     it('restricts the list of queried provider_ids to only the provider_id in the JWT for users with the compliance:read:provider scope', async () => {
       const clientSpy = jest
-        .spyOn(ComplianceServiceClient, 'getComplianceSnapshotsByTimeInterval')
-        .mockImplementation(async () => COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1)
+        .spyOn(ComplianceServiceClient, 'getComplianceViolationPeriods')
+        .mockImplementation(async () => COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1)
       await request
         .get(
           pathPrefix(
@@ -95,10 +95,10 @@ describe('Test Compliances API', () => {
       })
     })
 
-    it('defaults to querying for all provider_ids if none are provided, and the scope is compliance:read', async () => {
+    it('does not change the supplied provider_ids if the scope is compliance:read', async () => {
       const clientSpy = jest
-        .spyOn(ComplianceServiceClient, 'getComplianceSnapshotsByTimeInterval')
-        .mockImplementation(async () => COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1)
+        .spyOn(ComplianceServiceClient, 'getComplianceViolationPeriods')
+        .mockImplementation(async () => COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1)
       await request
         .get(
           pathPrefix(
@@ -111,7 +111,27 @@ describe('Test Compliances API', () => {
         .expect(HttpStatus.OK)
       expect(clientSpy).toHaveBeenCalledWith({
         start_time: TIME,
-        provider_ids: Object.keys(providers),
+        provider_ids: undefined,
+        policy_ids: [POLICY_ID_1, POLICY_ID_2],
+        end_time: TIME + 500
+      })
+
+      const clientSpy2 = jest
+        .spyOn(ComplianceServiceClient, 'getComplianceViolationPeriods')
+        .mockImplementation(async () => COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1)
+      await request
+        .get(
+          pathPrefix(
+            `/violation_periods?start_time=${TIME}&policy_id=${POLICY_ID_1}&policy_id=${POLICY_ID_2}&end_time=${
+              TIME + 500
+            }&provider_id=${PROVIDER_ID_1}&provider_id=${PROVIDER_ID_2}`
+          )
+        )
+        .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
+        .expect(HttpStatus.OK)
+      expect(clientSpy2).toHaveBeenCalledWith({
+        start_time: TIME,
+        provider_ids: [PROVIDER_ID_1, PROVIDER_ID_2],
         policy_ids: [POLICY_ID_1, POLICY_ID_2],
         end_time: TIME + 500
       })
@@ -128,44 +148,10 @@ describe('Test Compliances API', () => {
         .expect(HttpStatus.FORBIDDEN)
     })
 
-    it('Accurately breaks compliance snapshots into violation periods for one provider', async () => {
+    it('Encodes the tokens for each set of compliance snapshot ids in a compliance aggregate correctly', async () => {
       jest
-        .spyOn(ComplianceServiceClient, 'getComplianceSnapshotsByTimeInterval')
-        .mockImplementation(async () => COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2)
-      jest.spyOn(utils, 'uuid').mockImplementation(() => '1234')
-      await request
-        .get(pathPrefix(`/violation_periods?start_time=${TIME}`))
-        .set('Authorization', SCOPED_AUTH(['compliance:read'], ''))
-        .expect(HttpStatus.OK, {
-          version: '1.1.0',
-          start_time: TIME,
-          end_time: TIME + 500,
-          results: [
-            {
-              provider_id: '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
-              provider_name: 'Lime',
-              policy_id: 'dfe3f757-c43a-4eb6-b85e-abc00f3e8387',
-              violation_periods: [
-                {
-                  start_time: 1605821758035,
-                  end_time: 1605821758037,
-                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
-                },
-                {
-                  start_time: 1605821758038,
-                  end_time: null,
-                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
-                }
-              ]
-            }
-          ]
-        })
-    })
-
-    it('Accurately breaks compliance snapshots into violation periods for multiple providers and policies', async () => {
-      jest
-        .spyOn(ComplianceServiceClient, 'getComplianceSnapshotsByTimeInterval')
-        .mockImplementation(async () => COMPLIANCE_SNAPSHOTS)
+        .spyOn(ComplianceServiceClient, 'getComplianceViolationPeriods')
+        .mockImplementation(async () => ALL_COMPLIANCE_VIOLATION_PERIOD_AGGREGATES)
       jest.spyOn(utils, 'uuid').mockImplementation(() => '1234')
       await request
         .get(pathPrefix(`/violation_periods?start_time=${TIME}`))
@@ -183,7 +169,7 @@ describe('Test Compliances API', () => {
                 {
                   start_time: 1605821758034,
                   end_time: null,
-                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
+                  snapshots_uri: '/compliance_snapshot_ids?token=MjQzZTEyMDktNjFhZC00ZDdjLTg0NjQtZGI1NTFmMWY4YzIx'
                 }
               ]
             },
@@ -201,12 +187,13 @@ describe('Test Compliances API', () => {
                 {
                   start_time: 1605821758035,
                   end_time: 1605821758037,
-                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
+                  snapshots_uri:
+                    '/compliance_snapshot_ids?token=YmE2MzY0MDYtMTg5OC00OWEwLWI5MzctNmY4MjViNzg5ZWUwLDhjYjRkMGE4LTVlZGMtNDZmNi1hNGU0LWE0MGY1YTVmNDU1OA=='
                 },
                 {
                   start_time: 1605821758038,
                   end_time: null,
-                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
+                  snapshots_uri: '/compliance_snapshot_ids?token=M2ExMTE1MGItNWQ2NC00NjM4LWJkMmQtNzQ1OTA1ZWQ4Mjk0'
                 }
               ]
             },
@@ -218,7 +205,7 @@ describe('Test Compliances API', () => {
                 {
                   start_time: 1605821758036,
                   end_time: null,
-                  snapshots_uri: '/compliance_snapshot_ids?token=1234'
+                  snapshots_uri: '/compliance_snapshot_ids?token=MzllMjE3MWItYTlkZi00MTdjLWIyMTgtMmE4MmI0OTFhMGNj'
                 }
               ]
             }

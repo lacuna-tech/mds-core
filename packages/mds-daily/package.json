@@ -23,7 +23,6 @@
   ],
   "scripts": {
     "start": "PATH_PREFIX=/agency yarn watch server",
-    "test": "yarn test:eslint && yarn test:unit",
     "ts-node": "yarn build && DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config",
     "watch": "nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec yarn ts-node --"
   }
