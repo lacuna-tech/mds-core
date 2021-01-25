@@ -212,7 +212,7 @@ export const COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2: ComplianceSnapshotDomainM
   }
 ]
 
-export const COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1: ComplianceAggregateDomainModel[] = [
+export const COMPLIANCE_AGGREGATE_PROVIDER_1_POLICY_1: ComplianceAggregateDomainModel[] = [
   {
     policy_id: POLICY_ID_1,
     provider_id: PROVIDER_ID_1,
@@ -227,7 +227,7 @@ export const COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1: ComplianceAgg
   }
 ]
 
-export const COMPLIANCE_VIOLATION_PERIOD_AGGREGATE_PROVIDER_2_POLICY_2: ComplianceAggregateDomainModel[] = [
+export const COMPLIANCE_AGGREGATE_PROVIDER_2_POLICY_2: ComplianceAggregateDomainModel[] = [
   {
     provider_id: '63f13c48-34ff-49d2-aca7-cf6a5b6171c3',
     provider_name: 'Lime',
@@ -247,7 +247,7 @@ export const COMPLIANCE_VIOLATION_PERIOD_AGGREGATE_PROVIDER_2_POLICY_2: Complian
   }
 ]
 
-export const ALL_COMPLIANCE_VIOLATION_PERIOD_AGGREGATES: ComplianceAggregateDomainModel[] = [
+export const ALL_COMPLIANCE_AGGREGATES: ComplianceAggregateDomainModel[] = [
   {
     provider_id: 'c20e08cf-8488-46a6-a66c-5d8fb827f7e0',
     policy_id: '6d7a9c7e-853c-4ff7-a86f-e17c06d3bd80',

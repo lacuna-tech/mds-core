@@ -1,17 +1,10 @@
-import {
-  ComplianceAggregateDomainModel,
-  ComplianceServiceClient,
-  ComplianceSnapshotDomainModel,
-  ComplianceViolationPeriodDomainModel
-} from '@mds-core/mds-compliance-service'
-import db from '@mds-core/mds-db'
-import { providerName, providers } from '@mds-core/mds-providers'
+import { ComplianceServiceClient, ComplianceViolationPeriodDomainModel } from '@mds-core/mds-compliance-service'
 import { ApiRequestQuery } from '@mds-core/mds-api-server'
 import express from 'express'
 import { parseRequest } from '@mds-core/mds-api-helpers'
-import { Policy, Timestamp } from '@mds-core/mds-types'
-import { BadParamsError, isDefined, now, uuid } from '@mds-core/mds-utils'
-import { ComplianceAggregate, ComplianceApiRequest, ComplianceApiResponse, ComplianceViolationPeriod } from '../@types'
+import { Timestamp } from '@mds-core/mds-types'
+import { BadParamsError, isDefined, now } from '@mds-core/mds-utils'
+import { ComplianceAggregate, ComplianceApiRequest, ComplianceApiResponse } from '../@types'
 
 export type ComplianceApiGetViolationPeriodsRequest = ComplianceApiRequest &
   ApiRequestQuery<'start_time' | 'end_time' | 'provider_ids' | 'policy_ids'>
@@ -57,29 +50,15 @@ export const GetViolationPeriodsHandler = async (
       }
     })()
 
-    const violationPeriodAggregate = await ComplianceServiceClient.getComplianceViolationPeriods({
+    const violationPeriodsArray = await ComplianceServiceClient.getComplianceViolationPeriods({
       start_time,
       end_time,
       provider_ids: providerIDsOptionValue,
       policy_ids
     })
 
-    /*
-export interface ComplianceViolationPeriod {
-  snapshots_uri?: string
-  start_time: Timestamp
-  end_time: Timestamp | null
-}
-
-export interface ComplianceAggregate {
-  policy_id: UUID
-  provider_id: UUID
-  provider_name: string
-  violation_periods: ComplianceViolationPeriod[]
-}
-*/
-    const results = violationPeriodAggregate.map(aggregate => {
-      const { policy_id, provider_id, provider_name, violation_periods } = aggregate
+    const results = violationPeriodsArray.map(periodArray => {
+      const { policy_id, provider_id, provider_name, violation_periods } = periodArray
       return {
         policy_id,
         provider_id,

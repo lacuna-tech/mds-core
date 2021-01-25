@@ -18,8 +18,8 @@ import {
   COMPLIANCE_SNAPSHOTS_PROVIDER_2_POLICY_2,
   COMPLIANCE_SNAPSHOTS_PROVIDER_1_POLICY_1,
   COMPLIANCE_SNAPSHOT_ID,
-  ALL_COMPLIANCE_VIOLATION_PERIOD_AGGREGATES,
-  COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1
+  ALL_COMPLIANCE_AGGREGATES,
+  COMPLIANCE_AGGREGATE_PROVIDER_1_POLICY_1
 } from './fixtures'
 import { api } from '../api'
 
@@ -53,7 +53,7 @@ describe('Test Compliances API', () => {
     it('parses all query params successfully, and users with the compliance:read scope can query for arbitrary providers', async () => {
       const getComplianceSnapshotsSpy = jest
         .spyOn(ComplianceServiceClient, 'getComplianceViolationPeriods')
-        .mockImplementation(async () => COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1)
+        .mockImplementation(async () => COMPLIANCE_AGGREGATE_PROVIDER_1_POLICY_1)
 
       await request
         .get(
@@ -76,7 +76,7 @@ describe('Test Compliances API', () => {
     it('restricts the list of queried provider_ids to only the provider_id in the JWT for users with the compliance:read:provider scope', async () => {
       const clientSpy = jest
         .spyOn(ComplianceServiceClient, 'getComplianceViolationPeriods')
-        .mockImplementation(async () => COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1)
+        .mockImplementation(async () => COMPLIANCE_AGGREGATE_PROVIDER_1_POLICY_1)
       await request
         .get(
           pathPrefix(
@@ -98,7 +98,7 @@ describe('Test Compliances API', () => {
     it('does not change the supplied provider_ids if the scope is compliance:read', async () => {
       const clientSpy = jest
         .spyOn(ComplianceServiceClient, 'getComplianceViolationPeriods')
-        .mockImplementation(async () => COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1)
+        .mockImplementation(async () => COMPLIANCE_AGGREGATE_PROVIDER_1_POLICY_1)
       await request
         .get(
           pathPrefix(
@@ -118,7 +118,7 @@ describe('Test Compliances API', () => {
 
       const clientSpy2 = jest
         .spyOn(ComplianceServiceClient, 'getComplianceViolationPeriods')
-        .mockImplementation(async () => COMPLIANCE_VIOLATION_AGGREGATION_PROVIDER_1_POLICY_1)
+        .mockImplementation(async () => COMPLIANCE_AGGREGATE_PROVIDER_1_POLICY_1)
       await request
         .get(
           pathPrefix(
@@ -151,7 +151,7 @@ describe('Test Compliances API', () => {
     it('Encodes the tokens for each set of compliance snapshot ids in a compliance aggregate correctly', async () => {
       jest
         .spyOn(ComplianceServiceClient, 'getComplianceViolationPeriods')
-        .mockImplementation(async () => ALL_COMPLIANCE_VIOLATION_PERIOD_AGGREGATES)
+        .mockImplementation(async () => ALL_COMPLIANCE_AGGREGATES)
       jest.spyOn(utils, 'uuid').mockImplementation(() => '1234')
       await request
         .get(pathPrefix(`/violation_periods?start_time=${TIME}`))

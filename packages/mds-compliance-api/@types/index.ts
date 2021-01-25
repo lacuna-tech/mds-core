@@ -25,9 +25,3 @@ export interface ComplianceAggregate {
   provider_name: string
   violation_periods: ComplianceViolationPeriod[]
 }
-
-export interface ComplianceAggregateResponse {
-  start_time: Timestamp
-  end_time: Timestamp
-  results: ComplianceAggregate[]
-}
