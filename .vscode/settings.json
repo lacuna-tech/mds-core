@@ -14,5 +14,6 @@
   },
   "typescript.tsdk": "node_modules/typescript/lib",
   "licenser.author": "City of Los Angeles",
-  "licenser.useSingleLineStyle": false
+  "licenser.useSingleLineStyle": false,
+  "licenser.license": "AL2"
 }
