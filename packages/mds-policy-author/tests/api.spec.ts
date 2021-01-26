@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 /**
  * Copyright 2019 City of Los Angeles
  *
@@ -16,6 +15,7 @@
  */
 
 // eslint directives:
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-useless-concat */
 /* eslint-disable prefer-destructuring */
