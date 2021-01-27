@@ -15,9 +15,9 @@
  */
 
 import { ApiVersionMiddleware } from '@mds-core/mds-api-server'
-import { COLLECTOR_API_SUPPORTED_VERSIONS, COLLECTOR_API_DEFAULT_VERSION } from '../@types'
+import { COLLECTOR_API_SUPPORTED_VERSIONS, COLLECTOR_API_DEFAULT_VERSION, COLLECTOR_API_MIME_TYPE } from '../@types'
 
 export const CollectorApiVersionMiddleware = ApiVersionMiddleware(
-  'application/vnd.mds.collector+json',
+  COLLECTOR_API_MIME_TYPE,
   COLLECTOR_API_SUPPORTED_VERSIONS
 ).withDefaultVersion(COLLECTOR_API_DEFAULT_VERSION)

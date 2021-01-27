@@ -16,6 +16,8 @@
 
 import { ApiRequest, ApiResponse, ApiResponseLocalsClaims } from '@mds-core/mds-api-server'
 
+export const COLLECTOR_API_MIME_TYPE = 'application/vnd.mds.collector+json'
+
 export const COLLECTOR_API_SUPPORTED_VERSIONS = ['0.1.0'] as const
 export type COLLECTOR_API_SUPPORTED_VERSION = typeof COLLECTOR_API_SUPPORTED_VERSIONS[number]
 export const [COLLECTOR_API_DEFAULT_VERSION] = COLLECTOR_API_SUPPORTED_VERSIONS

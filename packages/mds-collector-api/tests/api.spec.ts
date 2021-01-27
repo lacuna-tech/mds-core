@@ -19,26 +19,36 @@ import HttpStatus from 'http-status-codes'
 import { CollectorServiceManager } from '@mds-core/mds-collector-service/service/manager'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { pathPrefix } from '@mds-core/mds-utils'
+import { COLLECTOR_API_DEFAULT_VERSION, COLLECTOR_API_MIME_TYPE } from '../@types'
 import { api } from '../api'
-import { COLLECTOR_API_DEFAULT_VERSION } from '../@types'
-
-const request = supertest(ApiServer(api))
-
-const [major, minor] = COLLECTOR_API_DEFAULT_VERSION.split('.')
-const ContentType = `application/vnd.mds.collector+json; charset=utf-8; version=${major}.${minor}`
 
 const CollectorService = CollectorServiceManager.controller()
 
 describe('Collector API', () => {
+  const request = supertest(ApiServer(api))
+  const [major, minor] = COLLECTOR_API_DEFAULT_VERSION.split('.')
+  const ContentType = `${COLLECTOR_API_MIME_TYPE}; charset=utf-8; version=${major}.${minor}`
+
   it('RPC service unavailable', async () => {
     const { body, headers } = await request.get(pathPrefix('/schema/test')).expect(HttpStatus.INTERNAL_SERVER_ERROR)
     expect(headers).toMatchObject({ 'content-type': ContentType })
     expect(body).toMatchObject({ error: { isServiceError: true, type: 'ServiceUnavailable' } })
   })
 
-  describe('Test endpoints', () => {
+  describe('Endpoints', () => {
     beforeAll(async () => {
       await CollectorService.start()
+    })
+
+    describe('GET /health', () => {
+      it(`OK`, async () => {
+        const { body } = await request.get(pathPrefix('/health')).expect(HttpStatus.OK)
+        expect(body).toMatchObject({
+          name: process.env.npm_package_name,
+          version: process.env.npm_package_version,
+          status: 'Running'
+        })
+      })
     })
 
     describe('GET /schema', () => {
