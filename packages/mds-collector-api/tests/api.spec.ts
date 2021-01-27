@@ -23,46 +23,49 @@ import { COLLECTOR_API_DEFAULT_VERSION, COLLECTOR_API_MIME_TYPE } from '../@type
 import { api } from '../api'
 
 const CollectorService = CollectorServiceManager.controller()
+const request = supertest(ApiServer(api))
+const [major, minor] = COLLECTOR_API_DEFAULT_VERSION.split('.')
+const CollectorApiContentType = `${COLLECTOR_API_MIME_TYPE}; charset=utf-8; version=${major}.${minor}`
+
+const Get = (path: string) => {
+  const url = pathPrefix(path)
+  return {
+    Responds: (code: number, response: Partial<{ body: {}; headers: {} }> = {}) =>
+      it(`GET ${url} (${code} ${HttpStatus.getStatusText(code).toUpperCase()})`, async () => {
+        expect(await request.get(url).expect(code)).toMatchObject(response)
+      })
+  }
+}
 
 describe('Collector API', () => {
-  const request = supertest(ApiServer(api))
-  const [major, minor] = COLLECTOR_API_DEFAULT_VERSION.split('.')
-  const ContentType = `${COLLECTOR_API_MIME_TYPE}; charset=utf-8; version=${major}.${minor}`
-
-  it('RPC service unavailable', async () => {
-    const { body, headers } = await request.get(pathPrefix('/schema/test')).expect(HttpStatus.INTERNAL_SERVER_ERROR)
-    expect(headers).toMatchObject({ 'content-type': ContentType })
-    expect(body).toMatchObject({ error: { isServiceError: true, type: 'ServiceUnavailable' } })
+  describe('Service Unavailable', () => {
+    Get('/schema/test').Responds(HttpStatus.INTERNAL_SERVER_ERROR, {
+      headers: { 'content-type': CollectorApiContentType },
+      body: { error: { isServiceError: true, type: 'ServiceUnavailable' } }
+    })
   })
 
-  describe('Endpoints', () => {
+  describe('Unknown Route', () => {
+    Get('/four-oh-four').Responds(HttpStatus.NOT_FOUND)
+  })
+
+  describe('API Endpoints', () => {
     beforeAll(async () => {
       await CollectorService.start()
     })
 
-    describe('GET /health', () => {
-      it(`OK`, async () => {
-        const { body } = await request.get(pathPrefix('/health')).expect(HttpStatus.OK)
-        expect(body).toMatchObject({
-          name: process.env.npm_package_name,
-          version: process.env.npm_package_version,
-          status: 'Running'
-        })
-      })
+    Get('/health').Responds(HttpStatus.OK, {
+      body: { name: process.env.npm_package_name, version: process.env.npm_package_version, status: 'Running' }
     })
 
-    describe('GET /schema', () => {
-      it(`OK`, async () => {
-        const { body, headers } = await request.get(pathPrefix('/schema/test')).expect(HttpStatus.OK)
-        expect(headers).toMatchObject({ 'content-type': ContentType })
-        expect(body).toMatchObject({ $schema: 'http://json-schema.org/draft/2019-09/schema#' })
-      })
+    Get('/schema/test').Responds(HttpStatus.OK, {
+      headers: { 'content-type': CollectorApiContentType },
+      body: { $schema: 'http://json-schema.org/draft/2019-09/schema#' }
+    })
 
-      it(`NOT FOUND`, async () => {
-        const { body, headers } = await request.get(pathPrefix('/schema/notfound')).expect(HttpStatus.NOT_FOUND)
-        expect(headers).toMatchObject({ 'content-type': ContentType })
-        expect(body).toMatchObject({ error: { isServiceError: true, type: 'NotFoundError' } })
-      })
+    Get('/schema/notfound').Responds(HttpStatus.NOT_FOUND, {
+      headers: { 'content-type': CollectorApiContentType },
+      body: { error: { isServiceError: true, type: 'NotFoundError' } }
     })
 
     afterAll(async () => {
