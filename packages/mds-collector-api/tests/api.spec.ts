@@ -20,30 +20,43 @@ import { CollectorServiceManager } from '@mds-core/mds-collector-service/service
 import { ApiServer } from '@mds-core/mds-api-server'
 import { pathPrefix } from '@mds-core/mds-utils'
 import { api } from '../api'
+import { COLLECTOR_API_DEFAULT_VERSION } from '../@types'
 
 const request = supertest(ApiServer(api))
+
+const [major, minor] = COLLECTOR_API_DEFAULT_VERSION.split('.')
+const ContentType = `application/vnd.mds.collector+json; charset=utf-8; version=${major}.${minor}`
 
 const CollectorService = CollectorServiceManager.controller()
 
 describe('Collector API', () => {
-  beforeAll(async () => {
-    await CollectorService.start()
+  it('RPC service unavailable', async () => {
+    const { body, headers } = await request.get(pathPrefix('/schema/test')).expect(HttpStatus.INTERNAL_SERVER_ERROR)
+    expect(headers).toMatchObject({ 'content-type': ContentType })
+    expect(body).toMatchObject({ error: { isServiceError: true, type: 'ServiceUnavailable' } })
   })
 
-  describe('Get Schema', () => {
-    it(`Expect 200 - OK`, async () => {
-      const { body } = await request.get(pathPrefix('/schema/test')).expect(HttpStatus.OK)
-      expect(body.$schema).toBe('http://json-schema.org/draft/2019-09/schema#')
+  describe('Test endpoints', () => {
+    beforeAll(async () => {
+      await CollectorService.start()
     })
 
-    it(`Expect 404 - NOT FOUND`, async () => {
-      const { body } = await request.get(pathPrefix('/schema/notfound')).expect(HttpStatus.NOT_FOUND)
-      expect(body.error.isServiceError).toBeTruthy()
-      expect(body.error.type).toBe('NotFoundError')
-    })
-  })
+    describe('GET /schema', () => {
+      it(`OK`, async () => {
+        const { body, headers } = await request.get(pathPrefix('/schema/test')).expect(HttpStatus.OK)
+        expect(headers).toMatchObject({ 'content-type': ContentType })
+        expect(body).toMatchObject({ $schema: 'http://json-schema.org/draft/2019-09/schema#' })
+      })
 
-  afterAll(async () => {
-    await CollectorService.stop()
+      it(`NOT FOUND`, async () => {
+        const { body, headers } = await request.get(pathPrefix('/schema/notfound')).expect(HttpStatus.NOT_FOUND)
+        expect(headers).toMatchObject({ 'content-type': ContentType })
+        expect(body).toMatchObject({ error: { isServiceError: true, type: 'NotFoundError' } })
+      })
+    })
+
+    afterAll(async () => {
+      await CollectorService.stop()
+    })
   })
 })
