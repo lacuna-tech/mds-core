@@ -118,6 +118,8 @@ spec:
             value: http://mds-policy-service
           - name: TRANSACTIONS_SERVICE_RPC_HOST
             value: http://mds-transactions-service
+          - name: COLLECTOR_SERVICE_RPC_HOST
+            value: http://mds-collector-service
           - name: TENANT_ID
           {{- if hasKey $.Values "tenantId" }}
             value: {{ $.Values.tenantId }}

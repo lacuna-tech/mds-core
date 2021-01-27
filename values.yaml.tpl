@@ -29,3 +29,7 @@ deployments:
     version: ${GEOGRAPHY_SERVICE_VERSION}
   mds-ingest-service:
     version: ${INGEST_SERVICE_VERSION}
+  mds-collector-service:
+    version: ${COLLECTOR_SERVICE_VERSION}
+  mds-collector-api:
+    version: ${COLLECTOR_API_VERSION}
