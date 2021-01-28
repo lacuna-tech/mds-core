@@ -19,7 +19,7 @@ const CollectorServer = CollectorServiceManager.controller()
 
 describe('Collector Service', () => {
   it('Service Unavailable', async () => {
-    await expect(CollectorServiceClient.getSchema('notfound')).rejects.toMatchObject({
+    await expect(CollectorServiceClient.getSchema('test')).rejects.toMatchObject({
       isServiceError: true,
       type: 'ServiceUnavailable'
     })
