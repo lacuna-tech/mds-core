@@ -27,7 +27,8 @@ export type CollectorApiGetSchemaResponse = CollectorApiResponse<CollectorApiGet
 
 export const GetSchemaHandler = async (req: CollectorApiGetSchemaRequest, res: CollectorApiGetSchemaResponse) => {
   try {
-    const schema = await CollectorServiceClient.getSchema(req.params.name)
+    const { name } = req.params
+    const schema = await CollectorServiceClient.getSchema(name)
     return res.status(200).send(schema)
   } catch (error) {
     if (isServiceError(error)) {

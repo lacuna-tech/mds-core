@@ -36,8 +36,9 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
   stop: async () => undefined,
   getSchema: async name => {
     try {
-      return ServiceResult(await importSchema(name))
-    } catch (error) /* istanbul ignore next */ {
+      const schema = await importSchema(name)
+      return ServiceResult(schema)
+    } catch (error) {
       const exception = ServiceException('Error Reading Schema', error)
       logger.error(exception, error)
       return exception
