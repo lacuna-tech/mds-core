@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-floating-promises */
 /**
  * Copyright 2019 City of Los Angeles
  *
@@ -16,13 +15,14 @@
  */
 
 // eslint directives:
+/* eslint-disable @typescript-eslint/no-floating-promises */
 /* eslint-disable no-plusplus */
 /* eslint-disable no-useless-concat */
 /* eslint-disable prefer-destructuring */
 /* eslint-disable promise/prefer-await-to-callbacks */
-
 /* eslint-reason extends object.prototype */
 /* eslint-disable-next-line @typescript-eslint/no-unused-vars */
+
 import assert from 'assert'
 import sinon from 'sinon'
 import supertest from 'supertest'
