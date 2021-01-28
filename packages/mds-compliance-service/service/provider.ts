@@ -86,18 +86,22 @@ export const ComplianceServiceProvider: ServiceProvider<ComplianceService> & Pro
   getComplianceViolationPeriods: async (options: GetComplianceViolationPeriodsOptions) => {
     try {
       const violationPeriodEntities = await ComplianceRepository.getComplianceViolationPeriods(options)
-      const complianceAggregateMap: ComplianceAggregateMap = {}
-      violationPeriodEntities.forEach(violationPeriodEntity => {
-        const { provider_id, policy_id } = violationPeriodEntity
-        const key = `${provider_id}:${policy_id}`
+      const complianceAggregateMap = violationPeriodEntities.reduce(
+        (acc: ComplianceAggregateMap, violationPeriodEntity) => {
+          const { provider_id, policy_id } = violationPeriodEntity
+          const key = `${provider_id}:${policy_id}`
 
-        if (!isDefined(complianceAggregateMap[key])) {
-          complianceAggregateMap[key] = []
-        }
-        if (violationPeriodEntity.sum_total_violations > 0) {
-          complianceAggregateMap[key].push(ComplianceViolationPeriodEntityToDomainCreate.map(violationPeriodEntity))
-        }
-      })
+          if (!isDefined(acc[key])) {
+            // eslint-disable-next-line no-param-reassign
+            acc[key] = []
+          }
+          if (violationPeriodEntity.sum_total_violations > 0) {
+            acc[key].push(ComplianceViolationPeriodEntityToDomainCreate.map(violationPeriodEntity))
+          }
+          return acc
+        },
+        {}
+      )
 
       const results: ComplianceAggregateDomainModel[] = Object.keys(complianceAggregateMap).map(key => {
         const { 0: provider_id, 1: policy_id } = key.split(':')

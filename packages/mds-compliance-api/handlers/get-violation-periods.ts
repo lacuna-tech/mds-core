@@ -64,13 +64,10 @@ export const GetViolationPeriodsHandler = async (
         provider_id,
         provider_name,
         violation_periods: violation_periods.map((period: ComplianceViolationPeriodDomainModel) => {
-          /* Can't destructure start_time and end_time or they'd shadow the start_time
-           * and end_time of the whole query period.
-           */
-          const { compliance_snapshot_ids } = period
+          const { compliance_snapshot_ids, start_time: period_start_time, end_time: period_end_time } = period
           return {
-            start_time: period.start_time,
-            end_time: period.end_time,
+            start_time: period_start_time,
+            end_time: period_end_time,
             snapshots_uri: `/compliance_snapshot_ids?token=${encodeToken(compliance_snapshot_ids)}`
           }
         })

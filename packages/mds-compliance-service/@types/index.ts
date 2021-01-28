@@ -29,6 +29,13 @@ export interface ComplianceSnapshotDomainModel {
   excess_vehicles_count: number
   total_violations: number
 }
+
+/**
+ * A violation period starts with the first compliance snapshot that has a violation, and ends
+ * with the first snapshot that has no violations. E.g. if A, B, C, D, and E are snapshots,
+ * and A and E have no violations, the violation period contains B, C and D, and the end_time is
+ * the compliance_as_of timestamp on E.
+ */
 export interface ComplianceViolationPeriodDomainModel {
   compliance_snapshot_ids: UUID[]
   start_time: Timestamp

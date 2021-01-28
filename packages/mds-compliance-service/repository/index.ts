@@ -14,6 +14,27 @@ import { ComplianceSnapshotEntityToDomain, ComplianceSnapshotDomainToEntityCreat
 import { ComplianceSnapshotEntity } from './entities/compliance-snapshot-entity'
 import migrations from './migrations'
 
+export class SqlVals {
+  public vals: (string | number | string[])[]
+
+  private index: number
+
+  public constructor() {
+    this.vals = []
+    this.index = 1
+  }
+
+  public add(value: string | number | string[]): string | number {
+    this.vals.push(value)
+    const literal = `$${this.index}`
+    this.index += 1
+    return literal
+  }
+
+  public values(): (string | number | string[])[] {
+    return this.vals
+  }
+}
 class ComplianceReadWriteRepository extends ReadWriteRepository {
   public getComplianceSnapshot = async (
     options: GetComplianceSnapshotOptions
@@ -149,6 +170,10 @@ class ComplianceReadWriteRepository extends ReadWriteRepository {
     }
   }
 
+  /**
+   *
+   * @param options Gets the periods of time for which a provider was in violation of a policy.
+   */
   public getComplianceViolationPeriods = async (
     options: GetComplianceViolationPeriodsOptions
   ): Promise<ComplianceViolationPeriodEntityModel[]> => {
@@ -188,8 +213,6 @@ class ComplianceReadWriteRepository extends ReadWriteRepository {
                 END group_number
                 from ${entityManager.getRepository(ComplianceSnapshotEntity).metadata.tableName}
                 where
-                  compliance_as_of >= $1
-                  and compliance_as_of <= $2
                   `
       const mainQueryPart2 = `
                 order by provider_id, policy_id, compliance_as_of
@@ -198,25 +221,25 @@ class ComplianceReadWriteRepository extends ReadWriteRepository {
           group by provider_id, policy_id, group_number
         ) s3; `
 
-      const queryParams: (Timestamp | UUID[])[] = [start_time, end_time]
+      const vals = new SqlVals()
       const queryPolicyIDs = policy_ids.length > 0
       const queryProviderIDs = provider_ids.length > 0
       const queryArray = [mainQueryPart1]
 
+      queryArray.push(`compliance_as_of >= ${vals.add(start_time)}`)
+      queryArray.push(`and compliance_as_of <= ${vals.add(end_time)}`)
+
       if (queryPolicyIDs) {
-        queryParams.push(policy_ids)
-        queryArray.push(`and policy_id = ANY($${queryParams.length})`)
+        queryArray.push(`and policy_id = ANY(${vals.add(policy_ids)})`)
       }
 
       if (queryProviderIDs) {
-        queryParams.push(provider_ids)
-        queryArray.push(`and provider_id = ANY($${queryParams.length})`)
+        queryArray.push(`and provider_id = ANY(${vals.add(provider_ids)})`)
       }
       queryArray.push(mainQueryPart2)
 
-      return await entityManager.query(queryArray.join('\n'), queryParams)
+      return await entityManager.query(queryArray.join('\n'), vals.values())
     } catch (error) {
-      // ${getManager().getRepository(ComplianceSnapshotEntity).metadata.tableName}
       throw RepositoryError(error)
     }
   }
