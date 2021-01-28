@@ -17,10 +17,10 @@
 import logger from '@mds-core/mds-logger'
 import { ServiceProvider, ProcessController, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
 import { NotFoundError } from '@mds-core/mds-utils'
-import { AnySchema } from 'ajv'
+import { SchemaObject } from 'ajv'
 import { CollectorService } from '../@types'
 
-const importSchema = async (name: string): Promise<AnySchema> => {
+const importSchema = async (name: string): Promise<SchemaObject> => {
   try {
     const { default: schema } = await import(`../schemas/${name}.schema`)
     return { $schema: 'http://json-schema.org/draft/2019-09/schema#', ...schema }

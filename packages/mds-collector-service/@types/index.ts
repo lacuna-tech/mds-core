@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import { AnySchema } from 'ajv'
+import { SchemaObject } from 'ajv'
 import { RpcRoute, RpcServiceDefinition } from '@mds-core/mds-rpc-common'
 
 export interface CollectorService {
-  getSchema: (name: string) => AnySchema
+  getSchema: (name: string) => SchemaObject
 }
 
 export const CollectorServiceRpcDefinition: RpcServiceDefinition<CollectorService> = {
