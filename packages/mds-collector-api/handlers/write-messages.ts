@@ -32,13 +32,13 @@
 import type { NextFunction } from 'express'
 import HttpStatus from 'http-status-codes'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
-import { CollectorServiceClient } from '@mds-core/mds-collector-service'
+import { CollectorService, CollectorServiceClient } from '@mds-core/mds-collector-service'
 import { asArray } from '@mds-core/mds-utils'
 import { CollectorApiResponse, CollectorApiRequest } from '../@types'
 
 export type CollectorApiWriteMessagesRequest = CollectorApiRequest<Array<{}>> & ApiRequestParams<'name'>
 
-export type CollectorApiWriteMessagesResponseBody = {}
+export type CollectorApiWriteMessagesResponseBody = ReturnType<CollectorService['writeMessages']>
 
 export type CollectorApiWriteMessagesResponse = CollectorApiResponse<CollectorApiWriteMessagesResponseBody>
 
@@ -49,8 +49,8 @@ export const WriteMessagesHandler = async (
 ) => {
   try {
     const { name } = req.params
-    const schema = await CollectorServiceClient.writeMessages(name, asArray(req.body ?? []))
-    return res.status(HttpStatus.CREATED).send(schema)
+    const messages = await CollectorServiceClient.writeMessages(name, asArray(req.body ?? []))
+    return res.status(HttpStatus.CREATED).send(messages)
   } catch (error) {
     next(error)
   }

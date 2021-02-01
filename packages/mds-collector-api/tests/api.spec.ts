@@ -21,6 +21,7 @@ import { ApiServer } from '@mds-core/mds-api-server'
 import { pathPrefix } from '@mds-core/mds-utils'
 import { COLLECTOR_API_DEFAULT_VERSION, COLLECTOR_API_MIME_TYPE } from '../@types'
 import { api } from '../api'
+import { CollectorApiWriteMessagesResponseBody } from '../index'
 
 const CollectorService = CollectorServiceManager.controller()
 const request = supertest(ApiServer(api))
@@ -70,8 +71,13 @@ describe('Collector API', () => {
 
     it('POST /schema/test', async () => {
       const messages = [{ one: 1 }, { two: 2 }]
-      const response = await request.post(pathPrefix('/schema/test')).send(messages).expect(201)
-      expect(response.body).toStrictEqual(messages.map(message => ({ schema: 'test', message })))
+      const { body }: { body: CollectorApiWriteMessagesResponseBody } = await request
+        .post(pathPrefix('/schema/test'))
+        .send(messages)
+        .expect(201)
+      expect(body.map(({ recorded, ...message }) => message)).toStrictEqual(
+        messages.map(message => ({ schema: 'test', message }))
+      )
     })
 
     afterAll(async () => {

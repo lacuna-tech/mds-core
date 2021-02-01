@@ -17,12 +17,12 @@
 import type { NextFunction } from 'express'
 import HttpStatus from 'http-status-codes'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
-import { CollectorServiceClient } from '@mds-core/mds-collector-service'
+import { CollectorService, CollectorServiceClient } from '@mds-core/mds-collector-service'
 import { CollectorApiResponse, CollectorApiRequest } from '../@types'
 
 export type CollectorApiGetMessageSchemaRequest = CollectorApiRequest & ApiRequestParams<'name'>
 
-export type CollectorApiGetMessageSchemaResponseBody = {}
+export type CollectorApiGetMessageSchemaResponseBody = ReturnType<CollectorService['getMessageSchema']>
 
 export type CollectorApiGetMessageSchemaResponse = CollectorApiResponse<CollectorApiGetMessageSchemaResponseBody>
 

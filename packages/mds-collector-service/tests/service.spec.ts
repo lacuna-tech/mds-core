@@ -64,7 +64,9 @@ describe('Collector Service', () => {
     it('Write Messages', async () => {
       const messages = [{ one: 1 }, { two: 2 }]
       const written = await CollectorServiceClient.writeMessages('test', messages)
-      expect(written).toStrictEqual(messages.map(message => ({ schema: 'test', message })))
+      expect(written.map(({ recorded, ...message }) => message)).toStrictEqual(
+        messages.map(message => ({ schema: 'test', message }))
+      )
     })
 
     afterAll(async () => {

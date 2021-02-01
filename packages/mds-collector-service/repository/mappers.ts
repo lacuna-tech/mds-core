@@ -33,7 +33,7 @@ export const CollectorMessageDomainToEntityCreate = ModelMapper<
 
 export const CollectorMessageEntityToDomain = ModelMapper<CollectorMessageEntityModel, CollectorMessageDomainModel>(
   (entity, options) => {
-    const { id, recorded, ...domain } = entity
+    const { id, ...domain } = entity
     return domain
   }
 )

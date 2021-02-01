@@ -14,19 +14,20 @@
  * limitations under the License.
  */
 
-import { SchemaObject } from 'ajv'
 import { RpcRoute, RpcServiceDefinition } from '@mds-core/mds-rpc-common'
 import { DomainModelCreate } from '@mds-core/mds-repository'
+import { Timestamp } from '@mds-core/mds-types'
 
 export interface CollectorMessageDomainModel {
   schema: string
   message: {}
+  recorded: Timestamp
 }
 
-export type CollectorMessageDomainCreateModel = DomainModelCreate<CollectorMessageDomainModel>
+export type CollectorMessageDomainCreateModel = DomainModelCreate<Omit<CollectorMessageDomainModel, 'recorded'>>
 
 export interface CollectorService {
-  getMessageSchema: (name: CollectorMessageDomainModel['schema']) => SchemaObject
+  getMessageSchema: (name: CollectorMessageDomainModel['schema']) => {}
   writeMessages: (
     schema: CollectorMessageDomainModel['schema'],
     messages: Array<CollectorMessageDomainModel['message']>
