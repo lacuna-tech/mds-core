@@ -71,7 +71,7 @@ describe('Collector Service', () => {
         TEST_PRODUCER_ID,
         TEST_COLLECTOR_MESSAGES
       )
-      expect(written.map(({ recorded, ...message }) => message)).toStrictEqual(
+      expect(written).toMatchObject(
         TEST_COLLECTOR_MESSAGES.map(message => ({ schema_id: TEST_SCHEMA_ID, producer_id: TEST_PRODUCER_ID, message }))
       )
     })
