@@ -12,15 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import { uuid } from '@mds-core/mds-utils'
 import { CollectorServiceClient } from '../client'
 import { CollectorServiceManager } from '../service/manager'
 import { CollectorRepository } from '../repository'
 
 const CollectorServer = CollectorServiceManager.controller()
+const TEST_SCHEMA_ID = 'test'
+const TEST_PRODUCER_ID = uuid()
+const TEST_COLLECTOR_MESSAGES = [{ one: 1 }, { two: 2 }]
 
 describe('Collector Service', () => {
   it('Service Unavailable', async () => {
-    await expect(CollectorServiceClient.getMessageSchema('test')).rejects.toMatchObject({
+    await expect(CollectorServiceClient.getMessageSchema(TEST_SCHEMA_ID)).rejects.toMatchObject({
       isServiceError: true,
       type: 'ServiceUnavailable'
     })
@@ -50,7 +54,7 @@ describe('Collector Service', () => {
     })
 
     it('Get Schema (Result)', async () => {
-      const schema = await CollectorServiceClient.getMessageSchema('test')
+      const schema = await CollectorServiceClient.getMessageSchema(TEST_SCHEMA_ID)
       expect(schema).toMatchObject({ $schema: 'http://json-schema.org/draft/2019-09/schema#' })
     })
 
@@ -62,10 +66,13 @@ describe('Collector Service', () => {
     })
 
     it('Write Messages', async () => {
-      const messages = [{ one: 1 }, { two: 2 }]
-      const written = await CollectorServiceClient.writeMessages('test', messages)
+      const written = await CollectorServiceClient.writeMessages(
+        TEST_SCHEMA_ID,
+        TEST_PRODUCER_ID,
+        TEST_COLLECTOR_MESSAGES
+      )
       expect(written.map(({ recorded, ...message }) => message)).toStrictEqual(
-        messages.map(message => ({ schema: 'test', message }))
+        TEST_COLLECTOR_MESSAGES.map(message => ({ schema_id: TEST_SCHEMA_ID, producer_id: TEST_PRODUCER_ID, message }))
       )
     })
 

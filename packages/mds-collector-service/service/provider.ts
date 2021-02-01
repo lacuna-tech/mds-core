@@ -21,13 +21,13 @@ import { SchemaObject } from 'ajv'
 import { CollectorService } from '../@types'
 import { CollectorRepository } from '../repository'
 
-const importSchema = async (name: string): Promise<SchemaObject> => {
+const importSchema = async (schema_id: string): Promise<SchemaObject> => {
   try {
-    const { default: schema } = await import(`../schemas/${name}.schema`)
+    const { default: schema } = await import(`../schemas/${schema_id}.schema`)
     return { $schema: 'http://json-schema.org/draft/2019-09/schema#', ...schema }
   } catch (error) {
     throw typeof error === 'object' && error !== null && error.code === 'MODULE_NOT_FOUND'
-      ? new NotFoundError(`Schema "${name}" not found`)
+      ? new NotFoundError(`Schema "${schema_id}" not found`)
       : error
   }
 }
@@ -35,22 +35,26 @@ const importSchema = async (name: string): Promise<SchemaObject> => {
 export const CollectorServiceProvider: ServiceProvider<CollectorService> & ProcessController = {
   start: CollectorRepository.initialize,
   stop: CollectorRepository.shutdown,
-  getMessageSchema: async name => {
+  getMessageSchema: async schema_id => {
     try {
-      const schema = await importSchema(name)
+      const schema = await importSchema(schema_id)
       return ServiceResult(schema)
     } catch (error) {
-      const exception = ServiceException('Error Reading Schema', error)
+      const exception = ServiceException(`Error Reading Schema ${schema_id}`, error)
       logger.error(exception, error)
       return exception
     }
   },
-  writeMessages: async (schema, messages) => {
+  writeMessages: async (schema_id, producer_id, messages) => {
     try {
-      const inserted = await CollectorRepository.writeMessages(messages.map(message => ({ schema, message })))
+      // TODO: Replace with schema validation
+      await importSchema(schema_id)
+      const inserted = await CollectorRepository.writeMessages(
+        messages.map(message => ({ schema_id, producer_id, message }))
+      )
       return ServiceResult(inserted)
     } catch (error) /* istanbul ignore next */ {
-      const exception = ServiceException('Error Writing Messages', error)
+      const exception = ServiceException(`Error Writing Messages for Schema ${schema_id}`, error)
       logger.error(exception, error)
       return exception
     }

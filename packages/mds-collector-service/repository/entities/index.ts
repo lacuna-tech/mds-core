@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import { Column, Entity } from 'typeorm'
+import { Column, Entity, Index } from 'typeorm'
 import { IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
 import { CollectorMessageDomainModel } from '../../@types'
 
 export interface CollectorMessageEntityModel extends IdentityColumn, RecordedColumn {
-  schema: CollectorMessageDomainModel['schema']
+  schema_id: CollectorMessageDomainModel['schema_id']
+  producer_id: CollectorMessageDomainModel['producer_id']
   message: CollectorMessageDomainModel['message']
 }
 
@@ -34,7 +35,11 @@ export class CollectorMessageEntity
   extends IdentityColumn(RecordedColumn(class {}), { primary: true })
   implements CollectorMessageEntityModel {
   @Column('varchar', { length: 255 })
-  schema: CollectorMessageEntityModel['schema']
+  @Index()
+  schema_id: CollectorMessageEntityModel['schema_id']
+
+  @Column('uuid')
+  producer_id: CollectorMessageEntityModel['producer_id']
 
   @Column('json')
   message: CollectorMessageEntityModel['message']

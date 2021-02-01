@@ -14,6 +14,6 @@
  * limitations under the License.
  */
 
-import { CreateCollectorMessagesTable1612195018323 } from './1612195018323-CreateCollectorMessagesTable'
+import { CreateCollectorMessagesTable1612209108259 } from './1612209108259-CreateCollectorMessagesTable'
 
-export default [CreateCollectorMessagesTable1612195018323]
+export default [CreateCollectorMessagesTable1612209108259]

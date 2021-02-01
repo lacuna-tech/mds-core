@@ -20,7 +20,7 @@ import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { CollectorService, CollectorServiceClient } from '@mds-core/mds-collector-service'
 import { CollectorApiResponse, CollectorApiRequest } from '../@types'
 
-export type CollectorApiGetMessageSchemaRequest = CollectorApiRequest & ApiRequestParams<'name'>
+export type CollectorApiGetMessageSchemaRequest = CollectorApiRequest & ApiRequestParams<'schema_id'>
 
 export type CollectorApiGetMessageSchemaResponseBody = ReturnType<CollectorService['getMessageSchema']>
 
@@ -32,8 +32,8 @@ export const GetMessageSchemaHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { name } = req.params
-    const schema = await CollectorServiceClient.getMessageSchema(name)
+    const { schema_id } = req.params
+    const schema = await CollectorServiceClient.getMessageSchema(schema_id)
     return res.status(HttpStatus.OK).send(schema)
   } catch (error) {
     next(error)

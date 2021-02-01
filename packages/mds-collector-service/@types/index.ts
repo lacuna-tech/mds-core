@@ -16,10 +16,11 @@
 
 import { RpcRoute, RpcServiceDefinition } from '@mds-core/mds-rpc-common'
 import { DomainModelCreate } from '@mds-core/mds-repository'
-import { Timestamp } from '@mds-core/mds-types'
+import { Timestamp, UUID } from '@mds-core/mds-types'
 
 export interface CollectorMessageDomainModel {
-  schema: string
+  schema_id: string
+  producer_id: UUID
   message: {}
   recorded: Timestamp
 }
@@ -27,9 +28,10 @@ export interface CollectorMessageDomainModel {
 export type CollectorMessageDomainCreateModel = DomainModelCreate<Omit<CollectorMessageDomainModel, 'recorded'>>
 
 export interface CollectorService {
-  getMessageSchema: (name: CollectorMessageDomainModel['schema']) => {}
+  getMessageSchema: (schema_id: CollectorMessageDomainModel['schema_id']) => {}
   writeMessages: (
-    schema: CollectorMessageDomainModel['schema'],
+    schema_id: CollectorMessageDomainModel['schema_id'],
+    producer_id: CollectorMessageDomainModel['producer_id'],
     messages: Array<CollectorMessageDomainModel['message']>
   ) => Array<CollectorMessageDomainModel>
 }

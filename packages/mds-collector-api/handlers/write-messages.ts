@@ -34,9 +34,10 @@ import HttpStatus from 'http-status-codes'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { CollectorService, CollectorServiceClient } from '@mds-core/mds-collector-service'
 import { asArray } from '@mds-core/mds-utils'
+import { SingleOrArray } from '@mds-core/mds-types'
 import { CollectorApiResponse, CollectorApiRequest } from '../@types'
 
-export type CollectorApiWriteMessagesRequest = CollectorApiRequest<Array<{}>> & ApiRequestParams<'name'>
+export type CollectorApiWriteMessagesRequest = CollectorApiRequest<SingleOrArray<{}>> & ApiRequestParams<'schema_id'>
 
 export type CollectorApiWriteMessagesResponseBody = ReturnType<CollectorService['writeMessages']>
 
@@ -48,8 +49,11 @@ export const WriteMessagesHandler = async (
   next: NextFunction
 ) => {
   try {
-    const { name } = req.params
-    const messages = await CollectorServiceClient.writeMessages(name, asArray(req.body ?? []))
+    const { schema_id } = req.params
+    // eslint-reason checkAccess middleware has previously verified that local.claims.provider_id is a UUID
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const producer_id = res.locals.claims!.provider_id!
+    const messages = await CollectorServiceClient.writeMessages(schema_id, producer_id, asArray(req.body))
     return res.status(HttpStatus.CREATED).send(messages)
   } catch (error) {
     next(error)

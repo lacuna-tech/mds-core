@@ -15,35 +15,24 @@
  */
 
 import type { Express } from 'express'
-import { pathPrefix } from '@mds-core/mds-utils'
-import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
+import { isUUID, pathPrefix } from '@mds-core/mds-utils'
+import { checkAccess } from '@mds-core/mds-api-server'
 import { CollectorApiAccessTokenScopes } from './@types'
 import { CollectorApiVersionMiddleware } from './middleware/collector-api-version'
 import { CollectorApiErrorMiddleware } from './middleware/collector-api-error'
 import { GetMessageSchemaHandler } from './handlers/get-message-schema'
 import { WriteMessagesHandler } from './handlers/write-messages'
 
-const checkCollectorApiAccess = (validator: AccessTokenScopeValidator<CollectorApiAccessTokenScopes>) =>
-  checkAccess(validator)
+const checkCollectorApiAccess = checkAccess<CollectorApiAccessTokenScopes>((scopes, claims) =>
+  isUUID(claims?.provider_id)
+)
 
 export const api = (app: Express): Express =>
   app
     .use(CollectorApiVersionMiddleware)
 
-    .get(
-      pathPrefix('/schema/:name'),
-      checkCollectorApiAccess(
-        (scopes, claims) => true // TODO: properly check scopes and claims
-      ),
-      GetMessageSchemaHandler
-    )
+    .get(pathPrefix('/schema/:schema_id'), checkCollectorApiAccess, GetMessageSchemaHandler)
 
-    .post(
-      pathPrefix('/schema/:name'),
-      checkCollectorApiAccess(
-        (scopes, claims) => true // TODO: properly check scopes and claims
-      ),
-      WriteMessagesHandler
-    )
+    .post(pathPrefix('/schema/:schema_id'), checkCollectorApiAccess, WriteMessagesHandler)
 
     .use(CollectorApiErrorMiddleware)
