@@ -17,18 +17,33 @@
 import type { Express } from 'express'
 import { pathPrefix } from '@mds-core/mds-utils'
 import { checkAccess, AccessTokenScopeValidator } from '@mds-core/mds-api-server'
-import { CollectorApiVersionMiddleware } from './middleware/collector-api-version'
-import { GetSchemaHandler } from './handlers/get-schema'
 import { CollectorApiAccessTokenScopes } from './@types'
+import { CollectorApiVersionMiddleware } from './middleware/collector-api-version'
+import { CollectorApiErrorMiddleware } from './middleware/collector-api-error'
+import { GetMessageSchemaHandler } from './handlers/get-message-schema'
+import { WriteMessagesHandler } from './handlers/write-messages'
 
 const checkCollectorApiAccess = (validator: AccessTokenScopeValidator<CollectorApiAccessTokenScopes>) =>
   checkAccess(validator)
 
 export const api = (app: Express): Express =>
-  app.use(CollectorApiVersionMiddleware).get(
-    pathPrefix('/schema/:name'),
-    checkCollectorApiAccess(
-      (scopes, claims) => true // TODO: properly check scopes and claims
-    ),
-    GetSchemaHandler
-  )
+  app
+    .use(CollectorApiVersionMiddleware)
+
+    .get(
+      pathPrefix('/schema/:name'),
+      checkCollectorApiAccess(
+        (scopes, claims) => true // TODO: properly check scopes and claims
+      ),
+      GetMessageSchemaHandler
+    )
+
+    .post(
+      pathPrefix('/schema/:name'),
+      checkCollectorApiAccess(
+        (scopes, claims) => true // TODO: properly check scopes and claims
+      ),
+      WriteMessagesHandler
+    )
+
+    .use(CollectorApiErrorMiddleware)

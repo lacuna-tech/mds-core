@@ -39,7 +39,7 @@ const Get = (path: string) => {
 
 describe('Collector API', () => {
   describe('Service Unavailable', () => {
-    Get('/schema/test').Responds(HttpStatus.INTERNAL_SERVER_ERROR, {
+    Get('/schema/test').Responds(HttpStatus.SERVICE_UNAVAILABLE, {
       headers: { 'content-type': CollectorApiContentType },
       body: { error: { isServiceError: true, type: 'ServiceUnavailable' } }
     })
@@ -66,6 +66,12 @@ describe('Collector API', () => {
     Get('/schema/notfound').Responds(HttpStatus.NOT_FOUND, {
       headers: { 'content-type': CollectorApiContentType },
       body: { error: { isServiceError: true, type: 'NotFoundError' } }
+    })
+
+    it('POST /schema/test', async () => {
+      const messages = [{ one: 1 }, { two: 2 }]
+      const response = await request.post(pathPrefix('/schema/test')).send(messages).expect(201)
+      expect(response.body).toStrictEqual(messages.map(message => ({ schema: 'test', message })))
     })
 
     afterAll(async () => {

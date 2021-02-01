@@ -14,26 +14,7 @@
  * limitations under the License.
  */
 
-import { JSONSchemaType } from 'ajv'
+import { CollectorRepository } from './repository'
 
-interface ExampleSchema {
-  name: string
-  email?: string
-}
-
-const ExampleSchema: JSONSchemaType<ExampleSchema> = {
-  type: 'object',
-  properties: {
-    name: {
-      type: 'string'
-    },
-    email: {
-      type: 'string',
-      format: 'email',
-      nullable: true
-    }
-  },
-  required: ['name']
-}
-
-export default ExampleSchema
+// Make connection options available to TypeORM CLI
+module.exports = CollectorRepository.cli({ migrationsDir: 'repository/migrations' })

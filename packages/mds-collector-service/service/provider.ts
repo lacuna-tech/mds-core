@@ -19,6 +19,7 @@ import { ServiceProvider, ProcessController, ServiceResult, ServiceException } f
 import { NotFoundError } from '@mds-core/mds-utils'
 import { SchemaObject } from 'ajv'
 import { CollectorService } from '../@types'
+import { CollectorRepository } from '../repository'
 
 const importSchema = async (name: string): Promise<SchemaObject> => {
   try {
@@ -32,14 +33,24 @@ const importSchema = async (name: string): Promise<SchemaObject> => {
 }
 
 export const CollectorServiceProvider: ServiceProvider<CollectorService> & ProcessController = {
-  start: async () => undefined,
-  stop: async () => undefined,
-  getSchema: async name => {
+  start: CollectorRepository.initialize,
+  stop: CollectorRepository.shutdown,
+  getMessageSchema: async name => {
     try {
       const schema = await importSchema(name)
       return ServiceResult(schema)
     } catch (error) {
       const exception = ServiceException('Error Reading Schema', error)
+      logger.error(exception, error)
+      return exception
+    }
+  },
+  writeMessages: async (schema, messages) => {
+    try {
+      const inserted = await CollectorRepository.writeMessages(messages.map(message => ({ schema, message })))
+      return ServiceResult(inserted)
+    } catch (error) /* istanbul ignore next */ {
+      const exception = ServiceException('Error Writing Messages', error)
       logger.error(exception, error)
       return exception
     }

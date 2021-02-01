@@ -14,28 +14,28 @@
  * limitations under the License.
  */
 
-import { isServiceError } from '@mds-core/mds-service-helpers'
+import type { NextFunction } from 'express'
+import HttpStatus from 'http-status-codes'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { CollectorServiceClient } from '@mds-core/mds-collector-service'
 import { CollectorApiResponse, CollectorApiRequest } from '../@types'
 
-export type CollectorApiGetSchemaRequest = CollectorApiRequest & ApiRequestParams<'name'>
+export type CollectorApiGetMessageSchemaRequest = CollectorApiRequest & ApiRequestParams<'name'>
 
-export type CollectorApiGetSchemaResponseBody = {}
+export type CollectorApiGetMessageSchemaResponseBody = {}
 
-export type CollectorApiGetSchemaResponse = CollectorApiResponse<CollectorApiGetSchemaResponseBody>
+export type CollectorApiGetMessageSchemaResponse = CollectorApiResponse<CollectorApiGetMessageSchemaResponseBody>
 
-export const GetSchemaHandler = async (req: CollectorApiGetSchemaRequest, res: CollectorApiGetSchemaResponse) => {
+export const GetMessageSchemaHandler = async (
+  req: CollectorApiGetMessageSchemaRequest,
+  res: CollectorApiGetMessageSchemaResponse,
+  next: NextFunction
+) => {
   try {
     const { name } = req.params
-    const schema = await CollectorServiceClient.getSchema(name)
-    return res.status(200).send(schema)
+    const schema = await CollectorServiceClient.getMessageSchema(name)
+    return res.status(HttpStatus.OK).send(schema)
   } catch (error) {
-    if (isServiceError(error)) {
-      if (error.type === 'NotFoundError') {
-        return res.status(404).send({ error })
-      }
-    }
-    return res.status(500).send({ error })
+    next(error)
   }
 }

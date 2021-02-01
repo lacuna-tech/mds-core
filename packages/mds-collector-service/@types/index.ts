@@ -16,11 +16,24 @@
 
 import { SchemaObject } from 'ajv'
 import { RpcRoute, RpcServiceDefinition } from '@mds-core/mds-rpc-common'
+import { DomainModelCreate } from '@mds-core/mds-repository'
+
+export interface CollectorMessageDomainModel {
+  schema: string
+  message: {}
+}
+
+export type CollectorMessageDomainCreateModel = DomainModelCreate<CollectorMessageDomainModel>
 
 export interface CollectorService {
-  getSchema: (name: string) => SchemaObject
+  getMessageSchema: (name: CollectorMessageDomainModel['schema']) => SchemaObject
+  writeMessages: (
+    schema: CollectorMessageDomainModel['schema'],
+    messages: Array<CollectorMessageDomainModel['message']>
+  ) => Array<CollectorMessageDomainModel>
 }
 
 export const CollectorServiceRpcDefinition: RpcServiceDefinition<CollectorService> = {
-  getSchema: RpcRoute<CollectorService['getSchema']>()
+  getMessageSchema: RpcRoute<CollectorService['getMessageSchema']>(),
+  writeMessages: RpcRoute<CollectorService['writeMessages']>()
 }

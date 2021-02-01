@@ -14,14 +14,33 @@
 
 import { CollectorServiceClient } from '../client'
 import { CollectorServiceManager } from '../service/manager'
+import { CollectorRepository } from '../repository'
 
 const CollectorServer = CollectorServiceManager.controller()
 
 describe('Collector Service', () => {
   it('Service Unavailable', async () => {
-    await expect(CollectorServiceClient.getSchema('test')).rejects.toMatchObject({
+    await expect(CollectorServiceClient.getMessageSchema('test')).rejects.toMatchObject({
       isServiceError: true,
       type: 'ServiceUnavailable'
+    })
+  })
+
+  describe('Repository Migrations', () => {
+    beforeAll(async () => {
+      await CollectorRepository.initialize()
+    })
+
+    it('Run Migrations', async () => {
+      await CollectorRepository.runAllMigrations()
+    })
+
+    it('Revert Migrations', async () => {
+      await CollectorRepository.revertAllMigrations()
+    })
+
+    afterAll(async () => {
+      await CollectorRepository.shutdown()
     })
   })
 
@@ -31,15 +50,21 @@ describe('Collector Service', () => {
     })
 
     it('Get Schema (Result)', async () => {
-      const schema = await CollectorServiceClient.getSchema('test')
+      const schema = await CollectorServiceClient.getMessageSchema('test')
       expect(schema).toMatchObject({ $schema: 'http://json-schema.org/draft/2019-09/schema#' })
     })
 
     it('Get Schema (Error)', async () => {
-      await expect(CollectorServiceClient.getSchema('notfound')).rejects.toMatchObject({
+      await expect(CollectorServiceClient.getMessageSchema('notfound')).rejects.toMatchObject({
         isServiceError: true,
         type: 'NotFoundError'
       })
+    })
+
+    it('Write Messages', async () => {
+      const messages = [{ one: 1 }, { two: 2 }]
+      const written = await CollectorServiceClient.writeMessages('test', messages)
+      expect(written).toStrictEqual(messages.map(message => ({ schema: 'test', message })))
     })
 
     afterAll(async () => {

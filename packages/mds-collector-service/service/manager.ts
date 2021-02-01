@@ -26,7 +26,8 @@ export const CollectorServiceManager = RpcServer(
     onStop: CollectorServiceProvider.stop
   },
   {
-    getSchema: args => CollectorServiceProvider.getSchema(...args)
+    getMessageSchema: args => CollectorServiceProvider.getMessageSchema(...args),
+    writeMessages: args => CollectorServiceProvider.writeMessages(...args)
   },
   {
     port: process.env.COLLECTOR_SERVICE_RPC_PORT,
