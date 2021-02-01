@@ -45,11 +45,11 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
       return exception
     }
   },
-  writeMessages: async (schema_id, producer_id, messages) => {
+  writeSchemaMessages: async (schema_id, producer_id, messages) => {
     try {
       // TODO: Replace with schema validation
       await importSchema(schema_id)
-      const inserted = await CollectorRepository.writeMessages(
+      const inserted = await CollectorRepository.insertCollectorMessages(
         messages.map(message => ({ schema_id, producer_id, message }))
       )
       return ServiceResult(inserted)

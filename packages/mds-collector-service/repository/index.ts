@@ -21,7 +21,7 @@ import { CollectorMessageDomainToEntityCreate, CollectorMessageEntityToDomain } 
 import migrations from './migrations'
 
 class CollectorReadWriteRepository extends ReadWriteRepository {
-  public writeMessages = async (
+  public insertCollectorMessages = async (
     messages: CollectorMessageDomainCreateModel[]
   ): Promise<CollectorMessageDomainModel[]> => {
     try {

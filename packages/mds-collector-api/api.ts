@@ -21,7 +21,7 @@ import { CollectorApiAccessTokenScopes } from './@types'
 import { CollectorApiVersionMiddleware } from './middleware/collector-api-version'
 import { CollectorApiErrorMiddleware } from './middleware/collector-api-error'
 import { GetMessageSchemaHandler } from './handlers/get-message-schema'
-import { WriteMessagesHandler } from './handlers/write-messages'
+import { WriteSchemaMessagesHandler } from './handlers/write-schema-messages'
 
 const checkCollectorApiAccess = checkAccess<CollectorApiAccessTokenScopes>((scopes, claims) =>
   isUUID(claims?.provider_id)
@@ -33,6 +33,6 @@ export const api = (app: Express): Express =>
 
     .get(pathPrefix('/schema/:schema_id'), checkCollectorApiAccess, GetMessageSchemaHandler)
 
-    .post(pathPrefix('/schema/:schema_id'), checkCollectorApiAccess, WriteMessagesHandler)
+    .post(pathPrefix('/schema/:schema_id'), checkCollectorApiAccess, WriteSchemaMessagesHandler)
 
     .use(CollectorApiErrorMiddleware)

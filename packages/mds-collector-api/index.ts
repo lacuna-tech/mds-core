@@ -15,4 +15,4 @@
  */
 
 export { CollectorApiGetMessageSchemaResponseBody } from './handlers/get-message-schema'
-export { CollectorApiWriteMessagesResponseBody } from './handlers/write-messages'
+export { CollectorApiWriteSchemaMessagesResponseBody } from './handlers/write-schema-messages'

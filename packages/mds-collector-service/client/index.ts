@@ -25,5 +25,5 @@ const CollectorServiceRpcClient = RpcClient(CollectorServiceRpcDefinition, {
 
 export const CollectorServiceClient: ServiceClient<CollectorService> = {
   getMessageSchema: (...args) => RpcRequest(CollectorServiceRpcClient.getMessageSchema, args),
-  writeMessages: (...args) => RpcRequest(CollectorServiceRpcClient.writeMessages, args)
+  writeSchemaMessages: (...args) => RpcRequest(CollectorServiceRpcClient.writeSchemaMessages, args)
 }

@@ -29,7 +29,7 @@ export type CollectorMessageDomainCreateModel = DomainModelCreate<Omit<Collector
 
 export interface CollectorService {
   getMessageSchema: (schema_id: CollectorMessageDomainModel['schema_id']) => {}
-  writeMessages: (
+  writeSchemaMessages: (
     schema_id: CollectorMessageDomainModel['schema_id'],
     producer_id: CollectorMessageDomainModel['producer_id'],
     messages: Array<CollectorMessageDomainModel['message']>
@@ -38,5 +38,5 @@ export interface CollectorService {
 
 export const CollectorServiceRpcDefinition: RpcServiceDefinition<CollectorService> = {
   getMessageSchema: RpcRoute<CollectorService['getMessageSchema']>(),
-  writeMessages: RpcRoute<CollectorService['writeMessages']>()
+  writeSchemaMessages: RpcRoute<CollectorService['writeSchemaMessages']>()
 }

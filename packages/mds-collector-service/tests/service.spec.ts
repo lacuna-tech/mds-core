@@ -65,8 +65,8 @@ describe('Collector Service', () => {
       })
     })
 
-    it('Write Messages', async () => {
-      const written = await CollectorServiceClient.writeMessages(
+    it('Write Schema Messages', async () => {
+      const written = await CollectorServiceClient.writeSchemaMessages(
         TEST_SCHEMA_ID,
         TEST_PRODUCER_ID,
         TEST_COLLECTOR_MESSAGES
