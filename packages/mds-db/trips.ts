@@ -5,7 +5,7 @@ import schema from './schema'
 
 import { logSql, SqlVals } from './sql-utils'
 
-import { getReadOnlyClient } from './client'
+import { getReadOnlyClient, makeReadOnlyQuery } from './client'
 
 export interface ReadTripIdsResult {
   count: number
