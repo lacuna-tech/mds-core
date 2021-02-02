@@ -112,14 +112,6 @@ export async function getEventCountsPerProviderSince(
   return makeReadOnlyQuery(sql, vals)
 }
 
-export async function getEventsLast24HoursPerProvider(start = yesterday(), stop = now()): Promise<VehicleEvent[]> {
-  const vals = new SqlVals()
-  const sql = `select provider_id, device_id, event_type, recorded, timestamp from ${
-    schema.TABLE.events
-  } where recorded > ${vals.add(start)} and recorded < ${vals.add(stop)} order by "timestamp" ASC`
-  return makeReadOnlyQuery(sql, vals)
-}
-
 export async function getNumEventsLast24HoursByProvider(
   start = yesterday(),
   stop = now()
