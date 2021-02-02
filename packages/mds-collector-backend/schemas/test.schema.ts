@@ -74,7 +74,8 @@ const TestSchema: JSONSchemaType<TestSchema> = {
       }
     }
   },
-  required: ['id', 'name', 'country', 'zip']
+  required: ['id', 'name', 'country', 'zip'],
+  additionalProperties: false
 }
 
 export default TestSchema

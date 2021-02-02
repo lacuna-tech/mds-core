@@ -22,8 +22,8 @@ import {
   ServiceException,
   ServiceError
 } from '@mds-core/mds-service-helpers'
-import { NotFoundError } from '@mds-core/mds-utils'
-import { SchemaObject, ValidateFunction } from 'ajv'
+import { NotFoundError, pluralize } from '@mds-core/mds-utils'
+import { SchemaObject, ValidateFunction, ErrorObject } from 'ajv'
 import { CollectorService } from '../@types'
 import { CollectorRepository } from '../repository'
 import { SchemaValidator } from '../schema-validator'
@@ -81,14 +81,21 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
       // TODO: Replace with schema validation
       const validate = await getValidator(schema_id)
 
-      for (const message of messages) {
-        if (!validate(message)) {
-          return ServiceError({
-            type: 'ValidationError',
-            message: `Invalid message for schema ${schema_id}`,
-            details: validate.errors
-          })
-        }
+      const invalid = messages.reduce<{ position: number; errors: Partial<ErrorObject>[] }[]>(
+        (errors, message, position) => {
+          // eslint-reason validate function has previously verified that errors is non-null
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          return validate(message) ? errors : errors.concat({ position, errors: validate.errors! })
+        },
+        []
+      )
+
+      if (invalid.length > 0) {
+        return ServiceError({
+          type: 'ValidationError',
+          message: `Invalid ${pluralize(invalid.length, 'message', 'messages')} for schema ${schema_id}`,
+          details: { invalid }
+        })
       }
 
       return ServiceResult(
