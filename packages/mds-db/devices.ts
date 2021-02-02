@@ -141,14 +141,3 @@ export async function getVehicleCountsPerProvider(): Promise<{ provider_id: UUID
   const sql = `select provider_id, count(provider_id) from ${schema.TABLE.devices} group by provider_id`
   return makeReadOnlyQuery(sql)
 }
-
-export async function getNumVehiclesRegisteredLast24HoursByProvider(
-  start = yesterday(),
-  stop = now()
-): Promise<{ provider_id: UUID; count: number }[]> {
-  const vals = new SqlVals()
-  const sql = `select provider_id, count(device_id) from ${schema.TABLE.devices} where recorded > ${vals.add(
-    start
-  )} and recorded < ${vals.add(stop)} group by provider_id`
-  return makeReadOnlyQuery(sql, vals)
-}

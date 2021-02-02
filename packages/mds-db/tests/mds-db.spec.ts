@@ -209,29 +209,9 @@ if (pg_info.database) {
         assert.deepEqual(result[0].count, 10)
       })
 
-      it('.getTelemetryCountsPerProviderSince', async () => {
-        const result = await MDSDBPostgres.getTelemetryCountsPerProviderSince()
-        assert.deepEqual(result.length, 1)
-      })
-
       it('.getVehicleCountsPerProvider', async () => {
         const result = await MDSDBPostgres.getVehicleCountsPerProvider()
         assert.deepEqual(result[0].count, 10)
-      })
-
-      it('.getNumVehiclesRegisteredLast24HoursByProvider', async () => {
-        const result = await MDSDBPostgres.getNumVehiclesRegisteredLast24HoursByProvider()
-        assert.deepEqual(result[0].count, 10)
-      })
-
-      it('.getNumEventsLast24HoursByProvider', async () => {
-        const result = await MDSDBPostgres.getNumEventsLast24HoursByProvider()
-        assert.deepEqual(result[0].count, 10)
-      })
-
-      it('.getMostRecentEventByProvider', async () => {
-        const result = await MDSDBPostgres.getMostRecentEventByProvider()
-        assert.deepEqual(result.length, 1)
       })
 
       it('.health', async () => {

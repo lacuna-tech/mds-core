@@ -7,8 +7,6 @@ apis:
     version: ${POLICY_VERSION}
   mds-compliance:
     version: ${COMPLIANCE_VERSION}
-  mds-daily:
-    version: ${DAILY_VERSION}
   mds-jurisdiction:
     version: ${JURISDICTION_VERSION}
   mds-jurisdiction-service:

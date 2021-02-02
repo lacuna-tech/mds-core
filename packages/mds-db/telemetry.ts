@@ -112,20 +112,6 @@ export async function readTelemetry(
   }
 }
 
-export async function getTelemetryCountsPerProviderSince(
-  start = yesterday(),
-  stop = now()
-): Promise<{ provider_id: UUID; count: number; slacount: number }[]> {
-  const one_day = days(1)
-  const vals = new SqlVals()
-  const sql = `select provider_id, count(*), count(case when ((recorded-timestamp) > ${vals.add(
-    one_day
-  )}) then 1 else null end) as slacount from telemetry where recorded > ${vals.add(start)} and recorded < ${vals.add(
-    stop
-  )} group by provider_id`
-  return makeReadOnlyQuery(sql, vals)
-}
-
 // TODO way too slow to be useful -- move into mds-agency-cache
 export async function getMostRecentTelemetryByProvider(): Promise<{ provider_id: UUID; max: number }[]> {
   const sql = `select provider_id, max(recorded) from ${schema.TABLE.telemetry} group by provider_id`

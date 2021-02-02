@@ -226,18 +226,6 @@ async function readKeys(pattern: string) {
   return (await getClient()).keysAsync(decorateKey(pattern))
 }
 
-async function getMostRecentEventByProvider(): Promise<{ provider_id: string; max: number }[]> {
-  const provider_ids = (await readKeys('provider:*:latest_event')).map(key => {
-    const [, provider_id] = key.split(':')
-    return provider_id
-  })
-  const result = await hreads(['latest_event'], provider_ids, 'provider')
-  return result.map(elem => {
-    const max = parseInt(elem.timestamp || '0')
-    return { provider_id: elem.provider_id, max }
-  })
-}
-
 async function wipeDevice(device_id: UUID) {
   const keys = [
     decorateKey(`device:${device_id}:event`),
