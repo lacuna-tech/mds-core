@@ -1,5 +1,5 @@
 import { UUID, Recorded, Telemetry, Timestamp } from '@mds-core/mds-types'
-import { now, csv, days, yesterday } from '@mds-core/mds-utils'
+import { now, csv } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { TelemetryRecord } from './types'
 

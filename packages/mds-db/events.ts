@@ -1,5 +1,5 @@
 import { VehicleEvent, UUID, Timestamp, Recorded } from '@mds-core/mds-types'
-import { now, isUUID, isTimestamp, seconds, yesterday } from '@mds-core/mds-utils'
+import { isUUID, isTimestamp } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { ReadEventsResult, ReadEventsQueryParams } from './types'
 
@@ -8,7 +8,7 @@ import schema from './schema'
 import { vals_sql, cols_sql, vals_list, logSql, SqlVals, SqlExecuter } from './sql-utils'
 
 import { readDevice } from './devices'
-import { getReadOnlyClient, getWriteableClient, makeReadOnlyQuery } from './client'
+import { getReadOnlyClient, getWriteableClient } from './client'
 
 export async function writeEvent(event: VehicleEvent) {
   const client = await getWriteableClient()

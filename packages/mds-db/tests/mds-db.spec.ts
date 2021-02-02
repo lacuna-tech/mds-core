@@ -8,7 +8,6 @@ import {
   JUMP_TEST_DEVICE_1,
   makeDevices,
   makeEventsWithTelemetry,
-  makeEvents,
   JUMP_PROVIDER_ID,
   POLICY_JSON,
   POLICY2_JSON,
@@ -24,11 +23,10 @@ import {
   START_ONE_MONTH_FROM_NOW,
   DELETEABLE_POLICY
 } from '@mds-core/mds-test-data'
-import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError, yesterday, days } from '@mds-core/mds-utils'
+import { now, clone, NotFoundError, rangeRandomInt, ConflictError, yesterday, days } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
 import MDSDBPostgres from '../index'
 import { dropTables, createTables, updateSchema } from '../migration'
-import { Trip } from '../types'
 import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
 
 const { env } = process
@@ -53,42 +51,6 @@ const DistrictSeven: Geography = {
   name: 'District Seven',
   geography_id: GEOGRAPHY2_UUID,
   geography_json: DISTRICT_SEVEN
-}
-
-function makeTrip(device: Device): Trip {
-  return {
-    provider_id: device.provider_id,
-    provider_name: device.provider_id,
-    device_id: device.device_id,
-    vehicle_id: device.vehicle_id,
-    vehicle_type: device.vehicle_type,
-    propulsion_types: device.propulsion_types,
-    provider_trip_id: uuid(),
-    trip_duration: rangeRandomInt(5),
-    trip_distance: rangeRandomInt(5),
-    route: {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          properties: {
-            timestamp: now()
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [Math.random() * 10, Math.random() * 10]
-          }
-        }
-      ]
-    },
-    accuracy: Math.random() * 3,
-    trip_start: now() - 1000 * Math.random(),
-    trip_end: now(),
-    parking_verification_url: 'http://iamverified.com',
-    standard_cost: rangeRandomInt(5),
-    actual_cost: rangeRandomInt(5),
-    recorded: now()
-  }
 }
 
 /* You'll need postgres running and the env variable PG_NAME

@@ -602,6 +602,5 @@ export default {
   readKeys,
   wipeDevice,
   updateVehicleList,
-  cleanup,
-  getMostRecentEventByProvider
+  cleanup
 }
