@@ -16,11 +16,15 @@ import { uuid } from '@mds-core/mds-utils'
 import { CollectorServiceClient } from '../client'
 import { CollectorServiceManager } from '../service/manager'
 import { CollectorRepository } from '../repository'
+import TestSchema from '../schemas/test.schema'
 
 const CollectorServer = CollectorServiceManager.controller()
 const TEST_SCHEMA_ID = 'test'
 const TEST_PRODUCER_ID = uuid()
-const TEST_COLLECTOR_MESSAGES = [{ one: 1 }, { two: 2 }]
+const TEST_COLLECTOR_MESSAGES = [
+  { id: uuid(), name: 'President', country: 'US', zip: '37188' },
+  { id: uuid(), name: 'Prime Minister', country: 'CA', zip: 'K1M 1M4' }
+]
 
 describe('Collector Service', () => {
   it('Service Unavailable', async () => {
@@ -55,7 +59,7 @@ describe('Collector Service', () => {
 
     it('Get Schema (Result)', async () => {
       const schema = await CollectorServiceClient.getMessageSchema(TEST_SCHEMA_ID)
-      expect(schema).toMatchObject({ $schema: 'http://json-schema.org/draft/2019-09/schema#' })
+      expect(schema).toMatchObject({ $schema: 'http://json-schema.org/draft-07/schema#', ...TestSchema })
     })
 
     it('Get Schema (Error)', async () => {
@@ -65,7 +69,7 @@ describe('Collector Service', () => {
       })
     })
 
-    it('Write Schema Messages', async () => {
+    it('Write Schema Messages (OK)', async () => {
       const written = await CollectorServiceClient.writeSchemaMessages(
         TEST_SCHEMA_ID,
         TEST_PRODUCER_ID,
@@ -74,6 +78,16 @@ describe('Collector Service', () => {
       expect(written).toMatchObject(
         TEST_COLLECTOR_MESSAGES.map(message => ({ schema_id: TEST_SCHEMA_ID, producer_id: TEST_PRODUCER_ID, message }))
       )
+    })
+
+    it('Write Schema Messages (Error)', async () => {
+      const [message] = TEST_COLLECTOR_MESSAGES
+      await expect(
+        CollectorServiceClient.writeSchemaMessages(TEST_SCHEMA_ID, TEST_PRODUCER_ID, [{ ...message, email: 'invalid' }])
+      ).rejects.toMatchObject({
+        isServiceError: true,
+        type: 'ValidationError'
+      })
     })
 
     afterAll(async () => {

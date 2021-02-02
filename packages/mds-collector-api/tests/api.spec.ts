@@ -29,7 +29,10 @@ const [major, minor] = COLLECTOR_API_DEFAULT_VERSION.split('.')
 const CollectorApiContentType = `${COLLECTOR_API_MIME_TYPE}; charset=utf-8; version=${major}.${minor}`
 const TEST_SCHEMA_ID = 'test'
 const TEST_PROVIDER_ID = uuid()
-const TEST_COLLECTOR_MESSAGES = [{ one: 1 }, { two: 2 }]
+const TEST_COLLECTOR_MESSAGES = [
+  { id: uuid(), name: 'President', country: 'US', zip: '37188' },
+  { id: uuid(), name: 'Prime Minister', country: 'CA', zip: 'K1M 1M4' }
+]
 
 const Get = (path: string, provider_id?: UUID, ...scopes: CollectorApiAccessTokenScopes[]) => {
   const url = pathPrefix(path)
@@ -98,7 +101,7 @@ describe('Collector API', () => {
 
     Get('/schema/test', TEST_PROVIDER_ID).Responds(HttpStatus.OK, {
       headers: { 'content-type': CollectorApiContentType },
-      body: { $schema: 'http://json-schema.org/draft/2019-09/schema#' }
+      body: { $schema: 'http://json-schema.org/draft-07/schema#' }
     })
 
     Post('/schema/forbidden', {}).Responds(HttpStatus.FORBIDDEN)
@@ -116,6 +119,14 @@ describe('Collector API', () => {
         message
       }))
     })
+
+    Post('/schema/test', { ...TEST_COLLECTOR_MESSAGES[0], email: 'invalid' }, TEST_PROVIDER_ID).Responds(
+      HttpStatus.BAD_REQUEST,
+      {
+        headers: { 'content-type': CollectorApiContentType },
+        body: { error: { isServiceError: true, type: 'ValidationError' } }
+      }
+    )
 
     afterAll(async () => {
       await CollectorService.stop()

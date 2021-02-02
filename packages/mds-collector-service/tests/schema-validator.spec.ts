@@ -17,13 +17,12 @@
 import { SchemaValidator } from '../schema-validator'
 import TestSchema from '../schemas/test.schema'
 
-const TestData = {
+const TestData: TestSchema = {
   country: 'US',
   id: '26eea094-3fc2-4610-839d-6ef018b46f81',
   name: 'Test',
   zip: '90210',
-  email: 'test@test.com',
-  timestamp: Date.now()
+  email: 'test@test.com'
 }
 
 const validate = SchemaValidator(TestSchema)

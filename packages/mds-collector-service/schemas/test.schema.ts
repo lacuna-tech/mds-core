@@ -25,7 +25,6 @@ type TestSchema = {
   email?: string
   country: Country
   zip: string
-  timestamp: number
 }
 
 const TestSchema: JSONSchemaType<TestSchema> = {
@@ -49,9 +48,6 @@ const TestSchema: JSONSchemaType<TestSchema> = {
     },
     zip: {
       type: 'string'
-    },
-    timestamp: {
-      type: 'number'
     }
   },
   if: {
@@ -78,7 +74,7 @@ const TestSchema: JSONSchemaType<TestSchema> = {
       }
     }
   },
-  required: ['id', 'name', 'timestamp', 'country', 'zip']
+  required: ['id', 'name', 'country', 'zip']
 }
 
 export default TestSchema
