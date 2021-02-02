@@ -17,7 +17,7 @@
 import type { NextFunction } from 'express'
 import HttpStatus from 'http-status-codes'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
-import { CollectorService, CollectorServiceClient } from '@mds-core/mds-collector-service'
+import { CollectorService, CollectorServiceClient } from '@mds-core/mds-collector-backend'
 import { CollectorApiResponse, CollectorApiRequest } from '../@types'
 
 export type CollectorApiGetMessageSchemaRequest = CollectorApiRequest & ApiRequestParams<'schema_id'>

@@ -76,11 +76,11 @@ apis:
     enabled: true
     version: latest
     migration: false
-  mds-collector-service:
+  mds-collector-backend:
     enabled: true
     version: latest
     migration: false
-  mds-collector-api:
+  mds-collector:
     enabled: true
     version: latest
     migration: false

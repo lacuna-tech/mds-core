@@ -95,7 +95,7 @@
       }
     },
     {
-      "name": "Server: mds-collector-api",
+      "name": "Server: mds-collector",
       "type": "node",
       "request": "launch",
       "runtimeArgs": [
@@ -110,15 +110,15 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/mds-collector-api",
+      "cwd": "${workspaceFolder}/packages/mds-collector",
       "env": {
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
-        "npm_package_name": "@mds-core/mds-collector-api",
+        "npm_package_name": "@mds-core/mds-collector",
         "PATH_PREFIX": "/collector"
       }
     },
     {
-      "name": "Server: mds-collector-service",
+      "name": "Server: mds-collector-backend",
       "type": "node",
       "request": "launch",
       "runtimeArgs": [
@@ -133,10 +133,10 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/mds-collector-service",
+      "cwd": "${workspaceFolder}/packages/mds-collector-backend",
       "env": {
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
-        "npm_package_name": "@mds-core/mds-collector-service"
+        "npm_package_name": "@mds-core/mds-collector-backend"
       }
     },
     {
@@ -519,7 +519,7 @@
       }
     },
     {
-      "name": "Tests: mds-collector-api",
+      "name": "Tests: mds-collector",
       "type": "node",
       "request": "launch",
       "runtimeArgs": [
@@ -532,15 +532,15 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/mds-collector-api",
+      "cwd": "${workspaceFolder}/packages/mds-collector",
       "env": {
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
-        "npm_package_name": "@mds-core/mds-collector-api",
+        "npm_package_name": "@mds-core/mds-collector",
         "PATH_PREFIX": "/collector"
       }
     },
     {
-      "name": "Tests: mds-collector-service",
+      "name": "Tests: mds-collector-backend",
       "type": "node",
       "request": "launch",
       "runtimeArgs": [
@@ -553,10 +553,10 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
-      "cwd": "${workspaceFolder}/packages/mds-collector-service",
+      "cwd": "${workspaceFolder}/packages/mds-collector-backend",
       "env": {
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
-        "npm_package_name": "@mds-core/mds-collector-service"
+        "npm_package_name": "@mds-core/mds-collector-backend"
       }
     },
     {

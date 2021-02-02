@@ -16,7 +16,7 @@
 
 import supertest from 'supertest'
 import HttpStatus from 'http-status-codes'
-import { CollectorServiceManager } from '@mds-core/mds-collector-service/service/manager'
+import { CollectorServiceManager } from '@mds-core/mds-collector-backend/service/manager'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { pathPrefix, uuid } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'

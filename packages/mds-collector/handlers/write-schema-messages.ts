@@ -32,7 +32,7 @@
 import type { NextFunction } from 'express'
 import HttpStatus from 'http-status-codes'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
-import { CollectorService, CollectorServiceClient } from '@mds-core/mds-collector-service'
+import { CollectorService, CollectorServiceClient } from '@mds-core/mds-collector-backend'
 import { asArray } from '@mds-core/mds-utils'
 import { SingleOrArray } from '@mds-core/mds-types'
 import { CollectorApiResponse, CollectorApiRequest } from '../@types'

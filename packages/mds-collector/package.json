@@ -1,5 +1,5 @@
 {
-  "name": "@mds-core/mds-collector-api",
+  "name": "@mds-core/mds-collector",
   "version": "0.1.0",
   "description": "Mobility Data Specification Collector API",
   "main": "dist/index.js",
@@ -24,7 +24,7 @@
   "dependencies": {
     "@mds-core/mds-api-helpers": "0.1.26",
     "@mds-core/mds-api-server": "0.1.26",
-    "@mds-core/mds-collector-service": "0.1.0",
+    "@mds-core/mds-collector-backend": "0.1.0",
     "@mds-core/mds-logger": "0.1.24",
     "@mds-core/mds-service-helpers": "0.1.0",
     "@mds-core/mds-types": "0.1.23",

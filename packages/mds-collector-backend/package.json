@@ -1,7 +1,7 @@
 {
-  "name": "@mds-core/mds-collector-service",
+  "name": "@mds-core/mds-collector-backend",
   "version": "0.1.0",
-  "description": "Mobility Data Specification Collector Service",
+  "description": "Mobility Data Specification Collector Backend",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
