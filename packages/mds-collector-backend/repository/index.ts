@@ -22,25 +22,30 @@ import migrations from './migrations'
 
 class CollectorReadWriteRepository extends ReadWriteRepository {
   public insertCollectorMessages = async (
-    messages: CollectorMessageDomainCreateModel[]
+    messages: CollectorMessageDomainCreateModel[],
+    beforeCommit: () => Promise<void> = async () => undefined
   ): Promise<CollectorMessageDomainModel[]> => {
     try {
       const connection = await this.connect('rw')
 
       const chunks = this.asChunksForInsert(messages.map(CollectorMessageDomainToEntityCreate.mapper()))
 
-      const results: Array<InsertReturning<CollectorMessageEntityModel>> = await connection.transaction(manager =>
-        Promise.all(
-          chunks.map(chunk =>
-            manager
-              .getRepository(CollectorMessageEntity)
-              .createQueryBuilder()
-              .insert()
-              .values(messages.map(CollectorMessageDomainToEntityCreate.mapper()))
-              .returning('*')
-              .execute()
+      const results: Array<InsertReturning<CollectorMessageEntityModel>> = await connection.transaction(
+        async manager => {
+          const inserted = await Promise.all(
+            chunks.map(chunk =>
+              manager
+                .getRepository(CollectorMessageEntity)
+                .createQueryBuilder()
+                .insert()
+                .values(messages.map(CollectorMessageDomainToEntityCreate.mapper()))
+                .returning('*')
+                .execute()
+            )
           )
-        )
+          await beforeCommit()
+          return inserted
+        }
       )
 
       return results

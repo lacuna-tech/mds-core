@@ -23,7 +23,7 @@ import {
   ServiceException,
   ServiceError
 } from '@mds-core/mds-service-helpers'
-import { getEnvVar, NotFoundError, pluralize } from '@mds-core/mds-utils'
+import { getEnvVar, NotFoundError, pluralize, ServerError } from '@mds-core/mds-utils'
 import { SchemaObject, ValidateFunction, ErrorObject } from 'ajv'
 import { CollectorService } from '../@types'
 import { CollectorRepository } from '../repository'
@@ -129,11 +129,16 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
 
       // Write to Postgres
       const result = await CollectorRepository.insertCollectorMessages(
-        messages.map(message => ({ schema_id, producer_id, message }))
+        messages.map(message => ({ schema_id, producer_id, message })),
+        // Write to Kafka prior to committiing transaction
+        async () => {
+          try {
+            await producer.write(messages)
+          } catch (error) {
+            throw new ServerError('Error writing to Kafka stream', error)
+          }
+        }
       )
-
-      // Write to Kafka
-      await producer.write(messages)
 
       return ServiceResult(result)
     } catch (error) /* istanbul ignore next */ {
