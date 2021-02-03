@@ -28,11 +28,13 @@ class CollectorReadWriteRepository extends ReadWriteRepository {
     try {
       const connection = await this.connect('rw')
 
-      const chunks = this.asChunksForInsert(messages.map(CollectorMessageDomainToEntityCreate.mapper()))
+      const chunks = this.asChunksForInsert(
+        messages.map(CollectorMessageDomainToEntityCreate.mapper({ recorded: Date.now() }))
+      )
 
       const results: Array<InsertReturning<CollectorMessageEntityModel>> = await connection.transaction(
         async manager => {
-          const inserted = await Promise.all(
+          const committed = await Promise.all(
             chunks.map(chunk =>
               manager
                 .getRepository(CollectorMessageEntity)
@@ -44,7 +46,7 @@ class CollectorReadWriteRepository extends ReadWriteRepository {
             )
           )
           await beforeCommit()
-          return inserted
+          return committed
         }
       )
 
