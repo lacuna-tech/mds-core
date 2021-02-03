@@ -2,3 +2,6 @@
 # https://npmjs.com/advisories/1556
 # https://npmjs.com/advisories/1561
 1556,1561
+
+#fix these in dev/upgrade-to-1.0
+1594
