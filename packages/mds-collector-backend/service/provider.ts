@@ -15,6 +15,7 @@
  */
 
 import logger from '@mds-core/mds-logger'
+import stream, { StreamProducer } from '@mds-core/mds-stream'
 import {
   ServiceProvider,
   ProcessController,
@@ -22,16 +23,23 @@ import {
   ServiceException,
   ServiceError
 } from '@mds-core/mds-service-helpers'
-import { NotFoundError, pluralize } from '@mds-core/mds-utils'
+import { getEnvVar, NotFoundError, pluralize } from '@mds-core/mds-utils'
 import { SchemaObject, ValidateFunction, ErrorObject } from 'ajv'
 import { CollectorService } from '../@types'
 import { CollectorRepository } from '../repository'
 import { SchemaValidator } from '../schema-validator'
 
-const SchemaCache = new Map<string, SchemaObject>()
-const ValidatorCache = new Map<string, ValidateFunction>()
+const SchemaObjects = new Map<string, SchemaObject>()
+type CollectorValidateFunction = ValidateFunction<{}>
+const ValidateFunctions = new Map<string, CollectorValidateFunction>()
+type CollectorStreamProducer = StreamProducer<{}>
+const StreamProducers = new Map<string, CollectorStreamProducer>()
 
-const importSchema = async (schema_id: string): Promise<SchemaObject> => {
+const { TENANT_ID } = getEnvVar({
+  TENANT_ID: 'mds'
+})
+
+const importSchemaObject = async (schema_id: string): Promise<SchemaObject> => {
   try {
     const { default: schema } = await import(`../schemas/${schema_id}.schema`)
     return { $schema: 'http://json-schema.org/draft-07/schema#', ...schema }
@@ -42,25 +50,47 @@ const importSchema = async (schema_id: string): Promise<SchemaObject> => {
   }
 }
 
-const getSchema = async (schema_id: string): Promise<SchemaObject> => {
+const getSchemaObject = async (schema_id: string): Promise<SchemaObject> => {
   const $schema = (schema: SchemaObject) => ({
     $schema: 'http://json-schema.org/draft-07/schema#',
     ...schema
   })
 
-  const schema = SchemaCache.get(schema_id) ?? $schema(await importSchema(schema_id))
-  if (!SchemaCache.has(schema_id)) {
-    SchemaCache.set(schema_id, schema)
+  const schema = SchemaObjects.get(schema_id) ?? $schema(await importSchemaObject(schema_id))
+  if (!SchemaObjects.has(schema_id)) {
+    SchemaObjects.set(schema_id, schema)
   }
   return schema
 }
 
-const getValidator = async (schema_id: string): Promise<ValidateFunction> => {
-  const validator = ValidatorCache.get(schema_id) ?? SchemaValidator(await getSchema(schema_id))
-  if (!ValidatorCache.has(schema_id)) {
-    ValidatorCache.set(schema_id, validator)
+const getValidateFunction = async (schema_id: string): Promise<CollectorValidateFunction> => {
+  const validator = ValidateFunctions.get(schema_id) ?? SchemaValidator(await getSchemaObject(schema_id))
+  if (!ValidateFunctions.has(schema_id)) {
+    ValidateFunctions.set(schema_id, validator)
   }
   return validator
+}
+
+const MockStreamProducer: CollectorStreamProducer = {
+  initialize: async () => undefined,
+  shutdown: async () => undefined,
+  write: async message => undefined
+}
+
+const createStreamProducer = async (schema_id: string): Promise<CollectorStreamProducer> => {
+  const topic = `${TENANT_ID}.collector.${schema_id}`
+  // TODO: Do we need to create the topic?
+  const producer = process.env.KAFKA_HOST !== undefined ? stream.KafkaStreamProducer(topic) : MockStreamProducer
+  await producer.initialize()
+  return producer
+}
+
+const getStreamProducer = async (schema_id: string): Promise<CollectorStreamProducer> => {
+  const producer = StreamProducers.get(schema_id) ?? (await createStreamProducer(schema_id))
+  if (!StreamProducers.has(schema_id)) {
+    StreamProducers.set(schema_id, producer)
+  }
+  return producer
 }
 
 export const CollectorServiceProvider: ServiceProvider<CollectorService> & ProcessController = {
@@ -68,7 +98,7 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
   stop: CollectorRepository.shutdown,
   getMessageSchema: async schema_id => {
     try {
-      const schema = await getSchema(schema_id)
+      const schema = await getSchemaObject(schema_id)
       return ServiceResult(schema)
     } catch (error) {
       const exception = ServiceException(`Error Reading Schema ${schema_id}`, error)
@@ -78,8 +108,7 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
   },
   writeSchemaMessages: async (schema_id, producer_id, messages) => {
     try {
-      // TODO: Replace with schema validation
-      const validate = await getValidator(schema_id)
+      const [validate, producer] = await Promise.all([getValidateFunction(schema_id), getStreamProducer(schema_id)])
 
       const invalid = messages.reduce<{ position: number; errors: Partial<ErrorObject>[] }[]>(
         (errors, message, position) => {
@@ -98,11 +127,15 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
         })
       }
 
-      return ServiceResult(
-        await CollectorRepository.insertCollectorMessages(
-          messages.map(message => ({ schema_id, producer_id, message }))
-        )
+      // Write to Postgres
+      const result = await CollectorRepository.insertCollectorMessages(
+        messages.map(message => ({ schema_id, producer_id, message }))
       )
+
+      // Write to Kafka
+      await producer.write(messages)
+
+      return ServiceResult(result)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException(`Error Writing Messages for Schema ${schema_id}`, error)
       logger.error(exception, error)

@@ -1,7 +1,7 @@
 {
   "name": "@container-images/mds-collector-backend",
   "version": "0.0.1",
-  "description": "Docker Image for MDS Collector Backend",
+  "description": "Docker Image for MDS Collector Backend Service",
   "private": true,
   "main": "dist/index.js",
   "files": [

@@ -106,7 +106,7 @@ describe('Collector API', () => {
 
     Post('/schema/forbidden', {}).Responds(HttpStatus.FORBIDDEN)
 
-    Post('/schema/notfound', {}, TEST_PROVIDER_ID).Responds(HttpStatus.NOT_FOUND, {
+    Post('/schema/notfound', [{}], TEST_PROVIDER_ID).Responds(HttpStatus.NOT_FOUND, {
       headers: { 'content-type': CollectorApiContentType },
       body: { error: { isServiceError: true, type: 'NotFoundError' } }
     })
@@ -120,7 +120,7 @@ describe('Collector API', () => {
       }))
     })
 
-    Post('/schema/test', { ...TEST_COLLECTOR_MESSAGES[0], email: 'invalid' }, TEST_PROVIDER_ID).Responds(
+    Post('/schema/test', [{ ...TEST_COLLECTOR_MESSAGES[0], email: 'invalid' }], TEST_PROVIDER_ID).Responds(
       HttpStatus.BAD_REQUEST,
       {
         headers: { 'content-type': CollectorApiContentType },
