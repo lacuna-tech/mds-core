@@ -1,6 +1,6 @@
 import { QueryResult } from 'pg'
 import { UUID, Device, Recorded, DeviceID } from '@mds-core/mds-types'
-import { now, yesterday, isUUID, csv, NotFoundError } from '@mds-core/mds-utils'
+import { now, isUUID, csv, NotFoundError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 
 import schema from './schema'
