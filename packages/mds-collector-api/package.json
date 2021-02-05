@@ -1,5 +1,5 @@
 {
-  "name": "@mds-core/mds-collector",
+  "name": "@mds-core/mds-collector-api",
   "version": "0.1.0",
   "description": "Mobility Data Specification Collector API",
   "main": "dist/index.js",
