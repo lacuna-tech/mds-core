@@ -4,10 +4,16 @@
   "version": "0.0.20",
   "author": "City of Los Angeles",
   "license": "Apache-2.0",
-  "workspaces": [
-    "container-images/*",
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "container-images/*",
+      "packages/*"
+    ],
+    "nohoist": [
+      "@mds-core/mds-collector-backend/ajv",
+      "@mds-core/mds-collector-backend/ajv-formats"
+    ]
+  },
   "engines": {
     "node": "14.2.0"
   },
