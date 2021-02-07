@@ -28,10 +28,10 @@
     "await-lock": "2.1.0",
     "pg": "8.5.1"
   },
-  "devDependencies": {
+  "peerDependencies": {
     "typeorm": "0.2.30"
   },
-  "peerDependencies": {
+  "devDependencies": {
     "typeorm": "0.2.30"
   }
 }
