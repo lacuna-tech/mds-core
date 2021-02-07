@@ -11,8 +11,8 @@
 ## Run Tests
 
 1. Make sure you can run the API as per [Quick Start](#quick-start) above.
-2. `yarn test`
+2. `pnpm test`
 
 ## Build Deployment Package
 1. Make sure the API passes all tests as per [Run Tests](#run-tests) above.
-2. `yarn build`
+2. `pnpm build`

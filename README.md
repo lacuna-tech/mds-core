@@ -102,14 +102,14 @@ Now you can work with each package
 
 ```sh
 cd packages/mds-audit
-yarn test
+pnpm test
 yarn start
 ```
 
 #### Running the tests
 You can also run all tests from the project root with
 ```
-yarn test
+pnpm test
 ```
 
 ### Package Management - Lerna
@@ -247,7 +247,7 @@ This will run the build, and create the docker container images.
 
 ```sh
 yarn clean
-NODE_ENV=development yarn image
+NODE_ENV=development pnpm image
 ```
 
 note that setting `NODE_ENV=development` will enable images to be built with the `:latest` tag instead of a specific version-branch-commit tag.  If you choose not to use this, the images will be built with tags matching the format `:version-branch-commit`.  You can generate a manifest with these image tags by running `yarn values`.  This manifest can be included in a helm install with the switch `--values dist/values.yaml`.
