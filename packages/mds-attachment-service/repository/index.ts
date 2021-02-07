@@ -93,12 +93,12 @@ class AttachmentReadWriteRepository extends ReadWriteRepository {
       const attachments = await (async () => {
         if (isAttachmentIdsOption(options)) {
           const { attachment_ids } = options
-          return connection.getRepository(AttachmentEntity).find({ where: { attachment_id: In(attachment_ids) } })
+          return connection.getRepository(AttachmentEntity).find({ attachment_id: In(attachment_ids) })
         }
 
         if (isAttachmentListIdOption(options)) {
           const { attachment_list_id } = options
-          return connection.getRepository(AttachmentEntity).find({ where: { attachment_list_id } })
+          return connection.getRepository(AttachmentEntity).find({ attachment_list_id })
         }
 
         return []
