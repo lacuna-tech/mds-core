@@ -112,7 +112,7 @@ const MergeConfigurations = (name: string, path: string, config: CustomConfigura
       ],
       resolve: {
         extensions: ['.ts', '.js'],
-        symlinks: false
+        symlinks: true
       },
       externals: {
         sharp: 'commonjs sharp'
