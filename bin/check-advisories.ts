@@ -44,13 +44,12 @@ const audit = async () => {
     console.log(`Usage: "pnpm-audit <${SeverityLevels.join('|')}> [...list of numeric advisory ids to exclude]"`)
     return 1
   }
-  const minSeverity = SeverityLevels[minSeverityLevel]
 
   // Set exclusions
   const exclusions = excluding.map(id => `https://npmjs.com/advisories/${id}`)
 
   // Get advisories
-  console.log(`Running "npm audit --json --audit-level=${minSeverity}"`)
+  console.log(`Running: pnpm audit --json --audit-level=${SeverityLevels[minSeverityLevel]}`)
 
   const {
     advisories,
@@ -71,7 +70,7 @@ const audit = async () => {
   console.log(
     `Found ${vulnerabilities.length === 0 ? 'no' : `${vulnerabilities.length}`} ${
       vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'
-    } in ${totalDependencies} dependencies${excluding.length > 0 ? ` (excluding ${excluding})` : ''}`
+    } in ${totalDependencies} dependencies${excluding.length > 0 ? ` (excluding ${excluding.join(', ')})` : ''}`
   )
 
   // Display vulnerabilities
