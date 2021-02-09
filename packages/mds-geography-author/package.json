@@ -26,5 +26,8 @@
     "test:unit": "PATH_PREFIX=/geography-author DOTENV_CONFIG_PATH=../../.env nyc --use-spawn-wrap  ts-mocha --project ../../tsconfig.json",
     "ts-node": "pnpm build && DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config",
     "watch": "nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec pnpm ts-node --"
+  },
+  "devDependencies": {
+    "@mds-core/mds-test-data": "0.1.26"
   }
 }

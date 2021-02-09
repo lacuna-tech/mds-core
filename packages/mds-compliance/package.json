@@ -39,5 +39,9 @@
     "fs": "0.0.1-security",
     "moment-timezone": "0.5.32",
     "yargs": "16.2.0"
+  },
+  "devDependencies": {
+    "@mds-core/mds-agency": "0.0.28",
+    "@mds-core/mds-test-data": "0.1.26"
   }
 }

@@ -26,5 +26,8 @@
     "@types/jsonwebtoken": "8.5.0",
     "express": "4.17.1",
     "jsonwebtoken": "8.5.1"
+  },
+  "devDependencies": {
+    "@mds-core/mds-providers": "0.1.26"
   }
 }
