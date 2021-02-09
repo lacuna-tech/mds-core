@@ -13,20 +13,27 @@ interface Advisory {
   title: string
   severity: SeverityLevel
   url: string
+  findings: {
+    version: string
+    paths: string[]
+  }[]
 }
 
-const getAdvisories = async (): Promise<Advisory[]> => {
-  try {
-    await promisify(exec)(`pnpm audit --json`)
-    return []
-  } catch ({ stdout }) {
+interface AuditJson {
+  advisories: { [x: number]: Advisory }
+  metadata: { totalDependencies: number }
+}
+
+const pnpmAuditJson = async (): Promise<AuditJson> => {
+  const pnpmAudit = async (): Promise<string> => {
     try {
-      return Object.values<Advisory>(JSON.parse(stdout).advisories)
-    } catch (error) {
-      console.error(error)
-      return []
+      const { stdout } = await promisify(exec)(`pnpm audit --json`)
+      return stdout
+    } catch ({ stdout }) {
+      return stdout
     }
   }
+  return <AuditJson>JSON.parse(await pnpmAudit())
 }
 
 const audit = async () => {
@@ -43,34 +50,48 @@ const audit = async () => {
   const exclusions = excluding.map(id => `https://npmjs.com/advisories/${id}`)
 
   // Get advisories
-  console.log(`Auditing dependencies for${minSeverity === 'low' ? ' ' : ` ${minSeverity} severity `}vulnerabilities`)
-  const advisories = await getAdvisories()
+  console.log(`Running "npm audit --json --audit-level=${minSeverity}"`)
 
-  // Check for outdated exclusions
-  exclusions
-    .filter(exclusion => !advisories.some(advisory => advisory.url === exclusion))
-    .forEach(exclusion => {
-      console.log(`Advisory exclusion for ${exclusion} is no longer required`)
-    })
+  const {
+    advisories,
+    metadata: { totalDependencies }
+  } = await pnpmAuditJson()
 
   // Ignore advisories below minimum severity level or excluded
-  const vulnerabilities = advisories
+  const vulnerabilities = Object.values(advisories)
     .filter(({ url }) => !exclusions.includes(url))
     .filter(({ severity }) => SeverityLevels.indexOf(severity) >= minSeverityLevel)
 
-  // Display vulnerabilities
-  vulnerabilities.forEach(({ id, title, severity, url }) => {
-    console.log(`Found ${severity.toUpperCase()} vulnerablity: ${id}: ${title} (${url})`)
-  })
-
-  console.log(
-    vulnerabilities.length === 0
-      ? `No vulnerabilities found${excluding.length > 0 ? ` (excluding ${excluding})` : ''}`
-      : `Run "npm audit --json --audit-level=${minSeverity}" for details`
+  // Detect outdated exclusions
+  const outdated = exclusions.filter(
+    exclusion => !Object.values(advisories).some(advisory => advisory.url === exclusion)
   )
 
-  return vulnerabilities.length
+  // Display results
+  console.log(
+    `Found ${vulnerabilities.length === 0 ? 'no' : `${vulnerabilities.length}`} ${
+      vulnerabilities.length === 1 ? 'vulnerability' : 'vulnerabilities'
+    } in ${totalDependencies} dependencies${excluding.length > 0 ? ` (excluding ${excluding})` : ''}`
+  )
+
+  // Display vulnerabilities
+  vulnerabilities.forEach(({ id, title, severity, url, findings }) => {
+    console.log(` - ${url}: ${title} (${severity.toUpperCase()})`)
+    findings.forEach(({ version, paths }) => {
+      paths.forEach(path => {
+        console.log(`    - ${path.replace(/>/g, ' > ')}@${version}`)
+      })
+    })
+  })
+
+  // Display outdated exclusions
+  outdated.forEach(exclusion => {
+    console.log(`Advisory exclusion for ${exclusion} is no longer required`)
+  })
+
+  // Exit with code representing the number of vulerabilities found
+  process.exit(vulnerabilities.length)
 }
 
 // Run the audit
-audit().then(code => process.exit(code))
+audit()
