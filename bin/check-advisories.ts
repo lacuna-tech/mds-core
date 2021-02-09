@@ -38,10 +38,10 @@ const pnpmAuditJson = async (): Promise<AuditJson> => {
 
 const audit = async () => {
   // Parse minimum severity level and advisory exclusions from command line arguments
-  const [, , level, ...excluding] = process.argv.map(arg => arg.toLowerCase())
+  const [level = 'low', ...excluding] = process.argv.slice(2).map(arg => arg.toLowerCase())
   const minSeverityLevel = SeverityLevels.indexOf(<SeverityLevel>level)
-  if (minSeverityLevel < 0 || excluding.some(id => !/^-?\d+$/.test(id))) {
-    console.log(`Usage: "pnpm-audit <${SeverityLevels.join('|')}> [...list of numeric advisory ids to exclude]"`)
+  if (minSeverityLevel < 0 || (excluding.length > 0 && excluding.some(id => !/^-?\d+$/.test(id)))) {
+    console.log(`Usage: check-advisories <${SeverityLevels.join('|')}> [...list of numeric advisory ids to exclude]"`)
     return 1
   }
 
