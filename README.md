@@ -84,17 +84,17 @@ Then add `export PG_NAME=mdstest` to your shell's environment file.  (The name i
 
 You should have NVM already installed from the link above.  The top level directory of the project has a `.nvmrc` file and you should be able to run `nvm install` to get the right version of Node.
 
-#### Package setup
-Install [Lerna](https://lerna.js.org/)
+#### Package manager setup
+Install [pnpm](https://pnpm.js.org/)
 
 ```sh
-yarn global add lerna
+npm install -g pnpm
 ```
 
-Install all packages.  Uses Yarn workspaces.
+Install all packages.  Uses pnpm workspaces.
 
 ```sh
-yarn install
+pnpm install
 ```
 
 #### Launching a local server for a package
@@ -103,49 +103,13 @@ Now you can work with each package
 ```sh
 cd packages/mds-audit
 pnpm test
-yarn start
+pnpm start
 ```
 
 #### Running the tests
 You can also run all tests from the project root with
 ```
 pnpm test
-```
-
-### Package Management - Lerna
-
-This repository is a monorepo and uses Lerna for working with its packages.
-
-#### Example commands
-
-Run all test suites at once
-
-```sh
-lerna run test
-```
-
-Run all tests suites sequentially
-
-```sh
-lerna run test --concurrency 1
-```
-
-Run tests for a particular package
-
-```sh
-lerna run test --scope mds-audit
-```
-
-Clean all dependencies
-
-```sh
-lerna run clean
-```
-
-Format all files
-
-```sh
-lerna run prettier
 ```
 
 ## Debugging with Visual Studio Code

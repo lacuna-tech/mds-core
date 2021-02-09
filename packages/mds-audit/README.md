@@ -8,7 +8,7 @@ Endpoints for auditing compliance with MDS. See
 1. Make sure node/git are installed
 2. Clone this repo
 3. `cd` into the repo dir
-4. Host the API locally at `http://localhost:4002` by running `yarn start`
+4. Host the API locally at `http://localhost:4002` by running `pnpm start`
 5. Interact with the API using your favorite REST client
 
 ## Run Tests
