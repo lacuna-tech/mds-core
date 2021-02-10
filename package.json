@@ -57,20 +57,22 @@
     "wtfnode": "0.8.4"
   },
   "scripts": {
-    "build": "tsc --version && pnpm recursive run build",
-    "bundle": "webpack --version && pnpm recursive run bundle",
+    "build": "tsc --version && pnpm run:concurrent build",
+    "bundle": "webpack --version && pnpm run:concurrent bundle",
     "check": "ts-node ./bin/check-advisories",
     "clean": "git clean -fdX -e '!.env' -e '!helm/mds/charts' -e '!helm/mds/charts/**' -e '!helm/mds/files' -e '!helm/mds/files/**' && pnpm install",
     "image": "pnpm recursive run image",
-    "image:development": "pnpm recursive run image:development",
-    "image:production": "pnpm recursive run image:production",
+    "image:development": "pnpm run:concurrent image:development",
+    "image:production": "pnpm run:concurrent image:production",
     "images": "pnpm recursive run image",
     "preinstall": "npx only-allow pnpm && npx toolcheck",
     "postinstall": "pnpm check low 1556 1561",
+    "run:concurrent": "pnpm recursive run --filter=!root",
+    "run:sequential": "pnpm recursive run --workspace-concurrency=1 --filter=!root",
     "push": "bin/build-helper pushImages",
     "test": "check-node-version --package --print && pnpm test:eslint && pnpm test:unit",
-    "test:eslint": "pnpm recursive run test:eslint",
-    "test:unit": "pnpm recursive run --workspace-concurrency=1 test:unit",
+    "test:eslint": "pnpm run:concurrent test:eslint",
+    "test:unit": "pnpm run:sequential test:unit",
     "values": "bin/build-helper templateValues"
   }
 }
