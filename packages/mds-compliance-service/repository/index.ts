@@ -171,6 +171,14 @@ class ComplianceReadWriteRepository extends ReadWriteRepository {
   }
 
   /**
+   * The complex SQL query has three parts:
+   * 1. s1 iterates through the compliance_snapshots rows in the window of time of interest to get
+   * contiguous rows where total_violations > 0.
+   * 2. s2 sorts through the results of s1 to group snapshots by policy_id and provider_id.
+   * 3. In s3, for each provider_id/policy_id, it gets all the violation periods, the start_time for each
+   * violation period, and the snapshot ids for each violation period.
+   * 4. Finally, for each violation period, it sets the end_time for each violation period (real_end_time),
+   * by looking ahead to the next snapshot, which has no violations, and getting the timestamp of that snapshot.
    *
    * @param options Gets the periods of time for which a provider was in violation of a policy.
    */
