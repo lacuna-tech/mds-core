@@ -33,7 +33,13 @@ const pnpmAuditJson = async (): Promise<AuditJson> => {
       return stdout
     }
   }
-  return <AuditJson>JSON.parse(await pnpmAudit())
+  const result = await pnpmAudit()
+  try {
+    return <AuditJson>JSON.parse(result)
+  } catch (error) {
+    console.error(`Skipping audit due to unexpected error: ${error}`)
+    process.exit(0)
+  }
 }
 
 const audit = async () => {
@@ -46,7 +52,7 @@ const audit = async () => {
   }
 
   // Set exclusions
-  const exclusions = excluding.map(id => `https://npmjs.com/advisories/${id}`)
+  const exclusions = excluding.map(Number)
 
   // Get advisories
   console.log(`Running: pnpm audit --json --audit-level=${SeverityLevels[minSeverityLevel]}`)
@@ -58,12 +64,12 @@ const audit = async () => {
 
   // Ignore advisories below minimum severity level or excluded
   const vulnerabilities = Object.values(advisories)
-    .filter(({ url }) => !exclusions.includes(url))
+    .filter(({ id }) => !exclusions.includes(id))
     .filter(({ severity }) => SeverityLevels.indexOf(severity) >= minSeverityLevel)
 
   // Detect outdated exclusions
   const outdated = exclusions.filter(
-    exclusion => !Object.values(advisories).some(advisory => advisory.url === exclusion)
+    exclusion => !Object.values(advisories).some(advisory => advisory.id === exclusion)
   )
 
   // Display results
