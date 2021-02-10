@@ -19,11 +19,6 @@ apis:
     pathPrefix: /compliance
     version: latest
     migration: false
-  mds-daily:
-    enabled: true
-    pathPrefix: /daily
-    version: latest
-    migration: false
   mds-jurisdiction:
     enabled: true
     pathPrefix: /jurisdiction

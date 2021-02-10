@@ -8,7 +8,6 @@ import {
   JUMP_TEST_DEVICE_1,
   makeDevices,
   makeEventsWithTelemetry,
-  makeEvents,
   JUMP_PROVIDER_ID,
   POLICY_JSON,
   POLICY2_JSON,
@@ -24,11 +23,10 @@ import {
   START_ONE_MONTH_FROM_NOW,
   DELETEABLE_POLICY
 } from '@mds-core/mds-test-data'
-import { now, clone, NotFoundError, rangeRandomInt, uuid, ConflictError, yesterday, days } from '@mds-core/mds-utils'
+import { now, clone, NotFoundError, rangeRandomInt, ConflictError, yesterday, days } from '@mds-core/mds-utils'
 import { isNullOrUndefined } from 'util'
 import MDSDBPostgres from '../index'
 import { dropTables, createTables, updateSchema } from '../migration'
-import { Trip } from '../types'
 import { configureClient, MDSPostgresClient, PGInfo } from '../sql-utils'
 
 const { env } = process
@@ -53,42 +51,6 @@ const DistrictSeven: Geography = {
   name: 'District Seven',
   geography_id: GEOGRAPHY2_UUID,
   geography_json: DISTRICT_SEVEN
-}
-
-function makeTrip(device: Device): Trip {
-  return {
-    provider_id: device.provider_id,
-    provider_name: device.provider_id,
-    device_id: device.device_id,
-    vehicle_id: device.vehicle_id,
-    vehicle_type: device.vehicle_type,
-    propulsion_types: device.propulsion_types,
-    provider_trip_id: uuid(),
-    trip_duration: rangeRandomInt(5),
-    trip_distance: rangeRandomInt(5),
-    route: {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          properties: {
-            timestamp: now()
-          },
-          geometry: {
-            type: 'Point',
-            coordinates: [Math.random() * 10, Math.random() * 10]
-          }
-        }
-      ]
-    },
-    accuracy: Math.random() * 3,
-    trip_start: now() - 1000 * Math.random(),
-    trip_end: now(),
-    parking_verification_url: 'http://iamverified.com',
-    standard_cost: rangeRandomInt(5),
-    actual_cost: rangeRandomInt(5),
-    recorded: now()
-  }
 }
 
 /* You'll need postgres running and the env variable PG_NAME
@@ -209,68 +171,9 @@ if (pg_info.database) {
         assert.deepEqual(result[0].count, 10)
       })
 
-      it('.getEventCountsPerProviderSince', async () => {
-        const result = await MDSDBPostgres.getEventCountsPerProviderSince()
-        assert.deepEqual(result[0].provider_id, JUMP_PROVIDER_ID)
-        assert.deepEqual(result[0].event_type, 'decommissioned')
-        assert.deepEqual(result[0].count, 9)
-        assert.deepEqual(result[1].provider_id, JUMP_PROVIDER_ID)
-        assert.deepEqual(result[1].event_type, 'trip_end')
-        assert.deepEqual(result[1].count, 1)
-      })
-
-      it('.getEventsLast24HoursPerProvider', async () => {
-        const result = await MDSDBPostgres.getEventsLast24HoursPerProvider()
-        assert.deepEqual(result.length, 10)
-        const firstResult = result[0]
-        assert(firstResult.provider_id)
-        assert(firstResult.device_id)
-        assert(firstResult.event_types)
-        assert(firstResult.recorded)
-        assert(firstResult.timestamp)
-      })
-
-      it('.getTelemetryCountsPerProviderSince', async () => {
-        const result = await MDSDBPostgres.getTelemetryCountsPerProviderSince()
-        assert.deepEqual(result.length, 1)
-      })
-
-      it('.getTripCountsPerProviderSince', async () => {
-        const result = await MDSDBPostgres.getTripCountsPerProviderSince()
-        assert.deepEqual(result[0].count, 1)
-      })
-
       it('.getVehicleCountsPerProvider', async () => {
         const result = await MDSDBPostgres.getVehicleCountsPerProvider()
         assert.deepEqual(result[0].count, 10)
-      })
-
-      it('.getNumVehiclesRegisteredLast24HoursByProvider', async () => {
-        const result = await MDSDBPostgres.getNumVehiclesRegisteredLast24HoursByProvider()
-        assert.deepEqual(result[0].count, 10)
-      })
-
-      it('.getNumEventsLast24HoursByProvider', async () => {
-        const result = await MDSDBPostgres.getNumEventsLast24HoursByProvider()
-        assert.deepEqual(result[0].count, 10)
-      })
-
-      it('.getTripEventsLast24HoursByProvider', async () => {
-        const trip1: Trip = makeTrip(JUMP_TEST_DEVICE_1)
-        const trip2: Trip = makeTrip(JUMP_TEST_DEVICE_1)
-        const event1: VehicleEvent = makeEvents([JUMP_TEST_DEVICE_1], now() - 5)[0]
-        const event2: VehicleEvent = makeEvents([JUMP_TEST_DEVICE_1], now())[0]
-        event1.trip_id = trip1.provider_trip_id
-        event2.trip_id = trip2.provider_trip_id
-        await MDSDBPostgres.writeEvent(event1)
-        await MDSDBPostgres.writeEvent(event2)
-        const result = await MDSDBPostgres.getTripEventsLast24HoursByProvider()
-        assert.deepEqual(result.length, 2)
-      })
-
-      it('.getMostRecentEventByProvider', async () => {
-        const result = await MDSDBPostgres.getMostRecentEventByProvider()
-        assert.deepEqual(result.length, 1)
       })
 
       it('.health', async () => {
