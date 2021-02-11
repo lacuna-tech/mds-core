@@ -57,7 +57,16 @@ export const RedisCache = () => {
 
     set: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.set(key, val)),
 
-    expireat: async (key: KeyType, time: Timestamp) => safelyExec(theClient => theClient.expireat(key, time)),
+    /**
+     * Expires at Unix time in seconds
+     */
+    expireat: async (key: KeyType, timeInSeconds: Timestamp) =>
+      safelyExec(theClient => theClient.expireat(key, timeInSeconds)),
+
+    /**
+     * Expires at Unix time in milliseconds
+     */
+    pexpireat: async (key: KeyType, time: Timestamp) => safelyExec(theClient => theClient.pexpireat(key, time)),
 
     dbsize: async () => safelyExec(theClient => theClient.dbsize()),
 
@@ -116,9 +125,7 @@ export const RedisCache = () => {
     zadd: async (key: KeyType, fields: OrderedFields | (string | number)[]) =>
       safelyExec(theClient => {
         const entries: (string | number)[] = !Array.isArray(fields)
-          ? Object.entries(fields).reduce((acc: (number | string)[], [field, value]) => {
-              return [...acc, value, field]
-            }, [])
+          ? Object.entries(fields).reduce((acc: (number | string)[], [field, value]) => [...acc, value, field], [])
           : fields
         return theClient.zadd(key, ...entries)
       }),
