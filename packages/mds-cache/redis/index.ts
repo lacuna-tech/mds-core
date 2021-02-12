@@ -64,7 +64,8 @@ export const RedisCache = () => {
     set: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.set(key, val)),
 
     /**
-     * Expires at Unix time in seconds, or time in milliseconds.
+     * Expires a key at Unix time in seconds, or time in milliseconds.
+     * Don't add both parameters, only one of them will be used.
      */
     expireat: async (options: ExpireAtOptions) => {
       const { key, timeInSeconds, timeInMs } = options
