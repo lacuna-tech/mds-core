@@ -15,10 +15,16 @@
  */
 
 import Redis, { KeyType, ValueType } from 'ioredis'
-import { Nullable, Timestamp } from '@mds-core/mds-types'
+import { Nullable, Timestamp, TimestampInSeconds } from '@mds-core/mds-types'
 import { isDefined, ClientDisconnectedError, ExceptionMessages } from '@mds-core/mds-utils'
 import { initClient } from './helpers/client'
 import { OrderedFields } from '../@types'
+
+export type ExpireAtOptions = {
+  key: KeyType
+  timeInSeconds?: TimestampInSeconds
+  timeInMs?: Timestamp
+}
 
 export const RedisCache = () => {
   let client: Nullable<Redis.Redis> = null
@@ -58,15 +64,17 @@ export const RedisCache = () => {
     set: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.set(key, val)),
 
     /**
-     * Expires at Unix time in seconds
+     * Expires at Unix time in seconds, or time in milliseconds.
      */
-    expireat: async (key: KeyType, timeInSeconds: Timestamp) =>
-      safelyExec(theClient => theClient.expireat(key, timeInSeconds)),
-
-    /**
-     * Expires at Unix time in milliseconds
-     */
-    pexpireat: async (key: KeyType, time: Timestamp) => safelyExec(theClient => theClient.pexpireat(key, time)),
+    expireat: async (options: ExpireAtOptions) => {
+      const { key, timeInSeconds, timeInMs } = options
+      if (timeInSeconds) {
+        return safelyExec(theClient => theClient.expireat(key, timeInSeconds))
+      }
+      if (timeInMs) {
+        return safelyExec(theClient => theClient.pexpireat(key, timeInMs))
+      }
+    },
 
     dbsize: async () => safelyExec(theClient => theClient.dbsize()),
 
