@@ -9,11 +9,11 @@
   "author": "City of Los Angeles",
   "license": "Apache-2.0",
   "dependencies": {
-    "@mds-core/mds-api-server": "0.1.26",
-    "@mds-core/mds-agency-cache": "0.1.26",
-    "@mds-core/mds-db": "0.1.26",
-    "@mds-core/mds-types": "0.1.23",
-    "@mds-core/mds-utils": "0.1.26"
+    "@mds-core/mds-api-server": "workspace:0.1.26",
+    "@mds-core/mds-agency-cache": "workspace:0.1.26",
+    "@mds-core/mds-db": "workspace:0.1.26",
+    "@mds-core/mds-types": "workspace:0.1.23",
+    "@mds-core/mds-utils": "workspace:0.1.26"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

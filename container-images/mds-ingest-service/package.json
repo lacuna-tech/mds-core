@@ -23,7 +23,7 @@
   "author": "City of Los Angeles",
   "license": "Apache-2.0",
   "dependencies": {
-    "@mds-core/mds-ingest-service": "0.1.0",
-    "@mds-core/mds-webpack-config": "0.1.0"
+    "@mds-core/mds-ingest-service": "workspace:0.1.0",
+    "@mds-core/mds-webpack-config": "workspace:0.1.0"
   }
 }

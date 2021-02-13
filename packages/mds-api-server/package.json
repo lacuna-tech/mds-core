@@ -19,9 +19,9 @@
   "author": "City of Los Angeles",
   "license": "Apache-2.0",
   "dependencies": {
-    "@mds-core/mds-api-authorizer": "0.1.26",
-    "@mds-core/mds-logger": "0.1.24",
-    "@mds-core/mds-utils": "0.1.26",
+    "@mds-core/mds-api-authorizer": "workspace:0.1.26",
+    "@mds-core/mds-logger": "workspace:0.1.24",
+    "@mds-core/mds-utils": "workspace:0.1.26",
     "@types/body-parser": "1.19.0",
     "@types/compression": "1.7.0",
     "@types/cors": "2.8.9",

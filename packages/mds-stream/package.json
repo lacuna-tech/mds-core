@@ -14,9 +14,9 @@
   "author": "City of Los Angeles",
   "license": "Apache-2.0",
   "dependencies": {
-    "@mds-core/mds-logger": "0.1.24",
-    "@mds-core/mds-types": "0.1.23",
-    "@mds-core/mds-utils": "0.1.26",
+    "@mds-core/mds-logger": "workspace:0.1.24",
+    "@mds-core/mds-types": "workspace:0.1.23",
+    "@mds-core/mds-utils": "workspace:0.1.26",
     "@types/bluebird": "3.5.33",
     "@types/redis": "2.8.28",
     "@types/sinon": "9.0.10",
