@@ -18,9 +18,7 @@
     "bundle:production": "webpack --mode=production --env npm_package_name=${npm_package_name} --env npm_package_version=${npm_package_version}",
     "image": "pnpm image:production",
     "image:development": "pnpm bundle:development && ../../bin/build-helper buildImage mds-agency:${npm_package_version}",
-    "image:production": "pnpm bundle:production && ../../bin/build-helper buildImage mds-agency:${npm_package_version}",
-    "test": "pnpm test:eslint",
-    "test:eslint": "eslint --ignore-path ../../.gitignore '**/*.ts'"
+    "image:production": "pnpm bundle:production && ../../bin/build-helper buildImage mds-agency:${npm_package_version}"
   },
   "dependencies": {
     "@mds-core/mds-agency": "0.0.28",

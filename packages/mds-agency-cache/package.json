@@ -15,9 +15,7 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "test": "pnpm test:eslint && pnpm test:unit",
-    "test:eslint": "eslint --ignore-path ../../.gitignore '**/*.ts'",
-    "test:unit": "exit 0"
+    "test": "exit 0"
   },
   "dependencies": {
     "@mds-core/mds-cache": "0.0.1",

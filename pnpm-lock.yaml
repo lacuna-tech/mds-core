@@ -16,6 +16,7 @@ importers:
       eslint-config-prettier: 7.1.0_eslint@7.17.0
       eslint-config-recommended: 4.1.0
       eslint-plugin-import: 2.22.1_eslint@7.17.0
+      eslint-plugin-log: 1.2.7_eslint@7.17.0
       eslint-plugin-prettier: 3.3.1_69979e61f6e4e06807b16d761b81a74d
       eslint-plugin-promise: 4.2.1
       git-revision-webpack-plugin: 3.0.6
@@ -65,6 +66,7 @@ importers:
       eslint-config-prettier: 7.1.0
       eslint-config-recommended: 4.1.0
       eslint-plugin-import: 2.22.1
+      eslint-plugin-log: 1.2.7
       eslint-plugin-prettier: 3.3.1
       eslint-plugin-promise: 4.2.1
       git-revision-webpack-plugin: 3.0.6
@@ -4504,6 +4506,10 @@ packages:
       node: '>= 6'
     resolution:
       integrity: sha512-U7VdrJFnJgo4xjrHpTzu0yrHPGImdsmD95ZlgYSEajAn2JKzDhDTPG9kBTefmObL2w/ngeZnilk+OV9CG3d7UA==
+  /common-js-file-extensions/1.0.4:
+    dev: true
+    resolution:
+      integrity: sha512-0l9aNyfbahES0qKEvo29u9hOwaNpVoAtQItkoqz1chHoWEhHDFnW+uKIJD1fUpr9jyemuOZhwSGttLasR8zGAA==
   /commondir/1.0.1:
     dev: true
     resolution:
@@ -5576,6 +5582,17 @@ packages:
       eslint: ^2 || ^3 || ^4 || ^5 || ^6 || ^7.2.0
     resolution:
       integrity: sha512-8K7JjINHOpH64ozkAhpT3sd+FswIZTfMZTjdx052pnWrgRCVfp8op9tbjpAk3DdUeI/Ba4C8OjdC0r90erHEOw==
+  /eslint-plugin-log/1.2.7_eslint@7.17.0:
+    dependencies:
+      chalk: 4.1.0
+      common-js-file-extensions: 1.0.4
+      eslint: 7.17.0
+      yargs-parser: 20.2.5
+    dev: true
+    peerDependencies:
+      eslint: '*'
+    resolution:
+      integrity: sha512-0kMVaRxuNfYcW5iMcv3T8ZpknehWN3spfRGeaIO2iopt5QtrN1EScUQq3/7ZARkbhvtZCWyr8yXkY6u6OcjsCg==
   /eslint-plugin-prettier/3.3.1_69979e61f6e4e06807b16d761b81a74d:
     dependencies:
       eslint: 7.17.0

@@ -53,8 +53,7 @@ pipeline {
             trap cleanup EXIT
 
             pnpm clean
-            PG_NAME=postgres PG_HOST=localhost PG_USER=postgres REDIS_HOST=localhost pnpm test:eslint
-            PG_NAME=postgres PG_HOST=localhost PG_USER=postgres REDIS_HOST=localhost pnpm test:unit
+            PG_NAME=postgres PG_HOST=localhost PG_USER=postgres REDIS_HOST=localhost pnpm test
           '''
         }
       }

@@ -1,11 +1,25 @@
 {
   "name": "root",
-  "private": true,
   "version": "0.0.20",
-  "author": "City of Los Angeles",
+  "private": true,
   "license": "Apache-2.0",
-  "engines": {
-    "node": "14.2.0"
+  "author": "City of Los Angeles",
+  "scripts": {
+    "build": "tsc --version && pnpm run:concurrent build",
+    "bundle": "webpack --version && pnpm run:concurrent bundle",
+    "clean": "git clean -fdX -e '!.env' -e '!helm/mds/charts' -e '!helm/mds/charts/**' -e '!helm/mds/files' -e '!helm/mds/files/**' && pnpm install",
+    "image": "pnpm run:concurrent image",
+    "image:development": "pnpm run:concurrent image:development",
+    "image:production": "pnpm run:concurrent image:production",
+    "images": "pnpm run:concurrent image",
+    "preinstall": "npx check-node-version --package && npx only-allow pnpm",
+    "lint": "eslint --ignore-path .gitignore --ignore-path .eslintignore '**/*.ts' && prettier './**/package.json' --check",
+    "push": "bin/build-helper pushImages",
+    "run:concurrent": "pnpm recursive run --filter=!root",
+    "run:sequential": "pnpm recursive run --workspace-concurrency=1 --filter=!root",
+    "pretest": "pnpm-ci audit -i 1556,1561 --strict && pnpm lint",
+    "test": "pnpm run:sequential test",
+    "values": "bin/build-helper templateValues"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "1.0.1",
@@ -23,6 +37,7 @@
     "eslint-config-prettier": "7.1.0",
     "eslint-config-recommended": "4.1.0",
     "eslint-plugin-import": "2.22.1",
+    "eslint-plugin-log": "1.2.7",
     "eslint-plugin-prettier": "3.3.1",
     "eslint-plugin-promise": "4.2.1",
     "git-revision-webpack-plugin": "3.0.6",
@@ -57,22 +72,7 @@
     "webpack-merge": "5.7.3",
     "wtfnode": "0.8.4"
   },
-  "scripts": {
-    "build": "tsc --version && pnpm run:concurrent build",
-    "bundle": "webpack --version && pnpm run:concurrent bundle",
-    "clean": "git clean -fdX -e '!.env' -e '!helm/mds/charts' -e '!helm/mds/charts/**' -e '!helm/mds/files' -e '!helm/mds/files/**' && pnpm install",
-    "image": "pnpm run:concurrent image",
-    "image:development": "pnpm run:concurrent image:development",
-    "image:production": "pnpm run:concurrent image:production",
-    "images": "pnpm run:concurrent image",
-    "preinstall": "npx check-node-version --package && npx only-allow pnpm",
-    "pretest": "pnpm-ci audit -i 1556,1561 --strict",
-    "run:concurrent": "pnpm recursive run --filter=!root",
-    "run:sequential": "pnpm recursive run --workspace-concurrency=1 --filter=!root",
-    "push": "bin/build-helper pushImages",
-    "test": "pnpm test:eslint && pnpm test:unit",
-    "test:eslint": "pnpm run:concurrent test:eslint",
-    "test:unit": "pnpm run:sequential test:unit",
-    "values": "bin/build-helper templateValues"
+  "engines": {
+    "node": "14.2.0"
   }
 }
