@@ -1,0 +1,4 @@
+{
+  "*.ts": "pnpm lint:eslint",
+  "package.json": "pnpm lint:prettier"
+}
