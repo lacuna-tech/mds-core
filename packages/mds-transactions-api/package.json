@@ -1,9 +1,9 @@
 {
   "name": "@mds-core/mds-transactions-api",
-  "description": "MDS Transaction API",
   "version": "0.1.0",
-  "author": "City of Los Angeles",
+  "description": "MDS Transaction API",
   "license": "Apache-2.0",
+  "author": "City of Los Angeles",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [

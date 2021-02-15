@@ -37,6 +37,7 @@
     "nyc": "15.1.0",
     "pnpm-ci-tools": "1.0.0",
     "prettier": "2.2.1",
+    "prettier-plugin-packagejson": "2.2.9",
     "should": "13.2.3",
     "sinon": "9.2.3",
     "sinon-express-mock": "2.2.1",

@@ -2,6 +2,12 @@
   "name": "@mds-core/mds-audit",
   "version": "0.1.38",
   "description": "Endpoint for auditing compliance with MDS",
+  "keywords": [
+    "mds",
+    "audit"
+  ],
+  "license": "Apache-2.0",
+  "author": "City of Los Angeles",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "files": [
@@ -16,12 +22,6 @@
     "ts-node": "pnpm build && DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config",
     "watch": "nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec pnpm ts-node --"
   },
-  "keywords": [
-    "mds",
-    "audit"
-  ],
-  "author": "City of Los Angeles",
-  "license": "Apache-2.0",
   "dependencies": {
     "@mds-core/mds-agency-cache": "0.1.26",
     "@mds-core/mds-api-helpers": "0.1.26",
