@@ -7,3 +7,4 @@ repos:
         args: [--allow-missing-credentials]
       - id: detect-private-key
       - id: check-merge-conflict
+      - id: check-case-conflict
