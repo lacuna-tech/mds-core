@@ -3,8 +3,7 @@ mds-*.zip
 dist
 dump.rdb
 
-# This project uses pnpm. Ignore npm/yarn lock files and virtual-store-dir
-.pnpm
+# This project uses pnpm. Ignore npm/yarn lock files
 package-lock.json
 npm-shrinkwrap.json
 yarn.lock

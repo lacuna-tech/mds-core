@@ -20,6 +20,6 @@
     "test:unit": "exit 0"
   },
   "dependencies": {
-    "@mds-core/mds-types": "workspace:0.1.23"
+    "@mds-core/mds-types": "0.1.23"
   }
 }
