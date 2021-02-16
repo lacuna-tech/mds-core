@@ -226,7 +226,6 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
   public deleteAllTransactions = async () => {
     const { connect } = this
     try {
-      console.log('DELETING THE BOIS')
       const connection = await connect('rw')
       const repository = await connection.getRepository(TransactionEntity)
 

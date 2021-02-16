@@ -15,11 +15,12 @@
  */
 
 import { uuid } from '@mds-core/mds-utils'
+import { UUID } from '@mds-core/mds-types'
 import { TransactionServiceManager } from '../service/manager'
 import { TransactionServiceClient } from '../client'
 import { TransactionRepository } from '../repository'
 import {
-  TransactionDomainModel,
+  TransactionDomainCreateModel,
   TransactionOperationDomainCreateModel,
   TransactionStatusDomainCreateModel
 } from '../@types'
@@ -44,30 +45,27 @@ describe('Transaction Repository Tests', () => {
 
 const TransactionServer = TransactionServiceManager.controller()
 
-const device_id = 'ee6bf5c7-bce0-46c9-a5c9-8652724059d7'
-const provider_id = '3452fa87-bfd7-42c5-9c53-5e07bde13671'
-const unknown_provider_id = '654b106d-5706-495f-8c89-64e17a5a3ed8'
-const transaction_id = '37bd96ac-69bd-4634-9b22-ff081d7a5a09'
-const unknown_transaction_id = '822415eb-baaa-40ff-b219-a5ed214e2114'
-const receipt_id = 'a5eb612e-a154-4339-a760-aee95908dc51'
-const operation_id = '4fcbbd4f-c0cb-46b7-b7dd-55ebae535493'
-const status_id = '15c99c65-cf78-46a9-9055-c9973e43f061'
-const receipt = { receipt_id, timestamp: Date.now(), receipt_details: {}, origin_url: '' }
+const receipt = { receipt_id: uuid(), timestamp: Date.now(), receipt_details: {}, origin_url: '' }
 
 /**
  * Generator for Transactions.
  * @param length How many transactions to generate
  */
-function* transactionsGenerator(length = 20): Generator<TransactionDomainModel> {
+function* transactionsGenerator(
+  length = 20,
+  options: { provider_id?: UUID } = {}
+): Generator<TransactionDomainCreateModel> {
   const start_timestamp = Date.now() - length * 1000
+
+  const { provider_id } = options
 
   for (let i = 0; i < length; i++) {
     const timestamp = start_timestamp + i * 1000
 
     yield {
       transaction_id: uuid(),
-      provider_id,
-      device_id,
+      provider_id: provider_id ?? uuid(),
+      device_id: uuid(),
       timestamp,
       amount: 100, // "I'd buy THAT for a dollar!"
       fee_type: 'base_fee',
@@ -76,7 +74,37 @@ function* transactionsGenerator(length = 20): Generator<TransactionDomainModel> 
   }
 }
 
-const malformed_uuid = '176b8453-ccaf-41c7-a4df-f7b3f80bddd1xxxxxxx'
+function* transactionStatusesGenerator(length = 20): Generator<TransactionStatusDomainCreateModel> {
+  const start_timestamp = Date.now() - length * 1000
+
+  for (let i = 0; i < length; i++) {
+    const timestamp = start_timestamp + i * 1000
+
+    yield {
+      transaction_id: uuid(),
+      status_id: uuid(),
+      timestamp,
+      status_type: 'invoice_generated',
+      author: 'no one'
+    }
+  }
+}
+
+function* transactionOperationsGenerator(length = 20): Generator<TransactionOperationDomainCreateModel> {
+  const start_timestamp = Date.now() - length * 1000
+
+  for (let i = 0; i < length; i++) {
+    const timestamp = start_timestamp + i * 1000
+
+    yield {
+      transaction_id: uuid(),
+      operation_id: uuid(),
+      timestamp,
+      operation_type: 'invoice_generated',
+      author: 'no one'
+    }
+  }
+}
 
 describe('Transaction Service Tests', () => {
   beforeAll(async () => {
@@ -98,17 +126,11 @@ describe('Transaction Service Tests', () => {
     describe('Transaction Creation Tests', () => {
       describe('Success Tests', () => {
         it('Create one good transaction succeeds', async () => {
-          const transaction = await TransactionServiceClient.createTransaction({
-            transaction_id,
-            provider_id,
-            device_id,
-            timestamp: Date.now() - 100000,
-            amount: 100, // "I'd buy THAT for a dollar!"
-            fee_type: 'base_fee',
-            receipt
-          })
-          expect(transaction.device_id).toEqual(device_id)
-          expect(transaction.transaction_id).toEqual(transaction_id)
+          const [transactionToPersist] = transactionsGenerator()
+
+          const recordedTransaction = await TransactionServiceClient.createTransaction(transactionToPersist)
+          expect(recordedTransaction.device_id).toEqual(transactionToPersist.device_id)
+          expect(recordedTransaction.transaction_id).toEqual(transactionToPersist.transaction_id)
         })
 
         it('Verifies good bulk-transaction creation', async () => {
@@ -125,34 +147,25 @@ describe('Transaction Service Tests', () => {
 
       describe('Failure Tests', () => {
         it('Create one transaction with malformed transaction_id rejects', async () => {
-          await expect(
-            TransactionServiceClient.createTransaction({
-              transaction_id: malformed_uuid,
-              provider_id,
-              device_id,
-              timestamp: Date.now(),
-              amount: 100, // "I'd buy THAT for a dollar!"
-              fee_type: 'base_fee',
-              receipt
-            })
-          ).rejects.toMatchObject({ type: 'ValidationError' })
+          const [transaction] = transactionsGenerator(1)
+          const malformedTransaction = { ...transaction, transaction_id: 'definitely-not-a-uuid' }
+
+          await expect(TransactionServiceClient.createTransaction(malformedTransaction)).rejects.toMatchObject({
+            type: 'ValidationError'
+          })
         })
 
         it('Create one transaction with missing fee_type rejects', async () => {
-          await expect(
-            TransactionServiceClient.createTransaction({
-              transaction_id: malformed_uuid,
-              provider_id,
-              device_id,
-              timestamp: Date.now(),
-              amount: 100, // "I'd buy THAT for a dollar!"
-              receipt
-            } as any)
-          ).rejects.toMatchObject({ type: 'ValidationError' })
+          const [transaction] = transactionsGenerator(1)
+          const { fee_type, ...malformedTransaction } = transaction
+
+          await expect(TransactionServiceClient.createTransaction(malformedTransaction as any)).rejects.toMatchObject({
+            type: 'ValidationError'
+          })
         })
 
         it('Post Transaction duplicate transaction_id', async () => {
-          const [transaction] = [...transactionsGenerator(1)]
+          const [transaction] = transactionsGenerator(1)
 
           await TransactionServiceClient.createTransaction(transaction)
 
@@ -166,7 +179,7 @@ describe('Transaction Service Tests', () => {
     describe('Transaction Read Tests', () => {
       describe('Success', () => {
         it('Get One Transaction', async () => {
-          const [transactionToPersist] = [...transactionsGenerator(1)]
+          const [transactionToPersist] = transactionsGenerator(1)
           const recordedTransaction = await TransactionServiceClient.createTransaction(transactionToPersist)
 
           const fetchedTransaction = await TransactionServiceClient.getTransaction(recordedTransaction.transaction_id)
@@ -183,7 +196,8 @@ describe('Transaction Service Tests', () => {
         })
 
         it('Get All Transactions with provider search and paging', async () => {
-          const transactionsToPersist = [...transactionsGenerator(21)] // Arbitrarily generate 21 events, just so we can verify paging works w/ default page size on a handful of pages.
+          const provider_id = uuid()
+          const transactionsToPersist = [...transactionsGenerator(21, { provider_id })] // Arbitrarily generate 21 events, just so we can verify paging works w/ default page size on a handful of pages.
           await TransactionServiceClient.createTransactions(transactionsToPersist)
 
           const { transactions: firstPage, cursor: firstCursor } = await TransactionServiceClient.getTransactions({
@@ -217,7 +231,7 @@ describe('Transaction Service Tests', () => {
 
         it('Get All Transactions with bogus provider serach', async () => {
           const { transactions } = await TransactionServiceClient.getTransactions({
-            provider_id: unknown_provider_id
+            provider_id: uuid()
           })
           expect(transactions.length).toEqual(0)
         })
@@ -226,13 +240,8 @@ describe('Transaction Service Tests', () => {
   })
 
   describe('Transaction Operation Tests', () => {
-    const sampleOperation: TransactionOperationDomainCreateModel = {
-      transaction_id,
-      operation_id,
-      timestamp: Date.now(),
-      operation_type: 'invoice_generated',
-      author: 'no one'
-    }
+    const [sampleOperation] = transactionOperationsGenerator(1)
+    const { operation_id, transaction_id } = sampleOperation
 
     describe('Transaction Operation Create Tests', () => {
       describe('Success', () => {
@@ -260,14 +269,14 @@ describe('Transaction Service Tests', () => {
       })
 
       it('Get All Transaction Operations for One Transaction', async () => {
-        const operations = await TransactionServiceClient.getTransactionOperations(transaction_id)
+        const operations = await TransactionServiceClient.getTransactionOperations(sampleOperation.transaction_id)
         expect(operations.length).toEqual(1)
         const [operation] = operations
         expect(operation.operation_id).toEqual(operation_id)
       })
 
       it('Get All Transaction Operations for One Nonexistant Transaction', async () => {
-        const operations = await TransactionServiceClient.getTransactionOperations(unknown_transaction_id)
+        const operations = await TransactionServiceClient.getTransactionOperations(uuid())
         expect(operations.length).toEqual(0)
       })
     })
@@ -282,36 +291,26 @@ describe('Transaction Service Tests', () => {
 
   describe('Transaction Status Tests', () => {
     it('Post Good Transaction Status', async () => {
-      const transactionStatus = await TransactionServiceClient.setTransactionStatus({
-        transaction_id,
-        status_id,
-        timestamp: Date.now(),
-        status_type: 'invoice_generated',
-        author: 'no one'
-      })
-      expect(transactionStatus.status_id).toEqual(status_id)
-      expect(transactionStatus.transaction_id).toEqual(transaction_id)
+      const [transactionStatusToPersist] = transactionStatusesGenerator(1)
+      const recordedTransactionStatus = await TransactionServiceClient.setTransactionStatus(transactionStatusToPersist)
+
+      expect(recordedTransactionStatus.status_id).toEqual(transactionStatusToPersist.status_id)
+      expect(recordedTransactionStatus.transaction_id).toEqual(recordedTransactionStatus.transaction_id)
     })
 
     it('Get All Transaction Statuses', async () => {
-      const transactionStatus: TransactionStatusDomainCreateModel = {
-        transaction_id,
-        status_id,
-        timestamp: Date.now(),
-        status_type: 'invoice_generated',
-        author: 'no one'
-      }
+      const [transactionStatusToPersist] = transactionStatusesGenerator(1)
 
-      await TransactionServiceClient.setTransactionStatus(transactionStatus)
+      await TransactionServiceClient.setTransactionStatus(transactionStatusToPersist)
 
-      const statuses = await TransactionServiceClient.getTransactionStatuses(transaction_id)
+      const statuses = await TransactionServiceClient.getTransactionStatuses(transactionStatusToPersist.transaction_id)
       expect(statuses.length).toEqual(1)
       const [status] = statuses
-      expect(status.status_id).toEqual(status_id)
+      expect(status.status_id).toEqual(transactionStatusToPersist.status_id)
     })
 
     it('Get All Transaction Statuses for One Nonexistant Transaction', async () => {
-      const statuses = await TransactionServiceClient.getTransactionStatuses(unknown_transaction_id)
+      const statuses = await TransactionServiceClient.getTransactionStatuses(uuid())
       expect(statuses.length).toEqual(0)
     })
 
