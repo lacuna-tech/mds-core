@@ -1,6 +1,1 @@
-packages/mds-compliance/tests/la-city-boundary.ts
-packages/mds-policy-author/tests/la-city-boundary.ts
-packages/mds-policy/tests/la-city-boundary.ts
-packages/mds-test-data/district-seven.ts
-packages/mds-test-data/la-city-boundary.ts
-packages/mds-test-data/test-areas/*.ts
+packages/mds-test-data/
