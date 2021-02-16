@@ -15,9 +15,7 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "test": "pnpm test:eslint && pnpm test:unit",
-    "test:eslint": "eslint --fix --ignore-path ../../.gitignore '**/*.ts'",
-    "test:unit": "DOTENV_CONFIG_PATH=../../.env jest"
+    "test": "DOTENV_CONFIG_PATH=../../.env jest"
   },
   "dependencies": {
     "@mds-core/mds-logger": "0.1.24",
