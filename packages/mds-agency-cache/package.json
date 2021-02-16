@@ -15,7 +15,7 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "test": "exit 0"
+    "test": "DOTENV_CONFIG_PATH=../../.env jest --passWithNoTests"
   },
   "dependencies": {
     "@mds-core/mds-cache": "0.0.1",
