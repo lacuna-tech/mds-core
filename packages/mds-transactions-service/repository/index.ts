@@ -74,7 +74,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
 
   // TODO search criteria
   public getTransactions = async (
-    search: TransactionSearchParams
+    search: TransactionSearchParams = {}
   ): Promise<{ transactions: TransactionDomainModel[]; cursor: Cursor }> => {
     const { connect } = this
     const { provider_id, start_timestamp, end_timestamp, before, after, limit } = validateTransactionSearchParams(
@@ -213,6 +213,58 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
       const connection = await connect('ro')
       const entities = await connection.getRepository(TransactionStatusEntity).find({ where: { transaction_id } })
       return entities.map(TransactionStatusEntityToDomain.mapper())
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  /**
+   * @deprecated
+   * **WARNING: This should ONLY be used during tests! Hence adding the deprecated flag.**
+   * Deletes all transactions from the DB.
+   */
+  public deleteAllTransactions = async () => {
+    const { connect } = this
+    try {
+      console.log('DELETING THE BOIS')
+      const connection = await connect('rw')
+      const repository = await connection.getRepository(TransactionEntity)
+
+      await repository.query(`DELETE FROM ${repository.metadata.tableName};`)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  /**
+   * @deprecated
+   * **WARNING: This should ONLY be used during tests! Hence adding the deprecated flag.**
+   * Deletes all transaction operations from the DB.
+   */
+  public deleteAllTransactionOperations = async () => {
+    const { connect } = this
+    try {
+      const connection = await connect('rw')
+      const repository = await connection.getRepository(TransactionOperationEntity)
+
+      await repository.query(`DELETE FROM ${repository.metadata.tableName};`)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  /**
+   * @deprecated
+   * **WARNING: This should ONLY be used during tests! Hence adding the deprecated flag.**
+   * Deletes all transaction statuses from the DB.
+   */
+  public deleteAllTransactionStatuses = async () => {
+    const { connect } = this
+    try {
+      const connection = await connect('rw')
+      const repository = await connection.getRepository(TransactionStatusEntity)
+
+      await repository.query(`DELETE FROM ${repository.metadata.tableName};`)
     } catch (error) {
       throw RepositoryError(error)
     }

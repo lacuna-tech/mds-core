@@ -18,7 +18,11 @@ import { uuid } from '@mds-core/mds-utils'
 import { TransactionServiceManager } from '../service/manager'
 import { TransactionServiceClient } from '../client'
 import { TransactionRepository } from '../repository'
-import { TransactionDomainModel } from '../@types'
+import {
+  TransactionDomainModel,
+  TransactionOperationDomainCreateModel,
+  TransactionStatusDomainCreateModel
+} from '../@types'
 
 describe('Transaction Repository Tests', () => {
   beforeAll(async () => {
@@ -50,6 +54,28 @@ const operation_id = '4fcbbd4f-c0cb-46b7-b7dd-55ebae535493'
 const status_id = '15c99c65-cf78-46a9-9055-c9973e43f061'
 const receipt = { receipt_id, timestamp: Date.now(), receipt_details: {}, origin_url: '' }
 
+/**
+ * Generator for Transactions.
+ * @param length How many transactions to generate
+ */
+function* transactionsGenerator(length = 20): Generator<TransactionDomainModel> {
+  const start_timestamp = Date.now() - length * 1000
+
+  for (let i = 0; i < length; i++) {
+    const timestamp = start_timestamp + i * 1000
+
+    yield {
+      transaction_id: uuid(),
+      provider_id,
+      device_id,
+      timestamp,
+      amount: 100, // "I'd buy THAT for a dollar!"
+      fee_type: 'base_fee',
+      receipt
+    }
+  }
+}
+
 const malformed_uuid = '176b8453-ccaf-41c7-a4df-f7b3f80bddd1xxxxxxx'
 
 describe('Transaction Service Tests', () => {
@@ -57,221 +83,246 @@ describe('Transaction Service Tests', () => {
     await TransactionServer.start()
   })
 
-  it('Post Good Transaction', async () => {
-    const transaction = await TransactionServiceClient.createTransaction({
-      transaction_id,
-      provider_id,
-      device_id,
-      timestamp: Date.now() - 100000,
-      amount: 100, // "I'd buy THAT for a dollar!"
-      fee_type: 'base_fee',
-      receipt
-    })
-    expect(transaction.device_id).toEqual(device_id)
-    expect(transaction.transaction_id).toEqual(transaction_id)
+  /**
+   * Clear DB after each test runs. No side-effects for you.
+   */
+  afterEach(async () => {
+    await Promise.all([
+      TransactionRepository.deleteAllTransactions(),
+      TransactionRepository.deleteAllTransactionOperations(),
+      TransactionRepository.deleteAllTransactionStatuses()
+    ])
   })
 
-  it('Post Transaction with malformed transaction_id', async () => {
-    try {
-      await TransactionServiceClient.createTransaction({
-        transaction_id: malformed_uuid,
-        provider_id,
-        device_id,
-        timestamp: Date.now(),
-        amount: 100, // "I'd buy THAT for a dollar!"
-        fee_type: 'base_fee',
-        receipt
+  describe('Transaction Tests', () => {
+    describe('Transaction Creation Tests', () => {
+      describe('Success Tests', () => {
+        it('Create one good transaction succeeds', async () => {
+          const transaction = await TransactionServiceClient.createTransaction({
+            transaction_id,
+            provider_id,
+            device_id,
+            timestamp: Date.now() - 100000,
+            amount: 100, // "I'd buy THAT for a dollar!"
+            fee_type: 'base_fee',
+            receipt
+          })
+          expect(transaction.device_id).toEqual(device_id)
+          expect(transaction.transaction_id).toEqual(transaction_id)
+        })
+
+        it('Verifies good bulk-transaction creation', async () => {
+          const transactionsToPersist = [...transactionsGenerator(20)]
+          const recordedTransactions = await TransactionServiceClient.createTransactions(transactionsToPersist)
+
+          recordedTransactions.forEach((transaction, i) => {
+            expect(transaction.device_id).toEqual(transactionsToPersist[i].device_id)
+          })
+
+          expect(recordedTransactions.length).toStrictEqual(transactionsToPersist.length)
+        })
       })
-      expect('did not happen').toBe('happened')
-    } catch (err) {
-      expect(err.type).toBe('ValidationError')
-    }
-  })
 
-  it('Post Transaction with missing fee_type', async () => {
-    try {
-      await TransactionServiceClient.createTransaction({
-        transaction_id: malformed_uuid,
-        provider_id,
-        device_id,
-        timestamp: Date.now(),
-        amount: 100, // "I'd buy THAT for a dollar!"
-        receipt
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any)
-      expect('did not happen').toBe('happened')
-    } catch (err) {
-      expect(err.type).toBe('ValidationError')
-    }
-  })
+      describe('Failure Tests', () => {
+        it('Create one transaction with malformed transaction_id rejects', async () => {
+          await expect(
+            TransactionServiceClient.createTransaction({
+              transaction_id: malformed_uuid,
+              provider_id,
+              device_id,
+              timestamp: Date.now(),
+              amount: 100, // "I'd buy THAT for a dollar!"
+              fee_type: 'base_fee',
+              receipt
+            })
+          ).rejects.toMatchObject({ type: 'ValidationError' })
+        })
 
-  it('Post Transaction duplicate transaction_id', async () => {
-    try {
-      await TransactionServiceClient.createTransaction({
-        transaction_id,
-        provider_id,
-        device_id,
-        timestamp: Date.now(),
-        amount: 100, // "I'd buy THAT for a dollar!"
-        fee_type: 'base_fee',
-        receipt
+        it('Create one transaction with missing fee_type rejects', async () => {
+          await expect(
+            TransactionServiceClient.createTransaction({
+              transaction_id: malformed_uuid,
+              provider_id,
+              device_id,
+              timestamp: Date.now(),
+              amount: 100, // "I'd buy THAT for a dollar!"
+              receipt
+            } as any)
+          ).rejects.toMatchObject({ type: 'ValidationError' })
+        })
+
+        it('Post Transaction duplicate transaction_id', async () => {
+          const [transaction] = [...transactionsGenerator(1)]
+
+          await TransactionServiceClient.createTransaction(transaction)
+
+          await expect(TransactionServiceClient.createTransaction(transaction)).rejects.toMatchObject({
+            type: 'ConflictError'
+          })
+        })
       })
-      expect('did not happen').toBe('happened')
-    } catch (err) {
-      expect(err.type).toBe('ConflictError')
-    }
-  })
-
-  function* bulkTransactions(): Generator<TransactionDomainModel> {
-    let timestamp = Date.now() - 20 * 1000
-    for (let i = 0; i < 20; i++) {
-      yield {
-        transaction_id: uuid(),
-        provider_id,
-        device_id,
-        timestamp,
-        amount: 100, // "I'd buy THAT for a dollar!"
-        fee_type: 'base_fee',
-        receipt
-      }
-      timestamp += 1000
-    }
-  }
-
-  it('Bulk Post 20 Transactions', async () => {
-    const transactions = await TransactionServiceClient.createTransactions([...bulkTransactions()])
-    expect(transactions[0].device_id).toEqual(device_id)
-    // TODO more checks
-  })
-
-  it('Get All Transactions', async () => {
-    const { transactions } = await TransactionServiceClient.getTransactions({})
-    expect(transactions.length).toEqual(10)
-    const [transaction] = transactions
-    expect(transaction.transaction_id).toEqual(transaction_id)
-  })
-
-  it('Get All Transactions with provider search and paging', async () => {
-    const { transactions, cursor } = await TransactionServiceClient.getTransactions({ provider_id })
-    expect(transactions.length).toEqual(10) // page size
-    const [transaction] = transactions
-    expect(transaction.transaction_id).toEqual(transaction_id)
-    const { transactions: transactions2, cursor: cursor2 } = await TransactionServiceClient.getTransactions({
-      provider_id,
-      after: cursor.afterCursor || undefined
-      // before: cursor.beforeCursor || undefined
     })
-    expect(transactions2.length).toEqual(10) // page siz
-    const { transactions: transactions3 } = await TransactionServiceClient.getTransactions({
-      provider_id,
-      after: cursor2.afterCursor || undefined
-      // before: cursor2.beforeCursor || undefined
+
+    describe('Transaction Read Tests', () => {
+      describe('Success', () => {
+        it('Get One Transaction', async () => {
+          const [transactionToPersist] = [...transactionsGenerator(1)]
+          const recordedTransaction = await TransactionServiceClient.createTransaction(transactionToPersist)
+
+          const fetchedTransaction = await TransactionServiceClient.getTransaction(recordedTransaction.transaction_id)
+          expect(fetchedTransaction).toStrictEqual(recordedTransaction)
+        })
+
+        it('Verifies that get all transactions with no options uses the default limit', async () => {
+          // We'll just generate a bunch of transactions here to test
+          const transactionsToPersist = [...transactionsGenerator(100)]
+          await TransactionServiceClient.createTransactions(transactionsToPersist)
+
+          const { transactions } = await TransactionServiceClient.getTransactions()
+          expect(transactions.length).toEqual(10)
+        })
+
+        it('Get All Transactions with provider search and paging', async () => {
+          const transactionsToPersist = [...transactionsGenerator(21)] // Arbitrarily generate 21 events, just so we can verify paging works w/ default page size on a handful of pages.
+          await TransactionServiceClient.createTransactions(transactionsToPersist)
+
+          const { transactions: firstPage, cursor: firstCursor } = await TransactionServiceClient.getTransactions({
+            provider_id
+          })
+          expect(firstPage.length).toEqual(10) // page size
+
+          const { transactions: secondPage, cursor: secondCursor } = await TransactionServiceClient.getTransactions({
+            provider_id,
+            after: firstCursor.afterCursor ?? undefined
+          })
+          expect(secondPage.length).toEqual(10) // page size
+
+          const { transactions: lastPage } = await TransactionServiceClient.getTransactions({
+            provider_id,
+            after: secondCursor.afterCursor ?? undefined
+          })
+          expect(lastPage.length).toEqual(1) // page size
+        })
+      })
+
+      describe('Failure', () => {
+        it('Verify that asking for too many items will fail (i.e. is Joi doing its job)', async () => {
+          try {
+            await TransactionServiceClient.getTransactions({ limit: 10000 })
+            expect('did not happen').toBe('happened')
+          } catch (err) {
+            expect(err.type).toBe('ValidationError')
+          }
+        })
+
+        it('Get All Transactions with bogus provider serach', async () => {
+          const { transactions } = await TransactionServiceClient.getTransactions({
+            provider_id: unknown_provider_id
+          })
+          expect(transactions.length).toEqual(0)
+        })
+      })
     })
-    expect(transactions3.length).toEqual(1) // page siz
   })
 
-  it('Verify that asking for too many items will fail (i.e. is Joi doing its job)', async () => {
-    try {
-      await TransactionServiceClient.getTransactions({ limit: 10000 })
-      expect('did not happen').toBe('happened')
-    } catch (err) {
-      expect(err.type).toBe('ValidationError')
-    }
-  })
-
-  it('Get All Transactions with bogus provider serach', async () => {
-    const { transactions } = await TransactionServiceClient.getTransactions({
-      provider_id: unknown_provider_id
-    })
-    expect(transactions.length).toEqual(0)
-  })
-
-  it('Get One Transaction', async () => {
-    const transaction = await TransactionServiceClient.getTransaction(transaction_id)
-    expect(transaction.transaction_id).toEqual(transaction_id)
-  })
-
-  // operations
-  it('Post Good Transaction Operation', async () => {
-    const operation = await TransactionServiceClient.addTransactionOperation({
+  describe('Transaction Operation Tests', () => {
+    const sampleOperation: TransactionOperationDomainCreateModel = {
       transaction_id,
       operation_id,
       timestamp: Date.now(),
       operation_type: 'invoice_generated',
       author: 'no one'
+    }
+
+    describe('Transaction Operation Create Tests', () => {
+      describe('Success', () => {
+        it('Post Good Transaction Operation', async () => {
+          const operation = await TransactionServiceClient.addTransactionOperation(sampleOperation)
+          expect(operation.operation_id).toEqual(operation_id)
+          expect(operation.transaction_id).toEqual(transaction_id)
+        })
+      })
+
+      describe('Failure', () => {
+        it('Post Duplicate Transaction Operation', async () => {
+          await TransactionServiceClient.addTransactionOperation(sampleOperation)
+
+          await expect(TransactionServiceClient.addTransactionOperation(sampleOperation)).rejects.toMatchObject({
+            type: 'ConflictError'
+          })
+        })
+      })
     })
-    expect(operation.operation_id).toEqual(operation_id)
-    expect(operation.transaction_id).toEqual(transaction_id)
+
+    describe('Transaction Operation Read Tests', () => {
+      beforeAll(async () => {
+        await TransactionServiceClient.addTransactionOperation(sampleOperation)
+      })
+
+      it('Get All Transaction Operations for One Transaction', async () => {
+        const operations = await TransactionServiceClient.getTransactionOperations(transaction_id)
+        expect(operations.length).toEqual(1)
+        const [operation] = operations
+        expect(operation.operation_id).toEqual(operation_id)
+      })
+
+      it('Get All Transaction Operations for One Nonexistant Transaction', async () => {
+        const operations = await TransactionServiceClient.getTransactionOperations(unknown_transaction_id)
+        expect(operations.length).toEqual(0)
+      })
+    })
+
+    // search with non-existant-transaction-id
+
+    // post op with missing fields
+    // post op with bad op
+    // post op with non-UUID
+    // post op on non-existant transaction id
   })
 
-  // post dup op id
-  it('Post Duplicate Transaction Operation', async () => {
-    try {
-      await TransactionServiceClient.addTransactionOperation({
+  describe('Transaction Status Tests', () => {
+    it('Post Good Transaction Status', async () => {
+      const transactionStatus = await TransactionServiceClient.setTransactionStatus({
         transaction_id,
-        operation_id,
+        status_id,
         timestamp: Date.now(),
-        operation_type: 'invoice_generated',
+        status_type: 'invoice_generated',
         author: 'no one'
       })
-      expect('did not happen').toBe('happened')
-    } catch (err) {
-      expect(err.type).toBe('ConflictError')
-    }
-  })
-
-  it('Get All Transaction Operations for One Transaction', async () => {
-    const operations = await TransactionServiceClient.getTransactionOperations(transaction_id)
-    expect(operations.length).toEqual(1)
-    const [operation] = operations
-    expect(operation.operation_id).toEqual(operation_id)
-  })
-
-  it('Get All Transaction Operations for One Nonexistant Transaction', async () => {
-    const operations = await TransactionServiceClient.getTransactionOperations(unknown_transaction_id)
-    expect(operations.length).toEqual(0)
-  })
-
-  // search with non-existant-transaction-id
-
-  // post op with missing fields
-  // post op with bad op
-  // post op with non-UUID
-  // post op on non-existant transaction id
-
-  // status
-  // operations
-  it('Post Good Transaction Status', async () => {
-    const operation = await TransactionServiceClient.setTransactionStatus({
-      transaction_id,
-      status_id,
-      timestamp: Date.now(),
-      status_type: 'invoice_generated',
-      author: 'no one'
+      expect(transactionStatus.status_id).toEqual(status_id)
+      expect(transactionStatus.transaction_id).toEqual(transaction_id)
     })
-    expect(operation.status_id).toEqual(status_id)
-    expect(operation.transaction_id).toEqual(transaction_id)
+
+    it('Get All Transaction Statuses', async () => {
+      const transactionStatus: TransactionStatusDomainCreateModel = {
+        transaction_id,
+        status_id,
+        timestamp: Date.now(),
+        status_type: 'invoice_generated',
+        author: 'no one'
+      }
+
+      await TransactionServiceClient.setTransactionStatus(transactionStatus)
+
+      const statuses = await TransactionServiceClient.getTransactionStatuses(transaction_id)
+      expect(statuses.length).toEqual(1)
+      const [status] = statuses
+      expect(status.status_id).toEqual(status_id)
+    })
+
+    it('Get All Transaction Statuses for One Nonexistant Transaction', async () => {
+      const statuses = await TransactionServiceClient.getTransactionStatuses(unknown_transaction_id)
+      expect(statuses.length).toEqual(0)
+    })
+
+    // TODO
+    // search with non-existant-transaction-id
+    // post dup stat id
+    // post stat with missing fields
+    // post stat with non-UUID
+    // post stat with bad stat
+    // post stat on non-existant transaction id
   })
-
-  it('Get All Transaction Statuses', async () => {
-    const statuses = await TransactionServiceClient.getTransactionStatuses(transaction_id)
-    expect(statuses.length).toEqual(1)
-    const [status] = statuses
-    expect(status.status_id).toEqual(status_id)
-  })
-
-  it('Get All Transaction Statuses for One Nonexistant Transaction', async () => {
-    const statuses = await TransactionServiceClient.getTransactionStatuses(unknown_transaction_id)
-    expect(statuses.length).toEqual(0)
-  })
-
-  // search with non-existant-transaction-id
-
-  // post dup stat id
-  // post stat with missing fields
-  // post stat with non-UUID
-  // post stat with bad stat
-  // post stat on non-existant transaction id
 
   afterAll(async () => {
     await TransactionServer.stop()
