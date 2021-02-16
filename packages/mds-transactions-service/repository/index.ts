@@ -74,7 +74,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
 
   // TODO search criteria
   public getTransactions = async (
-    search: TransactionSearchParams = {}
+    search: TransactionSearchParams
   ): Promise<{ transactions: TransactionDomainModel[]; cursor: Cursor }> => {
     const { connect } = this
     const { provider_id, start_timestamp, end_timestamp, before, after, limit } = validateTransactionSearchParams(

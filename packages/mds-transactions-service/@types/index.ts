@@ -139,7 +139,7 @@ export interface TransactionService {
 
   // if auth token has a provider_id, it must match
   // read-back bulk TODO search criteria
-  getTransactions: (params?: TransactionSearchParams) => { transactions: TransactionDomainModel[]; cursor: Cursor }
+  getTransactions: (params: TransactionSearchParams) => { transactions: TransactionDomainModel[]; cursor: Cursor }
   // if auth token has a provider_id, it must match
   // read back single
   getTransaction: (transaction_id: TransactionDomainModel['transaction_id']) => TransactionDomainModel

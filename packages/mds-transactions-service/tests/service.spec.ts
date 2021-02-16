@@ -191,7 +191,7 @@ describe('Transaction Service Tests', () => {
           const transactionsToPersist = [...transactionsGenerator(100)]
           await TransactionServiceClient.createTransactions(transactionsToPersist)
 
-          const { transactions } = await TransactionServiceClient.getTransactions()
+          const { transactions } = await TransactionServiceClient.getTransactions({})
           expect(transactions.length).toEqual(10)
         })
 
