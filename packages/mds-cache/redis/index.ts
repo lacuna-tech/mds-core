@@ -1,8 +1,30 @@
+/**
+ * Copyright 2019 City of Los Angeles
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 import Redis, { KeyType, ValueType } from 'ioredis'
-import { Nullable, Timestamp } from '@mds-core/mds-types'
+import { Nullable, Timestamp, TimestampInSeconds } from '@mds-core/mds-types'
 import { isDefined, ClientDisconnectedError, ExceptionMessages } from '@mds-core/mds-utils'
 import { initClient } from './helpers/client'
 import { OrderedFields } from '../@types'
+
+export type ExpireAtOptions = {
+  key: KeyType
+  timeInSeconds?: TimestampInSeconds
+  timeInMs?: Timestamp
+}
 
 export const RedisCache = () => {
   let client: Nullable<Redis.Redis> = null
@@ -41,7 +63,19 @@ export const RedisCache = () => {
 
     set: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.set(key, val)),
 
-    expireat: async (key: KeyType, time: Timestamp) => safelyExec(theClient => theClient.expireat(key, time)),
+    /**
+     * Expires a key at Unix time in seconds, or time in milliseconds.
+     * Don't add both parameters, only one of them will be used.
+     */
+    expireat: async (options: ExpireAtOptions) => {
+      const { key, timeInSeconds, timeInMs } = options
+      if (timeInSeconds) {
+        return safelyExec(theClient => theClient.expireat(key, timeInSeconds))
+      }
+      if (timeInMs) {
+        return safelyExec(theClient => theClient.pexpireat(key, timeInMs))
+      }
+    },
 
     dbsize: async () => safelyExec(theClient => theClient.dbsize()),
 
@@ -100,9 +134,7 @@ export const RedisCache = () => {
     zadd: async (key: KeyType, fields: OrderedFields | (string | number)[]) =>
       safelyExec(theClient => {
         const entries: (string | number)[] = !Array.isArray(fields)
-          ? Object.entries(fields).reduce((acc: (number | string)[], [field, value]) => {
-              return [...acc, value, field]
-            }, [])
+          ? Object.entries(fields).reduce((acc: (number | string)[], [field, value]) => [...acc, value, field], [])
           : fields
         return theClient.zadd(key, ...entries)
       }),

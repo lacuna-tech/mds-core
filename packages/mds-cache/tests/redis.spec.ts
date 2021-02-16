@@ -1,4 +1,20 @@
-import { ClientDisconnectedError, now, hours, ExceptionMessages } from '@mds-core/mds-utils'
+/**
+ * Copyright 2019 City of Los Angeles
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+import { ClientDisconnectedError, now, hours, ExceptionMessages, minutes } from '@mds-core/mds-utils'
 import { RedisCache } from '../redis'
 
 const redis = RedisCache()
@@ -144,6 +160,28 @@ describe('Redis Tests', () => {
         await expect(redis.smembers('foo')).resolves.toEqual([])
       })
     })
+
+    describe('ExpireAt', () => {
+      it('expires at a time in seconds', async () => {
+        await redis.set('foo', 'bar')
+        // expire 1 minute from now
+        await redis.expireat({ key: 'foo', timeInSeconds: Math.round(now() + minutes(1) / 1000) })
+        await expect(redis.get('foo')).resolves.toEqual('bar')
+        // expire 1 second ago
+        await redis.expireat({ key: 'foo', timeInSeconds: Math.round(now() / 1000) - 1 })
+        await expect(redis.get('foo')).resolves.toEqual(null)
+      })
+
+      it('expires at a time in milliseconds', async () => {
+        await redis.set('foo', 'bar')
+        // expire 1 minute from now
+        await redis.expireat({ key: 'foo', timeInMs: now() + minutes(1) })
+        await expect(redis.get('foo')).resolves.toEqual('bar')
+        // expire 1 millisecond ago
+        await redis.expireat({ key: 'foo', timeInMs: now() - 1 })
+        await expect(redis.get('foo')).resolves.toEqual(null)
+      })
+    })
   })
 
   describe('Null Client tests', () => {
@@ -258,7 +296,7 @@ describe('Redis Tests', () => {
     })
 
     it('expireat()', async () => {
-      await expect(redis.expireat('foo', now() + hours(1))).rejects.toEqual(
+      await expect(redis.expireat({ key: 'foo', timeInMs: now() + hours(1) })).rejects.toEqual(
         new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
       )
     })
