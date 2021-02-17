@@ -19,11 +19,7 @@ import { UUID } from '@mds-core/mds-types'
 import { TransactionServiceManager } from '../service/manager'
 import { TransactionServiceClient } from '../client'
 import { TransactionRepository } from '../repository'
-import {
-  TransactionDomainCreateModel,
-  TransactionOperationDomainCreateModel,
-  TransactionStatusDomainCreateModel
-} from '../@types'
+import { TransactionDomainCreateModel } from '../@types'
 
 describe('Transaction Repository Tests', () => {
   beforeAll(async () => {
@@ -70,38 +66,6 @@ function* transactionsGenerator(
       amount: 100, // "I'd buy THAT for a dollar!"
       fee_type: 'base_fee',
       receipt
-    }
-  }
-}
-
-function* transactionStatusesGenerator(length = 20): Generator<TransactionStatusDomainCreateModel> {
-  const start_timestamp = Date.now() - length * 1000
-
-  for (let i = 0; i < length; i++) {
-    const timestamp = start_timestamp + i * 1000
-
-    yield {
-      transaction_id: uuid(),
-      status_id: uuid(),
-      timestamp,
-      status_type: 'invoice_generated',
-      author: 'no one'
-    }
-  }
-}
-
-function* transactionOperationsGenerator(length = 20): Generator<TransactionOperationDomainCreateModel> {
-  const start_timestamp = Date.now() - length * 1000
-
-  for (let i = 0; i < length; i++) {
-    const timestamp = start_timestamp + i * 1000
-
-    yield {
-      transaction_id: uuid(),
-      operation_id: uuid(),
-      timestamp,
-      operation_type: 'invoice_generated',
-      author: 'no one'
     }
   }
 }
@@ -195,7 +159,7 @@ describe('Transaction Service Tests', () => {
           expect(transactions.length).toEqual(10)
         })
 
-        it('Get All Transactions with provider search and paging', async () => {
+        it('Get Bulk Transactions with provider search and default paging', async () => {
           const provider_id = uuid()
           const transactionsToPersist = [...transactionsGenerator(21, { provider_id })] // Arbitrarily generate 21 events, just so we can verify paging works w/ default page size on a handful of pages.
           await TransactionServiceClient.createTransactions(transactionsToPersist)
@@ -203,19 +167,85 @@ describe('Transaction Service Tests', () => {
           const { transactions: firstPage, cursor: firstCursor } = await TransactionServiceClient.getTransactions({
             provider_id
           })
-          expect(firstPage.length).toEqual(10) // page size
+          expect(firstPage.length).toEqual(10) // default page size
 
           const { transactions: secondPage, cursor: secondCursor } = await TransactionServiceClient.getTransactions({
             provider_id,
             after: firstCursor.afterCursor ?? undefined
           })
-          expect(secondPage.length).toEqual(10) // page size
+          expect(secondPage.length).toEqual(10) // default page size
 
           const { transactions: lastPage } = await TransactionServiceClient.getTransactions({
             provider_id,
             after: secondCursor.afterCursor ?? undefined
           })
-          expect(lastPage.length).toEqual(1) // page size
+          expect(lastPage.length).toEqual(1) // default page size
+        })
+
+        it('Get Bulk Transactions with custom limit paging', async () => {
+          const limit = 100
+
+          const transactionsToPersist = [...transactionsGenerator(201)] // Arbitrarily generate 201 events
+          await TransactionServiceClient.createTransactions(transactionsToPersist)
+
+          const { transactions: firstPage, cursor: firstCursor } = await TransactionServiceClient.getTransactions({
+            limit
+          })
+          expect(firstPage.length).toEqual(100) // custom page size
+
+          const { transactions: secondPage, cursor: secondCursor } = await TransactionServiceClient.getTransactions({
+            limit,
+            after: firstCursor.afterCursor ?? undefined
+          })
+          expect(secondPage.length).toEqual(100) // custom page size
+
+          const { transactions: lastPage } = await TransactionServiceClient.getTransactions({
+            limit,
+            after: secondCursor.afterCursor ?? undefined
+          })
+          expect(lastPage.length).toEqual(1) // last page, so lower than custom page size
+        })
+
+        it('Get Bulk Transactions within a time range, with default paging', async () => {
+          const [start_timestamp, end_timestamp] = [100_000, 200_000] // Garbage arbitrary timestamps
+
+          /**
+           * Will generate transactions with differing timestamps **WITHIN** our time bounds, like 100_000, 100_001, 100_002, ..., 100_014
+           */
+          const inBoundsTransactions = [...transactionsGenerator(15)].map((transaction, i) => ({
+            ...transaction,
+            timestamp: start_timestamp + i
+          }))
+          /**
+           * Will Generate transactions **OUTSIDE** of our time bounds, like 200_001, 200_001, ..., 200_0014
+           */
+          const outOfBoundsTransactions = [...transactionsGenerator(15)].map((transaction, i) => ({
+            ...transaction,
+            timestamp: end_timestamp + 1 + i
+          }))
+          const transactionsToPersist = [...inBoundsTransactions, ...outOfBoundsTransactions]
+          await TransactionServiceClient.createTransactions(transactionsToPersist)
+
+          const { transactions: firstPage, cursor: firstCursor } = await TransactionServiceClient.getTransactions({
+            start_timestamp,
+            end_timestamp
+          })
+          expect(firstPage.length).toEqual(10) // default page size
+          firstPage.forEach(({ timestamp }) => {
+            expect(timestamp).toBeGreaterThanOrEqual(start_timestamp)
+            expect(timestamp).toBeLessThanOrEqual(end_timestamp)
+          })
+
+          const { transactions: secondPage } = await TransactionServiceClient.getTransactions({
+            start_timestamp,
+            end_timestamp,
+            after: firstCursor.afterCursor ?? undefined
+          })
+          expect(secondPage.length).toEqual(5)
+          secondPage.forEach(({ timestamp }) => {
+            expect(timestamp).toBeGreaterThanOrEqual(start_timestamp)
+            expect(timestamp).toBeLessThanOrEqual(end_timestamp)
+          })
         })
       })
 
@@ -237,90 +267,6 @@ describe('Transaction Service Tests', () => {
         })
       })
     })
-  })
-
-  describe('Transaction Operation Tests', () => {
-    const [sampleOperation] = transactionOperationsGenerator(1)
-    const { operation_id, transaction_id } = sampleOperation
-
-    describe('Transaction Operation Create Tests', () => {
-      describe('Success', () => {
-        it('Post Good Transaction Operation', async () => {
-          const operation = await TransactionServiceClient.addTransactionOperation(sampleOperation)
-          expect(operation.operation_id).toEqual(operation_id)
-          expect(operation.transaction_id).toEqual(transaction_id)
-        })
-      })
-
-      describe('Failure', () => {
-        it('Post Duplicate Transaction Operation', async () => {
-          await TransactionServiceClient.addTransactionOperation(sampleOperation)
-
-          await expect(TransactionServiceClient.addTransactionOperation(sampleOperation)).rejects.toMatchObject({
-            type: 'ConflictError'
-          })
-        })
-      })
-    })
-
-    describe('Transaction Operation Read Tests', () => {
-      beforeAll(async () => {
-        await TransactionServiceClient.addTransactionOperation(sampleOperation)
-      })
-
-      it('Get All Transaction Operations for One Transaction', async () => {
-        const operations = await TransactionServiceClient.getTransactionOperations(sampleOperation.transaction_id)
-        expect(operations.length).toEqual(1)
-        const [operation] = operations
-        expect(operation.operation_id).toEqual(operation_id)
-      })
-
-      it('Get All Transaction Operations for One Nonexistant Transaction', async () => {
-        const operations = await TransactionServiceClient.getTransactionOperations(uuid())
-        expect(operations.length).toEqual(0)
-      })
-    })
-
-    // search with non-existant-transaction-id
-
-    // post op with missing fields
-    // post op with bad op
-    // post op with non-UUID
-    // post op on non-existant transaction id
-  })
-
-  describe('Transaction Status Tests', () => {
-    it('Post Good Transaction Status', async () => {
-      const [transactionStatusToPersist] = transactionStatusesGenerator(1)
-      const recordedTransactionStatus = await TransactionServiceClient.setTransactionStatus(transactionStatusToPersist)
-
-      expect(recordedTransactionStatus.status_id).toEqual(transactionStatusToPersist.status_id)
-      expect(recordedTransactionStatus.transaction_id).toEqual(recordedTransactionStatus.transaction_id)
-    })
-
-    it('Get All Transaction Statuses', async () => {
-      const [transactionStatusToPersist] = transactionStatusesGenerator(1)
-
-      await TransactionServiceClient.setTransactionStatus(transactionStatusToPersist)
-
-      const statuses = await TransactionServiceClient.getTransactionStatuses(transactionStatusToPersist.transaction_id)
-      expect(statuses.length).toEqual(1)
-      const [status] = statuses
-      expect(status.status_id).toEqual(transactionStatusToPersist.status_id)
-    })
-
-    it('Get All Transaction Statuses for One Nonexistant Transaction', async () => {
-      const statuses = await TransactionServiceClient.getTransactionStatuses(uuid())
-      expect(statuses.length).toEqual(0)
-    })
-
-    // TODO
-    // search with non-existant-transaction-id
-    // post dup stat id
-    // post stat with missing fields
-    // post stat with non-UUID
-    // post stat with bad stat
-    // post stat on non-existant transaction id
   })
 
   afterAll(async () => {
