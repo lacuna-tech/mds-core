@@ -48,6 +48,15 @@ apis:
     pathPrefix: /geography-author
     version: latest
     migration: false
+  mds-compliance-api:
+    enabled: true
+    pathPrefix: /compliance
+    version: latest
+    migration: false
+  mds-compliance-service:
+    enabled: true
+    version: latest
+    migration: false
 tenantId:
 timezone: America/Los_Angeles
 registry:
