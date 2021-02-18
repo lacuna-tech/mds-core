@@ -1,7 +1,7 @@
 {
   "name": "@container-images/mds-compliance-service",
   "version": "0.0.1",
-  "description": "Docker Image for MDS Jurisdiction Service",
+  "description": "Docker Image for MDS Compliance Service",
   "private": true,
   "main": "dist/index.js",
   "files": [
