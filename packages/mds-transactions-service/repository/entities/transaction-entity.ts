@@ -15,7 +15,7 @@
  */
 
 import { Entity, Column } from 'typeorm'
-import { BigintTransformer, IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
+import { BigintTransformer, IdentityColumn, RecordedColumn, ForceType } from '@mds-core/mds-repository'
 import { TransactionDomainModel } from '../../@types'
 
 export interface TransactionEntityModel extends IdentityColumn, RecordedColumn {
@@ -40,7 +40,7 @@ export class TransactionEntity extends IdentityColumn(RecordedColumn(class {})) 
   device_id: TransactionEntityModel['device_id']
 
   @Column('bigint', { transformer: BigintTransformer })
-  @Reflect.metadata('design:type', Number) // Manually specify the reflect metadata because TypeORM generates improper definitions depending on environment.
+  @ForceType(Number)
   timestamp: TransactionEntityModel['timestamp']
 
   @Column('varchar', { length: 127 })
