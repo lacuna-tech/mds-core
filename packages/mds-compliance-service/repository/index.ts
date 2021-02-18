@@ -2,7 +2,7 @@ import { getManager } from 'typeorm'
 
 import { InsertReturning, RepositoryError, ReadWriteRepository } from '@mds-core/mds-repository'
 import { isDefined, NotFoundError, now } from '@mds-core/mds-utils'
-import { Timestamp, UUID } from '@mds-core/mds-types'
+import { UUID } from '@mds-core/mds-types'
 import {
   ComplianceSnapshotDomainModel,
   GetComplianceSnapshotsByTimeIntervalOptions,
@@ -40,6 +40,7 @@ class ComplianceReadWriteRepository extends ReadWriteRepository {
     options: GetComplianceSnapshotOptions
   ): Promise<ComplianceSnapshotDomainModel> => {
     const isComplianceIdOption = (option: unknown): option is { compliance_snapshot_id: UUID } =>
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (option as any).compliance_snapshot_id
 
     const { connect } = this
