@@ -40,7 +40,8 @@ export class TransactionEntity extends IdentityColumn(RecordedColumn(class {})) 
   device_id: TransactionEntityModel['device_id']
 
   @Column('bigint', { transformer: BigintTransformer })
-  timestamp: number // should be TransactionEntityModel['timestamp']
+  @Reflect.metadata('design:type', Number) // Manually specify the reflect metadata because TypeORM generates improper definitions depending on environment.
+  timestamp: TransactionEntityModel['timestamp']
 
   @Column('varchar', { length: 127 })
   fee_type: TransactionEntityModel['fee_type']
