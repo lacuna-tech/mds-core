@@ -5,8 +5,6 @@ apis:
     version: ${AUDIT_VERSION}
   mds-policy:
     version: ${POLICY_VERSION}
-  mds-compliance:
-    version: ${COMPLIANCE_VERSION}
   mds-jurisdiction:
     version: ${JURISDICTION_VERSION}
   mds-jurisdiction-service:

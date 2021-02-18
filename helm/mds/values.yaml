@@ -14,11 +14,6 @@ apis:
     pathPrefix: /policy
     version: latest
     migration: false
-  mds-compliance:
-    enabled: true
-    pathPrefix: /compliance
-    version: latest
-    migration: false
   mds-jurisdiction:
     enabled: true
     pathPrefix: /jurisdiction
