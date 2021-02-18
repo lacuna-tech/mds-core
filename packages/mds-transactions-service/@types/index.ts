@@ -111,6 +111,12 @@ export const TRANSACTION_STATUS_TYPES = [
 
 export type TRANSACTION_STATUS_TYPE = typeof TRANSACTION_STATUS_TYPES[number]
 
+export const SORTABLE_COLUMNS = ['timestamp'] as const
+export type SORTABLE_COLUMN = typeof SORTABLE_COLUMNS[number]
+
+export const SORT_DIRECTIONS = ['ASC', 'DESC'] as const
+export type SORT_DIRECTION = typeof SORT_DIRECTIONS[number]
+
 export interface TransactionSearchParams {
   provider_id?: UUID
   start_timestamp?: Timestamp
@@ -118,6 +124,10 @@ export interface TransactionSearchParams {
   before?: string
   after?: string
   limit?: number
+  order?: {
+    column: SORTABLE_COLUMN
+    direction: SORT_DIRECTION
+  }
 }
 
 export interface TransactionStatusDomainModel {

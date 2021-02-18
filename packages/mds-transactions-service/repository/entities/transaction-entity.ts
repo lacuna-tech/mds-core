@@ -40,7 +40,7 @@ export class TransactionEntity extends IdentityColumn(RecordedColumn(class {})) 
   device_id: TransactionEntityModel['device_id']
 
   @Column('bigint', { transformer: BigintTransformer })
-  timestamp: TransactionEntityModel['timestamp']
+  timestamp: number // should be TransactionEntityModel['timestamp']
 
   @Column('varchar', { length: 127 })
   fee_type: TransactionEntityModel['fee_type']

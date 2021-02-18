@@ -19,9 +19,11 @@ import { NotFoundError } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'
 import Joi from 'joi'
 import { buildPaginator, Cursor } from 'typeorm-cursor-pagination'
-import { LessThan, MoreThan, Between, FindOperator } from 'typeorm'
+import { LessThan, MoreThan, Between, FindOperator, OrderByCondition } from 'typeorm'
 import { schemaValidator } from '@mds-core/mds-schema-validators'
 import {
+  SORTABLE_COLUMNS,
+  SORT_DIRECTIONS,
   TransactionDomainModel,
   TransactionOperationDomainModel,
   TransactionSearchParams,
@@ -48,7 +50,11 @@ const { validate: validateTransactionSearchParams } = schemaValidator<Transactio
       end_timestamp: Joi.number().integer(),
       before: Joi.string(),
       after: Joi.string(),
-      limit: Joi.number().integer().min(1).max(1000).default(10)
+      limit: Joi.number().integer().min(1).max(1000).default(10),
+      order: Joi.object<TransactionSearchParams['order']>().keys({
+        column: Joi.string().allow(...SORTABLE_COLUMNS),
+        direction: Joi.string().allow(...SORT_DIRECTIONS)
+      })
     })
     .unknown(false)
 )
@@ -77,10 +83,17 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
     search: TransactionSearchParams
   ): Promise<{ transactions: TransactionDomainModel[]; cursor: Cursor }> => {
     const { connect } = this
-    const { provider_id, start_timestamp, end_timestamp, before, after, limit } = validateTransactionSearchParams(
-      search
-    )
-    function when(): { timestamp?: FindOperator<number> } {
+    const {
+      provider_id,
+      start_timestamp,
+      end_timestamp,
+      before,
+      after,
+      limit,
+      order
+    } = validateTransactionSearchParams(search)
+
+    const resolveTimeBounds = (): { timestamp?: FindOperator<number> } => {
       if (start_timestamp && end_timestamp) {
         return { timestamp: Between(start_timestamp, end_timestamp) }
       }
@@ -92,23 +105,30 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
       }
       return {}
     }
-    function who(): { provider_id?: UUID } {
+
+    const resolveProviderId = (): { provider_id?: UUID } => {
       return provider_id ? { provider_id } : {}
     }
+
+    const resolveOrderOptions = (): OrderByCondition => (order ? { [order.column]: order.direction } : {})
+
+    console.log('resolveOrderOptions', resolveOrderOptions())
     try {
       const connection = await connect('ro')
       const queryBuilder = connection
         .getRepository(TransactionEntity)
         .createQueryBuilder('transactionentity') // yuk!
-        .where({ ...who(), ...when() })
+        .where({ ...resolveProviderId(), ...resolveTimeBounds() })
+
       const { data, cursor } = await buildPaginator({
         entity: TransactionEntity,
         query: {
           limit,
-          order: 'ASC',
+          order: order?.direction ?? 'ASC',
           afterCursor: after,
           beforeCursor: after ? undefined : before
-        }
+        },
+        paginationKeys: [order?.column ?? 'id']
       }).paginate(queryBuilder)
       return { transactions: data.map(TransactionEntityToDomain.mapper()), cursor }
     } catch (error) {

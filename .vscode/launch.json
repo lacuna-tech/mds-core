@@ -806,7 +806,7 @@
       "request": "launch",
       "runtimeArgs": [
         "--inspect-brk",
-        "${workspaceRoot}/node_modules/.bin/jest",
+        "${workspaceRoot}/node_modules/jest/bin/jest",
         "--runInBand",
         "--coverage",
         "false"
@@ -826,7 +826,7 @@
       "request": "launch",
       "runtimeArgs": [
         "--inspect-brk",
-        "${workspaceRoot}/node_modules/.bin/jest",
+        "${workspaceRoot}/node_modules/jest/bin/jest",
         "--runInBand",
         "--coverage",
         "false"

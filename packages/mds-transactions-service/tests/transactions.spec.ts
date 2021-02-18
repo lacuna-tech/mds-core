@@ -19,7 +19,7 @@ import { UUID } from '@mds-core/mds-types'
 import { TransactionServiceManager } from '../service/manager'
 import { TransactionServiceClient } from '../client'
 import { TransactionRepository } from '../repository'
-import { TransactionDomainCreateModel } from '../@types'
+import { TransactionDomainCreateModel, TransactionDomainModel } from '../@types'
 
 describe('Transaction Repository Tests', () => {
   beforeAll(async () => {
@@ -246,6 +246,48 @@ describe('Transaction Service Tests', () => {
             expect(timestamp).toBeGreaterThanOrEqual(start_timestamp)
             expect(timestamp).toBeLessThanOrEqual(end_timestamp)
           })
+        })
+
+        it('Get Bulk Transactions with sort options, with default paging', async () => {
+          const transactionsToPersist = [...transactionsGenerator(20)]
+          await TransactionServiceClient.createTransactions(transactionsToPersist)
+
+          const { transactions: firstPage, cursor: firstCursor } = await TransactionServiceClient.getTransactions({
+            order: {
+              column: 'timestamp',
+              direction: 'DESC'
+            }
+          })
+
+          console.log(firstPage)
+
+          firstPage.reduce<TransactionDomainModel | undefined>((prevTransaction, currTransaction) => {
+            if (prevTransaction) {
+              const { timestamp: prevTimestamp } = prevTransaction
+              const { timestamp: currTimestamp } = currTransaction
+              expect(currTimestamp).toBeLessThanOrEqual(prevTimestamp)
+            }
+
+            return currTransaction
+          }, undefined)
+
+          const { transactions: secondPage } = await TransactionServiceClient.getTransactions({
+            after: firstCursor.afterCursor ?? undefined,
+            order: {
+              column: 'timestamp',
+              direction: 'DESC'
+            }
+          })
+
+          secondPage.reduce<TransactionDomainModel | undefined>((prevTransaction, currTransaction) => {
+            if (prevTransaction) {
+              const { timestamp: prevTimestamp } = prevTransaction
+              const { timestamp: currTimestamp } = currTransaction
+              expect(currTimestamp).toBeLessThanOrEqual(prevTimestamp)
+            }
+
+            return currTransaction
+          }, undefined)
         })
       })
 

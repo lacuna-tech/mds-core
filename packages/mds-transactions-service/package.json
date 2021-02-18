@@ -32,6 +32,6 @@
     "@mds-core/mds-utils": "0.1.26",
     "joi": "17.3.0",
     "typeorm": "0.2.30",
-    "typeorm-cursor-pagination": "0.4.1"
+    "typeorm-cursor-pagination": "0.6.0"
   }
 }
