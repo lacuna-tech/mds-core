@@ -21,7 +21,8 @@ import {
   SORTABLE_COLUMNS,
   SORTABLE_COLUMN,
   SORT_DIRECTIONS,
-  SORT_DIRECTION
+  SORT_DIRECTION,
+  TransactionSearchParams
 } from '@mds-core/mds-transactions-service'
 import { ApiRequestParams } from '@mds-core/mds-api-server'
 import { parseRequest } from '@mds-core/mds-api-helpers'
@@ -36,70 +37,130 @@ export type TransactionApiGetTransactionsResponse = TransactionApiResponse<{
   links: PaginationLinks
 }>
 
+const getOrderOption = (req: TransactionApiGetTransactionsRequest) => {
+  const { order_column: column } = parseRequest(req)
+    .single({
+      parser: x => {
+        const isSortableColumn = (value: unknown): value is SORTABLE_COLUMN => SORTABLE_COLUMNS.includes(value as any)
+
+        if (x) {
+          if (typeof x === 'string') {
+            if (isSortableColumn(x)) {
+              return x
+            }
+          }
+
+          /**
+           * If the param exists but is not a string or sortable column, throw a validation error
+           */
+          throw new ValidationError(`Invalid sortable column ${x}`)
+        }
+      }
+    })
+    .query('order_column')
+
+  const { order_direction: direction = 'ASC' } = parseRequest(req)
+    .single({
+      parser: x => {
+        const isDirection = (value: unknown): value is SORT_DIRECTION => SORT_DIRECTIONS.includes(value as any)
+
+        if (x) {
+          if (typeof x === 'string') {
+            if (isDirection(x)) {
+              return x
+            }
+          }
+
+          /**
+           * If the param exists but is not a string or direction, throw a validation error
+           */
+          throw new ValidationError(`Invalid sort direction ${x}`)
+        }
+      }
+    })
+    .query('order_direction')
+
+  const order = column ? { column, direction } : undefined
+
+  return order
+}
+
+/**
+ * Construct URLs given search options & cursor location
+ * @param req Express Request
+ * @param param1 Search options & cursor location
+ */
+const constructUrls = (
+  req: TransactionApiGetTransactionsRequest,
+  { order, ...basicOptions }: TransactionSearchParams
+) => {
+  const url = new URL(`${req.get('x-forwarded-proto') || req.protocol}://${req.get('host')}${req.path}`)
+
+  const basicOptionsUrls = Object.entries(basicOptions).reduce((urlParams, [key, val]) => {
+    if (val) {
+      if (urlParams === '?') return `${urlParams}${key}=${val}`
+      return `${urlParams}&${key}=${val}`
+    }
+
+    return urlParams
+  }, `${url}?`)
+
+  // We can do this because we're assured to have *something* in `basicOptionsUrls` if we're generating a page
+  if (order) {
+    return `${basicOptionsUrls}&order_column=${order.column}&order_direction=${order.direction}`
+  }
+
+  return basicOptionsUrls
+}
+
 export const GetTransactionsHandler = async (
   req: TransactionApiGetTransactionsRequest,
   res: TransactionApiGetTransactionsResponse
 ) => {
   try {
-    const { order_column: column } = parseRequest(req)
-      .single({
-        parser: x => {
-          const isSortableColumn = (value: unknown): value is SORTABLE_COLUMN => SORTABLE_COLUMNS.includes(x as any)
-
-          if (x) {
-            if (typeof x === 'string') {
-              if (isSortableColumn(x)) {
-                return x
-              }
-            }
-
-            /**
-             * If the param exists but is not a string or sortable column, throw a validation error
-             */
-            throw new ValidationError(`Invalid sortable column ${x}`)
-          }
-        }
-      })
-      .query('order_column')
-
-    const { order_direction: direction = 'ASC' } = parseRequest(req)
-      .single({
-        parser: x => {
-          const isDirection = (value: unknown): value is SORT_DIRECTION => SORT_DIRECTIONS.includes(x as any)
-
-          if (x) {
-            if (typeof x === 'string') {
-              if (isDirection(x)) {
-                return x
-              }
-            }
-
-            /**
-             * If the param exists but is not a string or direction, throw a validation error
-             */
-            throw new ValidationError(`Invalid sort direction ${x}`)
-          }
-        }
-      })
-      .query('order_direction')
-
-    const order = column ? { column, direction } : undefined
+    const order = getOrderOption(req)
+    const { provider_id, before, after } = parseRequest(req)
+      .single({ parser: String })
+      .query('provider_id', 'before', 'after')
+    const { start_timestamp, end_timestamp, limit = 10 } = parseRequest(req)
+      .single({ parser: Number })
+      .query('start_timestamp', 'end_timestamp', 'limit')
 
     const { transactions, cursor } = await TransactionServiceClient.getTransactions({
-      ...parseRequest(req).single({ parser: String }).query('provider_id'),
-      ...parseRequest(req).single({ parser: Number }).query('start_timestamp', 'end_timestamp'),
-      order
+      provider_id,
+      before,
+      after,
+      start_timestamp,
+      end_timestamp,
+      order,
+      limit
     })
+
     const { version } = res.locals
-    // convert Cursor to links
-    // TODO finish implementing
+
     const links: PaginationLinks = {
-      first: 'first?',
-      last: 'last?',
-      prev: cursor.beforeCursor,
+      prev: cursor.beforeCursor
+        ? constructUrls(req, {
+            order,
+            provider_id,
+            start_timestamp,
+            end_timestamp,
+            limit,
+            before: cursor.beforeCursor
+          })
+        : null,
       next: cursor.afterCursor
+        ? constructUrls(req, {
+            order,
+            provider_id,
+            start_timestamp,
+            end_timestamp,
+            limit,
+            after: cursor.afterCursor
+          })
+        : null
     }
-    console.log('!!!!', JSON.stringify(links))
+
     return res.status(200).send({ version, transactions, links })
   } catch (error) {
     return res.status(500).send({ error: new ServerError(error) })

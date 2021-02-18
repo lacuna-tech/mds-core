@@ -20,8 +20,6 @@ import { Nullable, Timestamp, UUID, VEHICLE_TYPE, VehicleEvent } from '@mds-core
 import { Cursor } from 'typeorm-cursor-pagination'
 
 export interface PaginationLinks {
-  first: string
-  last: string
   prev: string | null
   next: string | null
 }
