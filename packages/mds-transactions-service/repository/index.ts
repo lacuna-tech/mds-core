@@ -19,7 +19,7 @@ import { NotFoundError } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'
 import Joi from 'joi'
 import { buildPaginator, Cursor } from 'typeorm-cursor-pagination'
-import { LessThan, MoreThan, Between, FindOperator, OrderByCondition } from 'typeorm'
+import { LessThan, MoreThan, Between, FindOperator } from 'typeorm'
 import { schemaValidator } from '@mds-core/mds-schema-validators'
 import {
   SORTABLE_COLUMNS,
@@ -110,9 +110,6 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
       return provider_id ? { provider_id } : {}
     }
 
-    const resolveOrderOptions = (): OrderByCondition => (order ? { [order.column]: order.direction } : {})
-
-    console.log('resolveOrderOptions', resolveOrderOptions())
     try {
       const connection = await connect('ro')
       const queryBuilder = connection
