@@ -57,18 +57,18 @@ describe('Transaction Status Tests', () => {
     expect(status.status_id).toEqual(transactionStatusToPersist.status_id)
   })
 
-  it('Get All Transaction Statuses for One Nonexistant Transaction', async () => {
+  it('Get All Transaction Statuses for One Nonexistent Transaction', async () => {
     const statuses = await TransactionServiceClient.getTransactionStatuses(uuid())
     expect(statuses.length).toEqual(0)
   })
 
   // TODO
-  // search with non-existant-transaction-id
+  // search with non-existent-transaction-id
   // post dup stat id
   // post stat with missing fields
   // post stat with non-UUID
   // post stat with bad stat
-  // post stat on non-existant transaction id
+  // post stat on non-existaet transaction id
 
   afterAll(async () => {
     await TransactionServer.stop()
