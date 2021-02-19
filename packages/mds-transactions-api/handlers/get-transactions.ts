@@ -40,20 +40,20 @@ export type TransactionApiGetTransactionsResponse = TransactionApiResponse<{
 const getOrderOption = (req: TransactionApiGetTransactionsRequest) => {
   const { order_column: column } = parseRequest(req)
     .single({
-      parser: x => {
+      parser: queryVal => {
         const isSortableColumn = (value: unknown): value is SORTABLE_COLUMN => SORTABLE_COLUMNS.includes(value as any)
 
-        if (x) {
-          if (typeof x === 'string') {
-            if (isSortableColumn(x)) {
-              return x
+        if (queryVal) {
+          if (typeof queryVal === 'string') {
+            if (isSortableColumn(queryVal)) {
+              return queryVal
             }
           }
 
           /**
            * If the param exists but is not a string or sortable column, throw a validation error
            */
-          throw new ValidationError(`Invalid sortable column ${x}`)
+          throw new ValidationError(`Invalid sortable column ${queryVal}`)
         }
       }
     })
@@ -61,20 +61,20 @@ const getOrderOption = (req: TransactionApiGetTransactionsRequest) => {
 
   const { order_direction: direction = 'ASC' } = parseRequest(req)
     .single({
-      parser: x => {
+      parser: queryVal => {
         const isDirection = (value: unknown): value is SORT_DIRECTION => SORT_DIRECTIONS.includes(value as any)
 
-        if (x) {
-          if (typeof x === 'string') {
-            if (isDirection(x)) {
-              return x
+        if (queryVal) {
+          if (typeof queryVal === 'string') {
+            if (isDirection(queryVal)) {
+              return queryVal
             }
           }
 
           /**
            * If the param exists but is not a string or direction, throw a validation error
            */
-          throw new ValidationError(`Invalid sort direction ${x}`)
+          throw new ValidationError(`Invalid sort direction ${queryVal}`)
         }
       }
     })
