@@ -16,31 +16,25 @@
 
 import { Column, Entity, Index } from 'typeorm'
 import { IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
-import { CollectorMessageDomainModel } from '../../@types'
+import { UUID } from '@mds-core/mds-types'
 
-export interface CollectorMessageEntityModel extends IdentityColumn, RecordedColumn {
-  schema_id: CollectorMessageDomainModel['schema_id']
-  producer_id: CollectorMessageDomainModel['producer_id']
-  message: CollectorMessageDomainModel['message']
+@Entity('collector-messages')
+export class CollectorMessageEntity extends IdentityColumn(RecordedColumn(class {}), { primary: true }) {
+  @Column('varchar', { length: 255 })
+  @Index()
+  schema_id: string
+
+  @Column('uuid')
+  producer_id: UUID
+
+  @Column('json')
+  message: {}
 }
+
+export type CollectorMessageEntityModel = CollectorMessageEntity
 
 export type CollectorMessageEntityCreateModel = Omit<
   CollectorMessageEntityModel,
   keyof RecordedColumn | keyof IdentityColumn
 > &
   Partial<Pick<CollectorMessageEntityModel, keyof RecordedColumn>>
-
-@Entity('collector-messages')
-export class CollectorMessageEntity
-  extends IdentityColumn(RecordedColumn(class {}), { primary: true })
-  implements CollectorMessageEntityModel {
-  @Column('varchar', { length: 255 })
-  @Index()
-  schema_id: CollectorMessageEntityModel['schema_id']
-
-  @Column('uuid')
-  producer_id: CollectorMessageEntityModel['producer_id']
-
-  @Column('json')
-  message: CollectorMessageEntityModel['message']
-}
