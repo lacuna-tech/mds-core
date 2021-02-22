@@ -40,12 +40,13 @@ const { TENANT_ID } = getEnvVar({
 })
 
 const importSchemaObject = async (schema_id: string): Promise<SchemaObject> => {
+  const module = `../schemas/${schema_id}.schema`
   try {
-    const { default: schema } = await import(`../schemas/${schema_id}.schema`)
+    const { default: schema } = await import(module)
     return { $schema: 'http://json-schema.org/draft-07/schema#', ...schema }
   } catch (error) {
     throw typeof error === 'object' && error !== null && error.code === 'MODULE_NOT_FOUND'
-      ? new NotFoundError(`Schema "${schema_id}" not found`)
+      ? new NotFoundError(`Schema module ${module} not found`)
       : error
   }
 }
