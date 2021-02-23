@@ -47,7 +47,7 @@ export interface CurbUseDetailsDomainModel {
   trip_events: VehicleEvent[]
 }
 
-export const FEE_TYPES = [
+export const FEE_TYPE = <const>[
   'base_fee',
   'upgrade_fee',
   'congestion_fee',
@@ -56,9 +56,9 @@ export const FEE_TYPES = [
   'reservation_fee',
   'distance_fee',
   'tolls_fee'
-] as const
+]
 
-export type FEE_TYPE = typeof FEE_TYPES[number]
+export type FEE_TYPE = typeof FEE_TYPE[number]
 
 export interface ReceiptDomainModel {
   receipt_id: UUID
@@ -78,16 +78,16 @@ export interface TransactionDomainModel {
 }
 export type TransactionDomainCreateModel = DomainModelCreate<TransactionDomainModel>
 
-export const TRANSACTION_OPERATION_TYPES = [
+export const TRANSACTION_OPERATION_TYPE = <const>[
   'transaction_posted',
   'invoice_generated',
   'dispute_requested',
   'dispute_approved',
   'dispute_declined',
   'dispute_canceled'
-] as const
+]
 
-export type TRANSACTION_OPERATION_TYPE = typeof TRANSACTION_OPERATION_TYPES[number]
+export type TRANSACTION_OPERATION_TYPE = typeof TRANSACTION_OPERATION_TYPE[number]
 
 export interface TransactionOperationDomainModel {
   operation_id: UUID
@@ -100,20 +100,19 @@ export interface TransactionOperationDomainModel {
 }
 export type TransactionOperationDomainCreateModel = DomainModelCreate<TransactionOperationDomainModel>
 
-export const TRANSACTION_STATUS_TYPES = [
+export const TRANSACTION_STATUS_TYPE = <const>[
   'order_submitted',
   'order_canceled',
   'order_complete',
   'order_incomplete'
-] as const
+]
+export type TRANSACTION_STATUS_TYPE = typeof TRANSACTION_STATUS_TYPE[number]
 
-export type TRANSACTION_STATUS_TYPE = typeof TRANSACTION_STATUS_TYPES[number]
+export const SORTABLE_COLUMN = <const>['timestamp']
+export type SORTABLE_COLUMN = typeof SORTABLE_COLUMN[number]
 
-export const SORTABLE_COLUMNS = ['timestamp'] as const
-export type SORTABLE_COLUMN = typeof SORTABLE_COLUMNS[number]
-
-export const SORT_DIRECTIONS = ['ASC', 'DESC'] as const
-export type SORT_DIRECTION = typeof SORT_DIRECTIONS[number]
+export const SORT_DIRECTION = <const>['ASC', 'DESC']
+export type SORT_DIRECTION = typeof SORT_DIRECTION[number]
 
 export interface TransactionSearchParams {
   provider_id?: UUID

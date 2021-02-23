@@ -18,9 +18,7 @@ import {
   TransactionServiceClient,
   TransactionDomainModel,
   PaginationLinks,
-  SORTABLE_COLUMNS,
   SORTABLE_COLUMN,
-  SORT_DIRECTIONS,
   SORT_DIRECTION,
   TransactionSearchParams
 } from '@mds-core/mds-transactions-service'
@@ -41,13 +39,12 @@ const getOrderOption = (req: TransactionApiGetTransactionsRequest) => {
   const { order_column: column } = parseRequest(req)
     .single({
       parser: queryVal => {
-        const isSortableColumn = (value: unknown): value is SORTABLE_COLUMN => SORTABLE_COLUMNS.includes(value as any)
+        const isSortableColumn = (value: unknown): value is SORTABLE_COLUMN =>
+          typeof value === 'string' && SORTABLE_COLUMN.includes(value as SORTABLE_COLUMN)
 
         if (queryVal) {
-          if (typeof queryVal === 'string') {
-            if (isSortableColumn(queryVal)) {
-              return queryVal
-            }
+          if (isSortableColumn(queryVal)) {
+            return queryVal
           }
 
           /**
@@ -62,17 +59,16 @@ const getOrderOption = (req: TransactionApiGetTransactionsRequest) => {
   const { order_direction: direction = 'ASC' } = parseRequest(req)
     .single({
       parser: queryVal => {
-        const isDirection = (value: unknown): value is SORT_DIRECTION => SORT_DIRECTIONS.includes(value as any)
+        const isDirection = (value: unknown): value is SORT_DIRECTION =>
+          typeof queryVal === 'string' && SORT_DIRECTION.includes(value as SORT_DIRECTION)
 
         if (queryVal) {
-          if (typeof queryVal === 'string') {
-            if (isDirection(queryVal)) {
-              return queryVal
-            }
+          if (isDirection(queryVal)) {
+            return queryVal
           }
 
           /**
-           * If the param exists but is not a string or direction, throw a validation error
+           * If the param exists but is not a direction, throw a validation error
            */
           throw new ValidationError(`Invalid sort direction ${queryVal}`)
         }

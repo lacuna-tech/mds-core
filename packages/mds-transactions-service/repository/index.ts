@@ -22,8 +22,8 @@ import { buildPaginator, Cursor } from 'typeorm-cursor-pagination'
 import { LessThan, MoreThan, Between, FindOperator } from 'typeorm'
 import { schemaValidator } from '@mds-core/mds-schema-validators'
 import {
-  SORTABLE_COLUMNS,
-  SORT_DIRECTIONS,
+  SORTABLE_COLUMN,
+  SORT_DIRECTION,
   TransactionDomainModel,
   TransactionOperationDomainModel,
   TransactionSearchParams,
@@ -52,8 +52,8 @@ const { validate: validateTransactionSearchParams } = schemaValidator<Transactio
       after: Joi.string(),
       limit: Joi.number().integer().min(1).max(1000).default(10),
       order: Joi.object<TransactionSearchParams['order']>().keys({
-        column: Joi.string().allow(...SORTABLE_COLUMNS),
-        direction: Joi.string().allow(...SORT_DIRECTIONS)
+        column: Joi.string().allow(...SORTABLE_COLUMN),
+        direction: Joi.string().allow(...SORT_DIRECTION)
       })
     })
     .unknown(false)
@@ -106,9 +106,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
       return {}
     }
 
-    const resolveProviderId = (): { provider_id?: UUID } => {
-      return provider_id ? { provider_id } : {}
-    }
+    const resolveProviderId = (): { provider_id?: UUID } => (provider_id ? { provider_id } : {})
 
     try {
       const connection = await connect('ro')
