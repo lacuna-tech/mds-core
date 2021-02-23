@@ -259,8 +259,6 @@ describe('Transaction Service Tests', () => {
             }
           })
 
-          console.log(firstPage)
-
           firstPage.reduce<TransactionDomainModel | undefined>((prevTransaction, currTransaction) => {
             if (prevTransaction) {
               const { timestamp: prevTimestamp } = prevTransaction
@@ -293,12 +291,9 @@ describe('Transaction Service Tests', () => {
 
       describe('Failure', () => {
         it('Verify that asking for too many items will fail (i.e. is Joi doing its job)', async () => {
-          try {
-            await TransactionServiceClient.getTransactions({ limit: 10000 })
-            expect('did not happen').toBe('happened')
-          } catch (err) {
-            expect(err.type).toBe('ValidationError')
-          }
+          await expect(TransactionServiceClient.getTransactions({ limit: 10000 })).rejects.toMatchObject({
+            type: 'ValidationError'
+          })
         })
 
         it('Get All Transactions with bogus provider serach', async () => {
