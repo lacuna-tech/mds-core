@@ -24,14 +24,13 @@ import {
   ServiceError
 } from '@mds-core/mds-service-helpers'
 import { getEnvVar, NotFoundError, pluralize, ServerError } from '@mds-core/mds-utils'
-import { SchemaObject, ValidateFunction, ErrorObject } from 'ajv'
+import { SchemaObject, ErrorObject } from 'ajv'
 import { CollectorService } from '../@types'
 import { CollectorRepository } from '../repository'
 import { SchemaValidator } from '../schema-validator'
 
 const SchemaObjects = new Map<string, SchemaObject>()
-type CollectorValidateFunction = ValidateFunction<{}>
-const ValidateFunctions = new Map<string, CollectorValidateFunction>()
+const SchemaValidators = new Map<string, SchemaValidator>()
 type CollectorStreamProducer = StreamProducer<{}>
 const StreamProducers = new Map<string, CollectorStreamProducer>()
 
@@ -64,10 +63,10 @@ const getSchemaObject = async (schema_id: string): Promise<SchemaObject> => {
   return schema
 }
 
-const getValidateFunction = async (schema_id: string): Promise<CollectorValidateFunction> => {
-  const validator = ValidateFunctions.get(schema_id) ?? SchemaValidator(await getSchemaObject(schema_id))
-  if (!ValidateFunctions.has(schema_id)) {
-    ValidateFunctions.set(schema_id, validator)
+const getSchemaValidator = async (schema_id: string): Promise<SchemaValidator> => {
+  const validator = SchemaValidators.get(schema_id) ?? SchemaValidator(await getSchemaObject(schema_id))
+  if (!SchemaValidators.has(schema_id)) {
+    SchemaValidators.set(schema_id, validator)
   }
   return validator
 }
@@ -109,13 +108,16 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
   },
   writeSchemaMessages: async (schema_id, provider_id, messages) => {
     try {
-      const [validate, producer] = await Promise.all([getValidateFunction(schema_id), getStreamProducer(schema_id)])
+      const [validator, producer] = await Promise.all([getSchemaValidator(schema_id), getStreamProducer(schema_id)])
 
       const invalid = messages.reduce<{ position: number; errors: Partial<ErrorObject>[] }[]>(
-        (errors, message, position) => {
-          // eslint-reason validate function has previously verified that errors is non-null
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return validate(message) ? errors : errors.concat({ position, errors: validate.errors! })
+        (failures, message, position) => {
+          try {
+            validator.validate(message)
+            return failures
+          } catch (errors) {
+            return failures.concat({ position, errors })
+          }
         },
         []
       )

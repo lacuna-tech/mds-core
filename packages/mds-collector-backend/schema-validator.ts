@@ -18,5 +18,16 @@ import Ajv, { Options } from 'ajv'
 import withFormats from 'ajv-formats'
 
 export const SchemaValidator = <Schema>(schema: Schema, options: Options = { allErrors: true }) => {
-  return withFormats(new Ajv(options)).compile<Schema>(schema)
+  const validator = withFormats(new Ajv(options)).compile<Schema>(schema)
+  return {
+    validate: <T extends object = object>(data: unknown): data is T => {
+      if (validator(data)) {
+        return true
+      }
+      throw validator.errors ?? []
+    },
+    schema: validator.schema
+  }
 }
+
+export type SchemaValidator = ReturnType<typeof SchemaValidator>

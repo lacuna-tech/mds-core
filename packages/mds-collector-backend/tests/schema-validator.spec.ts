@@ -25,55 +25,69 @@ const TestData: TestSchema = {
   email: 'test@test.com'
 }
 
-const validate = SchemaValidator(TestSchema)
+const validator = SchemaValidator(TestSchema)
 
 describe('Schema Validation', () => {
   it('Passes Validation', () => {
-    expect(validate(TestData)).toBeTruthy()
-    expect(validate.errors).toBeNull()
+    expect(validator.validate(TestData)).toBe(true)
   })
 
   it('Passes Validation (optional field)', () => {
     const { email, ...data } = TestData
-    expect(validate(data)).toBeTruthy()
-    expect(validate.errors).toBeNull()
+    expect(validator.validate(data)).toBe(true)
   })
 
-  it('Fails Validation (missing required field)', () => {
+  it('Fails Validation (missing required field)', async () => {
     const { id, ...data } = TestData
-    expect(validate(data)).toBe(false)
-    expect(validate.errors?.find(error => error.keyword === 'required')).toMatchObject({
-      params: { missingProperty: 'id' }
-    })
+    await expect(async () => validator.validate(data)).rejects.toContainEqual(
+      expect.objectContaining({
+        keyword: 'required',
+        params: { missingProperty: 'id' }
+      })
+    )
   })
 
-  it('Fails Validation (invalid format)', () => {
+  it('Fails Validation (invalid format)', async () => {
     const data = { ...TestData, email: 'invalid' }
-    expect(validate(data)).toBeFalsy()
-    expect(validate.errors?.find(error => error.dataPath === '/email')).toMatchObject({ keyword: 'format' })
+    await expect(async () => validator.validate(data)).rejects.toContainEqual(
+      expect.objectContaining({
+        keyword: 'format',
+        dataPath: '/email'
+      })
+    )
   })
 
-  it('Fails Validation (invalid enum)', () => {
+  it('Fails Validation (invalid enum)', async () => {
     const data = { ...TestData, country: 'NZ' }
-    expect(validate(data)).toBeFalsy()
-    expect(validate.errors?.find(error => error.dataPath === '/country')).toMatchObject({
-      keyword: 'enum'
-    })
+    await expect(async () => validator.validate(data)).rejects.toContainEqual(
+      expect.objectContaining({
+        keyword: 'enum',
+        dataPath: '/country'
+      })
+    )
   })
 
-  it('Fails Validation (invalid type)', () => {
+  it('Fails Validation (invalid type)', async () => {
     const data = { ...TestData, zip: true }
-    expect(validate(data)).toBeFalsy()
-    expect(validate.errors?.find(error => error.dataPath === '/zip')).toMatchObject({ keyword: 'type' })
+    await expect(async () => validator.validate(data)).rejects.toContainEqual(
+      expect.objectContaining({
+        keyword: 'type',
+        dataPath: '/zip'
+      })
+    )
   })
 
-  it('Fails Validation (invalid pattern)', () => {
+  it('Fails Validation (invalid pattern)', async () => {
     const data = { ...TestData, country: 'CA' }
-    expect(validate(data)).toBeFalsy()
-    expect(validate.errors?.find(error => error.dataPath === '/zip')).toMatchObject({ keyword: 'pattern' })
+    await expect(async () => validator.validate(data)).rejects.toContainEqual(
+      expect.objectContaining({
+        keyword: 'pattern',
+        dataPath: '/zip'
+      })
+    )
   })
 
   it('Returns JSON schema', () => {
-    expect(validate.schema).toMatchObject(TestSchema)
+    expect(validator.schema).toMatchObject(TestSchema)
   })
 })
