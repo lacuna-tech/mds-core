@@ -21,7 +21,7 @@ export class CreateCollectorMessagesTable1612209108259 implements MigrationInter
 
   public async up(queryRunner: QueryRunner): Promise<void> {
     await queryRunner.query(
-      `CREATE TABLE "collector-messages" ("recorded" bigint NOT NULL DEFAULT (extract(epoch from now()) * 1000)::bigint, "id" bigint GENERATED ALWAYS AS IDENTITY, "schema_id" character varying(255) NOT NULL, "producer_id" uuid NOT NULL, "message" json NOT NULL, CONSTRAINT "collector_messages_pkey" PRIMARY KEY ("id"))`
+      `CREATE TABLE "collector-messages" ("recorded" bigint NOT NULL DEFAULT (extract(epoch from now()) * 1000)::bigint, "id" bigint GENERATED ALWAYS AS IDENTITY, "schema_id" character varying(255) NOT NULL, "provider_id" uuid NOT NULL, "message" json NOT NULL, CONSTRAINT "collector_messages_pkey" PRIMARY KEY ("id"))`
     )
     await queryRunner.query(`CREATE INDEX "idx_recorded_collector_messages" ON "collector-messages" ("recorded") `)
     await queryRunner.query(`CREATE UNIQUE INDEX "idx_id_collector_messages" ON "collector-messages" ("id") `)

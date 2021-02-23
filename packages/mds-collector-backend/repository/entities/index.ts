@@ -25,10 +25,10 @@ export class CollectorMessageEntity extends IdentityColumn(RecordedColumn(class 
   schema_id: string
 
   @Column('uuid')
-  producer_id: UUID
+  provider_id: UUID
 
   @Column('json')
-  message: {}
+  message: object
 }
 
 export type CollectorMessageEntityModel = CollectorMessageEntity

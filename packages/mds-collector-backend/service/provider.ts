@@ -107,7 +107,7 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
       return exception
     }
   },
-  writeSchemaMessages: async (schema_id, producer_id, messages) => {
+  writeSchemaMessages: async (schema_id, provider_id, messages) => {
     try {
       const [validate, producer] = await Promise.all([getValidateFunction(schema_id), getStreamProducer(schema_id)])
 
@@ -130,13 +130,15 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
 
       // Write to Postgres
       const result = await CollectorRepository.insertCollectorMessages(
-        messages.map(message => ({ schema_id, producer_id, message })),
+        messages.map(message => ({ schema_id, provider_id, message })),
         // Write to Kafka prior to committing transaction
-        async () => {
-          try {
-            await producer.write(messages)
-          } catch (error) {
-            throw new ServerError('Error writing to Kafka stream', error)
+        {
+          beforeCommit: async () => {
+            try {
+              await producer.write(messages)
+            } catch (error) {
+              throw new ServerError('Error writing to Kafka stream', error)
+            }
           }
         }
       )

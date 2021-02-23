@@ -115,7 +115,7 @@ describe('Collector API', () => {
       headers: { 'content-type': CollectorApiContentType },
       body: TEST_COLLECTOR_MESSAGES.map(message => ({
         schema_id: TEST_SCHEMA_ID,
-        producer_id: TEST_PROVIDER_ID,
+        provider_id: TEST_PROVIDER_ID,
         message
       }))
     })

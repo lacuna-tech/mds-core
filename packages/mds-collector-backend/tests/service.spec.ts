@@ -77,7 +77,7 @@ describe('Collector Service', () => {
         TEST_COLLECTOR_MESSAGES
       )
       expect(written).toMatchObject(
-        TEST_COLLECTOR_MESSAGES.map(message => ({ schema_id: TEST_SCHEMA_ID, producer_id: TEST_PRODUCER_ID, message }))
+        TEST_COLLECTOR_MESSAGES.map(message => ({ schema_id: TEST_SCHEMA_ID, provider_id: TEST_PRODUCER_ID, message }))
       )
     })
 

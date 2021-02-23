@@ -41,10 +41,13 @@ export const WriteSchemaMessagesHandler = async (
     if (!isNonEmptyArray(req.body)) {
       throw new ValidationError('Request must contain a non-empty array of messages')
     }
-    // eslint-reason checkAccess middleware has previously verified that local.claims.provider_id is a UUID
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    const producer_id = res.locals.claims!.provider_id!
-    const messages = await CollectorServiceClient.writeSchemaMessages(schema_id, producer_id, req.body)
+    const messages = await CollectorServiceClient.writeSchemaMessages(
+      schema_id,
+      // eslint-reason checkAccess middleware has previously verified that local.claims.provider_id is a UUID
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      res.locals.claims!.provider_id!,
+      req.body
+    )
     return res.status(HttpStatus.CREATED).send(messages)
   } catch (error) {
     next(error)

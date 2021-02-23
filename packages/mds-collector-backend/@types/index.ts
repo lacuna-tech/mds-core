@@ -20,8 +20,8 @@ import { NonEmptyArray, Timestamp, UUID } from '@mds-core/mds-types'
 
 export interface CollectorMessageDomainModel {
   schema_id: string
-  producer_id: UUID
-  message: {}
+  provider_id: UUID
+  message: object
   recorded: Timestamp
 }
 
@@ -31,7 +31,7 @@ export interface CollectorService {
   getMessageSchema: (schema_id: CollectorMessageDomainModel['schema_id']) => {}
   writeSchemaMessages: (
     schema_id: CollectorMessageDomainModel['schema_id'],
-    producer_id: CollectorMessageDomainModel['producer_id'],
+    provider_id: CollectorMessageDomainModel['provider_id'],
     messages: NonEmptyArray<CollectorMessageDomainModel['message']>
   ) => Array<CollectorMessageDomainModel>
 }

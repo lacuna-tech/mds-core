@@ -20,12 +20,17 @@ import { CollectorMessageEntity, CollectorMessageEntityModel } from './entities'
 import { CollectorMessageDomainToEntityCreate, CollectorMessageEntityToDomain } from './mappers'
 import migrations from './migrations'
 
+interface InsertCollectorMessagesOptions {
+  beforeCommit: () => Promise<void>
+}
+
 class CollectorReadWriteRepository extends ReadWriteRepository {
   public insertCollectorMessages = async (
     messages: CollectorMessageDomainCreateModel[],
-    beforeCommit: () => Promise<void> = async () => undefined
+    options: Partial<InsertCollectorMessagesOptions> = {}
   ): Promise<CollectorMessageDomainModel[]> => {
     try {
+      const { beforeCommit = async () => undefined } = options
       const connection = await this.connect('rw')
 
       const chunks = this.asChunksForInsert(
