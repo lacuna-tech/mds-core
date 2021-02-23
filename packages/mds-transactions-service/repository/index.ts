@@ -42,6 +42,15 @@ import { TransactionOperationEntity } from './entities/operation-entity'
 import { TransactionStatusEntity } from './entities/status-entity'
 import migrations from './migrations'
 
+/**
+ * Aborts execution if not running under a test environment.
+ */
+const testEnvSafeguard = () => {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error(`This method is only supported when executing tests`)
+  }
+}
+
 const { validate: validateTransactionSearchParams } = schemaValidator<TransactionSearchParams>(
   Joi.object<TransactionSearchParams>()
     .keys({
@@ -239,6 +248,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
    * Deletes all transactions from the DB.
    */
   public deleteAllTransactions = async () => {
+    testEnvSafeguard()
     const { connect } = this
     try {
       const connection = await connect('rw')
@@ -256,6 +266,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
    * Deletes all transaction operations from the DB.
    */
   public deleteAllTransactionOperations = async () => {
+    testEnvSafeguard()
     const { connect } = this
     try {
       const connection = await connect('rw')
@@ -273,6 +284,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
    * Deletes all transaction statuses from the DB.
    */
   public deleteAllTransactionStatuses = async () => {
+    testEnvSafeguard()
     const { connect } = this
     try {
       const connection = await connect('rw')

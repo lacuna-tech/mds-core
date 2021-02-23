@@ -37,13 +37,6 @@ describe('Transaction Status Tests', () => {
       TransactionRepository.deleteAllTransactionStatuses()
     ])
   })
-  afterAll(async () => {
-    await Promise.all([
-      TransactionRepository.deleteAllTransactions(),
-      TransactionRepository.deleteAllTransactionOperations(),
-      TransactionRepository.deleteAllTransactionStatuses()
-    ])
-  })
 
   it('Post Good Transaction Status', async () => {
     const [transactionStatusToPersist] = transactionStatusesGenerator(1)
@@ -78,6 +71,11 @@ describe('Transaction Status Tests', () => {
   // post stat on non-existaet transaction id
 
   afterAll(async () => {
+    await Promise.all([
+      TransactionRepository.deleteAllTransactions(),
+      TransactionRepository.deleteAllTransactionOperations(),
+      TransactionRepository.deleteAllTransactionStatuses()
+    ])
     await TransactionServer.stop()
   })
 })

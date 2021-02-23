@@ -85,13 +85,6 @@ describe('Transaction Service Tests', () => {
       TransactionRepository.deleteAllTransactionStatuses()
     ])
   })
-  afterAll(async () => {
-    await Promise.all([
-      TransactionRepository.deleteAllTransactions(),
-      TransactionRepository.deleteAllTransactionOperations(),
-      TransactionRepository.deleteAllTransactionStatuses()
-    ])
-  })
 
   describe('Transaction Tests', () => {
     describe('Transaction Creation Tests', () => {
@@ -314,6 +307,11 @@ describe('Transaction Service Tests', () => {
   })
 
   afterAll(async () => {
+    await Promise.all([
+      TransactionRepository.deleteAllTransactions(),
+      TransactionRepository.deleteAllTransactionOperations(),
+      TransactionRepository.deleteAllTransactionStatuses()
+    ])
     await TransactionServer.stop()
   })
 })

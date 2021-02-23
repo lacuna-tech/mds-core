@@ -37,13 +37,6 @@ describe('Transaction Operation Tests', () => {
       TransactionRepository.deleteAllTransactionStatuses()
     ])
   })
-  afterAll(async () => {
-    await Promise.all([
-      TransactionRepository.deleteAllTransactions(),
-      TransactionRepository.deleteAllTransactionOperations(),
-      TransactionRepository.deleteAllTransactionStatuses()
-    ])
-  })
 
   const [sampleOperation] = transactionOperationsGenerator(1)
   const { operation_id, transaction_id } = sampleOperation
@@ -69,11 +62,9 @@ describe('Transaction Operation Tests', () => {
   })
 
   describe('Transaction Operation Read Tests', () => {
-    beforeAll(async () => {
-      await TransactionServiceClient.addTransactionOperation(sampleOperation)
-    })
-
     it('Get All Transaction Operations for One Transaction', async () => {
+      await TransactionServiceClient.addTransactionOperation(sampleOperation)
+
       const operations = await TransactionServiceClient.getTransactionOperations(sampleOperation.transaction_id)
       expect(operations.length).toEqual(1)
       const [operation] = operations
@@ -81,6 +72,8 @@ describe('Transaction Operation Tests', () => {
     })
 
     it('Get All Transaction Operations for One Nonexistent Transaction', async () => {
+      await TransactionServiceClient.addTransactionOperation(sampleOperation)
+
       const operations = await TransactionServiceClient.getTransactionOperations(uuid())
       expect(operations.length).toEqual(0)
     })
@@ -94,6 +87,11 @@ describe('Transaction Operation Tests', () => {
   // post op on non-existent transaction id
 
   afterAll(async () => {
+    await Promise.all([
+      TransactionRepository.deleteAllTransactions(),
+      TransactionRepository.deleteAllTransactionOperations(),
+      TransactionRepository.deleteAllTransactionStatuses()
+    ])
     await TransactionServer.stop()
   })
 })
