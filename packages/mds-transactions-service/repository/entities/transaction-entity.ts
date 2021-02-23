@@ -15,7 +15,7 @@
  */
 
 import { Entity, Column } from 'typeorm'
-import { BigintTransformer, IdentityColumn, RecordedColumn, ForceType } from '@mds-core/mds-repository'
+import { BigintTransformer, IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
 import { UUID, Timestamp, Nullable } from '@mds-core/mds-types'
 import { FEE_TYPE } from '../../@types'
 
@@ -31,7 +31,6 @@ export class TransactionEntity extends IdentityColumn(RecordedColumn(class {})) 
   device_id: Nullable<UUID>
 
   @Column('bigint', { transformer: BigintTransformer })
-  @ForceType(Number)
   timestamp: Timestamp
 
   @Column('varchar', { length: 127 })
