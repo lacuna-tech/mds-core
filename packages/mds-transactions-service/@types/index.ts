@@ -133,7 +133,7 @@ export interface TransactionStatusDomainModel {
   transaction_id: UUID
   // when was this change made
   timestamp: Timestamp
-  status_type: TRANSACTION_OPERATION_TYPE
+  status_type: TRANSACTION_STATUS_TYPE
   // who made this change (TODO work out authorship representation; could be human, could be api, etc.)
   author: string
 }

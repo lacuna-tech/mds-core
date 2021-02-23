@@ -14,7 +14,7 @@ function* transactionStatusesGenerator(length = 20): Generator<TransactionStatus
       transaction_id: uuid(),
       status_id: uuid(),
       timestamp,
-      status_type: 'invoice_generated',
+      status_type: 'order_submitted',
       author: 'no one'
     }
   }
