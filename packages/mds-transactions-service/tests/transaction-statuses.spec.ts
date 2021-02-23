@@ -28,9 +28,16 @@ describe('Transaction Status Tests', () => {
   })
 
   /**
-   * Clear DB after each test runs. No side-effects for you.
+   * Clear DB after each test runs, and after the file is finished. No side-effects for you.
    */
-  afterEach(async () => {
+  beforeEach(async () => {
+    await Promise.all([
+      TransactionRepository.deleteAllTransactions(),
+      TransactionRepository.deleteAllTransactionOperations(),
+      TransactionRepository.deleteAllTransactionStatuses()
+    ])
+  })
+  afterAll(async () => {
     await Promise.all([
       TransactionRepository.deleteAllTransactions(),
       TransactionRepository.deleteAllTransactionOperations(),
