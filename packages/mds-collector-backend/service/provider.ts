@@ -131,7 +131,7 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
       // Write to Postgres
       const result = await CollectorRepository.insertCollectorMessages(
         messages.map(message => ({ schema_id, producer_id, message })),
-        // Write to Kafka prior to committiing transaction
+        // Write to Kafka prior to committing transaction
         async () => {
           try {
             await producer.write(messages)
