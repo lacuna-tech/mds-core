@@ -14,9 +14,8 @@ export const TransactionApiErrorMiddleware = (
 ) => {
   log.error(req.method, req.originalUrl, error)
 
-  if (isError(error, ValidationError)) return res.status(HttpStatus.BAD_REQUEST).send({ error })
-
-  if (isError(error, BadParamsError)) return res.status(HttpStatus.BAD_REQUEST).send({ error })
+  if (isError(error, ValidationError) || isError(error, BadParamsError))
+    return res.status(HttpStatus.BAD_REQUEST).send({ error })
 
   if (isError(error, NotFoundError)) return res.status(HttpStatus.NOT_FOUND).send({ error })
 
