@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 City of Los Angeles
+ * Copyright 2020 City of Los Angeles
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +15,6 @@
  */
 
 export * from './@types'
-export * from './exceptions'
-export * from './filters'
-export * from './mapper'
-export * from './mixins'
+export * from './client'
 export * from './repository'
-export * from './transformers'
-export * from './decorators'
+export * from './test-fixtures'
