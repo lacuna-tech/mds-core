@@ -24,14 +24,14 @@ export interface JsonObject {
   [property: string]: Json
 }
 
-export type JsonValue = string | number | boolean | JsonArray | JsonObject
+export type JsonValue = string | number | boolean | JsonArray | JsonObject | Error
 
 export type Json = JsonValue | null
 
 const logger: Pick<Console, 'info' | 'warn' | 'error'> = console
 type LogLevel = keyof typeof logger
 
-type LogArgs = [message: string, obj?: JsonObject | Error]
+type LogArgs = [message: string, data?: Record<string, unknown> | Error]
 
 const redact = (arg: unknown): any => {
   const res = JSON.stringify(arg instanceof Error ? { error: arg.toString() } : arg, (k, v) =>
@@ -41,12 +41,12 @@ const redact = (arg: unknown): any => {
   return JSON.parse(res)
 }
 
-const log = (level: LogLevel, ...[message, obj]: LogArgs) => {
+const log = (level: LogLevel, ...[message, data]: LogArgs): { log_message?: string; log_data?: any } => {
   if (process.env.QUIET === 'true') {
     return {}
   }
 
-  const { log_message, log_data } = { log_message: redact(message), log_data: redact(obj) }
+  const { log_message, log_data } = { log_message: redact(message), log_data: redact(data) }
   const log_timestamp = Date.now()
   const log_ISO_timestamp = new Date(log_timestamp).toISOString()
   const log_requestId = httpContext.get('x-request-id')

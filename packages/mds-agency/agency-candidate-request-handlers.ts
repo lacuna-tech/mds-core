@@ -32,7 +32,7 @@ export const readAllVehicleIds = async (req: AgencyApiRequest, res: AgencyApiRes
     })
   }
 
-  logger.info(query_provider_id ? providerName(query_provider_id) : null, 'get /vehicles')
+  logger.info(`get /vehicles for ${query_provider_id ? providerName(query_provider_id) : null}`)
 
   const items = await db.readDeviceIds(query_provider_id)
   const data: { [s: string]: string[] } = {}
