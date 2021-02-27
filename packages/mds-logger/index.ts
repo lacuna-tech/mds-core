@@ -16,25 +16,37 @@
 
 import httpContext from 'express-http-context'
 
+// eslint-reason recursive declarations require interfaces
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface JsonArray extends Array<Json> {}
+
+export interface JsonObject {
+  [property: string]: Json
+}
+
+export type JsonValue = string | number | boolean | JsonArray | JsonObject
+
+export type Json = JsonValue | null
+
 const logger: Pick<Console, 'info' | 'warn' | 'error'> = console
 type LogLevel = keyof typeof logger
 
-type LogArgs = [message: string, obj?: object]
+type LogArgs = [message: string, obj?: JsonObject | Error]
 
-const redact = (arg: unknown): object => {
-  const res = JSON.stringify(arg instanceof Error ? arg.toString() : arg, (k, v) =>
+const redact = (arg: unknown): any => {
+  const res = JSON.stringify(arg instanceof Error ? { error: arg.toString() } : arg, (k, v) =>
     ['lat', 'lng'].includes(k) ? '[REDACTED]' : v
   )
 
   return JSON.parse(res)
 }
 
-const log = (level: LogLevel, ...[message, obj]: LogArgs): any => {
+const log = (level: LogLevel, ...[message, obj]: LogArgs) => {
   if (process.env.QUIET === 'true') {
-    return
+    return {}
   }
 
-  const { message: log_message, ...log_data } = { message: redact(message), ...redact(obj) }
+  const { log_message, log_data } = { log_message: redact(message), log_data: redact(obj) }
   const log_timestamp = Date.now()
   const log_ISO_timestamp = new Date(log_timestamp).toISOString()
   const log_requestId = httpContext.get('x-request-id')
@@ -44,10 +56,11 @@ const log = (level: LogLevel, ...[message, obj]: LogArgs): any => {
     log_ISO_timestamp,
     log_timestamp,
     ...(log_requestId ? { log_requestId } : {}),
+    log_message,
     log_data
   })
 
-  return log_data
+  return { log_message, log_data }
 }
 
 const info = (...args: LogArgs) => log('info', ...args)
