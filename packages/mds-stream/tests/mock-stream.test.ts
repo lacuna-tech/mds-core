@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-import logger from '@mds-core/mds-logger'
 import { mockStream } from '../test-utils'
 import { StreamProducer } from '../stream-interface'
 import { KafkaStreamProducer } from '../kafka'
