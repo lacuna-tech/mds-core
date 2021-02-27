@@ -16,18 +16,6 @@
 
 import httpContext from 'express-http-context'
 
-// eslint-reason recursive declarations require interfaces
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-export interface JsonArray extends Array<Json> {}
-
-export interface JsonObject {
-  [property: string]: Json
-}
-
-export type JsonValue = string | number | boolean | JsonArray | JsonObject | Error
-
-export type Json = JsonValue | null
-
 const logger: Pick<Console, 'info' | 'warn' | 'error'> = console
 type LogLevel = keyof typeof logger
 
