@@ -393,12 +393,12 @@ export async function refresh(device_id: UUID, provider_id: UUID): Promise<strin
     const event = await db.readEvent(device_id)
     await cache.writeEvent(event)
   } catch (error) {
-    logger.info('mds-agency::refresh no events', { device_id, error })
+    logger.info('no events for', { device_id, error })
   }
   try {
     await db.readTelemetry(device_id)
   } catch (error) {
-    logger.info('mds-agency::refresh no telemetry ', { device_id, error })
+    logger.info('no telemetry for', { device_id, error })
   }
   return 'done'
 }
@@ -407,11 +407,11 @@ export async function refresh(device_id: UUID, provider_id: UUID): Promise<strin
  * for some functions we will want to validate the :device_id param
  */
 export async function validateDeviceId(req: express.Request, res: express.Response, next: Function) {
-  const { params: device_id, originalUrl } = req
+  const { device_id } = req.params
 
   /* istanbul ignore if This is never called with no device_id parameter */
   if (!device_id) {
-    logger.warn('agency: missing device_id', { originalUrl })
+    logger.warn('agency: missing device_id', { originalUrl: req.originalUrl })
     res.status(400).send({
       error: 'missing_param',
       error_description: 'missing device_id'
@@ -419,7 +419,7 @@ export async function validateDeviceId(req: express.Request, res: express.Respon
     return
   }
   if (device_id && !isUUID(device_id)) {
-    logger.warn('agency: bogus device_id', { device_id, originalUrl })
+    logger.warn('agency: bogus device_id', { device_id, originalUrl: req.originalUrl })
     res.status(400).send({
       error: 'bad_param',
       error_description: `invalid device_id ${device_id} is not a UUID`

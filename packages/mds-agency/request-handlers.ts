@@ -113,15 +113,19 @@ export const registerVehicle = async (req: AgencyApiRegisterVehicleRequest, res:
       logger.error('writeRegisterEvent failure', err)
     }
     res.status(201).send({})
-  } catch (error) {
-    if (String(error).includes('duplicate'))
-      return res.status(409).send({
+  } catch (err) {
+    if (String(err).includes('duplicate')) {
+      res.status(409).send({
         error: 'already_registered',
         error_description: 'A vehicle with this device_id is already registered'
       })
-
-    logger.error('register vehicle failed', { providerName: providerName(res.locals.provider_id), error })
-    return res.status(500).send(agencyServerError)
+    } else if (String(err).includes('db')) {
+      logger.error('register vehicle failed:', { err, providerName: providerName(res.locals.provider_id) })
+      res.status(500).send(agencyServerError)
+    } else {
+      logger.error('register vehicle failed:', { err, providerName: providerName(res.locals.provider_id) })
+      res.status(500).send(agencyServerError)
+    }
   }
 }
 
@@ -187,11 +191,7 @@ export async function updateVehicleFail(
   } else if (!provider_id) {
     res.status(404).send({})
   } else {
-    logger.error(`fail PUT /vehicles/${device_id}`, {
-      providerName: providerName(provider_id),
-      body: req.body,
-      err: error
-    })
+    logger.error(`fail PUT /vehicles/${device_id}`, { providerName: providerName(provider_id), body: req.body, error })
     res.status(500).send(agencyServerError)
   }
 }
@@ -270,7 +270,7 @@ export const submitVehicleEvent = async (
     const delta = now() - recorded
 
     if (delta > 100) {
-      logger.info(`${name} post event took ${delta}ms`)
+      logger.info(`${name} post event took ${delta} ms`)
       fin()
     } else {
       fin()
@@ -287,7 +287,7 @@ export const submitVehicleEvent = async (
         error_description: 'An event with this device_id and timestamp has already been received'
       })
     } else if (message.includes('not found') || message.includes('unregistered')) {
-      logger.info('event for unregistered device', { name, event })
+      logger.info('event for unregistered', { name, event })
       res.status(400).send({
         error: 'unregistered',
         error_description: 'The specified device_id has not been registered'
@@ -317,7 +317,7 @@ export const submitVehicleEvent = async (
     const failure = (await badEvent(event)) || (event.telemetry ? badTelemetry(event.telemetry) : null)
     // TODO unify with fail() above
     if (failure) {
-      logger.info('event failure', { failure, name, event })
+      logger.info('event failure', { name, failure, event })
       return res.status(400).send(failure)
     }
 
@@ -420,9 +420,9 @@ export const submitVehicleTelemetry = async (
       if (delta > 300) {
         logger.info('writeTelemetry', {
           name,
-          items: valid.length,
+          validItems: valid.length,
           unique: recorded_telemetry.length,
-          duration: `${delta}ms (${Math.round((1000 * valid.length) / delta)}/s)`
+          delta: `${delta} ms (${Math.round((1000 * valid.length) / delta)}/s)`
         })
       }
       if (recorded_telemetry.length) {
@@ -443,7 +443,7 @@ export const submitVehicleTelemetry = async (
     } else {
       const body = `${JSON.stringify(req.body).substring(0, 128)} ...`
       const fails = `${JSON.stringify(failures).substring(0, 128)} ...`
-      logger.info(`no valid telemetry in ${data.length} items:`, { name, body, failures: fails })
+      logger.info(`no valid telemetry in ${data.length} items for ${name}`, { body, fails })
       res.status(400).send({
         error: 'invalid_data',
         error_description: 'None of the provided data was valid',

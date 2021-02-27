@@ -42,7 +42,7 @@ export const wipeDevice = async (req: AgencyApiWipeDeviceRequest, res: AgencyApi
     const cacheResult = await cache.wipeDevice(device_id)
     logger.info('cache wiped for device', { cacheResult })
     const dbResult = await db.wipeDevice(device_id)
-    logger.info('db wiped', { dbResult })
+    logger.info('db wiped for device', { dbResult })
     if (cacheResult >= 1) {
       res.status(200).send({
         result: `successfully wiped ${device_id}`
@@ -67,7 +67,7 @@ export const refreshCache = async (req: AgencyApiRefreshCacheRequest, res: Agenc
   try {
     const rows = await db.readDeviceIds()
 
-    logger.info(`read ${rows.length} device_ids. skip ${skip} take ${take}`)
+    logger.info(`read ${rows.length} device_ids.`, { skip, take })
     const devices = rows.slice(skip, take + skip)
     logger.info('device_ids', { devices })
 
