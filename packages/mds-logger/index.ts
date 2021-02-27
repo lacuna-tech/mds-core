@@ -19,27 +19,39 @@ import httpContext from 'express-http-context'
 const logger: Pick<Console, 'info' | 'warn' | 'error'> = console
 type LogLevel = keyof typeof logger
 
-const redact = (args: unknown[]): string[] =>
-  args.map(arg =>
-    JSON.stringify(arg instanceof Error ? arg.toString() : arg, (k, v) =>
-      ['lat', 'lng'].includes(k) ? '[REDACTED]' : v
-    )
+type LogArgs = [message: string, obj?: object]
+
+const redact = (arg: unknown): object => {
+  const res = JSON.stringify(arg instanceof Error ? arg.toString() : arg, (k, v) =>
+    ['lat', 'lng'].includes(k) ? '[REDACTED]' : v
   )
 
-const log = (level: LogLevel, ...args: unknown[]): string[] => {
-  const redacted = process.env.QUIET === 'true' ? [] : redact(args)
-  if (redacted.length) {
-    const timestamp = Date.now()
-    const ISOTimestamp = new Date(timestamp).toISOString()
-    const requestId = httpContext.get('x-request-id')
-
-    logger[level](level.toUpperCase(), ISOTimestamp, timestamp, ...(requestId ? [requestId] : []), ...redacted)
-  }
-  return redacted
+  return JSON.parse(res)
 }
 
-const info = (...args: unknown[]) => log('info', ...args)
-const warn = (...args: unknown[]) => log('warn', ...args)
-const error = (...args: unknown[]) => log('error', ...args)
+const log = (level: LogLevel, ...[message, obj]: LogArgs): any => {
+  if (process.env.QUIET === 'true') {
+    return
+  }
+
+  const { message: log_message, ...log_data } = { message: redact(message), ...redact(obj) }
+  const log_timestamp = Date.now()
+  const log_ISO_timestamp = new Date(log_timestamp).toISOString()
+  const log_requestId = httpContext.get('x-request-id')
+
+  logger[level]({
+    log_level: level.toUpperCase(),
+    log_ISO_timestamp,
+    log_timestamp,
+    ...(log_requestId ? { log_requestId } : {}),
+    log_data
+  })
+
+  return log_data
+}
+
+const info = (...args: LogArgs) => log('info', ...args)
+const warn = (...args: LogArgs) => log('warn', ...args)
+const error = (...args: LogArgs) => log('error', ...args)
 
 export default { log, info, warn, error }
