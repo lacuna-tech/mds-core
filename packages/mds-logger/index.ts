@@ -34,6 +34,7 @@ type LogLevel = keyof typeof logger
 type LogArgs = [message: string, data?: Record<string, unknown> | Error]
 
 const redact = (arg: unknown): any => {
+  if (arg === undefined) return {}
   const res = JSON.stringify(arg instanceof Error ? { error: arg.toString() } : arg, (k, v) =>
     ['lat', 'lng'].includes(k) ? '[REDACTED]' : v
   )

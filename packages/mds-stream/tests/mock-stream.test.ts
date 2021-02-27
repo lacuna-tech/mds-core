@@ -43,7 +43,6 @@ describe('Mock stream API', () => {
       initialize: jest.fn(async () => undefined),
       shutdown: jest.fn(async () => undefined),
       write: jest.fn(async x => {
-        logger.info(x)
         return undefined
       })
     }
