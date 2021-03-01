@@ -19,9 +19,7 @@ import httpContext from 'express-http-context'
 const logger: Pick<Console, 'info' | 'warn' | 'error'> = console
 type LogLevel = keyof typeof logger
 
-type LogArgs = [message: string, data?: Record<string, unknown> | Error]
-
-const redact = (arg: unknown): any => {
+const redact = (arg: string | Record<string, unknown> | Error | undefined): any => {
   if (arg === undefined) return {}
   const res = JSON.stringify(arg instanceof Error ? { error: arg.toString() } : arg, (k, v) =>
     ['lat', 'lng'].includes(k) ? '[REDACTED]' : v
@@ -30,7 +28,10 @@ const redact = (arg: unknown): any => {
   return JSON.parse(res)
 }
 
-const log = (level: LogLevel, ...[message, data]: LogArgs): { log_message?: string; log_data?: any } => {
+const log = (level: LogLevel) => (
+  message: string,
+  data?: Record<string, unknown> | Error
+): { log_message?: string; log_data?: any } => {
   if (process.env.QUIET === 'true') {
     return {}
   }
@@ -52,8 +53,9 @@ const log = (level: LogLevel, ...[message, data]: LogArgs): { log_message?: stri
   return { log_message, log_data }
 }
 
-const info = (...args: LogArgs) => log('info', ...args)
-const warn = (...args: LogArgs) => log('warn', ...args)
-const error = (...args: LogArgs) => log('error', ...args)
-
-export default { log, info, warn, error }
+export default {
+  log: (level: LogLevel, ...args: Parameters<ReturnType<typeof log>>) => log(level)(...args),
+  info: log('info'),
+  warn: log('warn'),
+  error: log('error')
+}

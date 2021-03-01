@@ -99,7 +99,7 @@ describe('MDS Logger', () => {
     test.value(Object.keys(result).length).is(0)
   })
 
-  it.only('can write a log with only a message, and no data', () => {
+  it('can write a log with only a message, and no data', () => {
     logger.info('some message')
   })
 })
