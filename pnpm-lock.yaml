@@ -21,7 +21,7 @@ importers:
       eslint-plugin-progress: 0.0.1
       eslint-plugin-promise: 4.3.1
       git-revision-webpack-plugin: 3.0.6
-      husky: 5.1.1
+      husky: 5.1.2
       jest: 26.6.3_ts-node@9.1.1
       lerna: 3.22.1
       lint-staged: 10.5.4
@@ -73,7 +73,7 @@ importers:
       eslint-plugin-progress: 0.0.1
       eslint-plugin-promise: 4.3.1
       git-revision-webpack-plugin: 3.0.6
-      husky: 5.1.1
+      husky: 5.1.2
       jest: 26.6.3
       lerna: 3.22.1
       lint-staged: 10.5.4
@@ -7133,13 +7133,13 @@ packages:
     dev: true
     resolution:
       integrity: sha1-xG4xWaKT9riW2ikxbYtv6Lt5u+0=
-  /husky/5.1.1:
+  /husky/5.1.2:
     dev: true
     engines:
       node: '>= 10'
     hasBin: true
     resolution:
-      integrity: sha512-80LZ736V0Nr4/st0c2COYaMbEQhHNmAbLMN8J/kLk7/mo0QdUkUGNDjv/7jVkhug377Wh8wfbWyaVXEJ/h2B/Q==
+      integrity: sha512-lilaRYeDXcAOj8DuRnN9IxUyEMVbYg9rK7yVNkPB5V4hCvxIUxpMeiv9K2h77CE0HzjCnk1Br0oWe1IghXngDQ==
   /iconv-lite/0.4.24:
     dependencies:
       safer-buffer: 2.1.2
@@ -12637,7 +12637,7 @@ packages:
       serialize-javascript: 5.0.1
       source-map: 0.6.1
       terser: 5.6.0
-      webpack: 5.24.2
+      webpack: 5.24.2_webpack-cli@4.5.0
     dev: true
     engines:
       node: '>= 10.13.0'
