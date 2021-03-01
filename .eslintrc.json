@@ -19,7 +19,6 @@
     "project": "tsconfig.eslint.json"
   },
   "extends": [
-    "airbnb-base",
     "plugin:@typescript-eslint/recommended",
     "plugin:import/typescript",
     "plugin:promise/recommended",
