@@ -19,8 +19,8 @@ import { RpcClient, RpcRequest } from '@mds-core/mds-rpc-common'
 import { CollectorServiceRpcDefinition, CollectorService } from '../@types'
 
 const CollectorServiceRpcClient = RpcClient(CollectorServiceRpcDefinition, {
-  host: process.env.COLLECTOR_SERVICE_RPC_HOST,
-  port: process.env.COLLECTOR_SERVICE_RPC_PORT
+  host: process.env.COLLECTOR_BACKEND_RPC_HOST,
+  port: process.env.COLLECTOR_BACKEND_RPC_PORT
 })
 
 export const CollectorServiceClient: ServiceClient<CollectorService> = {

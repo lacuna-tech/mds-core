@@ -30,9 +30,9 @@ export const CollectorServiceManager = RpcServer(
     writeSchemaMessages: args => CollectorServiceProvider.writeSchemaMessages(...args)
   },
   {
-    port: process.env.COLLECTOR_SERVICE_RPC_PORT,
+    port: process.env.COLLECTOR_BACKEND_RPC_PORT,
     repl: {
-      port: process.env.COLLECTOR_SERVICE_REPL_PORT,
+      port: process.env.COLLECTOR_BACKEND_REPL_PORT,
       context: { client: CollectorServiceClient }
     }
   }

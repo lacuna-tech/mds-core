@@ -116,7 +116,7 @@ spec:
             value: http://mds-jurisdiction-service
           - name: POLICY_SERVICE_RPC_HOST
             value: http://mds-policy-service
-          - name: COLLECTOR_SERVICE_RPC_HOST
+          - name: COLLECTOR_BACKEND_RPC_HOST
             value: http://mds-collector-backend
           - name: TRANSACTION_SERVICE_RPC_HOST
             value: http://mds-transaction-service
