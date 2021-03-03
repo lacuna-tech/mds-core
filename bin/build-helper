@@ -58,6 +58,7 @@ images() {
 }
 
 templateValues() {
+  createImagesFileIfNotExists
   suffix="$(getBranchSuffix)$(getCommitHash)"
   for image in $(images); do
     version=$(jq -r '.version' < $BASE_DIR/container-images/$image/package.json)
