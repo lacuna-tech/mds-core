@@ -116,7 +116,16 @@ export async function readEvents(params: ReadEventsQueryParams): Promise<ReadEve
 
 // -000
 
-export async function readTripEvents(params: ReadEventsQueryParams): Promise<ReadEventsResult> {
+export interface TripEvents {
+  [trip_id: string]: VehicleEvent[]
+}
+
+export interface TripEventsResult {
+  events: TripEvents
+  count: number
+}
+
+export async function readTripEvents(params: ReadEventsQueryParams): Promise<TripEventsResult> {
   const { skip, take, start_time, end_time } = params
   const client = await getReadOnlyClient()
   const vals = new SqlVals()
@@ -162,23 +171,18 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Rea
   await logSql(selectSql, selectVals)
 
   const res2 = await client.query(selectSql, selectVals)
-  const events = res2.rows.map(r => {
-    const [trip_id, json] = r
-    const eventWithTelemetry = JSON.parse(json)
-    return { trip_id, event: eventWithTelemetry }
-  })
+
+  const events = res2.rows.reduce((acc: TripEvents, row) => {
+    const [trip_id, unparsedJson] = row
+    const eventWithTelemetry = JSON.parse(unparsedJson) as VehicleEvent
+    Object.assign(acc, {[trip_id]: eventWithTelemetry})
+    return acc
+  },{})
   return {
     events,
     count
   }
 }
-
-const trips = {
-  [events[0].trip_id]: [events],
-  'fe57bb27-3afc-41c6-85f0-3c87837161a0': [event, event]
-}
-
-//----
 
 export async function readHistoricalEvents(params: ReadHistoricalEventsQueryParams): Promise<VehicleEvent[]> {
   const { provider_id: query_provider_id, end_date } = params
