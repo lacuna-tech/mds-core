@@ -156,9 +156,8 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
 
   let selectSql = `SELECT trip_id, array_agg(row_to_json(*)) as events_and_telemetry
   FROM ${schema.TABLE.events} e
-  JOIN telemetry t ON t.event_id = e.id
-  LEFT JOIN ${schema.TABLE.telemetry} T ON E.device_id = T.device_id
-      AND COALESCE(E.telemetry_timestamp, E.timestamp) = T.timestamp
+  LEFT JOIN ${schema.TABLE.telemetry} t ON e.device_id = t.device_id
+      AND COALESCE(e.telemetry_timestamp, e.timestamp) = t.timestamp
   ${queryFilter} 
 
   group by trip_id
