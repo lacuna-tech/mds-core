@@ -8,12 +8,19 @@ BASE_DIR=$(dirname $0)/..
 NODE_ENV=${NODE_ENV:-""}
 REGISTRY=${REGISTRY:=""}
 
-buildImage() {
-  local image=$1
-  if [! -f $BASE_DIR/dist/images.txt]
+createImagesFileIfNotExists() {
+  if [ ! -d $BASE_DIR/dist ]; then
+    mkdir -p $BASE_DIR/dist
+  fi
+  if [ ! -f $BASE_DIR/dist/images.txt ]
   then
     touch $BASE_DIR/dist/images.txt
   fi
+}
+
+buildImage() {
+  local image=$1
+  createImagesFileIfNotExists
   if [[ "$NODE_ENV" == "development" ]]; then
     image_name=$(echo $image | cut -f1 -d":")
     docker build -t ${REGISTRY}${image_name}:latest .
@@ -25,10 +32,7 @@ buildImage() {
 }
 
 pushImages() {
-  if [! -f $BASE_DIR/dist/images.txt]
-  then
-    touch $BASE_DIR/dist/images.txt
-  fi
+  createImagesFileIfNotExists
   cat /dev/null > $BASE_DIR/dist/images.txt
   if [[ "$REGISTRY" =~ amazonaws.com$ ]]; then
     eval $(aws ecr get-login --no-include-email)
