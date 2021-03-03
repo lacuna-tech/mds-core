@@ -9,10 +9,10 @@ NODE_ENV=${NODE_ENV:-""}
 REGISTRY=${REGISTRY:=""}
 
 createImagesFileIfNotExists() {
-  if [ ! -d $BASE_DIR/dist ]; then
+  if [[ ! -d $BASE_DIR/dist ]]; then
     mkdir -p $BASE_DIR/dist
   fi
-  if [ ! -f $BASE_DIR/dist/images.txt ]
+  if [[ ! -f $BASE_DIR/dist/images.txt ]]
   then
     touch $BASE_DIR/dist/images.txt
   fi
