@@ -1,5 +1,5 @@
 /**
- * Copyright 2019 City of Los Angeles
+ * Copyright 2020 City of Los Angeles
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,20 +14,5 @@
  * limitations under the License.
  */
 
-import { DeleteResult, InsertResult, UpdateResult } from 'typeorm'
-import { Optional, NullableKeys } from '@mds-core/mds-types'
-
-export interface InsertReturning<T> extends InsertResult {
-  raw: T[]
-}
-
-export interface UpdateReturning<T> extends UpdateResult {
-  raw: T[]
-}
-
-export interface DeleteReturning<T> extends DeleteResult {
-  raw: T[]
-}
-
-// Mark all nullable properties as optional (useful for create methods)
-export type DomainModelCreate<T> = Optional<T, NullableKeys<T>>
+export * from './transaction-api-version'
+export * from './transaction-api-error'
