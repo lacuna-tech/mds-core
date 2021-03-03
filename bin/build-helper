@@ -12,8 +12,7 @@ createImagesFileIfNotExists() {
   if [[ ! -d $BASE_DIR/dist ]]; then
     mkdir -p $BASE_DIR/dist
   fi
-  if [[ ! -f $BASE_DIR/dist/images.txt ]]
-  then
+  if [[ ! -f $BASE_DIR/dist/images.txt ]]; then
     touch $BASE_DIR/dist/images.txt
   fi
 }
