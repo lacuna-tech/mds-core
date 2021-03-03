@@ -15,11 +15,11 @@
 import { uuid } from '@mds-core/mds-utils'
 import { NonEmptyArray } from '@mds-core/mds-types'
 import { CollectorServiceClient } from '../client'
-import { CollectorServiceManager } from '../service/manager'
+import { CollectorBackendController } from '../service/backend'
 import { CollectorRepository } from '../repository'
 import TestSchema from '../schemas/test.schema'
 
-const CollectorServer = CollectorServiceManager.controller()
+const CollectorBackend = CollectorBackendController()
 const TEST_SCHEMA_ID = 'test'
 const TEST_PRODUCER_ID = uuid()
 const TEST_COLLECTOR_MESSAGES: NonEmptyArray<TestSchema> = [
@@ -55,7 +55,7 @@ describe('Collector Service', () => {
 
   describe('Service Methods', () => {
     beforeAll(async () => {
-      await CollectorServer.start()
+      await CollectorBackend.start()
     })
 
     it('Get Schema (Result)', async () => {
@@ -92,7 +92,7 @@ describe('Collector Service', () => {
     })
 
     afterAll(async () => {
-      await CollectorServer.stop()
+      await CollectorBackend.stop()
     })
   })
 })

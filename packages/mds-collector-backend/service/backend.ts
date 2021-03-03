@@ -19,7 +19,7 @@ import { CollectorServiceProvider } from './provider'
 import { CollectorServiceClient } from '../client'
 import { CollectorServiceRpcDefinition } from '../@types'
 
-export const CollectorServiceManager = RpcServer(
+export const { monitor: CollectorBackend, controller: CollectorBackendController } = RpcServer(
   CollectorServiceRpcDefinition,
   {
     onStart: CollectorServiceProvider.start,
