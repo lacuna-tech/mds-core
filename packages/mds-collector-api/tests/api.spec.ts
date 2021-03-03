@@ -16,14 +16,14 @@
 
 import supertest from 'supertest'
 import HttpStatus from 'http-status-codes'
-import { CollectorServiceManager } from '@mds-core/mds-collector-backend/service/manager'
+import { CollectorBackendController } from '@mds-core/mds-collector-backend/service/backend'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { pathPrefix, uuid } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'
 import { CollectorApiAccessTokenScopes, COLLECTOR_API_DEFAULT_VERSION, COLLECTOR_API_MIME_TYPE } from '../@types'
 import { api } from '../api'
 
-const CollectorService = CollectorServiceManager.controller()
+const CollectorBackend = CollectorBackendController()
 const request = supertest(ApiServer(api))
 const [major, minor] = COLLECTOR_API_DEFAULT_VERSION.split('.')
 const CollectorApiContentType = `${COLLECTOR_API_MIME_TYPE}; charset=utf-8; version=${major}.${minor}`
@@ -83,7 +83,7 @@ describe('Collector API', () => {
 
   describe('API Endpoints', () => {
     beforeAll(async () => {
-      await CollectorService.start()
+      await CollectorBackend.start()
     })
 
     Get('/not-found').Responds(HttpStatus.NOT_FOUND)
@@ -129,7 +129,7 @@ describe('Collector API', () => {
     )
 
     afterAll(async () => {
-      await CollectorService.stop()
+      await CollectorBackend.stop()
     })
   })
 })
