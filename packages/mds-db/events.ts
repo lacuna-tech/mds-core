@@ -174,8 +174,8 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
 
   const events = res2.rows.reduce((acc: TripEvents, row) => {
     const [trip_id, unparsedJson] = row
-    const eventWithTelemetry = JSON.parse(unparsedJson) as VehicleEvent
-    Object.assign(acc, {[trip_id]: eventWithTelemetry})
+    const eventsWithTelemetry = JSON.parse(unparsedJson) as VehicleEvent[]
+    Object.assign(acc, {[trip_id]: eventsWithTelemetry})
     return acc
   },{})
   return {
