@@ -114,6 +114,72 @@ export async function readEvents(params: ReadEventsQueryParams): Promise<ReadEve
   }
 }
 
+// -000
+
+export async function readTripEvents(params: ReadEventsQueryParams): Promise<ReadEventsResult> {
+  const { skip, take, start_time, end_time } = params
+  const client = await getReadOnlyClient()
+  const vals = new SqlVals()
+  const conditions = []
+
+  if (start_time) {
+    conditions.push(`"timestamp" >= ${vals.add(start_time)}`)
+  }
+  if (end_time) {
+    conditions.push(`"timestamp" <= ${vals.add(end_time)}`)
+  }
+
+  conditions.push('trip_id is not null')
+
+  const filter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
+  const countSql = `SELECT COUNT(*) FROM ${schema.TABLE.events} ${filter}`
+  const countVals = vals.values()
+
+  await logSql(countSql, countVals)
+
+  const res = await client.query(countSql, countVals)
+  const count = parseInt(res.rows[0].count)
+
+  if (typeof skip === 'number' && skip >= 0) {
+    conditions.push(` id > ${vals.add(skip)}`)
+  }
+  const queryFilter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
+
+  let selectSql = `SELECT trip_id, array_agg(row_to_json(*)) as events_and_telemetry
+  FROM ${schema.TABLE.events} e
+  JOIN telemetry t ON t.event_id = e.id
+  LEFT JOIN ${schema.TABLE.telemetry} T ON E.device_id = T.device_id
+      AND COALESCE(E.telemetry_timestamp, E.timestamp) = T.timestamp
+  ${queryFilter} 
+
+  group by trip_id
+  ORDER BY trip_id, recorded`
+
+  if (typeof take === 'number' && take >= 0) {
+    selectSql += ` LIMIT ${vals.add(take)}`
+  }
+  const selectVals = vals.values()
+  await logSql(selectSql, selectVals)
+
+  const res2 = await client.query(selectSql, selectVals)
+  const events = res2.rows.map(r => {
+    const [trip_id, json] = r
+    const eventWithTelemetry = JSON.parse(json)
+    return { trip_id, event: eventWithTelemetry }
+  })
+  return {
+    events,
+    count
+  }
+}
+
+const trips = {
+  [events[0].trip_id]: [events],
+  'fe57bb27-3afc-41c6-85f0-3c87837161a0': [event, event]
+}
+
+//----
+
 export async function readHistoricalEvents(params: ReadHistoricalEventsQueryParams): Promise<VehicleEvent[]> {
   const { provider_id: query_provider_id, end_date } = params
   const client = await getReadOnlyClient()
