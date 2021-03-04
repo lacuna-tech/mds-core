@@ -16,7 +16,7 @@
 
 import { InsertReturning, ReadWriteRepository, RepositoryError } from '@mds-core/mds-repository'
 import { CollectorMessageDomainCreateModel, CollectorMessageDomainModel } from '../@types'
-import { CollectorMessageEntity, CollectorMessageEntityModel } from './entities'
+import { CollectorSchemaEntity, CollectorMessageEntity, CollectorMessageEntityModel } from './entities'
 import { CollectorMessageDomainToEntityCreate, CollectorMessageEntityToDomain } from './mappers'
 import migrations from './migrations'
 
@@ -64,7 +64,7 @@ class CollectorReadWriteRepository extends ReadWriteRepository {
   }
 
   constructor() {
-    super('collector', { entities: [CollectorMessageEntity], migrations })
+    super('collector', { entities: [CollectorSchemaEntity, CollectorMessageEntity], migrations })
   }
 }
 

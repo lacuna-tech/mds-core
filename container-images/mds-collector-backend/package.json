@@ -13,12 +13,12 @@
     "dist/"
   ],
   "scripts": {
-    "bundle": "yarn bundle:production",
+    "bundle": "pnpm bundle:production",
     "bundle:development": "webpack --mode=development --env npm_package_name=${npm_package_name} --env npm_package_version=${npm_package_version}",
     "bundle:production": "webpack --mode=production --env npm_package_name=${npm_package_name} --env npm_package_version=${npm_package_version}",
-    "image": "yarn image:production",
-    "image:development": "yarn bundle:development && ../../bin/build-helper buildImage mds-collector-backend:${npm_package_version}",
-    "image:production": "yarn bundle:production && ../../bin/build-helper buildImage mds-collector-backend:${npm_package_version}"
+    "image": "pnpm image:production",
+    "image:development": "pnpm bundle:development && ../../bin/build-helper buildImage mds-collector-backend:${npm_package_version}",
+    "image:production": "pnpm bundle:production && ../../bin/build-helper buildImage mds-collector-backend:${npm_package_version}"
   },
   "dependencies": {
     "@mds-core/mds-collector-backend": "0.1.0",

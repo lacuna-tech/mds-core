@@ -24,12 +24,11 @@ import {
   ServiceError
 } from '@mds-core/mds-service-helpers'
 import { getEnvVar, NotFoundError, pluralize, ServerError } from '@mds-core/mds-utils'
-import { SchemaObject, ErrorObject } from 'ajv'
+import { ErrorObject } from 'ajv'
 import { CollectorService } from '../@types'
 import { CollectorRepository } from '../repository'
 import { SchemaValidator } from '../schema-validator'
 
-const SchemaObjects = new Map<string, SchemaObject>()
 const SchemaValidators = new Map<string, SchemaValidator>()
 type CollectorStreamProducer = StreamProducer<{}>
 const StreamProducers = new Map<string, CollectorStreamProducer>()
@@ -38,35 +37,35 @@ const { TENANT_ID } = getEnvVar({
   TENANT_ID: 'mds'
 })
 
-const importSchemaObject = async (schema_id: string): Promise<SchemaObject> => {
-  const module = `../schemas/${schema_id}.schema`
-  try {
-    const { default: schema } = await import(module)
-    return { $schema: 'http://json-schema.org/draft-07/schema#', ...schema }
-  } catch (error) {
-    throw typeof error === 'object' && error !== null && error.code === 'MODULE_NOT_FOUND'
-      ? new NotFoundError(`Schema module ${module} not found`)
-      : error
-  }
-}
+// const importSchemaObject = async (schema_id: string): Promise<SchemaObject> => {
+//   const module = `../schemas/${schema_id}.schema`
+//   try {
+//     const { default: schema } = await import(module)
+//     return { $schema: 'http://json-schema.org/draft-07/schema#', ...schema }
+//   } catch (error) {
+//     throw typeof error === 'object' && error !== null && error.code === 'MODULE_NOT_FOUND'
+//       ? new NotFoundError(`Schema module ${module} not found`)
+//       : error
+//   }
+// }
 
-const getSchemaObject = async (schema_id: string): Promise<SchemaObject> => {
-  const $schema = (schema: SchemaObject) => ({
-    $schema: 'http://json-schema.org/draft-07/schema#',
-    ...schema
-  })
+// const getSchemaObject = async (schema_id: string): Promise<SchemaObject> => {
+//   const $schema = (schema: SchemaObject) => ({
+//     $schema: 'http://json-schema.org/draft-07/schema#',
+//     ...schema
+//   })
 
-  const schema = SchemaObjects.get(schema_id) ?? $schema(await importSchemaObject(schema_id))
-  if (!SchemaObjects.has(schema_id)) {
-    SchemaObjects.set(schema_id, schema)
-  }
-  return schema
-}
+//   const schema = SchemaObjects.get(schema_id) ?? $schema(await importSchemaObject(schema_id))
+//   if (!SchemaObjects.has(schema_id)) {
+//     SchemaObjects.set(schema_id, schema)
+//   }
+//   return schema
+// }
 
-const getSchemaValidator = async (schema_id: string): Promise<SchemaValidator> => {
-  const validator = SchemaValidators.get(schema_id) ?? SchemaValidator(await getSchemaObject(schema_id))
-  if (!SchemaValidators.has(schema_id)) {
-    SchemaValidators.set(schema_id, validator)
+const getSchemaValidator = (schema_id: string) => {
+  const validator = SchemaValidators.get(schema_id)
+  if (!validator) {
+    throw new NotFoundError(`Schema module ${module} not registered`)
   }
   return validator
 }
@@ -95,10 +94,26 @@ const getStreamProducer = async (schema_id: string): Promise<CollectorStreamProd
 
 export const CollectorServiceProvider: ServiceProvider<CollectorService> & ProcessController = {
   start: CollectorRepository.initialize,
+
   stop: CollectorRepository.shutdown,
+
+  registerMessageSchema: async (schema_id, schema) => {
+    try {
+      SchemaValidators.set(
+        schema_id,
+        SchemaValidator({ $schema: 'http://json-schema.org/draft-07/schema#', ...schema })
+      )
+      return ServiceResult(true)
+    } catch (error) {
+      const exception = ServiceException(`Error Registering Schema ${schema_id}`, error)
+      logger.error(exception, error)
+      return exception
+    }
+  },
+
   getMessageSchema: async schema_id => {
     try {
-      const schema = await getSchemaObject(schema_id)
+      const { schema } = getSchemaValidator(schema_id)
       return ServiceResult(schema)
     } catch (error) {
       const exception = ServiceException(`Error Reading Schema ${schema_id}`, error)
@@ -106,6 +121,7 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
       return exception
     }
   },
+
   writeSchemaMessages: async (schema_id, provider_id, messages) => {
     try {
       const [validator, producer] = await Promise.all([getSchemaValidator(schema_id), getStreamProducer(schema_id)])

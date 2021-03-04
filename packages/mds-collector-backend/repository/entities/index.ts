@@ -17,6 +17,24 @@
 import { Column, Entity, Index } from 'typeorm'
 import { IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
 import { UUID } from '@mds-core/mds-types'
+import { SchemaObject } from 'ajv'
+
+@Entity('collector-schemas')
+export class CollectorSchemaEntity extends IdentityColumn(RecordedColumn(class {})) {
+  @Column('varchar', { length: 255, primary: true })
+  schema_id: string
+
+  @Column('json')
+  schema: SchemaObject
+}
+
+export type CollectorSchemaEntityModel = CollectorSchemaEntity
+
+export type CollectorSchemaEntityCreateModel = Omit<
+  CollectorSchemaEntityModel,
+  keyof RecordedColumn | keyof IdentityColumn
+> &
+  Partial<Pick<CollectorSchemaEntityModel, keyof RecordedColumn>>
 
 @Entity('collector-messages')
 export class CollectorMessageEntity extends IdentityColumn(RecordedColumn(class {}), { primary: true }) {

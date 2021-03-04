@@ -17,6 +17,7 @@
 import { RpcRoute, RpcServiceDefinition } from '@mds-core/mds-rpc-common'
 import { DomainModelCreate } from '@mds-core/mds-repository'
 import { NonEmptyArray, Timestamp, UUID } from '@mds-core/mds-types'
+import { AnySchema, SchemaObject } from 'ajv'
 
 export interface CollectorMessageDomainModel {
   schema_id: string
@@ -28,7 +29,8 @@ export interface CollectorMessageDomainModel {
 export type CollectorMessageDomainCreateModel = DomainModelCreate<Omit<CollectorMessageDomainModel, 'recorded'>>
 
 export interface CollectorService {
-  getMessageSchema: (schema_id: CollectorMessageDomainModel['schema_id']) => {}
+  registerMessageSchema: (schema_id: CollectorMessageDomainModel['schema_id'], schema: SchemaObject) => true
+  getMessageSchema: (schema_id: CollectorMessageDomainModel['schema_id']) => AnySchema
   writeSchemaMessages: (
     schema_id: CollectorMessageDomainModel['schema_id'],
     provider_id: CollectorMessageDomainModel['provider_id'],
@@ -37,6 +39,7 @@ export interface CollectorService {
 }
 
 export const CollectorServiceRpcDefinition: RpcServiceDefinition<CollectorService> = {
+  registerMessageSchema: RpcRoute<CollectorService['registerMessageSchema']>(),
   getMessageSchema: RpcRoute<CollectorService['getMessageSchema']>(),
   writeSchemaMessages: RpcRoute<CollectorService['writeSchemaMessages']>()
 }

@@ -26,6 +26,7 @@ export const { monitor: CollectorBackend, controller: CollectorBackendController
     onStop: CollectorServiceProvider.stop
   },
   {
+    registerMessageSchema: args => CollectorServiceProvider.registerMessageSchema(...args),
     getMessageSchema: args => CollectorServiceProvider.getMessageSchema(...args),
     writeSchemaMessages: args => CollectorServiceProvider.writeSchemaMessages(...args)
   },

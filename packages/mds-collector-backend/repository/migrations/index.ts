@@ -15,5 +15,6 @@
  */
 
 import { CreateCollectorMessagesTable1612209108259 } from './1612209108259-CreateCollectorMessagesTable'
+import { CreateCollectorSchemasTable1614811400362 } from './1614811400362-CreateCollectorSchemasTable'
 
-export default [CreateCollectorMessagesTable1612209108259]
+export default [CreateCollectorMessagesTable1612209108259, CreateCollectorSchemasTable1614811400362]

@@ -58,7 +58,17 @@ describe('Collector Service', () => {
       await CollectorBackend.start()
     })
 
-    it('Get Schema (Result)', async () => {
+    it('Register Schema (OK)', async () => {
+      await expect(CollectorServiceClient.registerMessageSchema(TEST_SCHEMA_ID, TestSchema)).resolves.toEqual(true)
+    })
+
+    it('Register Schema (Error)', async () => {
+      await expect(
+        CollectorServiceClient.registerMessageSchema(TEST_SCHEMA_ID, { type: 'invalid' })
+      ).rejects.toMatchObject({ isServiceError: true, type: 'ServiceException' })
+    })
+
+    it('Get Schema (OK)', async () => {
       const schema = await CollectorServiceClient.getMessageSchema(TEST_SCHEMA_ID)
       expect(schema).toMatchObject({ $schema: 'http://json-schema.org/draft-07/schema#', ...TestSchema })
     })
