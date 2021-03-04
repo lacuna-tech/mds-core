@@ -15,10 +15,10 @@
     "preinstall": "npx check-node-version --package && npx only-allow pnpm",
     "postinstall": "husky install",
     "lint": "pnpm lint:audit && pnpm lint:prettier '**/package.json' && pnpm lint:eslint '**/*.ts'",
-    "prepare": "husky install",
     "lint:audit": "pnpm-ci audit -i 1556,1561 --strict",
     "lint:eslint": "eslint --ignore-path .gitignore --ignore-path .eslintignore",
     "lint:prettier": "prettier --check",
+    "prepare": "husky install",
     "push": "bin/build-helper pushImages",
     "run:concurrent": "pnpm recursive run --filter=!root",
     "run:sequential": "pnpm recursive run --workspace-concurrency=1 --filter=!root",
@@ -78,6 +78,6 @@
     "wtfnode": "0.8.4"
   },
   "engines": {
-    "node": "14.2.0"
+    "node": "15.11.0"
   }
 }
