@@ -15,9 +15,25 @@
  */
 
 import { InsertReturning, ReadWriteRepository, RepositoryError } from '@mds-core/mds-repository'
-import { CollectorMessageDomainCreateModel, CollectorMessageDomainModel } from '../@types'
-import { CollectorSchemaEntity, CollectorMessageEntity, CollectorMessageEntityModel } from './entities'
-import { CollectorMessageDomainToEntityCreate, CollectorMessageEntityToDomain } from './mappers'
+import { NotFoundError } from '@mds-core/mds-utils'
+import {
+  CollectorMessageDomainCreateModel,
+  CollectorMessageDomainModel,
+  CollectorSchemaDomainCreateModel,
+  CollectorSchemaDomainModel
+} from '../@types'
+import {
+  CollectorSchemaEntity,
+  CollectorMessageEntity,
+  CollectorMessageEntityModel,
+  CollectorSchemaEntityModel
+} from './entities'
+import {
+  CollectorMessageDomainToEntityCreate,
+  CollectorMessageEntityToDomain,
+  CollectorSchemaDomainToEntityCreate,
+  CollectorSchemaEntityToDomain
+} from './mappers'
 import migrations from './migrations'
 
 interface InsertCollectorMessagesOptions {
@@ -25,6 +41,42 @@ interface InsertCollectorMessagesOptions {
 }
 
 class CollectorReadWriteRepository extends ReadWriteRepository {
+  public insertCollectorSchema = async (
+    schema: CollectorSchemaDomainCreateModel
+  ): Promise<CollectorSchemaDomainModel> => {
+    try {
+      const connection = await this.connect('rw')
+      const {
+        raw: [entity]
+      }: InsertReturning<CollectorSchemaEntityModel> = await connection
+        .getRepository(CollectorSchemaEntity)
+        .createQueryBuilder()
+        .insert()
+        .values([CollectorSchemaDomainToEntityCreate.map(schema)])
+        .returning('*')
+        .onConflict('("schema_id") DO UPDATE SET "schema" = EXCLUDED."schema", "recorded" = EXCLUDED."recorded"')
+        .execute()
+      return CollectorSchemaEntityToDomain.map(entity)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  public getCollectorSchema = async (
+    schema_id: CollectorSchemaDomainModel['schema_id']
+  ): Promise<CollectorSchemaDomainModel> => {
+    try {
+      const connection = await this.connect('ro')
+      const entity = await connection.getRepository(CollectorSchemaEntity).findOne({ where: { schema_id } })
+      if (!entity) {
+        throw new NotFoundError(`Schema ${schema_id} not found`)
+      }
+      return entity
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
   public insertCollectorMessages = async (
     messages: CollectorMessageDomainCreateModel[],
     options: Partial<InsertCollectorMessagesOptions> = {}

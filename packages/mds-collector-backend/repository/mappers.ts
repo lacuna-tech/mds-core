@@ -16,8 +16,37 @@
 
 import { Timestamp } from '@mds-core/mds-types'
 import { ModelMapper } from '@mds-core/mds-repository'
-import { CollectorMessageDomainCreateModel, CollectorMessageDomainModel } from '../@types'
-import { CollectorMessageEntityCreateModel, CollectorMessageEntityModel } from './entities'
+import {
+  CollectorMessageDomainCreateModel,
+  CollectorMessageDomainModel,
+  CollectorSchemaDomainCreateModel,
+  CollectorSchemaDomainModel
+} from '../@types'
+import {
+  CollectorMessageEntityCreateModel,
+  CollectorMessageEntityModel,
+  CollectorSchemaEntityCreateModel,
+  CollectorSchemaEntityModel
+} from './entities'
+
+type CollectorSchemaEntityCreateOptions = Partial<{ recorded: Timestamp }>
+
+export const CollectorSchemaDomainToEntityCreate = ModelMapper<
+  CollectorSchemaDomainCreateModel,
+  CollectorSchemaEntityCreateModel,
+  CollectorSchemaEntityCreateOptions
+>((domain, options) => {
+  const { recorded } = options ?? {}
+  const entity = { recorded, ...domain }
+  return entity
+})
+
+export const CollectorSchemaEntityToDomain = ModelMapper<CollectorSchemaEntityModel, CollectorSchemaDomainModel>(
+  (entity, options) => {
+    const { id, recorded, ...domain } = entity
+    return domain
+  }
+)
 
 type CollectorMessageEntityCreateOptions = Partial<{ recorded: Timestamp }>
 
