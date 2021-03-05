@@ -83,6 +83,14 @@ describe('Transaction Status Tests', () => {
         type: 'ValidationError'
       })
     })
+
+    it('Get Transactions Statuses for >100 transaction_ids', async () => {
+      await expect(
+        TransactionServiceClient.getTransactionsStatuses(Array.from({ length: 200 }, uuid))
+      ).rejects.toMatchObject({
+        type: 'ValidationError'
+      })
+    })
   })
 
   // TODO

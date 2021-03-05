@@ -65,5 +65,5 @@ export const { validate: validateTransactionId, isValid: isValidTransactionId } 
 )
 
 export const { validate: validateTransactionIds, isValid: isValidTransactionIds } = schemaValidator<UUID[]>(
-  Joi.array().items(Joi.string().uuid()).required()
+  Joi.array().items(Joi.string().uuid()).max(100).required()
 )
