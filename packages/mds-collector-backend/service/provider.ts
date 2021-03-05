@@ -15,6 +15,7 @@
  */
 
 import logger from '@mds-core/mds-logger'
+import { Nullable } from '@mds-core/mds-types'
 import stream, { StreamProducer } from '@mds-core/mds-stream'
 import {
   ServiceProvider,
@@ -30,8 +31,8 @@ import { CollectorRepository } from '../repository'
 import { SchemaValidator } from '../schema-validator'
 
 const SchemaValidators = new Map<string, SchemaValidator>()
-type CollectorStreamProducer = StreamProducer<{}>
-const StreamProducers = new Map<string, CollectorStreamProducer>()
+type CollectorStreamProducer = Nullable<StreamProducer<{}>>
+const StreamProducers = new Map<string, Nullable<CollectorStreamProducer>>()
 
 const { TENANT_ID } = getEnvVar({
   TENANT_ID: 'mds'
@@ -50,18 +51,15 @@ const getSchemaValidator = async (schema_id: string) => {
   return validator
 }
 
-const MockStreamProducer: CollectorStreamProducer = {
-  initialize: async () => undefined,
-  shutdown: async () => undefined,
-  write: async message => undefined
-}
-
 const createStreamProducer = async (schema_id: string): Promise<CollectorStreamProducer> => {
   const topic = `${TENANT_ID}.collector.${schema_id}`
   // TODO: Do we need to create the topic?
-  const producer = process.env.KAFKA_HOST !== undefined ? stream.KafkaStreamProducer(topic) : MockStreamProducer
-  await producer.initialize()
-  return producer
+  if (process.env.KAFKA_HOST !== undefined) {
+    const producer = stream.KafkaStreamProducer(topic)
+    await producer.initialize()
+    return producer
+  }
+  return null
 }
 
 const getStreamProducer = async (schema_id: string): Promise<CollectorStreamProducer> => {
@@ -131,16 +129,18 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
       // Write to Postgres
       const result = await CollectorRepository.insertCollectorMessages(
         messages.map(message => ({ schema_id, provider_id, message })),
-        // Write to Kafka prior to committing transaction
-        {
-          beforeCommit: async () => {
-            try {
-              await producer.write(messages)
-            } catch (error) {
-              throw new ServerError('Error writing to Kafka stream', error)
+        producer
+          ? {
+              // Write to Kafka prior to committing transaction
+              beforeCommit: async () => {
+                try {
+                  await producer.write(messages)
+                } catch (error) {
+                  throw new ServerError('Error writing to Kafka stream', error)
+                }
+              }
             }
-          }
-        }
+          : {}
       )
 
       return ServiceResult(result)
