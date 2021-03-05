@@ -19,7 +19,7 @@ import httpContext from 'express-http-context'
 const logger: Pick<Console, 'info' | 'warn' | 'error'> = console
 type LogLevel = keyof typeof logger
 
-const redact = (arg: string | Record<string, unknown> | Error | undefined): any => {
+const redact = (arg: string | Record<string, unknown> | Error | undefined) => {
   if (arg === undefined) return {}
   const res = JSON.stringify(arg instanceof Error ? { error: arg.toString() } : arg, (k, v) =>
     ['lat', 'lng'].includes(k) ? '[REDACTED]' : v
