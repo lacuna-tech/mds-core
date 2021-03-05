@@ -16,7 +16,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -39,7 +39,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server/index.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -61,7 +61,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -84,7 +84,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server/index.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -106,7 +106,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server/index.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -129,7 +129,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server/index.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -151,7 +151,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -174,7 +174,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -197,7 +197,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -220,7 +220,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -243,7 +243,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server/index.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -265,7 +265,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server/index.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -276,7 +276,7 @@
       }
     },
     {
-      "name": "Server: mds-jursidiction",
+      "name": "Server: mds-jurisdiction",
       "type": "node",
       "request": "launch",
       "runtimeArgs": [
@@ -287,7 +287,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -299,7 +299,7 @@
       }
     },
     {
-      "name": "Server: mds-jursidiction-service",
+      "name": "Server: mds-jurisdiction-service",
       "type": "node",
       "request": "launch",
       "runtimeArgs": [
@@ -310,7 +310,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server/index.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -332,7 +332,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -355,7 +355,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -378,7 +378,7 @@
         "-r",
         "dotenv/config"
       ],
-      "args": ["server"],
+      "args": ["server/index.ts"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
       "protocol": "inspector",
@@ -409,6 +409,28 @@
         "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
         "npm_package_name": "@mds-core/mds-transaction-api",
         "PATH_PREFIX": "/transaction"
+      }
+    },
+    {
+      "name": "Server: mds-transaction-service",
+      "type": "node",
+      "request": "launch",
+      "runtimeArgs": [
+        "-r",
+        "ts-node/register",
+        "-r",
+        "tsconfig-paths/register",
+        "-r",
+        "dotenv/config"
+      ],
+      "args": ["server/index.ts"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "protocol": "inspector",
+      "cwd": "${workspaceFolder}/packages/mds-transaction-service",
+      "env": {
+        "DOTENV_CONFIG_PATH": "${workspaceFolder}/.env",
+        "npm_package_name": "@mds-core/mds-transaction-service"
       }
     },
     {
