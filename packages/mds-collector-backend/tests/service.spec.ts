@@ -13,7 +13,6 @@
 // limitations under the License.
 
 import { uuid } from '@mds-core/mds-utils'
-import { NonEmptyArray } from '@mds-core/mds-types'
 import { CollectorServiceClient } from '../client'
 import { CollectorBackendController } from '../service/backend'
 import { CollectorRepository } from '../repository'
@@ -22,7 +21,7 @@ import TestSchema from '../schemas/test.schema'
 const CollectorBackend = CollectorBackendController()
 const TEST_SCHEMA_ID = 'test'
 const TEST_PRODUCER_ID = uuid()
-const TEST_COLLECTOR_MESSAGES: NonEmptyArray<TestSchema> = [
+const TEST_COLLECTOR_MESSAGES: Array<TestSchema> = [
   { id: uuid(), name: 'President', country: 'US', zip: '37188' },
   { id: uuid(), name: 'Prime Minister', country: 'CA', zip: 'K1M 1M4' }
 ]
