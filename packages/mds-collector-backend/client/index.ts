@@ -16,8 +16,12 @@
 
 import { ServiceClient } from '@mds-core/mds-service-helpers'
 import { RpcClient, RpcRequest } from '@mds-core/mds-rpc-common'
-import { UUID } from '@mds-core/mds-types'
-import { CollectorServiceRpcDefinition, CollectorService, CollectorSchemaDomainModel } from '../@types'
+import {
+  CollectorServiceRpcDefinition,
+  CollectorService,
+  CollectorSchemaDomainModel,
+  CollectorMessageDomainModel
+} from '../@types'
 
 const CollectorServiceRpcClient = RpcClient(CollectorServiceRpcDefinition, {
   host: process.env.COLLECTOR_BACKEND_RPC_HOST,
@@ -31,14 +35,15 @@ export const CollectorServiceClient: ServiceClient<CollectorService> = {
 }
 
 export const CollectorServiceClientFactory = (
-  provider_id: UUID,
   schema_id: CollectorSchemaDomainModel['schema_id'],
   schema: CollectorSchemaDomainModel['schema']
 ) => {
   return {
     registerMessageSchema: async () => CollectorServiceClient.registerMessageSchema(schema_id, schema),
     getMessageSchema: async () => CollectorServiceClient.getMessageSchema(schema_id),
-    writeSchemaMessages: async (messages: object[]) =>
-      CollectorServiceClient.writeSchemaMessages(schema_id, provider_id, messages)
+    writeSchemaMessages: async (
+      provider_id: CollectorMessageDomainModel['provider_id'],
+      messages: Array<CollectorMessageDomainModel['message']>
+    ) => CollectorServiceClient.writeSchemaMessages(schema_id, provider_id, messages)
   }
 }
