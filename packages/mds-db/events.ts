@@ -154,14 +154,16 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   }
   const queryFilter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
 
-  let selectSql = `SELECT trip_id, array_agg(row_to_json(*) order by COALESCE(e.telemetry_timestamp, e.timestamp)) as events_and_telemetry
-  FROM ${schema.TABLE.events} e
-  LEFT JOIN ${schema.TABLE.telemetry} t ON e.device_id = t.device_id
-      AND COALESCE(e.telemetry_timestamp, e.timestamp) = t.timestamp
-  ${queryFilter} 
-
-  group by trip_id
-  ORDER BY trip_id`
+  let selectSql = `select et.trip_id, array_agg(row_to_json(et.*) order by best_timestamp) as events
+    FROM
+      (SELECT e.*, to_json(t.*) as telemetry, COALESCE(e.telemetry_timestamp, e.timestamp) as best_timestamp
+      FROM ${schema.TABLE.events} e
+      LEFT JOIN ${schema.TABLE.telemetry} t ON e.device_id = t.device_id
+        AND COALESCE(e.telemetry_timestamp, e.timestamp) = t.timestamp
+      ${queryFilter}
+      ) et
+    GROUP BY et.trip_id
+    ORDER BY et.trip_id`
 
   if (typeof take === 'number' && take >= 0) {
     selectSql += ` LIMIT ${vals.add(take)}`
