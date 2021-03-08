@@ -20,13 +20,12 @@ import TestSchema from '../schemas/test.schema'
 
 const CollectorBackend = CollectorBackendController()
 const TEST_SCHEMA_ID = 'test'
-const TEST_PRODUCER_ID = uuid()
 const TEST_COLLECTOR_MESSAGES: Array<TestSchema> = [
   { id: uuid(), name: 'President', country: 'US', zip: '37188' },
   { id: uuid(), name: 'Prime Minister', country: 'CA', zip: 'K1M 1M4' }
 ]
 
-const TestSchemaCollectorClient = CollectorServiceClientFactory(TEST_PRODUCER_ID, TEST_SCHEMA_ID, TestSchema)
+const TestSchemaCollectorClient = CollectorServiceClientFactory(uuid(), TEST_SCHEMA_ID, TestSchema)
 
 describe('Collector Service', () => {
   it('Service Unavailable', async () => {
@@ -83,9 +82,7 @@ describe('Collector Service', () => {
 
     it('Write Schema Messages (OK)', async () => {
       const written = await TestSchemaCollectorClient.writeSchemaMessages(TEST_COLLECTOR_MESSAGES)
-      expect(written).toMatchObject(
-        TEST_COLLECTOR_MESSAGES.map(message => ({ schema_id: TEST_SCHEMA_ID, provider_id: TEST_PRODUCER_ID, message }))
-      )
+      expect(written).toMatchObject(TEST_COLLECTOR_MESSAGES.map(message => ({ schema_id: TEST_SCHEMA_ID, message })))
     })
 
     it('Write Schema Messages (Error)', async () => {
