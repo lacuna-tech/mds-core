@@ -121,10 +121,15 @@ export interface TripEvents {
 }
 
 export interface TripEventsResult {
-  events: TripEvents
+  trips: TripEvents
   count: number
 }
 
+/**
+ *
+ * @param params
+ * skip/take paginates on trip_id
+ */
 export async function readTripEvents(params: ReadEventsQueryParams): Promise<TripEventsResult> {
   const { skip, take, start_time, end_time } = params
   const client = await getReadOnlyClient()
@@ -132,16 +137,16 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   const conditions = []
 
   if (start_time) {
-    conditions.push(`"timestamp" >= ${vals.add(start_time)}`)
+    conditions.push(`e."timestamp" >= ${vals.add(start_time)}`)
   }
   if (end_time) {
-    conditions.push(`"timestamp" <= ${vals.add(end_time)}`)
+    conditions.push(`e."timestamp" <= ${vals.add(end_time)}`)
   }
 
-  conditions.push('trip_id is not null')
+  conditions.push('e.trip_id is not null')
 
   const filter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
-  const countSql = `SELECT COUNT(*) FROM ${schema.TABLE.events} ${filter}`
+  const countSql = `SELECT COUNT(*) FROM ${schema.TABLE.events} e ${filter}`
   const countVals = vals.values()
 
   await logSql(countSql, countVals)
@@ -150,7 +155,7 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   const count = parseInt(res.rows[0].count)
 
   if (typeof skip === 'number' && skip >= 0) {
-    conditions.push(` id > ${vals.add(skip)}`)
+    conditions.push(` e.trip_id > ${vals.add(skip)}`)
   }
   const queryFilter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
 
@@ -161,6 +166,7 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
       LEFT JOIN ${schema.TABLE.telemetry} t ON e.device_id = t.device_id
         AND COALESCE(e.telemetry_timestamp, e.timestamp) = t.timestamp
       ${queryFilter}
+      order by trip_id
       ) et
     GROUP BY et.trip_id
     ORDER BY et.trip_id`
@@ -173,14 +179,14 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
 
   const res2 = await client.query(selectSql, selectVals)
 
-  const events = res2.rows.reduce((acc: TripEvents, row) => {
-    const [trip_id, unparsedJson] = row
-    const eventsWithTelemetry = JSON.parse(unparsedJson) as VehicleEvent[]
-    Object.assign(acc, {[trip_id]: eventsWithTelemetry})
+  const trips = Object.values(res2.rows).reduce((acc: TripEvents, row) => {
+    logger.info(row)
+    const { trip_id, events } = row
+    Object.assign(acc, { [trip_id]: events as VehicleEvent })
     return acc
-  },{})
+  }, {})
   return {
-    events,
+    trips,
     count
   }
 }

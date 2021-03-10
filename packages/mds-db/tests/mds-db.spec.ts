@@ -127,13 +127,46 @@ async function seedDB() {
     devices.slice(0, 9),
     startTime + 10,
     shapeUUID,
-    VEHICLE_EVENTS.deregister
+    VEHICLE_EVENTS.deregister,
+    rangeRandomInt(10)
   )
   const tripEndEvent: VehicleEvent[] = makeEventsWithTelemetry(
     devices.slice(9, 10),
     startTime + 10,
     shapeUUID,
     'trip_end'
+  )
+  const telemetry: Telemetry[] = []
+  const events: VehicleEvent[] = deregisterEvents.concat(tripEndEvent)
+  events.map(event => {
+    if (event.telemetry) {
+      telemetry.push(event.telemetry)
+    }
+  })
+
+  await MDSDBPostgres.seed({ devices, events, telemetry })
+}
+
+async function seedTripEvents() {
+  await MDSDBPostgres.reinitialize()
+  const devices: Device[] = makeDevices(9, startTime, JUMP_PROVIDER_ID) as Device[]
+  devices.push(JUMP_TEST_DEVICE_1 as Device)
+  const trip_id = uuid()
+  const deregisterEvents: VehicleEvent[] = makeEventsWithTelemetry(
+    devices.slice(0, 9),
+    startTime + 10,
+    shapeUUID,
+    VEHICLE_EVENTS.trip_start,
+    rangeRandomInt(10),
+    trip_id
+  )
+  const tripEndEvent: VehicleEvent[] = makeEventsWithTelemetry(
+    devices.slice(9, 10),
+    startTime + 10,
+    shapeUUID,
+    'trip_end',
+    rangeRandomInt(10),
+    trip_id
   )
   const telemetry: Telemetry[] = []
   const events: VehicleEvent[] = deregisterEvents.concat(tripEndEvent)
@@ -214,6 +247,34 @@ if (pg_info.database) {
         )
 
         assert(telemetryResults.length > 0)
+      })
+
+      it('can read VehicleEvents and Telemetry as collections of trips', async () => {
+        await seedTripEvents()
+        await seedTripEvents()
+
+        const devicesResult: Device[] = (await MDSDBPostgres.readDeviceIds(JUMP_PROVIDER_ID, 0, 20)) as Device[]
+        assert.deepEqual(devicesResult.length, 10)
+
+        const vehicleEventsResult = await MDSDBPostgres.readEvents({
+          start_time: String(startTime)
+        })
+        const trip_ids = vehicleEventsResult.events.reduce((acc, event) => acc.add(event.trip_id), new Set())
+
+        const tripEventsResult = await MDSDBPostgres.readTripEvents({
+          start_time: String(startTime)
+        })
+        assert.deepEqual(tripEventsResult.count, 10)
+
+        // there should be X trips
+        assert.deepStrictEqual(Object.keys(tripEventsResult.trips).length, trip_ids.size)
+
+        // telemetry on each event should not be undefined
+        Object.values(tripEventsResult.trips).forEach(trip => {
+          trip.forEach(event => {
+            assert.notStrictEqual(event.telemetry, undefined)
+          })
+        })
       })
 
       it('can wipe a device', async () => {
