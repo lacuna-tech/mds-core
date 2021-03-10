@@ -125,7 +125,7 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
       return ServiceResult(statuses)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Transaction Operations', error)
-      logger.error(exception, error)
+      logger.error('mds-transaction-service::getTransactionsStatuses error', { exception, error })
       return exception
     }
   }
