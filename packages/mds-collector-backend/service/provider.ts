@@ -52,7 +52,7 @@ const getSchemaValidator = async (schema_id: string) => {
 }
 
 const createStreamProducer = async (schema_id: string): Promise<CollectorStreamProducer> => {
-  const topic = `${TENANT_ID}.collector.${schema_id}`
+  const topic = `${TENANT_ID}.collector:${schema_id}`
   // TODO: Do we need to create the topic?
   if (process.env.KAFKA_HOST !== undefined) {
     const producer = stream.KafkaStreamProducer(topic)
@@ -103,6 +103,9 @@ export const CollectorServiceProvider: ServiceProvider<CollectorService> & Proce
   },
 
   writeSchemaMessages: async (schema_id, provider_id, messages) => {
+    if (messages.length === 0) {
+      return ServiceResult([])
+    }
     try {
       const [validator, producer] = await Promise.all([getSchemaValidator(schema_id), getStreamProducer(schema_id)])
 
