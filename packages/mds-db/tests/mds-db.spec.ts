@@ -152,7 +152,7 @@ async function seedTripEvents() {
   const devices: Device[] = makeDevices(9, startTime, JUMP_PROVIDER_ID) as Device[]
   devices.push(JUMP_TEST_DEVICE_1 as Device)
   const trip_id = uuid()
-  const deregisterEvents: VehicleEvent[] = makeEventsWithTelemetry(
+  const tripStartEvents: VehicleEvent[] = makeEventsWithTelemetry(
     devices.slice(0, 9),
     startTime + 10,
     shapeUUID,
@@ -160,7 +160,7 @@ async function seedTripEvents() {
     rangeRandomInt(10),
     trip_id
   )
-  const tripEndEvent: VehicleEvent[] = makeEventsWithTelemetry(
+  const tripEndEvents: VehicleEvent[] = makeEventsWithTelemetry(
     devices.slice(9, 10),
     startTime + 10,
     shapeUUID,
@@ -169,7 +169,7 @@ async function seedTripEvents() {
     trip_id
   )
   const telemetry: Telemetry[] = []
-  const events: VehicleEvent[] = deregisterEvents.concat(tripEndEvent)
+  const events: VehicleEvent[] = tripStartEvents.concat(tripEndEvents)
   events.map(event => {
     if (event.telemetry) {
       telemetry.push(event.telemetry)
@@ -264,7 +264,7 @@ if (pg_info.database) {
         const tripEventsResult = await MDSDBPostgres.readTripEvents({
           start_time: String(startTime)
         })
-        assert.deepEqual(tripEventsResult.count, 10)
+        assert.deepStrictEqual(tripEventsResult.tripCount, trip_ids.size)
 
         // there should be X trips
         assert.deepStrictEqual(Object.keys(tripEventsResult.trips).length, trip_ids.size)

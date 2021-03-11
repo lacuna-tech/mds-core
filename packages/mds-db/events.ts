@@ -122,7 +122,7 @@ export interface TripEvents {
 
 export interface TripEventsResult {
   trips: TripEvents
-  count: number
+  tripCount: number
 }
 
 /**
@@ -146,13 +146,13 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   conditions.push('e.trip_id is not null')
 
   const filter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
-  const countSql = `SELECT COUNT(*) FROM ${schema.TABLE.events} e ${filter}`
+  const countSql = `SELECT COUNT(*) FROM ${schema.TABLE.events} e ${filter} GROUP BY e.trip_id`
   const countVals = vals.values()
 
   await logSql(countSql, countVals)
 
   const res = await client.query(countSql, countVals)
-  const count = parseInt(res.rows[0].count)
+  const tripCount = parseInt(res.rows[0].count)
 
   if (typeof skip === 'number' && skip >= 0) {
     conditions.push(` e.trip_id > ${vals.add(skip)}`)
@@ -186,7 +186,7 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
 
   return {
     trips,
-    count
+    tripCount
   }
 }
 
