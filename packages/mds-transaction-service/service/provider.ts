@@ -22,7 +22,9 @@ import { TransactionRepository } from '../repository'
 import {
   validateTransactionDomainModel,
   validateTransactionOperationDomainModel,
-  validateTransactionStatusDomainModel
+  validateTransactionStatusDomainModel,
+  validateTransactionIds,
+  validateTransactionId
 } from './validators'
 
 export const TransactionServiceProvider: ServiceProvider<TransactionService> & ProcessController = {
@@ -33,7 +35,7 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
       return ServiceResult(await TransactionRepository.createTransaction(validateTransactionDomainModel(transaction)))
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Creating Transaction', error)
-      logger.error(exception, error)
+      logger.error('mds-transaction-service::createTransaction error', { exception, error })
       return exception
     }
   },
@@ -44,7 +46,7 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
       )
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Creating Transactions', error)
-      logger.error(exception, error)
+      logger.error('mds-transaction-service::createTransactions error', { exception, error })
       return exception
     }
   },
@@ -54,7 +56,7 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
       return ServiceResult(transaction)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException(`Error Getting Transaction: ${transaction_id}`, error)
-      logger.error(exception, error)
+      logger.error('mds-transaction-service::getTransaction error', { exception, error })
       return exception
     }
   },
@@ -65,7 +67,7 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
       return ServiceResult(transactions)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Transactions', error)
-      logger.error(exception, error)
+      logger.error('mds-transaction-service::getTransactions error', { exception, error })
       return exception
     }
   },
@@ -77,7 +79,7 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
       return ServiceResult(operation)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Creating Transaction Operation', error)
-      logger.error(exception, error)
+      logger.error('mds-transaction-service::addTransactionOperation error', { exception, error })
       return exception
     }
   },
@@ -88,7 +90,7 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
       return ServiceResult(operations)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Transaction Operations', error)
-      logger.error(exception, error)
+      logger.error('mds-transaction-service::getTransactionOperations error', { exception, error })
       return exception
     }
   },
@@ -100,18 +102,30 @@ export const TransactionServiceProvider: ServiceProvider<TransactionService> & P
       return ServiceResult(status)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Creating Transaction Status', error)
-      logger.error(exception, error)
+      logger.error('mds-transaction-service::setTransactionStatus error', { exception, error })
       return exception
     }
   },
   // TODO search params
   getTransactionStatuses: async (transaction_id: UUID) => {
     try {
+      validateTransactionId(transaction_id)
       const statuses = await TransactionRepository.getTransactionStatuses(transaction_id)
       return ServiceResult(statuses)
     } catch (error) /* istanbul ignore next */ {
       const exception = ServiceException('Error Getting Transaction Operations', error)
-      logger.error(exception, error)
+      logger.error('mds-transaction-service::getTransactionStatuses error', { exception, error })
+      return exception
+    }
+  },
+  getTransactionsStatuses: async (transaction_ids: UUID[]) => {
+    try {
+      validateTransactionIds(transaction_ids)
+      const statuses = await TransactionRepository.getTransactionsStatuses(transaction_ids)
+      return ServiceResult(statuses)
+    } catch (error) /* istanbul ignore next */ {
+      const exception = ServiceException('Error Getting Transaction Operations', error)
+      logger.error('mds-transaction-service::getTransactionsStatuses error', { exception, error })
       return exception
     }
   }

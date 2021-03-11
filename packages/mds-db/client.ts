@@ -15,6 +15,7 @@
  */
 
 import logger from '@mds-core/mds-logger'
+import AwaitLock from 'await-lock'
 
 import { logSql, configureClient, MDSPostgresClient, SqlVals } from './sql-utils'
 
@@ -34,7 +35,7 @@ async function setupClient(useWriteable: boolean): Promise<MDSPostgresClient> {
     port: Number(PG_PORT) || 5432
   }
 
-  logger.info('connecting to postgres:', ...Object.keys(info).map(key => (info as { [x: string]: unknown })[key]))
+  logger.info('connecting to postgres', { info })
 
   const client = configureClient({ ...info, password: (useWriteable ? PG_PASS : PG_PASS_READER) || PG_PASS })
 
@@ -49,33 +50,37 @@ async function setupClient(useWriteable: boolean): Promise<MDSPostgresClient> {
   }
 }
 
+const readOnlyClientLock = new AwaitLock()
 export async function getReadOnlyClient(): Promise<MDSPostgresClient> {
-  if (readOnlyCachedClient && readOnlyCachedClient.connected) {
-    return readOnlyCachedClient
-  }
-
+  await readOnlyClientLock.acquireAsync()
   try {
-    readOnlyCachedClient = await setupClient(false)
+    if (!readOnlyCachedClient || !readOnlyCachedClient.connected) {
+      readOnlyCachedClient = await setupClient(false)
+    }
     return readOnlyCachedClient
   } catch (err) {
     readOnlyCachedClient = null
     logger.error('postgres connection error', err)
     throw err
+  } finally {
+    readOnlyClientLock.release()
   }
 }
 
+const writeableClientLock = new AwaitLock()
 export async function getWriteableClient(): Promise<MDSPostgresClient> {
-  if (writeableCachedClient && writeableCachedClient.connected) {
-    return writeableCachedClient
-  }
-
+  await writeableClientLock.acquireAsync()
   try {
-    writeableCachedClient = await setupClient(true)
+    if (!writeableCachedClient || !writeableCachedClient.connected) {
+      writeableCachedClient = await setupClient(true)
+    }
     return writeableCachedClient
   } catch (err) {
     writeableCachedClient = null
     logger.error('postgres connection error', err)
     throw err
+  } finally {
+    writeableClientLock.release()
   }
 }
 

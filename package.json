@@ -13,11 +13,12 @@
     "image:production": "pnpm run:concurrent image:production",
     "images": "pnpm run:concurrent image",
     "preinstall": "npx check-node-version --package && npx only-allow pnpm",
-    "prepare": "husky install",
-    "lint": "pnpm lint:audit && pnpm lint:eslint '**/*.ts' && pnpm lint:prettier '**/package.json'",
+    "postinstall": "husky install",
+    "lint": "pnpm lint:audit && pnpm lint:prettier '**/package.json' && pnpm lint:eslint '**/*.ts'",
     "lint:audit": "pnpm-ci audit -i 1556,1561 --strict",
     "lint:eslint": "eslint --ignore-path .gitignore --ignore-path .eslintignore",
     "lint:prettier": "prettier --check",
+    "prepare": "husky install",
     "push": "bin/build-helper pushImages",
     "run:concurrent": "pnpm recursive run --filter=!root",
     "run:sequential": "pnpm recursive run --workspace-concurrency=1 --filter=!root",
@@ -69,7 +70,7 @@
     "tsconfig-paths": "3.9.0",
     "typedoc": "0.20.28",
     "typedoc-plugin-lerna-packages": "0.3.1",
-    "typescript": "4.2.2",
+    "typescript": "4.2.3",
     "unit.js": "2.1.1",
     "webpack": "5.24.2",
     "webpack-cli": "4.5.0",
@@ -77,6 +78,6 @@
     "wtfnode": "0.8.4"
   },
   "engines": {
-    "node": "14.2.0"
+    "node": "15.11.0"
   }
 }
