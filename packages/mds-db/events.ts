@@ -179,12 +179,11 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
 
   const res2 = await client.query(selectSql, selectVals)
 
-  const trips = Object.values(res2.rows).reduce((acc: TripEvents, row) => {
-    logger.info(row)
-    const { trip_id, events } = row
-    Object.assign(acc, { [trip_id]: events as VehicleEvent })
-    return acc
-  }, {})
+  const trips = Object.values(res2.rows).reduce(
+    (acc: TripEvents, { trip_id, events }) => Object.assign(acc, { [trip_id]: events as VehicleEvent }),
+    {}
+  )
+
   return {
     trips,
     count
