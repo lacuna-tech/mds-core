@@ -37,6 +37,6 @@ export const AttachmentServiceManager = RpcServer(
       port: process.env.ATTACHMENT_SERVICE_REPL_PORT,
       context: { client: AttachmentServiceClient }
     },
-    maxRequestSize: '20mb'
+    maxRequestSize: '10mb'
   }
 )
