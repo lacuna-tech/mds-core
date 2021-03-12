@@ -129,7 +129,7 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
        * 'simple' means no word-stemming, all words are indexed and searchable.
        * ['string','numeric','boolean'] means all values of the JSONB column are being searched as text
        */
-      const searchBrackets = search_text
+      return search_text
         ? new Brackets(qb =>
             qb.where(
               `jsonb_to_tsvector('simple',${alias}.receipt,'["string","numeric","boolean"]') @@ to_tsquery(:search_text)`,
@@ -139,8 +139,6 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
             )
           )
         : []
-
-      return searchBrackets
     }
 
     const resolveProviderId = (): { provider_id?: UUID } => (provider_id ? { provider_id } : {})

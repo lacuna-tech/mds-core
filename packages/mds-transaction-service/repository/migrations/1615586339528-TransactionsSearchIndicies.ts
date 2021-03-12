@@ -7,7 +7,7 @@ export class TransactionsSearchIndicies1615586339528 implements MigrationInterfa
     await queryRunner.query(`CREATE INDEX "idx_fee_type_transactions" ON "transactions" ("fee_type") `)
     await queryRunner.query(`CREATE INDEX "idx_amount_transactions" ON "transactions" ("amount") `)
     await queryRunner.query(
-      `CREATE INDEX "idx_receipt_transactions" ON "transactions" USING GIN (jsonb_to_tsvector('simple', receipt,'["string","numeric","boolean"]')) `
+      `CREATE INDEX "idx_receipt_transactions" ON "transactions" USING GIN (jsonb_to_tsvector('simple', receipt,'["string","numeric","boolean"]'))`
     )
   }
 
