@@ -154,8 +154,8 @@ class TransactionReadWriteRepository extends ReadWriteRepository {
       ]
 
       return clauses.flat().reduce((acc, clause) => {
-        return new Brackets(qb => qb.andWhere(acc as Brackets).andWhere(clause as Brackets))
-      }, new Brackets(qb => qb.where('1=1'))) as Brackets
+        return new Brackets(qb => qb.andWhere(acc).andWhere(clause))
+      }, new Brackets(qb => qb.where('1=1')))
     }
 
     try {
