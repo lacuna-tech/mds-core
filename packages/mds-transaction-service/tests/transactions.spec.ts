@@ -317,12 +317,12 @@ describe('Transaction Service Tests', () => {
           expect(bluePages.length).toEqual(limit) // all results are color:blue
 
           // Search for a non-existent value
-          const { transactions: redPages } = await TransactionServiceClient.getTransactions({
+          const { transactions: baseFeePages } = await TransactionServiceClient.getTransactions({
             limit,
             search_text: 'blu',
             fee_type: 'base_fee'
           })
-          expect(redPages.length).toEqual(0) // no results are base_fee
+          expect(baseFeePages.length).toEqual(0) // no results are base_fee
 
           // Arbitrarily generate 5 events
           await TransactionServiceClient.createTransactions([
@@ -330,22 +330,22 @@ describe('Transaction Service Tests', () => {
           ])
 
           // Partial matching on string-value 'red', amount > 100 and amount < 200
-          const { transactions: whitePages } = await TransactionServiceClient.getTransactions({
+          const { transactions: cheapRedPages } = await TransactionServiceClient.getTransactions({
             limit,
             search_text: 'red',
             start_amount: 100,
             end_amount: 200
           })
-          expect(whitePages.length).toEqual(limit) // all results are color:blue
+          expect(cheapRedPages.length).toEqual(limit) // all results are color:red
 
           // Partial matching on string-value 'red', amount > 200 and amount < 300
-          const { transactions: blackPages } = await TransactionServiceClient.getTransactions({
+          const { transactions: expensiveRedPages } = await TransactionServiceClient.getTransactions({
             limit,
             search_text: 'red',
             start_amount: 200,
             end_amount: 300
           })
-          expect(blackPages.length).toEqual(0) // no results between 200 and 300
+          expect(expensiveRedPages.length).toEqual(0) // no results between 200 and 300
         })
       })
 
