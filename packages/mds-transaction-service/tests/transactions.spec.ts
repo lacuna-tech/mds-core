@@ -299,7 +299,7 @@ describe('Transaction Service Tests', () => {
           expect(whitePages.length).toEqual(limit) // found all the white pages missing from the book!
         })
 
-        it.only('Get Bulk Transactions with search on fee_type, amount', async () => {
+        it('Get Bulk Transactions with search on fee_type, amount', async () => {
           const limit = 5
           const provider_id = uuid()
 
