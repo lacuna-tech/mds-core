@@ -27,7 +27,6 @@ import { parseRequest } from '@mds-core/mds-api-helpers'
 import { ValidationError } from '@mds-core/mds-utils'
 import express from 'express'
 import { TransactionApiRequest, TransactionApiResponse } from '../@types'
-import logger from '@mds-core/mds-logger'
 
 export type TransactionApiGetTransactionsRequest = TransactionApiRequest &
   ApiRequestParams<'provider_id' | 'start_timestamp' | 'end_timestamp'>
@@ -127,7 +126,7 @@ export const GetTransactionsHandler = async (
       .query('provider_id', 'before', 'after')
 
     const provider_id = scopes.includes('transactions:read') ? quereied_provider_id : res.locals.claims?.provider_id
-    logger.info('calling with', { data: res.locals.claims })
+
     if (provider_id === null) {
       /* This should never happen -- a client with just the transactions:read:provider scope
        * should *always* have a provider_id claim in their token.
