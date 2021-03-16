@@ -42,7 +42,9 @@ export const api = (app: express.Express): express.Express =>
     .use(TransactionApiVersionMiddleware)
     .get(
       pathPrefix('/transactions'),
-      checkTransactionApiAccess(scopes => scopes.includes('transactions:read')),
+      checkTransactionApiAccess(
+        scopes => scopes.includes('transactions:read') || scopes.includes('transactions:read:provider')
+      ),
       GetTransactionsHandler
     )
     .get(
