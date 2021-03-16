@@ -262,7 +262,7 @@ describe('Test Transactions API: Transactions', () => {
       expect(next).toBeUrl()
     })
 
-    it('Will override add provider_id if not included when client has transactions:read:provider scope', async () => {
+    it('Will override provider_id if not included when client has transactions:read:provider scope', async () => {
       const mockTransactions: TransactionDomainModel[] = []
       const provider_id_scoped = uuid() // only provider_id allowed for client
       const basicOptions = {

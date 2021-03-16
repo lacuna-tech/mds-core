@@ -125,15 +125,9 @@ export const GetTransactionsHandler = async (
       .single({ parser: String })
       .query('provider_id', 'before', 'after')
 
-    const provider_id = scopes.includes('transactions:read') ? quereied_provider_id : res.locals.claims?.provider_id
-
-    if (provider_id === null) {
-      /* This should never happen -- a client with just the transactions:read:provider scope
-       * should *always* have a provider_id claim in their token.
-       */
-
-      return res.status(500).send({ error: 'internal_server_error' })
-    }
+    // eslint-reason checkAccess middleware has previously verified that local.claims.provider_id is a UUID
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const provider_id = scopes.includes('transactions:read') ? quereied_provider_id : res.locals.claims!.provider_id!
 
     const { start_timestamp, end_timestamp, limit = 10 } = parseRequest(req)
       .single({ parser: Number })
