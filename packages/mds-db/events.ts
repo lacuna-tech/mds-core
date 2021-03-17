@@ -126,9 +126,7 @@ export interface TripEventsResult {
 }
 
 /**
- *
- * @param params
- * skip/take paginates on trip_id
+ * @param ReadEventsQueryParams skip/take paginates on trip_id
  */
 export async function readTripEvents(params: ReadEventsQueryParams): Promise<TripEventsResult> {
   const { skip, take, start_time, end_time } = params
@@ -146,7 +144,7 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   conditions.push('e.trip_id is not null')
 
   const filter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
-  const countSql = `SELECT COUNT(*) FROM ${schema.TABLE.events} e ${filter} GROUP BY e.trip_id`
+  const countSql = `SELECT COUNT(DISTINCT(trip_id)) FROM ${schema.TABLE.events} e ${filter}`
   const countVals = vals.values()
 
   await logSql(countSql, countVals)
