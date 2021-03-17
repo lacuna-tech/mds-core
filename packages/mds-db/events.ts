@@ -114,8 +114,6 @@ export async function readEvents(params: ReadEventsQueryParams): Promise<ReadEve
   }
 }
 
-// -000
-
 export interface TripEvents {
   [trip_id: string]: VehicleEvent[]
 }
