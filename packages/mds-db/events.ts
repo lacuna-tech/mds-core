@@ -172,7 +172,7 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
     FROM
       (SELECT e.*, to_json(t.*) as telemetry, e.telemetry_timestamp AS best_timestamp
       FROM ${schema.TABLE.events} e
-      LEFT JOIN ${schema.TABLE.telemetry} t ON e.device_id = t.device_id
+      JOIN ${schema.TABLE.telemetry} t ON e.device_id = t.device_id
         AND e.telemetry_timestamp = t.timestamp
         AND e.trip_id in (${tripIdSubQuery})
       ORDER BY trip_id
