@@ -127,16 +127,19 @@ export interface TripEventsResult {
  * @param ReadEventsQueryParams skip/take paginates on trip_id
  */
 export async function readTripEvents(params: ReadEventsQueryParams): Promise<TripEventsResult> {
-  const { skip, take, start_time, end_time } = params
+  const { skip, take = 100, start_time, end_time } = params
   const client = await getReadOnlyClient()
   const vals = new SqlVals()
   const conditions = []
 
+  /**
+   * TODO: add an index on 'timestamp'
+   */
   if (start_time) {
-    conditions.push(`e."timestamp" >= ${vals.add(start_time)}`)
+    conditions.push(`e."recorded" >= ${vals.add(start_time)}`)
   }
   if (end_time) {
-    conditions.push(`e."timestamp" <= ${vals.add(end_time)}`)
+    conditions.push(`e."recorded" <= ${vals.add(end_time)}`)
   }
 
   conditions.push('e.trip_id is not null')
@@ -153,23 +156,30 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   if (typeof skip === 'number' && skip >= 0) {
     conditions.push(` e.trip_id > ${vals.add(skip)}`)
   }
+
   const queryFilter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
 
-  let selectSql = `select et.trip_id, array_agg(row_to_json(et.*) order by best_timestamp) as events
+  /**
+   * Since pagination is done by trip_id, that index can be used to filter through the large dataset as well.
+   */
+  let tripIdSubQuery = `SELECT DISTINCT(trip_id) FROM events ${queryFilter} ORDER BY trip_id`
+
+  if (typeof take === 'number' && take >= 0) {
+    tripIdSubQuery += ` LIMIT ${vals.add(take)}`
+  }
+
+  const selectSql = `SELECT et.trip_id, array_agg(row_to_json(et.*) ORDER BY best_timestamp) AS events
     FROM
-      (SELECT e.*, to_json(t.*) as telemetry, COALESCE(e.telemetry_timestamp, e.timestamp) as best_timestamp
+      (SELECT e.*, to_json(t.*) as telemetry, e.telemetry_timestamp AS best_timestamp
       FROM ${schema.TABLE.events} e
       LEFT JOIN ${schema.TABLE.telemetry} t ON e.device_id = t.device_id
-        AND COALESCE(e.telemetry_timestamp, e.timestamp) = t.timestamp
-      ${queryFilter}
-      order by trip_id
+        AND e.telemetry_timestamp = t.timestamp
+        AND e.trip_id in (${tripIdSubQuery})
+      ORDER BY trip_id
       ) et
     GROUP BY et.trip_id
     ORDER BY et.trip_id`
 
-  if (typeof take === 'number' && take >= 0) {
-    selectSql += ` LIMIT ${vals.add(take)}`
-  }
   const selectVals = vals.values()
   await logSql(selectSql, selectVals)
 
