@@ -31,11 +31,8 @@ export const SchemaValidator = <T>(schema: Schema<T>, options: Options = { allEr
   return {
     validate: (data: unknown): data is T => {
       if (!validator(data)) {
-        const [error] = validator.errors ?? [null]
-        throw new ValidationError(
-          `${error?.instancePath || 'Data'} ${error?.message ?? 'is invalid'}`,
-          validator.errors
-        )
+        const [{ instancePath, message } = { instancePath: 'Data', message: 'is invalid' }] = validator.errors ?? []
+        throw new ValidationError(`${instancePath} ${message}`, validator.errors)
       }
       return true
     },
