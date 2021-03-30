@@ -14,20 +14,28 @@
  * limitations under the License.
  */
 
-import Ajv, { AnySchema, Options } from 'ajv'
+import Ajv, { SchemaObject, JSONSchemaType, Options, ValidateFunction } from 'ajv'
 import withFormats from 'ajv-formats'
+import { ValidationError } from '@mds-core/mds-utils'
 
-export const SchemaValidator = <Schema extends AnySchema>(schema: Schema, options: Options = { allErrors: true }) => {
-  const validator = withFormats(new Ajv(options)).compile<Schema>(schema)
-  return {
-    validate: <T extends object = object>(data: unknown): data is T => {
-      if (validator(data)) {
-        return true
-      }
-      throw validator.errors ?? []
-    },
-    schema: validator.schema
-  }
+export type Schema<T> = SchemaObject | JSONSchemaType<T>
+
+export type SchemaValidator<T> = {
+  validate: (data: unknown) => data is T
+  $schema: Schema<T> & { $schema: string }
 }
 
-export type SchemaValidator = ReturnType<typeof SchemaValidator>
+export const SchemaValidator = <T>(schema: Schema<T>, options: Options = { allErrors: true }): SchemaValidator<T> => {
+  const $schema = Object.assign({ $schema: 'http://json-schema.org/draft-07/schema#' }, schema)
+  const validator: ValidateFunction<T> = withFormats(new Ajv(options)).compile($schema)
+  return {
+    validate: (data: unknown): data is T => {
+      if (!validator(data)) {
+        const [{ instancePath, message } = { instancePath: 'Data', message: 'is invalid' }] = validator.errors ?? []
+        throw new ValidationError(`${instancePath} ${message}`, validator.errors)
+      }
+      return true
+    },
+    $schema
+  }
+}
