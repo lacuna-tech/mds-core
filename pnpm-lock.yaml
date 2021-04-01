@@ -476,6 +476,7 @@ importers:
       '@mds-core/mds-api-server': link:../mds-api-server
       '@mds-core/mds-collector-backend': link:../mds-collector-backend
       '@mds-core/mds-logger': link:../mds-logger
+      '@mds-core/mds-schema-validators': link:../mds-schema-validators
       '@mds-core/mds-service-helpers': link:../mds-service-helpers
       '@mds-core/mds-types': link:../mds-types
       '@mds-core/mds-utils': link:../mds-utils
@@ -487,6 +488,7 @@ importers:
       '@mds-core/mds-api-server': 0.1.28
       '@mds-core/mds-collector-backend': 0.1.2
       '@mds-core/mds-logger': 0.2.2
+      '@mds-core/mds-schema-validators': 0.1.4
       '@mds-core/mds-service-helpers': 0.1.2
       '@mds-core/mds-types': 0.1.25
       '@mds-core/mds-utils': 0.1.28
@@ -498,23 +500,23 @@ importers:
       '@mds-core/mds-logger': link:../mds-logger
       '@mds-core/mds-repository': link:../mds-repository
       '@mds-core/mds-rpc-common': link:../mds-rpc-common
+      '@mds-core/mds-schema-validators': link:../mds-schema-validators
       '@mds-core/mds-service-helpers': link:../mds-service-helpers
       '@mds-core/mds-stream': link:../mds-stream
       '@mds-core/mds-types': link:../mds-types
       '@mds-core/mds-utils': link:../mds-utils
       ajv: 8.0.0
-      ajv-formats: 2.0.0_ajv@8.0.0
       typeorm: 0.2.30
     specifiers:
       '@mds-core/mds-logger': 0.2.2
       '@mds-core/mds-repository': 0.1.2
       '@mds-core/mds-rpc-common': 0.1.2
+      '@mds-core/mds-schema-validators': 0.1.4
       '@mds-core/mds-service-helpers': 0.1.2
       '@mds-core/mds-stream': 0.1.28
       '@mds-core/mds-types': 0.1.25
       '@mds-core/mds-utils': 0.1.28
       ajv: 8.0.0
-      ajv-formats: 2.0.0
       typeorm: 0.2.30
   packages/mds-compliance:
     dependencies:
@@ -889,12 +891,16 @@ importers:
       '@mds-core/mds-providers': link:../mds-providers
       '@mds-core/mds-types': link:../mds-types
       '@mds-core/mds-utils': link:../mds-utils
+      ajv: 8.0.3
+      ajv-formats: 2.0.1_ajv@8.0.3
       joi: 17.3.0
       joi-to-json: 1.2.0
     specifiers:
       '@mds-core/mds-providers': 0.1.28
       '@mds-core/mds-types': 0.1.25
       '@mds-core/mds-utils': 0.1.28
+      ajv: 8.0.3
+      ajv-formats: 2.0.1
       joi: 17.3.0
       joi-to-json: 1.2.0
   packages/mds-service-helpers:
@@ -3417,14 +3423,14 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==
-  /ajv-formats/2.0.0_ajv@8.0.0:
+  /ajv-formats/2.0.1_ajv@8.0.3:
     dependencies:
-      ajv: 8.0.0
+      ajv: 8.0.3
     dev: false
     peerDependencies:
-      ajv: ^8.0.0-beta.4
+      ajv: ^8.0.0
     resolution:
-      integrity: sha512-+Qmnz4K1Z7HajOd8hPX7w+9WlCRfW4rvcMr4XLW4CghOAlS3qWKX7pUCJHaj6HAWPGaWRy63evu0v8CxOClw9A==
+      integrity: sha512-WOCTxWY8Q+JLBJxJ8fjizSuk72qaAlL3v+XtJakEger28WcevS5tBEH2eND9e7U42thp2Uc/DNDYw9riD+kTAA==
   /ajv-keywords/3.5.2_ajv@6.12.6:
     dependencies:
       ajv: 6.12.6
@@ -3459,6 +3465,15 @@ packages:
     dev: false
     resolution:
       integrity: sha512-AgKgeO3Y58RMZoi3S+6OYqGjndt8VlrCwGM3bQEMtbGTLOO+VrymV1Fb0TnffzG4gSwa6MEgIreOn9y3Q9rt+A==
+  /ajv/8.0.3:
+    dependencies:
+      fast-deep-equal: 3.1.3
+      json-schema-traverse: 1.0.0
+      require-from-string: 2.0.2
+      uri-js: 4.4.1
+    dev: false
+    resolution:
+      integrity: sha512-Df6NAivu9KpZw+q8ySijAgLvr1mUA5ihkRvCLCxpdYR21ann5yIuN+PpFxmweSj7i3yjJ0x5LN5KVs0RRzskAQ==
   /ansi-align/3.0.0:
     dependencies:
       string-width: 3.1.0
