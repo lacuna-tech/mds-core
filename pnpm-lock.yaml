@@ -476,13 +476,14 @@ importers:
       '@mds-core/mds-api-server': link:../mds-api-server
       '@mds-core/mds-collector-backend': link:../mds-collector-backend
       '@mds-core/mds-logger': link:../mds-logger
-      '@mds-core/mds-schema-validators': link:../mds-schema-validators
       '@mds-core/mds-service-helpers': link:../mds-service-helpers
       '@mds-core/mds-types': link:../mds-types
       '@mds-core/mds-utils': link:../mds-utils
       '@types/express': 4.17.10
       express: 4.17.1
       http-status-codes: 2.1.4
+    devDependencies:
+      '@mds-core/mds-schema-validators': link:../mds-schema-validators
     specifiers:
       '@mds-core/mds-api-helpers': 0.1.28
       '@mds-core/mds-api-server': 0.1.28
