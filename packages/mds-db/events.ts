@@ -132,14 +132,11 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   const vals = new SqlVals()
   const conditions = []
 
-  /**
-   * TODO: add an index on 'timestamp'
-   */
   if (start_time) {
-    conditions.push(`e."recorded" >= ${vals.add(start_time)}`)
+    conditions.push(`e."timestamp" >= ${vals.add(start_time)}`)
   }
   if (end_time) {
-    conditions.push(`e."recorded" <= ${vals.add(end_time)}`)
+    conditions.push(`e."timestamp" <= ${vals.add(end_time)}`)
   }
 
   conditions.push('e.trip_id is not null')
