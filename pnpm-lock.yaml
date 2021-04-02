@@ -506,7 +506,7 @@ importers:
       '@mds-core/mds-stream': link:../mds-stream
       '@mds-core/mds-types': link:../mds-types
       '@mds-core/mds-utils': link:../mds-utils
-      ajv: 8.0.0
+      ajv: 8.0.3
       typeorm: 0.2.30
     specifiers:
       '@mds-core/mds-logger': 0.2.2
@@ -517,7 +517,7 @@ importers:
       '@mds-core/mds-stream': 0.1.28
       '@mds-core/mds-types': 0.1.25
       '@mds-core/mds-utils': 0.1.28
-      ajv: 8.0.0
+      ajv: 8.0.3
       typeorm: 0.2.30
   packages/mds-compliance:
     dependencies:
@@ -893,7 +893,7 @@ importers:
       '@mds-core/mds-types': link:../mds-types
       '@mds-core/mds-utils': link:../mds-utils
       ajv: 8.0.3
-      ajv-formats: 2.0.1_ajv@8.0.3
+      ajv-formats: 2.0.2
       joi: 17.3.0
       joi-to-json: 1.2.0
     specifiers:
@@ -901,7 +901,7 @@ importers:
       '@mds-core/mds-types': 0.1.25
       '@mds-core/mds-utils': 0.1.28
       ajv: 8.0.3
-      ajv-formats: 2.0.1
+      ajv-formats: 2.0.2
       joi: 17.3.0
       joi-to-json: 1.2.0
   packages/mds-service-helpers:
@@ -3424,14 +3424,15 @@ packages:
       node: '>=8'
     resolution:
       integrity: sha512-4I7Td01quW/RpocfNayFdFVk1qSuoh0E7JrbRJ16nH01HhKFQ88INq9Sd+nd72zqRySlr9BmDA8xlEJ6vJMrYA==
-  /ajv-formats/2.0.1_ajv@8.0.3:
+  /ajv-formats/2.0.2:
     dependencies:
       ajv: 8.0.3
     dev: false
-    peerDependencies:
-      ajv: ^8.0.0
+    peerDependenciesMeta:
+      ajv:
+        optional: true
     resolution:
-      integrity: sha512-WOCTxWY8Q+JLBJxJ8fjizSuk72qaAlL3v+XtJakEger28WcevS5tBEH2eND9e7U42thp2Uc/DNDYw9riD+kTAA==
+      integrity: sha512-Brah4Uo5/U8v76c6euTwtjVFFaVishwnJrQBYpev1JRh4vjA1F4HY3UzQez41YUCszUCXKagG8v6eVRBHV1gkw==
   /ajv-keywords/3.5.2_ajv@6.12.6:
     dependencies:
       ajv: 6.12.6
@@ -3457,15 +3458,6 @@ packages:
     dev: true
     resolution:
       integrity: sha512-ga/aqDYnUy/o7vbsRTFhhTsNeXiYb5JWDIcRIeZfwRNCefwjNTVYCGdGSUrEmiu3yDK3vFvNbgJxvrQW4JXrYQ==
-  /ajv/8.0.0:
-    dependencies:
-      fast-deep-equal: 3.1.3
-      json-schema-traverse: 1.0.0
-      require-from-string: 2.0.2
-      uri-js: 4.4.1
-    dev: false
-    resolution:
-      integrity: sha512-AgKgeO3Y58RMZoi3S+6OYqGjndt8VlrCwGM3bQEMtbGTLOO+VrymV1Fb0TnffzG4gSwa6MEgIreOn9y3Q9rt+A==
   /ajv/8.0.3:
     dependencies:
       fast-deep-equal: 3.1.3
