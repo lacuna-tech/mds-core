@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import { connect, SubOpts, Msg, SubscriptionOptions, NatsConnection } from 'nats'
+import { connect, SubscriptionOptions, NatsConnection } from 'nats'
 import logger from '@mds-core/mds-logger'
 import { getEnvVar, asArray } from '@mds-core/mds-utils'
 import { SingleOrArray } from '@mds-core/mds-types'
+import { natsCbWrapper, NatsProcessorFn } from './codecs'
 
 const initializeNatsClient = () => {
   const { NATS } = getEnvVar({ NATS: 'localhost' })
@@ -31,12 +32,19 @@ const initializeNatsClient = () => {
 
 export const createStreamConsumer = async (
   topics: SingleOrArray<string>,
-  processor: SubOpts<Msg>['callback'],
+  processor: NatsProcessorFn,
   options: SubscriptionOptions = {}
 ) => {
   const natsClient = await initializeNatsClient()
   try {
-    await Promise.all(asArray(topics).map(topic => natsClient.subscribe(topic, { ...options, callback: processor })))
+    await Promise.all(
+      asArray(topics).map(topic =>
+        natsClient.subscribe(topic, {
+          ...options,
+          callback: natsCbWrapper(processor)
+        })
+      )
+    )
   } catch (err) {
     logger.error(err)
   }
