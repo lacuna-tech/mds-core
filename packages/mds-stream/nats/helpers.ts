@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { connect, MsgCallback, SubscriptionOptions, Client } from 'ts-nats'
+import { connect, SubOpts, Msg, SubscriptionOptions, NatsConnection } from 'nats'
 import logger from '@mds-core/mds-logger'
 import { getEnvVar, asArray } from '@mds-core/mds-utils'
 import { SingleOrArray } from '@mds-core/mds-types'
@@ -22,7 +22,7 @@ import { SingleOrArray } from '@mds-core/mds-types'
 const initializeNatsClient = () => {
   const { NATS } = getEnvVar({ NATS: 'localhost' })
   return connect({
-    url: `nats://${NATS}:4222`,
+    servers: `nats://${NATS}:4222`,
     reconnect: true,
     waitOnFirstConnect: true,
     maxReconnectAttempts: -1 // Retry forever
@@ -31,12 +31,12 @@ const initializeNatsClient = () => {
 
 export const createStreamConsumer = async (
   topics: SingleOrArray<string>,
-  processor: MsgCallback,
+  processor: SubOpts<Msg>['callback'],
   options: SubscriptionOptions = {}
 ) => {
   const natsClient = await initializeNatsClient()
   try {
-    await Promise.all(asArray(topics).map(topic => natsClient.subscribe(topic, processor, options)))
+    await Promise.all(asArray(topics).map(topic => natsClient.subscribe(topic, { ...options, callback: processor })))
   } catch (err) {
     logger.error(err)
   }
@@ -47,4 +47,4 @@ export const createStreamProducer = async () => {
   return initializeNatsClient()
 }
 
-export const disconnectClient = (consumer: Client) => consumer.close()
+export const disconnectClient = (consumer: NatsConnection) => consumer.close()

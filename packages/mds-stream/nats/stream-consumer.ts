@@ -14,17 +14,17 @@
  * limitations under the License.
  */
 
-import { SubscriptionOptions, Client, MsgCallback } from 'ts-nats'
+import { SubscriptionOptions, NatsConnection, SubOpts, Msg } from 'nats'
 import { Nullable, SingleOrArray } from '@mds-core/mds-types'
 import { createStreamConsumer, disconnectClient } from './helpers'
 import { StreamConsumer } from '../stream-interface'
 
 export const NatsStreamConsumer = (
   topics: SingleOrArray<string>,
-  eachMessage: MsgCallback,
+  eachMessage: SubOpts<Msg>['callback'],
   options?: Partial<SubscriptionOptions>
 ): StreamConsumer => {
-  let consumer: Nullable<Client> = null
+  let consumer: Nullable<NatsConnection> = null
   return {
     initialize: async () => {
       if (!consumer) {
