@@ -17,7 +17,7 @@ createImagesFileIfNotExists() {
   fi
 }
 
-setRegistry() {
+formatRegistry() {
   # if registry is passed as env var ensure last char is a /
   local last=$(echo "${REGISTRY: -1}")
   if [[ $REGISTRY != "" && "$last" != "/" ]]; then
@@ -30,7 +30,7 @@ setRegistry() {
 buildImage() {
   local image=$1
   createImagesFileIfNotExists
-  setRegistry
+  formatRegistry
 
   if [[ "$NODE_ENV" == "development" ]]; then
     image_name=$(echo $image | cut -f1 -d":")
@@ -49,7 +49,7 @@ pushImages() {
     echo "REGISTRY env var is not set. Please add REGISTRY to env or as a var before the command."
     exit 1
   else
-    setRegistry
+    formatRegistry
   fi
 
   if [[ "$REGISTRY" =~ amazonaws.com$ ]]; then
