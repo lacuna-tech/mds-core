@@ -21,7 +21,7 @@ formatRegistry() {
   # if registry is passed as env var ensure last char is a /
   local last=$(echo "${REGISTRY: -1}")
 
-  if [[ $REGISTRY != "" &&  ]]; then
+  if [[ $REGISTRY == "" ]]; then
     echo "REGISTRY env var is not set. Please add REGISTRY to env or as a var before the command."
     exit 1
   elif [[ "$last" != "/" ]]; then
