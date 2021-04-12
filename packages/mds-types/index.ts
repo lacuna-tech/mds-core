@@ -98,6 +98,7 @@ export interface Geography {
 
 export type GeographySummary = Omit<Geography, 'geography_json'>
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export interface GeographyMetadata<M extends {} = Record<string, any>> {
   geography_id: UUID
   geography_metadata: M
