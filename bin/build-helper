@@ -20,11 +20,15 @@ createImagesFileIfNotExists() {
 formatRegistry() {
   # if registry is passed as env var ensure last char is a /
   local last=$(echo "${REGISTRY: -1}")
-  if [[ $REGISTRY != "" && "$last" != "/" ]]; then
+
+  if [[ $REGISTRY != "" &&  ]]; then
+    echo "REGISTRY env var is not set. Please add REGISTRY to env or as a var before the command."
+    exit 1
+  elif [[ "$last" != "/" ]]; then
     REGISTRY="${REGISTRY}/"
   fi
 
-  echo "Currently using registry: ${REGISTRY:="unset"}"
+  echo "Currently using registry: ${REGISTRY}"
 }
 
 buildImage() {
@@ -44,13 +48,6 @@ buildImage() {
 
 pushImages() {
   createImagesFileIfNotExists
-
-  if [[ $REGISTRY == "" ]]; then
-    echo "REGISTRY env var is not set. Please add REGISTRY to env or as a var before the command."
-    exit 1
-  else
-    formatRegistry
-  fi
 
   if [[ "$REGISTRY" =~ amazonaws.com$ ]]; then
     eval $(aws ecr get-login --no-include-email)
