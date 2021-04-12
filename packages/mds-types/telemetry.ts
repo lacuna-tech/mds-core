@@ -1,5 +1,6 @@
-import { Timestamp, UUID } from './base'
+import { Timestamp, UUID } from './utils'
 
+// Standard telemetry columns (used in more than one table)
 export interface TelemetryData {
   lat: number
   lng: number

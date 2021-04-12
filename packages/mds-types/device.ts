@@ -1,4 +1,4 @@
-import { Enum, Timestamp, UUID } from './base'
+import { Enum, Timestamp, UUID } from './utils'
 import { VEHICLE_STATE } from './vehicle/vehicle_states'
 import { VEHICLE_TYPE } from './vehicle/vehicle_types'
 
@@ -37,4 +37,3 @@ export interface Device_v1_1_0 extends CoreDevice {
 export type Device = Device_v1_1_0
 
 export type DeviceID = Pick<Device, 'provider_id' | 'device_id'>
-// Standard telemetry columns (used in more than one table)

@@ -1,4 +1,4 @@
-import { Enum, Timestamp, UUID, Nullable } from './base'
+import { Enum, Timestamp, UUID, Nullable } from './utils'
 import { Telemetry } from './telemetry'
 import { TRIP_STATE } from './trip'
 import {

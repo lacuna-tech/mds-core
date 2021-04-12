@@ -1,4 +1,4 @@
-import { Timestamp, UUID } from './base'
+import { Timestamp, UUID } from './utils'
 import { ACCESSIBILITY_OPTION } from './device'
 import { GpsData } from './telemetry'
 

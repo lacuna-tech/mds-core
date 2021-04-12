@@ -15,7 +15,7 @@
  */
 import { FeatureCollection } from 'geojson'
 import { AUDIT_EVENT_TYPE, VehicleEvent, VEHICLE_EVENT } from './event'
-import { Timestamp, UUID } from './base'
+import { Timestamp, UUID } from './utils'
 import { Device } from './device'
 import { Telemetry, TelemetryData, WithGpsProperty } from './telemetry'
 
@@ -131,7 +131,7 @@ export interface Provider {
   gbfs_api_url?: string
 }
 
-export * from './base'
+export * from './utils'
 export * from './device'
 export * from './event'
 export * from './event_states_maps'
