@@ -1,10 +1,9 @@
-import { Enum, Timestamp, UUID } from './utils'
+import { Timestamp, UUID } from './utils'
 import { VEHICLE_STATE } from './vehicle/vehicle_states'
 import { VEHICLE_TYPE } from './vehicle/vehicle_types'
 
-export const PROPULSION_TYPES = Enum('human', 'electric', 'electric_assist', 'hybrid', 'combustion')
-export type PROPULSION_TYPE = keyof typeof PROPULSION_TYPES
-export const RIGHT_OF_WAY_STATES = ['available', 'reserved', 'non_operational', 'trip'] as const
+export const PROPULSION_TYPES = ['human', 'electric', 'electric_assist', 'hybrid', 'combustion'] as const
+export type PROPULSION_TYPE = typeof PROPULSION_TYPES[number]
 
 export const ACCESSIBILITY_OPTIONS = ['wheelchair_accessible'] as const
 export type ACCESSIBILITY_OPTION = typeof ACCESSIBILITY_OPTIONS[number]
