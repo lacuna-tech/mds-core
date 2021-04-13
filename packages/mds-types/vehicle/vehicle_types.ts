@@ -1,4 +1,2 @@
-import { Enum } from '../utils'
-
-export const VEHICLE_TYPES = Enum('car', 'bicycle', 'scooter', 'moped', 'other')
-export type VEHICLE_TYPE = keyof typeof VEHICLE_TYPES
+export const VEHICLE_TYPES = ['car', 'bicycle', 'scooter', 'moped', 'other'] as const
+export type VEHICLE_TYPE = typeof VEHICLE_TYPES[number]
