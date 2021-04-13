@@ -11,7 +11,7 @@ import {
 } from './validators'
 
 /**
- * Note: This schema is still very-much-so in flux
+ * Note: This schema is still very-much-so in flux (especially dependent on mode), so we're keeping this minimal for now. If you see any required bits commented out, this is due to wanting to retain some previous iterations for posterity.
  */
 export const tripMetadataSchema = Joi.object().keys({
   trip_id: uuidSchema.required(),
