@@ -1,7 +1,7 @@
 import Sinon from 'sinon'
 import assert from 'assert'
 import { uuid } from '@mds-core/mds-utils'
-import { Device, VEHICLE_TYPES } from '@mds-core/mds-types'
+import { Device } from '@mds-core/mds-types'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-agency-cache'
 import stream from '@mds-core/mds-stream'
@@ -34,13 +34,13 @@ describe('Agency API request handlers', () => {
     const getFakeBody = () => {
       const device_id = uuid()
       const vehicle_id = uuid()
-      const type: Device['type'] = VEHICLE_TYPES.car
-      const propulsion: Device['propulsion'] = ['combustion']
+      const vehicle_type: Device['vehicle_type'] = 'car'
+      const propulsion_types: Device['propulsion_types'] = ['combustion']
       const body = {
         device_id,
         vehicle_id,
-        type,
-        propulsion,
+        vehicle_type,
+        propulsion_types,
         year: 1990,
         mfgr: 'foo inc',
         model: 'i date one'
@@ -129,7 +129,6 @@ describe('Agency API request handlers', () => {
       Sinon.replace(db, 'writeDevice', Sinon.fake.resolves('it-worked'))
       Sinon.replace(cache, 'writeDevice', Sinon.fake.resolves('it-worked'))
       Sinon.replace(stream, 'writeDevice', Sinon.fake.resolves('it-worked'))
-      Sinon.replace(utils, 'writeRegisterEvent', Sinon.fake.resolves('it-worked'))
       await registerVehicle({ body } as AgencyApiRegisterVehicleRequest, res)
       assert.equal(statusHandler.calledWith(201), true)
       assert.equal(sendHandler.called, true)
@@ -149,7 +148,6 @@ describe('Agency API request handlers', () => {
       Sinon.replace(db, 'writeDevice', Sinon.fake.resolves('it-worked'))
       Sinon.replace(cache, 'writeDevice', Sinon.fake.rejects('it-broke'))
       Sinon.replace(stream, 'writeDevice', Sinon.fake.resolves('it-worked'))
-      Sinon.replace(utils, 'writeRegisterEvent', Sinon.fake.resolves('it-worked'))
       await registerVehicle({ body } as AgencyApiRegisterVehicleRequest, res)
       assert.equal(statusHandler.calledWith(201), true)
       assert.equal(sendHandler.called, true)

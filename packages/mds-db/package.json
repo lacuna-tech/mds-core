@@ -14,7 +14,7 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
-    "test": "DOTENV_CONFIG_PATH=../../.env nyc --use-spawn-wrap --lines 65  ts-mocha --project ../../tsconfig.json"
+    "test": "DOTENV_CONFIG_PATH=../../.env nyc --use-spawn-wrap --lines 64  ts-mocha --project ../../tsconfig.json"
   },
   "dependencies": {
     "@mds-core/mds-attachment-service": "0.1.2",
@@ -25,7 +25,7 @@
     "@mds-core/mds-policy-service": "0.1.2",
     "@mds-core/mds-types": "0.1.25",
     "@mds-core/mds-utils": "0.1.28",
-    "@types/pg": "7.14.7",
+    "@types/pg": "7.14.11",
     "await-lock": "2.1.0",
     "pg": "8.5.1"
   },
