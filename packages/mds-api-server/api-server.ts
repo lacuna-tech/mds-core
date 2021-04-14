@@ -28,6 +28,7 @@ import { RequestLoggingMiddlewareOptions, RequestLoggingMiddleware } from './mid
 import { PrometheusMiddlewareOptions, PrometheusMiddleware } from './middleware/prometheus'
 import { serverVersion } from './utils'
 import { HealthRequestHandler } from './handlers/health'
+import { apmStart } from '@mds-core/mds-utils'
 
 export interface ApiServerOptions {
   authorization: AuthorizationMiddlewareOptions
@@ -46,7 +47,8 @@ export const ApiServer = <T extends {} = {}>(
   options: Partial<ApiServerOptions> = {},
   app: express.Express = express()
 ): express.Express => {
-  logger.info(`${serverVersion()} starting`)
+  // start apm instrumentation if enabled
+  apmStart()
 
   // Log the custom authorization namespace/claims
   const claims = [ProviderIdClaim, UserEmailClaim, JurisdictionsClaim]

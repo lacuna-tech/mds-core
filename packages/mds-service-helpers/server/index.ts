@@ -27,6 +27,7 @@ import {
 import { Nullable } from '@mds-core/mds-types'
 import retry, { Options as RetryOptions } from 'async-retry'
 import { ServiceResultType, ServiceErrorDescriptor, ServiceErrorType, ProcessController } from '../@types'
+import { apmCaptureError } from '@mds-core/mds-utils/apm-service'
 
 type ProcessMonitorOptions = Partial<
   Omit<RetryOptions, 'onRetry'> & {
@@ -134,9 +135,10 @@ export const ServiceResult = <R>(result: R): ServiceResultType<R> => ({ error: n
 
 export const ServiceError = <E extends string>(
   error: Omit<ServiceErrorDescriptor<E>, 'isServiceError'>
-): ServiceErrorType<E> => ({
-  error: { isServiceError: true, ...error }
-})
+): ServiceErrorType<E> => {
+  apmCaptureError({ name: error.type, message: `${error.type}: ${error.message}`, stack: Error().stack })
+  return { error: { isServiceError: true, ...error } }
+}
 
 export const ServiceException = (message: string, error?: unknown) => {
   const details = (error instanceof Error && error.message) || undefined

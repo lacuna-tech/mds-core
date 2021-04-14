@@ -25,4 +25,5 @@ export { JsonBodyParserMiddlewareOptions, JsonBodyParserMiddleware } from './mid
 export { RequestLoggingMiddlewareOptions, RequestLoggingMiddleware } from './middleware/request-logging'
 export { RawBodyParserMiddlewareOptions, RawBodyParserMiddleware } from './middleware/raw-body-parser'
 export { PrometheusMiddlewareOptions, PrometheusMiddleware } from './middleware/prometheus'
+export { ApmErrorCaptureMiddlewareOptions, ApmErrorCaptureMiddleware } from './middleware/apm-error-capture'
 export { AccessTokenScopeValidator, checkAccess } from './utils'

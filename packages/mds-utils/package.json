@@ -25,6 +25,7 @@
     "@types/point-in-polygon": "1.0.0",
     "@types/uuid": "8.3.0",
     "circle-to-polygon": "2.1.0",
+    "elastic-apm-node": "^3.13.0",
     "moment-timezone": "0.5.33",
     "point-in-polygon": "1.1.0",
     "uuid": "8.3.2"

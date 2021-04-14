@@ -14,10 +14,13 @@
  * limitations under the License.
  */
 
+import { apmCaptureError } from '../apm-service'
+
 class BaseError extends Error {
   public constructor(public name: string, public reason?: string, public info?: unknown) {
     super(reason)
     Error.captureStackTrace(this, BaseError)
+    apmCaptureError({ name, message: `${name}: ${reason}`, stack: Error().stack })
   }
 }
 

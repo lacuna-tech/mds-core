@@ -27,12 +27,14 @@ import {
   PrometheusMiddleware,
   RequestLoggingMiddleware,
   RawBodyParserMiddlewareOptions,
-  RawBodyParserMiddleware
+  RawBodyParserMiddleware,
+  ApiRequest,
+  ApiResponse
 } from '@mds-core/mds-api-server'
 import { Nullable } from '@mds-core/mds-types'
 import { ProcessManager } from '@mds-core/mds-service-helpers'
 import { RpcServiceDefinition, RPC_PORT, RPC_CONTENT_TYPE, REPL_PORT } from '../@types'
-
+import { apmSetTransactionName } from 'packages/mds-utils'
 export interface RpcServiceHandlers {
   onStart: () => Promise<void>
   onStop: () => Promise<void>
@@ -84,6 +86,13 @@ const startRepl = (options: RpcServerOptions['repl']): Promise<net.Server> =>
     })
   })
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export const ApmErrorMiddleware = (req: ApiRequest, res: ApiResponse, next: express.NextFunction) => {
+  logger.error('WTF MATE')
+  apmSetTransactionName(req.originalUrl)
+  next()
+}
+
 export const RpcServer = <S>(
   definition: RpcServiceDefinition<S>,
   { onStart, onStop }: RpcServiceHandlers,
@@ -99,12 +108,15 @@ export const RpcServer = <S>(
         const port = Number(options.port || process.env.RPC_PORT || RPC_PORT)
         logger.info(`Starting RPC server listening for ${RPC_CONTENT_TYPE} requests on port ${port}`)
         await onStart()
+        // apm.start({ transactionIgnoreUrls: ['/health'] })
+
         server = HttpServer(
           express()
             .use(PrometheusMiddleware())
             .use(RequestLoggingMiddleware())
             .use(RawBodyParserMiddleware({ type: RPC_CONTENT_TYPE, limit: options.maxRequestSize }))
             .get('/health', HealthRequestHandler)
+            .use(ApmErrorMiddleware)
             .use(ModuleRpcProtocolServer.registerRpcRoutes(definition, routes)),
           { port }
         )

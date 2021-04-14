@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Copyright 2019 City of Los Angeles
  *
@@ -14,12 +15,21 @@
  * limitations under the License.
  */
 
-import { v4 } from 'uuid'
-import { UUID } from '@mds-core/mds-types'
+import express from 'express'
+import { ApiRequest, ApiResponse } from '../@types'
+import logger from '@mds-core/mds-logger'
 
-export * from './exceptions/exceptions'
-export * from './exceptions/exception-messages'
-export * from './utils'
-export * from './apm-service'
+export type ApmErrorCaptureMiddlewareOptions = Partial<{}>
 
-export const uuid = (): UUID => v4()
+export const ApmErrorCaptureMiddleware = (options: ApmErrorCaptureMiddlewareOptions = {}) => (
+  req: ApiRequest,
+  res: ApiResponse,
+  next: express.NextFunction
+) => {
+  logger.info('LALALALALALALALAL')
+  console.log(res.json)
+  if (res.json) {
+    console.log(res.json)
+  }
+  return next()
+}
