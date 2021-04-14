@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { VehicleEvent, Device, UUID, Timestamp, Recorded } from '@mds-core/mds-types'
+import { VehicleEvent, Device, UUID, Timestamp, Recorded, VehicleEvent_v0_4_1 } from '@mds-core/mds-types'
 import { now, isUUID, isTimestamp, seconds, yesterday } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { ReadEventsResult, ReadEventsQueryParams, ReadHistoricalEventsQueryParams } from './types'
@@ -115,7 +115,7 @@ export async function readEvents(params: ReadEventsQueryParams): Promise<ReadEve
 }
 
 export interface TripEvents {
-  [trip_id: string]: VehicleEvent[]
+  [trip_id: string]: VehicleEvent_v0_4_1[]
 }
 
 export interface TripEventsResult {
@@ -124,6 +124,7 @@ export interface TripEventsResult {
 }
 
 /**
+ * @deprecated 1.0, for 0.4 vehicle_event types
  * @param ReadEventsQueryParams skip/take paginates on trip_id
  */
 export async function readTripEvents(params: ReadEventsQueryParams): Promise<TripEventsResult> {
