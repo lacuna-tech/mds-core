@@ -151,7 +151,7 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   const res = await client.query(countSql, countVals)
   const tripCount = parseInt(res.rows[0].count)
 
-  if (typeof skip === 'number' && skip >= 0) {
+  if (skip) {
     conditions.push(` trip_id > ${vals.add(skip)}`)
   }
 
