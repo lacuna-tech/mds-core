@@ -134,13 +134,13 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   const conditions = []
 
   if (start_time) {
-    conditions.push(`e."timestamp" >= ${vals.add(start_time)}`)
+    conditions.push(`"timestamp" >= ${vals.add(start_time)}`)
   }
   if (end_time) {
-    conditions.push(`e."timestamp" <= ${vals.add(end_time)}`)
+    conditions.push(`"timestamp" <= ${vals.add(end_time)}`)
   }
 
-  conditions.push('e.trip_id is not null')
+  conditions.push('trip_id is not null')
 
   const filter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
   const countSql = `SELECT COUNT(DISTINCT(trip_id)) FROM ${schema.TABLE.events} e ${filter}`
@@ -152,7 +152,7 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   const tripCount = parseInt(res.rows[0].count)
 
   if (typeof skip === 'number' && skip >= 0) {
-    conditions.push(` e.trip_id > ${vals.add(skip)}`)
+    conditions.push(` trip_id > ${vals.add(skip)}`)
   }
 
   const queryFilter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
@@ -160,7 +160,7 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   /**
    * Since pagination is done by trip_id, that index can be used to filter through the large dataset as well.
    */
-  let tripIdSubQuery = `SELECT DISTINCT(trip_id) FROM events ${queryFilter} ORDER BY trip_id`
+  let tripIdSubQuery = `SELECT DISTINCT(trip_id) FROM events e2 ${queryFilter} ORDER BY e2.trip_id`
 
   if (typeof take === 'number' && take >= 0) {
     tripIdSubQuery += ` LIMIT ${vals.add(take)}`
