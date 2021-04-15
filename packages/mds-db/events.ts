@@ -183,10 +183,28 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
 
   const res2 = await client.query(selectSql, selectVals)
 
-  const trips = Object.values(res2.rows).reduce(
-    (acc: TripEvents, { trip_id, events }) => Object.assign(acc, { [trip_id]: events as VehicleEvent }),
-    {}
-  )
+  const trips = Object.values(res2.rows).reduce((acc: TripEvents, { trip_id, events: unmappedEvents }) => {
+    const events = (unmappedEvents as any[]).map(e => {
+      const { provider_id, device_id, timestamp, lat, lng, speed, heading, accuracy, altitude } = e.telemetry
+      return {
+        ...e,
+        telemetry: {
+          provider_id,
+          device_id,
+          timestamp,
+          gps: {
+            lng,
+            lat,
+            speed,
+            heading,
+            accuracy,
+            altitude
+          }
+        }
+      }
+    })
+    return Object.assign(acc, { [trip_id]: events as VehicleEvent[] })
+  }, {})
 
   return {
     trips,
