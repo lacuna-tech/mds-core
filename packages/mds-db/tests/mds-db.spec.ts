@@ -180,7 +180,6 @@ if (pg_info.database) {
           start_time: String(startTime),
           provider_id: JUMP_PROVIDER_ID
         })
-        assert.deepStrictEqual(tripEventsResult.tripCount, trip_ids.size)
 
         // there should be X trips
         assert.deepStrictEqual(Object.keys(tripEventsResult.trips).length, trip_ids.size)
