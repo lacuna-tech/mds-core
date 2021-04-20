@@ -177,7 +177,8 @@ if (pg_info.database) {
         const trip_ids = vehicleEventsResult.events.reduce((acc, event) => acc.add(event.trip_id), new Set())
 
         const tripEventsResult = await MDSDBPostgres.readTripEvents({
-          start_time: String(startTime)
+          start_time: String(startTime),
+          provider_id: JUMP_PROVIDER_ID
         })
         assert.deepStrictEqual(tripEventsResult.tripCount, trip_ids.size)
 

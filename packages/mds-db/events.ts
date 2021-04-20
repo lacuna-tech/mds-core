@@ -128,7 +128,7 @@ export interface TripEventsResult {
  * @param ReadEventsQueryParams skip/take paginates on trip_id
  */
 export async function readTripEvents(params: ReadEventsQueryParams): Promise<TripEventsResult> {
-  const { skip, take = 100, start_time, end_time } = params
+  const { skip, take = 100, start_time, end_time, provider_id } = params
   const client = await getReadOnlyClient()
   const vals = new SqlVals()
   const conditions = []
@@ -138,6 +138,9 @@ export async function readTripEvents(params: ReadEventsQueryParams): Promise<Tri
   }
   if (end_time) {
     conditions.push(`"timestamp" <= ${vals.add(end_time)}`)
+  }
+  if (provider_id) {
+    conditions.push(`provider_id = ${vals.add(provider_id)}`)
   }
 
   conditions.push('trip_id is not null')
