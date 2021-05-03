@@ -12,7 +12,7 @@
   "scripts": {
     "build": "tsc --build tsconfig.build.json",
     "test": "exit 0",
-    "ts-node": "yarn build && DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config"
+    "ts-node": "pnpm build && DOTENV_CONFIG_PATH=../../.env ts-node -r dotenv/config"
   },
   "dependencies": {
     "@mds-core/mds-api-server": "0.1.28",
