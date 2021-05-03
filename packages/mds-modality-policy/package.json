@@ -24,7 +24,7 @@
     "@mds-core/mds-policy": "0.0.29",
     "@mds-core/mds-schema-validators": "0.1.4",
     "@mds-core/mds-types": "0.1.25",
-    "@types/express": "4.17.8",
+    "@types/express": "4.17.11",
     "express": "4.17.1"
   }
 }
