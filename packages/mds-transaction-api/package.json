@@ -14,7 +14,10 @@
     "start": "PATH_PREFIX=/transaction pnpm watch server",
     "test": "PATH_PREFIX=/transaction DOTENV_CONFIG_PATH=../../.env jest",
     "ts-node": "DOTENV_CONFIG_PATH=../../.env node -r ts-node/register -r dotenv/config",
-    "watch": "pnpm build && nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec pnpm ts-node --"
+    "watch": "pnpm build && nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec pnpm ts-node --",
+    "generate:schema": "ts-node ./generate-schemas.ts",
+    "generate:flatspec": "speccy resolve spec/spec.yaml > spec/flat-spec.yaml",
+    "generate": "pnpm generate:schema && pnpm generate:flatspec"
   },
   "dependencies": {
     "@mds-core/mds-api-helpers": "0.1.28",
@@ -30,6 +33,7 @@
     "joi": "17.4.0"
   },
   "devDependencies": {
-    "@mds-core/mds-test-data": "0.1.28"
+    "@mds-core/mds-test-data": "0.1.28",
+    "speccy": "0.11.0"
   }
 }

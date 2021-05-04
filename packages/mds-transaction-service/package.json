@@ -20,8 +20,7 @@
     "test": "DOTENV_CONFIG_PATH=../../.env jest --runInBand",
     "ts-node": "DOTENV_CONFIG_PATH=../../.env node --experimental-repl-await -r ts-node/register -r dotenv/config",
     "typeorm": "ts-node ./node_modules/typeorm/cli.js",
-    "watch": "pnpm build && nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec pnpm ts-node --",
-    "generate:schema": "ts-node ./generate-schemas.ts"
+    "watch": "pnpm build && nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec pnpm ts-node --"
   },
   "dependencies": {
     "@mds-core/mds-logger": "0.2.2",
