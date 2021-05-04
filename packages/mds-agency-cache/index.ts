@@ -437,7 +437,7 @@ async function writeTelemetry(telemetries: Telemetry[]) {
   try {
     await Promise.all(telemetries.map(telemetry => writeOneTelemetry(telemetry)))
   } catch (err) {
-    logger.error('Failed to write to cache', err)
+    logger.error('Failed to write telemetry to cache', err)
     throw err
   }
 }
