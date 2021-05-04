@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "transaction_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "provider_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "device_id": {
+      "type": "string",
+      "format": "uuid",
+      "nullable": true
+    },
+    "timestamp": {
+      "type": "integer",
+      "minimum": 100000000000,
+      "maximum": 99999999999999
+    },
+    "fee_type": {
+      "type": "string",
+      "enum": [
+        "base_fee",
+        "upgrade_fee",
+        "congestion_fee",
+        "trip_fee",
+        "parking_fee",
+        "reservation_fee",
+        "distance_fee",
+        "tolls_fee"
+      ]
+    },
+    "amount": {
+      "type": "integer"
+    },
+    "receipt": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "type": "object",
+      "properties": {
+        "receipt_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "timestamp": {
+          "type": "integer",
+          "minimum": 100000000000,
+          "maximum": 99999999999999
+        },
+        "origin_url": {
+          "type": "string",
+          "format": "url"
+        },
+        "receipt_details": {
+          "type": "object"
+        }
+      },
+      "required": [
+        "origin_url",
+        "receipt_details",
+        "receipt_id",
+        "timestamp"
+      ]
+    }
+  },
+  "required": [
+    "amount",
+    "device_id",
+    "fee_type",
+    "provider_id",
+    "receipt",
+    "timestamp",
+    "transaction_id"
+  ]
+}

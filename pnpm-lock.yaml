@@ -1052,7 +1052,7 @@ importers:
       flat: 5.0.2
       kafkajs: 1.15.0
       nats: 2.0.2
-      redis: 3.1.0
+      redis: 3.1.2
       sinon: 10.0.0
     dependencies:
       '@mds-core/mds-logger': link:../mds-logger
@@ -1065,7 +1065,7 @@ importers:
       flat: 5.0.2
       kafkajs: 1.15.0
       nats: 2.0.2
-      redis: 3.1.0
+      redis: 3.1.2
       sinon: 10.0.0
 
   packages/mds-test-data:
@@ -10364,8 +10364,8 @@ packages:
       redis-errors: 1.2.0
     dev: false
 
-  /redis/3.1.0:
-    resolution: {integrity: sha512-//lAOcEtNIKk2ekZibes5oyWKYUVWMvMB71lyD/hS9KRePNkB7AU3nXGkArX6uDKEb2N23EyJBthAv6pagD0uw==}
+  /redis/3.1.2:
+    resolution: {integrity: sha512-grn5KoZLr/qrRQVwoSkmzdbw6pwF+/rwODtrOr6vuBRiR/f3rjSTGupbF90Zpqm2oenix8Do6RV7pYEkGwlKkw==}
     engines: {node: '>=10'}
     dependencies:
       denque: 1.5.0
