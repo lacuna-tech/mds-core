@@ -32,8 +32,6 @@ export const { $schema: TransactionApiVersionSchema } = SchemaValidator<{ versio
     $id: 'TransactionApiVersion',
     description: 'API version in SemVer',
     type: 'string',
-    enum: [...TRANSACTION_API_SUPPORTED_VERSIONS],
-    example: TRANSACTION_API_DEFAULT_VERSION
-  },
-  { keywords: ['example'] }
+    enum: [...TRANSACTION_API_SUPPORTED_VERSIONS]
+  }
 )
