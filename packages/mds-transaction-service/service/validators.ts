@@ -75,7 +75,9 @@ const timestampSchema = { type: 'integer', minimum: 100_000_000_000, maximum: 99
 //   required: ['duration', 'end_timestamp', 'geography_id', 'start_timestamp', 'trip_events', 'trip_id', 'vehicle_type']
 // })
 
-const { $schema: receiptSchema } = SchemaValidator<ReceiptDomainModel>(
+const {
+  $schema: { $schema, ...receiptSchema }
+} = SchemaValidator<ReceiptDomainModel>(
   {
     type: 'object',
     properties: {
