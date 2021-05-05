@@ -160,4 +160,6 @@ export const { validate: validateTransactionIds } = SchemaValidator<UUID[]>({
   items: uuidSchema
 })
 
-export const schemas = [TransactionSchema, TransactionOperationSchema, TransactionStatusSchema]
+/* eslint-reason avoiding TS2742, TS4023, TS7056 */
+/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
+export const schemas: any[] = [TransactionSchema, TransactionOperationSchema, TransactionStatusSchema]
