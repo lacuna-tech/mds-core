@@ -15,9 +15,9 @@
     "test": "PATH_PREFIX=/transaction DOTENV_CONFIG_PATH=../../.env jest",
     "ts-node": "DOTENV_CONFIG_PATH=../../.env node -r ts-node/register -r dotenv/config",
     "watch": "pnpm build && nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec pnpm ts-node --",
+    "generate": "pnpm generate:schema && pnpm generate:flatspec",
     "generate:schema": "ts-node ./generate-schemas.ts && git add schema-gen",
-    "generate:flatspec": "speccy resolve spec/spec.yaml > spec/flat-spec.yaml",
-    "generate": "pnpm generate:schema && pnpm generate:flatspec"
+    "generate:flatspec": "speccy resolve spec/spec.yaml > spec/flat-spec.yaml && git add spec/flat-spec.yaml"
   },
   "dependencies": {
     "@mds-core/mds-api-helpers": "0.1.28",
