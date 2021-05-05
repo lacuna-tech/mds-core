@@ -90,7 +90,7 @@ describe('Transaction Service Tests', () => {
           })
         })
 
-        it.only('Create one transaction with missing fee_type rejects', async () => {
+        it('Create one transaction with missing fee_type rejects', async () => {
           const [transaction] = transactionsGenerator(1)
           const { fee_type, ...malformedTransaction } = transaction
 
