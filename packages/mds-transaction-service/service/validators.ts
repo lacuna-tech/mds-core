@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { SchemaValidator } from '@mds-core/mds-schema-validators'
+import { SchemaObject, SchemaValidator } from '@mds-core/mds-schema-validators'
 import {
   FEE_TYPE,
   ReceiptDomainModel,
@@ -160,6 +160,4 @@ export const { validate: validateTransactionIds } = SchemaValidator<UUID[]>({
   items: uuidSchema
 })
 
-/* eslint-reason avoiding TS2742, TS4023, TS7056 */
-/* eslint-disable-next-line @typescript-eslint/no-explicit-any */
-export const schemas: any[] = [TransactionSchema, TransactionOperationSchema, TransactionStatusSchema]
+export const schemas: SchemaObject[] = [TransactionSchema, TransactionOperationSchema, TransactionStatusSchema]
