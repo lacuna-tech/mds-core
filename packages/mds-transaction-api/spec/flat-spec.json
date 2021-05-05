@@ -116,9 +116,7 @@
                       "enum": [
                         "0.0.1"
                       ],
-                      "example": [
-                        "0.0.1"
-                      ]
+                      "example": "0.0.1"
                     },
                     "transaction": {
                       "$ref": "#/paths/~1transaction/post/requestBody/content/application~1json/schema"
