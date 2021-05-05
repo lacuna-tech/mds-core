@@ -19,6 +19,7 @@
     "test": "DOTENV_CONFIG_PATH=../../.env jest"
   },
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "9.0.7",
     "@mds-core/mds-providers": "0.1.28",
     "@mds-core/mds-test-data": "0.1.28",
     "@mds-core/mds-types": "0.1.25",

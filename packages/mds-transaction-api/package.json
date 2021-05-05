@@ -34,7 +34,6 @@
     "joi": "17.4.0"
   },
   "devDependencies": {
-    "@apidevtools/json-schema-ref-parser": "9.0.7",
     "@mds-core/mds-test-data": "0.1.28"
   }
 }
