@@ -1084,6 +1084,7 @@ importers:
       '@mds-core/mds-api-helpers': 0.1.28
       '@mds-core/mds-api-server': 0.1.28
       '@mds-core/mds-logger': 0.2.2
+      '@mds-core/mds-schema-validators': 0.1.4
       '@mds-core/mds-service-helpers': 0.1.2
       '@mds-core/mds-test-data': 0.1.28
       '@mds-core/mds-transaction-service': 0.1.2
@@ -1097,6 +1098,7 @@ importers:
       '@mds-core/mds-api-helpers': link:../mds-api-helpers
       '@mds-core/mds-api-server': link:../mds-api-server
       '@mds-core/mds-logger': link:../mds-logger
+      '@mds-core/mds-schema-validators': link:../mds-schema-validators
       '@mds-core/mds-service-helpers': link:../mds-service-helpers
       '@mds-core/mds-transaction-service': link:../mds-transaction-service
       '@mds-core/mds-types': link:../mds-types

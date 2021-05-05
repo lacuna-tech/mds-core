@@ -102,6 +102,7 @@ export const {
   $schema: TransactionSchema
 } = SchemaValidator<TransactionDomainModel>(
   {
+    $id: 'Transaction',
     type: 'object',
     properties: {
       transaction_id: uuidSchema,
@@ -121,6 +122,7 @@ export const {
   validate: validateTransactionOperationDomainModel,
   $schema: TransactionOperationSchema
 } = SchemaValidator<TransactionOperationDomainModel>({
+  $id: 'TransactionOperation',
   type: 'object',
   properties: {
     transaction_id: uuidSchema,
@@ -136,6 +138,7 @@ export const {
   validate: validateTransactionStatusDomainModel,
   $schema: TransactionStatusSchema
 } = SchemaValidator<TransactionStatusDomainModel>({
+  $id: 'TransactionStatus',
   type: 'object',
   properties: {
     transaction_id: uuidSchema,
@@ -155,8 +158,4 @@ export const { validate: validateTransactionIds } = SchemaValidator<UUID[]>({
   items: uuidSchema
 })
 
-export const schemas: { name: string; schema: any }[] = [
-  { name: 'TransactionSchema', schema: TransactionSchema },
-  { name: 'TransactionOperationSchema', schema: TransactionOperationSchema },
-  { name: 'TransactionStatusSchema', schema: TransactionStatusSchema }
-]
+export const schemas = [TransactionSchema, TransactionOperationSchema, TransactionStatusSchema]

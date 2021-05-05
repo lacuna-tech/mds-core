@@ -27,7 +27,7 @@ paths:
                 type: object
                 properties:
                   version:
-                    $ref: "#/components/schemas/Version"
+                    $ref: "../schema-gen/TransactionApiVersionSchema.json"
                   transaction:
                     $ref: "../schema-gen/TransactionSchema.json"
         "400":
@@ -92,7 +92,7 @@ paths:
                 type: object
                 properties:
                   version:
-                    $ref: "#/components/schemas/Version"
+                    $ref: "../schema-gen/TransactionApiVersionSchema.json"
                   links:
                     type: object
                     properties:
@@ -137,7 +137,7 @@ paths:
                 type: object
                 properties:
                   version:
-                    $ref: "#/components/schemas/Version"
+                    $ref: "../schema-gen/TransactionApiVersionSchema.json"
                   transactions:
                     type: array
                     items:
@@ -165,7 +165,7 @@ paths:
                 type: object
                 properties:
                   version:
-                    $ref: "#/components/schemas/Version"
+                    $ref: "../schema-gen/TransactionApiVersionSchema.json"
                   transaction:
                     $ref: "../schema-gen/TransactionSchema.json"
         "404":
@@ -189,7 +189,7 @@ paths:
                 type: object
                 properties:
                   version:
-                    $ref: "#/components/schemas/Version"
+                    $ref: "../schema-gen/TransactionApiVersionSchema.json"
                   operations:
                     type: array
                     items:
@@ -220,7 +220,7 @@ paths:
                 type: object
                 properties:
                   version:
-                    $ref: "#/components/schemas/Version"
+                    $ref: "../schema-gen/TransactionApiVersionSchema.json"
                   operation:
                     $ref: "../schema-gen/TransactionOperationSchema.json"
         "400":
@@ -246,7 +246,7 @@ paths:
                 type: object
                 properties:
                   version:
-                    $ref: "#/components/schemas/Version"
+                    $ref: "../schema-gen/TransactionApiVersionSchema.json"
                   statuses:
                     type: array
                     items:
@@ -277,7 +277,7 @@ paths:
                 type: object
                 properties:
                   version:
-                    $ref: "#/components/schemas/Version"
+                    $ref: "../schema-gen/TransactionApiVersionSchema.json"
                   status:
                     $ref: "../schema-gen/TransactionStatusSchema.json"
         "400":
@@ -312,7 +312,7 @@ paths:
                 type: object
                 properties:
                   version:
-                    $ref: "#/components/schemas/Version"
+                    $ref: "../schema-gen/TransactionApiVersionSchema.json"
                   statuses:
                     type: object
                     additionalProperties:
@@ -328,12 +328,6 @@ paths:
 
 components:
   schemas:
-    Version:
-      description: Current API version
-      type: number
-      format: f32
-      example:
-        value: 0.0.1
     Timestamp:
       description: Timestamp in Milliseconds since Epoch
       type: integer

@@ -21,7 +21,6 @@
           "content": {
             "application/json": {
               "schema": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "transaction_id": {
@@ -113,7 +112,10 @@
                   "type": "object",
                   "properties": {
                     "version": {
-                      "$ref": "#/components/schemas/Version"
+                      "type": "number",
+                      "example": [
+                        "0.0.1"
+                      ]
                     },
                     "transaction": {
                       "$ref": "#/paths/~1transaction/post/requestBody/content/application~1json/schema"
@@ -223,7 +225,7 @@
                   "type": "object",
                   "properties": {
                     "version": {
-                      "$ref": "#/components/schemas/Version"
+                      "$ref": "#/paths/~1transaction/post/responses/201/content/application~1json/schema/properties/version"
                     },
                     "links": {
                       "type": "object",
@@ -289,7 +291,7 @@
                   "type": "object",
                   "properties": {
                     "version": {
-                      "$ref": "#/components/schemas/Version"
+                      "$ref": "#/paths/~1transaction/post/responses/201/content/application~1json/schema/properties/version"
                     },
                     "transactions": {
                       "type": "array",
@@ -332,7 +334,7 @@
                   "type": "object",
                   "properties": {
                     "version": {
-                      "$ref": "#/components/schemas/Version"
+                      "$ref": "#/paths/~1transaction/post/responses/201/content/application~1json/schema/properties/version"
                     },
                     "transaction": {
                       "$ref": "#/paths/~1transaction/post/requestBody/content/application~1json/schema"
@@ -369,7 +371,7 @@
                   "type": "object",
                   "properties": {
                     "version": {
-                      "$ref": "#/components/schemas/Version"
+                      "$ref": "#/paths/~1transaction/post/responses/201/content/application~1json/schema/properties/version"
                     },
                     "operations": {
                       "type": "array",
@@ -417,7 +419,7 @@
                   "type": "object",
                   "properties": {
                     "version": {
-                      "$ref": "#/components/schemas/Version"
+                      "$ref": "#/paths/~1transaction/post/responses/201/content/application~1json/schema/properties/version"
                     },
                     "operation": {
                       "$ref": "#/paths/~1transactions~1%7Btransaction_id%7D~1statuses/post/requestBody/content/application~1json/schema"
@@ -457,7 +459,7 @@
                   "type": "object",
                   "properties": {
                     "version": {
-                      "$ref": "#/components/schemas/Version"
+                      "$ref": "#/paths/~1transaction/post/responses/201/content/application~1json/schema/properties/version"
                     },
                     "statuses": {
                       "type": "array",
@@ -491,7 +493,6 @@
           "content": {
             "application/json": {
               "schema": {
-                "$schema": "http://json-schema.org/draft-07/schema#",
                 "type": "object",
                 "properties": {
                   "transaction_id": {
@@ -543,10 +544,9 @@
                   "type": "object",
                   "properties": {
                     "version": {
-                      "$ref": "#/components/schemas/Version"
+                      "$ref": "#/paths/~1transaction/post/responses/201/content/application~1json/schema/properties/version"
                     },
                     "status": {
-                      "$schema": "http://json-schema.org/draft-07/schema#",
                       "type": "object",
                       "properties": {
                         "transaction_id": {
@@ -633,7 +633,7 @@
                   "type": "object",
                   "properties": {
                     "version": {
-                      "$ref": "#/components/schemas/Version"
+                      "$ref": "#/paths/~1transaction/post/responses/201/content/application~1json/schema/properties/version"
                     },
                     "statuses": {
                       "type": "object",
@@ -664,14 +664,6 @@
   },
   "components": {
     "schemas": {
-      "Version": {
-        "description": "Current API version",
-        "type": "number",
-        "format": "f32",
-        "example": {
-          "value": "0.0.1"
-        }
-      },
       "Timestamp": {
         "description": "Timestamp in Milliseconds since Epoch",
         "type": "integer",

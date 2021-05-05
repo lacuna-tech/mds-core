@@ -15,9 +15,19 @@
  */
 
 import { ApiVersionMiddleware } from '@mds-core/mds-api-server'
+import { SchemaValidator } from '@mds-core/mds-schema-validators'
 import { TRANSACTION_API_SUPPORTED_VERSIONS, TRANSACTION_API_DEFAULT_VERSION } from '../@types'
 
 export const TransactionApiVersionMiddleware = ApiVersionMiddleware(
   'application/vnd.mds.transaction+json',
   TRANSACTION_API_SUPPORTED_VERSIONS
 ).withDefaultVersion(TRANSACTION_API_DEFAULT_VERSION)
+
+export const { $schema: TransactionApiVersionSchema } = SchemaValidator<{ version: number }>(
+  {
+    $id: 'TransactionApiVersion',
+    type: 'number',
+    example: [...TRANSACTION_API_SUPPORTED_VERSIONS]
+  },
+  { keywords: ['example'] }
+)
