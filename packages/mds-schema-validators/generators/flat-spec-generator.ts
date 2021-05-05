@@ -1,6 +1,7 @@
 import $RefParser from '@apidevtools/json-schema-ref-parser'
 import { writeFileSync } from 'fs'
 
+/* istanbul ignore next */
 export const GenerateFlatSpec = (path: string) => {
   const SPEC_DIR = `${path}/spec`
 

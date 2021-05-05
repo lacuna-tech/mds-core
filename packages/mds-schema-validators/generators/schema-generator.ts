@@ -8,6 +8,7 @@ import { SchemaObject } from 'ajv'
  * @param path Path to caller package. Typically, the invoker should pass in `__dirname` here.
  * @example GenerateSchemaFiles(someSchemaObjects, __dirname)
  */
+/* istanbul ignore next */
 export const GenerateSchemaFiles = (schemas: SchemaObject[], path: string) => {
   const SCHEMA_DIR = `${path}/schema-gen`
 
