@@ -1,6 +1,6 @@
 {
-  "type": "number",
-  "format": "float",
+  "description": "API version in SemVer",
+  "type": "string",
   "example": [
     "0.0.1"
   ]

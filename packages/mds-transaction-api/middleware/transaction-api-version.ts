@@ -26,8 +26,8 @@ export const TransactionApiVersionMiddleware = ApiVersionMiddleware(
 export const { $schema: TransactionApiVersionSchema } = SchemaValidator<{ version: number }>(
   {
     $id: 'TransactionApiVersion',
-    type: 'number',
-    format: 'float',
+    description: 'API version in SemVer',
+    type: 'string',
     example: [...TRANSACTION_API_SUPPORTED_VERSIONS]
   },
   { keywords: ['example'] }
