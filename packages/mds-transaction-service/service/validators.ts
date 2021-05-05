@@ -84,7 +84,7 @@ const { $schema: receiptSchema } = SchemaValidator<ReceiptDomainModel>(
       origin_url: {
         description: 'Where did this transaction originate?',
         type: 'string',
-        format: 'url',
+        format: 'uri',
         example: 'https://mds.coruscant.com/compliance/snapshot/c78280ff-4e58-4e30-afa9-d72673037799'
       },
       receipt_details: {
