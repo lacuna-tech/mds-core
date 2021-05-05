@@ -113,6 +113,7 @@
                   "properties": {
                     "version": {
                       "type": "number",
+                      "format": "float",
                       "example": [
                         "0.0.1"
                       ]

@@ -1013,7 +1013,7 @@ importers:
       '@mds-core/mds-types': 0.1.25
       '@mds-core/mds-utils': 0.1.28
       ajv: 8.2.0
-      ajv-formats: 2.0.2
+      ajv-formats: 2.1.0
       joi: 17.4.0
       joi-to-json: 1.2.0
     dependencies:
@@ -1022,7 +1022,7 @@ importers:
       '@mds-core/mds-types': link:../mds-types
       '@mds-core/mds-utils': link:../mds-utils
       ajv: 8.2.0
-      ajv-formats: 2.0.2
+      ajv-formats: 2.1.0
       joi: 17.4.0
       joi-to-json: 1.2.0
 
@@ -3417,8 +3417,8 @@ packages:
       indent-string: 4.0.0
     dev: true
 
-  /ajv-formats/2.0.2:
-    resolution: {integrity: sha512-Brah4Uo5/U8v76c6euTwtjVFFaVishwnJrQBYpev1JRh4vjA1F4HY3UzQez41YUCszUCXKagG8v6eVRBHV1gkw==}
+  /ajv-formats/2.1.0:
+    resolution: {integrity: sha512-USH2jBb+C/hIpwD2iRjp0pe0k+MvzG0mlSn/FIdCgQhUb9ALPRjt2KIQdfZDS9r0ZIeUAg7gOu9KL0PFqGqr5Q==}
     peerDependenciesMeta:
       ajv:
         optional: true

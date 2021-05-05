@@ -27,6 +27,7 @@ export const { $schema: TransactionApiVersionSchema } = SchemaValidator<{ versio
   {
     $id: 'TransactionApiVersion',
     type: 'number',
+    format: 'float',
     example: [...TRANSACTION_API_SUPPORTED_VERSIONS]
   },
   { keywords: ['example'] }
