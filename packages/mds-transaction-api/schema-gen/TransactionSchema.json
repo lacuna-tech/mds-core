@@ -8,7 +8,8 @@
     },
     "provider_id": {
       "type": "string",
-      "format": "uuid"
+      "format": "uuid",
+      "description": "What Provider is being charged for this transaction?"
     },
     "device_id": {
       "type": "string",
@@ -50,10 +51,13 @@
           "maximum": 99999999999999
         },
         "origin_url": {
+          "description": "Where did this transaction originate?",
           "type": "string",
-          "format": "url"
+          "format": "url",
+          "example": "https://mds.coruscant.com/compliance/snapshot/c78280ff-4e58-4e30-afa9-d72673037799"
         },
         "receipt_details": {
+          "description": "Free-form object which describes the details of this transaction. Highly use-case dependent.",
           "type": "object"
         }
       },

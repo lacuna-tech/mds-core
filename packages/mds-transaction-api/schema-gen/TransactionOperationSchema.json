@@ -27,6 +27,7 @@
       ]
     },
     "author": {
+      "description": "Who/what executed this operation?",
       "type": "string"
     }
   },

@@ -75,35 +75,47 @@ const timestampSchema = { type: 'integer', minimum: 100_000_000_000, maximum: 99
 //   required: ['duration', 'end_timestamp', 'geography_id', 'start_timestamp', 'trip_events', 'trip_id', 'vehicle_type']
 // })
 
-const { $schema: receiptSchema } = SchemaValidator<ReceiptDomainModel>({
-  type: 'object',
-  properties: {
-    receipt_id: uuidSchema,
-    timestamp: timestampSchema,
-    origin_url: { type: 'string', format: 'url' },
-    receipt_details: {
-      type: 'object'
-    }
+const { $schema: receiptSchema } = SchemaValidator<ReceiptDomainModel>(
+  {
+    type: 'object',
+    properties: {
+      receipt_id: uuidSchema,
+      timestamp: timestampSchema,
+      origin_url: {
+        description: 'Where did this transaction originate?',
+        type: 'string',
+        format: 'url',
+        example: 'https://mds.coruscant.com/compliance/snapshot/c78280ff-4e58-4e30-afa9-d72673037799'
+      },
+      receipt_details: {
+        description: 'Free-form object which describes the details of this transaction. Highly use-case dependent.',
+        type: 'object'
+      }
+    },
+    required: ['origin_url', 'receipt_details', 'receipt_id', 'timestamp']
   },
-  required: ['origin_url', 'receipt_details', 'receipt_id', 'timestamp']
-})
+  { keywords: ['example'] }
+)
 
 export const {
   validate: validateTransactionDomainModel,
   $schema: TransactionSchema
-} = SchemaValidator<TransactionDomainModel>({
-  type: 'object',
-  properties: {
-    transaction_id: uuidSchema,
-    provider_id: uuidSchema,
-    device_id: { ...uuidSchema, nullable: true },
-    timestamp: timestampSchema,
-    fee_type: { type: 'string', enum: [...FEE_TYPE] },
-    amount: { type: 'integer' },
-    receipt: receiptSchema
+} = SchemaValidator<TransactionDomainModel>(
+  {
+    type: 'object',
+    properties: {
+      transaction_id: uuidSchema,
+      provider_id: { ...uuidSchema, description: 'What Provider is being charged for this transaction?' },
+      device_id: { ...uuidSchema, nullable: true },
+      timestamp: timestampSchema,
+      fee_type: { type: 'string', enum: [...FEE_TYPE] },
+      amount: { type: 'integer' },
+      receipt: receiptSchema
+    },
+    required: ['amount', 'device_id', 'fee_type', 'provider_id', 'receipt', 'timestamp', 'transaction_id']
   },
-  required: ['amount', 'device_id', 'fee_type', 'provider_id', 'receipt', 'timestamp', 'transaction_id']
-})
+  { keywords: ['example'] }
+)
 
 export const {
   validate: validateTransactionOperationDomainModel,
@@ -115,7 +127,7 @@ export const {
     operation_id: uuidSchema,
     timestamp: timestampSchema,
     operation_type: { type: 'string', enum: [...TRANSACTION_OPERATION_TYPE] },
-    author: { type: 'string' }
+    author: { description: 'Who/what executed this operation?', type: 'string' }
   },
   required: ['author', 'operation_id', 'operation_type', 'timestamp', 'transaction_id']
 })
@@ -130,7 +142,7 @@ export const {
     status_id: uuidSchema,
     timestamp: timestampSchema,
     status_type: { type: 'string', enum: [...TRANSACTION_STATUS_TYPE] },
-    author: { type: 'string' }
+    author: { description: 'Who/what updated the status of the transaction?', type: 'string' }
   },
   required: ['author', 'status_id', 'status_type', 'timestamp', 'transaction_id']
 })

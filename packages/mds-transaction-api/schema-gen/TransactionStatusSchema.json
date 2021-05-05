@@ -25,6 +25,7 @@
       ]
     },
     "author": {
+      "description": "Who/what updated the status of the transaction?",
       "type": "string"
     }
   },
