@@ -17,9 +17,10 @@
     "watch": "pnpm build && nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec pnpm ts-node --",
     "generate": "pnpm generate:schema && pnpm generate:flatspec",
     "generate:schema": "ts-node ./generate-schemas.ts && git add schema-gen",
-    "generate:flatspec": "speccy resolve spec/spec.yaml > spec/flat-spec.yaml && git add spec/flat-spec.yaml"
+    "generate:flatspec": "ts-node ./generate-flat-spec.ts && git add spec/flat-spec.json"
   },
   "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "9.0.7",
     "@mds-core/mds-api-helpers": "0.1.28",
     "@mds-core/mds-api-server": "0.1.28",
     "@mds-core/mds-logger": "0.2.2",
@@ -33,7 +34,6 @@
     "joi": "17.4.0"
   },
   "devDependencies": {
-    "@mds-core/mds-test-data": "0.1.28",
-    "speccy": "0.11.0"
+    "@mds-core/mds-test-data": "0.1.28"
   }
 }

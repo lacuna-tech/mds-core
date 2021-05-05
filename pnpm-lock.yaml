@@ -1082,6 +1082,7 @@ importers:
 
   packages/mds-transaction-api:
     specifiers:
+      '@apidevtools/json-schema-ref-parser': 9.0.7
       '@mds-core/mds-api-helpers': 0.1.28
       '@mds-core/mds-api-server': 0.1.28
       '@mds-core/mds-logger': 0.2.2
@@ -1096,6 +1097,7 @@ importers:
       joi: 17.4.0
       speccy: 0.11.0
     dependencies:
+      '@apidevtools/json-schema-ref-parser': 9.0.7
       '@mds-core/mds-api-helpers': link:../mds-api-helpers
       '@mds-core/mds-api-server': link:../mds-api-server
       '@mds-core/mds-logger': link:../mds-logger
@@ -1179,6 +1181,14 @@ importers:
       webpack: 5.30.0
 
 packages:
+
+  /@apidevtools/json-schema-ref-parser/9.0.7:
+    resolution: {integrity: sha512-QdwOGF1+eeyFh+17v2Tz626WX0nucd1iKOm6JUTUvCZdbolblCOOQCxGrQPY0f7jEhn36PiAWqZnsC2r5vmUWg==}
+    dependencies:
+      '@jsdevtools/ono': 7.1.3
+      call-me-maybe: 1.0.1
+      js-yaml: 3.14.1
+    dev: false
 
   /@babel/code-frame/7.12.11:
     resolution: {integrity: sha512-Zt1yodBx1UcyiePMSkWnU4hPqhwq7hGi2nFL1LeA3EUl+q2LQx16MISgJ0+z7dnmgvP9QtIleuETGOiOH1RcIw==}
@@ -1772,6 +1782,10 @@ packages:
       '@types/yargs': 15.0.13
       chalk: 4.1.1
     dev: true
+
+  /@jsdevtools/ono/7.1.3:
+    resolution: {integrity: sha512-4JQNk+3mVzK3xh2rqd6RB4J46qUR19azEHBneZyTZM+c456qOrbbM/5xcR8huNCCcbVt7+UmizG6GuUvPvKUYg==}
+    dev: false
 
   /@lerna/add/4.0.0:
     resolution: {integrity: sha512-cpmAH1iS3k8JBxNvnMqrGTTjbY/ZAiKa1ChJzFevMYY3eeqbvhsBKnBcxjRXtdrJ6bd3dCQM+ZtK+0i682Fhng==}
@@ -3586,7 +3600,6 @@ packages:
     resolution: {integrity: sha512-o5Roy6tNG4SL/FOkCAN6RzjiakZS25RLYFrcMttJqbdd8BWrnA+fGz57iN5Pb06pvBGvl5gQ0B48dJlslXvoTg==}
     dependencies:
       sprintf-js: 1.0.3
-    dev: true
 
   /argparse/2.0.1:
     resolution: {integrity: sha512-8+9WqebbFzpX9OR+Wa6O29asIogeRMzcGtAINdpMHHyAg10f05aSFVBbcEqGf/PXw1EjAZ+q2/bEBg3DvurK3Q==}
@@ -4186,7 +4199,6 @@ packages:
 
   /call-me-maybe/1.0.1:
     resolution: {integrity: sha1-JtII6onje1y95gJQoV8DHBak1ms=}
-    dev: true
 
   /callsites/3.1.0:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
@@ -5740,7 +5752,6 @@ packages:
     resolution: {integrity: sha512-eGuFFw7Upda+g4p+QHvnW0RyTX/SVeJBDM/gCtMARO0cLuT2HcEKnTPvhjV6aGeqrCB/sbNop0Kszm0jsaWU4A==}
     engines: {node: '>=4'}
     hasBin: true
-    dev: true
 
   /esquery/1.4.0:
     resolution: {integrity: sha512-cCDispWt5vHHtwMY2YrAQ4ibFkAL8RbH5YGBnZBc90MolvvfkkQcJro/aZiAQUlQ3qgrYS6D6v8Gc5G5CQsc9w==}
@@ -7868,7 +7879,6 @@ packages:
     dependencies:
       argparse: 1.0.10
       esprima: 4.0.1
-    dev: true
 
   /js-yaml/4.0.0:
     resolution: {integrity: sha512-pqon0s+4ScYUvX30wxQi3PogGFAlUyH0awepWvwkj4jD4v+ova3RiYw8bmA6x2rDrEaj8i/oWKoRxpVNW+Re8Q==}
@@ -11704,7 +11714,6 @@ packages:
 
   /sprintf-js/1.0.3:
     resolution: {integrity: sha1-BOaSb2YolTVPPdAVIDYzuFcpfiw=}
-    dev: true
 
   /sshpk/1.16.1:
     resolution: {integrity: sha512-HXXqVUq7+pcKeLqqZj6mHFUMvXtOJt1uoUx09pFW6011inTMxqI8BA8PM95myrIyyKwdnzjdFjLiE6KBPVtJIg==}
