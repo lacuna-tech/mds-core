@@ -4,7 +4,19 @@ import { TransactionApiVersionSchema } from './middleware'
 
 const SCHEMA_DIR = 'schema-gen'
 
-if (!existsSync(SCHEMA_DIR)) mkdirSync(SCHEMA_DIR)
+const README = `# Schema-Gen
+
+The files in this folder are 100% auto-generated and **should not be manually modified**.
+
+## Usage
+
+To add/remove schemas from this folder, please modify the contents of this package's [generate-schemas.ts](../generate-schemas.ts) to change what's generated.
+`
+
+if (!existsSync(SCHEMA_DIR)) {
+  mkdirSync(SCHEMA_DIR)
+  writeFileSync(`${SCHEMA_DIR}/README.md`, README)
+}
 
 const schemas = [...transactionServiceSchemas, TransactionApiVersionSchema]
 
