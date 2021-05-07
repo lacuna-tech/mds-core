@@ -2,7 +2,7 @@
   "description": "API version in SemVer",
   "type": "string",
   "enum": [
-    "0.0.1"
+    "0.1.0"
   ],
-  "example": "0.0.1"
+  "example": "0.1.0"
 }

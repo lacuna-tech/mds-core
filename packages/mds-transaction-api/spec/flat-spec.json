@@ -2,7 +2,7 @@
   "openapi": "3.0.2",
   "info": {
     "title": "MDS Transaction API",
-    "version": "0.0.1"
+    "version": "0.1.0"
   },
   "servers": [
     {
@@ -114,9 +114,9 @@
                       "description": "API version in SemVer",
                       "type": "string",
                       "enum": [
-                        "0.0.1"
+                        "0.1.0"
                       ],
-                      "example": "0.0.1"
+                      "example": "0.1.0"
                     },
                     "transaction": {
                       "$ref": "#/paths/~1transaction/post/requestBody/content/application~1json/schema"
