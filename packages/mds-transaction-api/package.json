@@ -16,8 +16,8 @@
     "ts-node": "DOTENV_CONFIG_PATH=../../.env node -r ts-node/register -r dotenv/config",
     "watch": "pnpm build && nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec pnpm ts-node --",
     "generate": "pnpm generate:schema && pnpm generate:flatspec",
-    "generate:schema": "ts-node ./generate-schemas.ts && git add schema-gen",
-    "generate:flatspec": "ts-node ./generate-flat-spec.ts && git add spec/flat-spec.json"
+    "generate:flatspec": "ts-node ./generate-flat-spec.ts && git add spec/flat-spec.json",
+    "generate:schema": "ts-node ./generate-schemas.ts && git add schema-gen"
   },
   "dependencies": {
     "@mds-core/mds-api-helpers": "0.1.28",
