@@ -97,8 +97,8 @@ const STREAM_MAXLEN: { [S in Stream]: number } = {
 
 async function getClient() {
   if (!cachedClient) {
-    const { REDIS_HOST, REDIS_PORT } = process.env
-    const { host = 'localhost', port = 6379 } = { host: REDIS_HOST, port: REDIS_PORT }
+    const { REDIS_HOST, REDIS_PORT, REDIS_PASS } = process.env
+    const { host = 'localhost', port = 6379, password } = { host: REDIS_HOST, port: REDIS_PORT, password: REDIS_PASS }
     if (!REDIS_PORT) {
       logger.info(`no redis port found, falling back to ${port}`)
     }
@@ -107,7 +107,7 @@ async function getClient() {
     }
 
     logger.info(`connecting to redis on ${host}:${port}`)
-    cachedClient = redis.createClient(Number(port), host)
+    cachedClient = redis.createClient(Number(port), host, { password })
     cachedClient.on('error', async err => {
       logger.error(`redis error ${err}`)
     })
@@ -159,10 +159,20 @@ async function writeStreamBatch(stream: Stream, field: string, values: unknown[]
 // put basics of vehicle in the cache
 async function writeDevice(device: Device) {
   if (env.NATS) {
-    await AgencyStreamNats.writeDevice(device)
+    try {
+      await AgencyStreamNats.writeDevice(device)
+    } catch (err) {
+      logger.error('Failed to write device to NATS', err)
+      throw err
+    }
   }
   if (env.KAFKA_HOST) {
-    await AgencyStreamKafka.writeDevice(device)
+    try {
+      await AgencyStreamKafka.writeDevice(device)
+    } catch (err) {
+      logger.error('Failed to write device to Kafka', err)
+      throw err
+    }
   }
   return writeStream(DEVICE_INDEX_STREAM, 'data', device)
 }
@@ -180,10 +190,20 @@ async function writeEvent(event: VehicleEvent) {
 // put latest locations in the cache
 async function writeTelemetry(telemetry: Telemetry[]) {
   if (env.NATS) {
-    await AgencyStreamNats.writeTelemetry(telemetry)
+    try {
+      await AgencyStreamNats.writeTelemetry(telemetry)
+    } catch (err) {
+      logger.error('Failed to write telemetry to NATS', err)
+      throw err
+    }
   }
   if (env.KAFKA_HOST) {
-    await AgencyStreamKafka.writeTelemetry(telemetry)
+    try {
+      await AgencyStreamKafka.writeTelemetry(telemetry)
+    } catch (err) {
+      logger.error('Failed to write telemetry to Kafka', err)
+      throw err
+    }
   }
   const start = now()
   await writeStreamBatch(DEVICE_RAW_STREAM, 'telemetry', telemetry)
