@@ -238,11 +238,15 @@ export const providers: Readonly<{ [P in PROVIDER_ID]: Readonly<Provider> }> = O
   })
 })
 
+const isProviderId = (provider_id: unknown): provider_id is PROVIDER_ID => {
+  return typeof provider_id === 'string' && providers[provider_id as PROVIDER_ID] !== undefined
+}
+
 /**
  * convert provider_id to provider name (if available), or a subset of the UUID for humans
  * @param  provider_id
  * @return name or provider_id substring
  */
-export function providerName(provider_id: string): string {
-  return provider_id in providers ? providers[provider_id].provider_name : provider_id
+export const providerName = (provider_id: string): string => {
+  return isProviderId(provider_id) ? providers[provider_id].provider_name : provider_id
 }
