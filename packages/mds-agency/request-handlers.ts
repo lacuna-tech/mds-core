@@ -336,6 +336,12 @@ export const submitVehicleEvent = async (
     const failure = (await badEvent(device, event)) || (event.telemetry ? badTelemetry(event.telemetry) : null)
     // TODO unify with fail() above
     if (failure) {
+      await stream.writeEventError({
+        provider_id,
+        data: event,
+        recorded: now(),
+        error_message: failure.error_description
+      })
       logger.info('event failure', { name, failure, event })
       return res.status(400).send(failure)
     }
