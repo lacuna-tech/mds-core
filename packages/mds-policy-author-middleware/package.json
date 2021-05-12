@@ -1,7 +1,6 @@
 {
   "name": "@mds-core/mds-policy-author-middleware",
   "version": "0.1.0",
-  "private": true,
   "description": "MDS Policy Author API Shared Middleware",
   "author": "City of Los Angeles",
   "main": "dist/index.js",
