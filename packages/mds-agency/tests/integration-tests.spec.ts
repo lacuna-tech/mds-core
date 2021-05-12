@@ -631,10 +631,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it.only('verifies post device status bogus DEVICE_UUID', done => {
-    const mockErrorWriter = jest.spyOn(stream, 'writeEventError')
-    mockErrorWriter.mockImplementation()
-
+  it('verifies post device status bogus DEVICE_UUID', done => {
     request
       .post(pathPrefix('/vehicles/' + 'bogus' + '/event'))
       .set('Authorization', AUTH)
@@ -649,8 +646,6 @@ describe('Tests API', () => {
         test.string(result.body.error_description).contains('invalid')
         done(err)
       })
-
-    expect(mockErrorWriter).toHaveBeenCalledWith('foo')
   })
   it('verifies post device status provider mismatch', done => {
     request
