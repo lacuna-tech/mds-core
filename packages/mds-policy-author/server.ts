@@ -14,13 +14,16 @@
 import { ApiServer, HttpServer } from '@mds-core/mds-api-server'
 import { ModalityPolicyTypeInfo } from '@mds-core/mds-types'
 import express from 'express'
-import { injectModalityValidator, injectVersion } from '@mds-core/mds-policy-author-middleware'
-import { api } from '@mds-core/mds-policy-author'
+import { api } from './api'
+import { injectVersionMiddleware, injectModalityValidator } from './middleware'
 
+/**
+ * Runs API server with Vanilla MDS Policy (no foreign property injection)
+ */
 HttpServer(
   api<ModalityPolicyTypeInfo>(
     injectModalityValidator(
-      injectVersion(
+      injectVersionMiddleware(
         ApiServer((app: express.Express) => {
           return app
         })
