@@ -19,6 +19,8 @@ import { injectVersionMiddleware, injectModalityValidator } from './middleware'
 
 /**
  * Runs API server with Vanilla MDS Policy (no foreign property injection)
+ *
+ * Note: The ordering of injection here is important, we need to make sure that the versioning middleware is applied even if there's a validation error.
  */
 HttpServer(
   api<ModalityPolicyTypeInfo>(
