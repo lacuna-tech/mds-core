@@ -25,7 +25,7 @@ const { TENANT_ID } = getEnvVar({
 })
 const deviceProducer = NatsStreamProducer<Device>(`${TENANT_ID}.device`)
 const eventProducer = NatsStreamProducer<VehicleEvent>(`${TENANT_ID}.event`)
-const eventErrorProducer = NatsStreamProducer<Partial<VehicleEvent>>(`${TENANT_ID}.event-error`)
+const eventErrorProducer = NatsStreamProducer<Partial<VehicleEvent>>(`${TENANT_ID}.event.error`)
 const telemetryProducer = NatsStreamProducer<Telemetry>(`${TENANT_ID}.telemetry`)
 const tripMetadataProducer = NatsStreamProducer<TripMetadata>(`${TENANT_ID}.trip_metadata`)
 

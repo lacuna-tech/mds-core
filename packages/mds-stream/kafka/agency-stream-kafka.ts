@@ -25,7 +25,7 @@ const { TENANT_ID } = getEnvVar({
 })
 const deviceProducer = KafkaStreamProducer<Device>(`${TENANT_ID}.device`)
 const eventProducer = KafkaStreamProducer<VehicleEvent>(`${TENANT_ID}.event`)
-const eventErrorProducer = KafkaStreamProducer<Partial<VehicleEvent>>(`${TENANT_ID}.event-error`)
+const eventErrorProducer = KafkaStreamProducer<Partial<VehicleEvent>>(`${TENANT_ID}.event.error`)
 const telemetryProducer = KafkaStreamProducer<Telemetry>(`${TENANT_ID}.telemetry`)
 const tripMetadataProducer = KafkaStreamProducer<TripMetadata>(`${TENANT_ID}.trip_metadata`)
 
