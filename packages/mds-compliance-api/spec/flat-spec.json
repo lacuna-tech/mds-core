@@ -12,6 +12,14 @@
   "paths": {
     "/violation_periods": {
       "get": {
+        "security": [
+          {
+            "bearerAuth": [
+              "compliance:read",
+              "compliance:read:provider"
+            ]
+          }
+        ],
         "summary": "Get violation periods",
         "parameters": [
           {
@@ -57,6 +65,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "version": {
+                      "$ref": "#/components/schemas/ComplianceApiVersion"
+                    },
                     "start_time": {
                       "$ref": "#/components/schemas/Timestamp"
                     },
@@ -80,6 +91,14 @@
     },
     "/violation_details_snapshot": {
       "get": {
+        "security": [
+          {
+            "bearerAuth": [
+              "compliance:read",
+              "compliance:read:provider"
+            ]
+          }
+        ],
         "summary": "Get violation snapshot details",
         "parameters": [
           {
@@ -122,6 +141,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "version": {
+                      "$ref": "#/components/schemas/ComplianceApiVersion"
+                    },
                     "data": {
                       "$ref": "#/components/schemas/ComplianceSnapshot"
                     }
@@ -136,6 +158,14 @@
     },
     "/compliance_snapshot_ids": {
       "get": {
+        "security": [
+          {
+            "bearerAuth": [
+              "compliance:read",
+              "compliance:read:provider"
+            ]
+          }
+        ],
         "summary": "Get compliance snapshot_ids",
         "parameters": [
           {
@@ -155,6 +185,9 @@
                 "schema": {
                   "type": "object",
                   "properties": {
+                    "version": {
+                      "$ref": "#/components/schemas/ComplianceApiVersion"
+                    },
                     "data": {
                       "type": "array",
                       "items": {
@@ -180,6 +213,14 @@
       }
     },
     "schemas": {
+      "ComplianceApiVersion": {
+        "description": "API Version in SemVer",
+        "type": "string",
+        "enum": [
+          "1.1.0"
+        ],
+        "example": "1.1.0"
+      },
       "Timestamp": {
         "description": "Timestamp in Milliseconds since Epoch",
         "type": "integer",
