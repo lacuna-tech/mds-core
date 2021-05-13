@@ -14,13 +14,27 @@
  * limitations under the License.
  */
 
-import { ReadWriteRepository } from '@mds-core/mds-repository'
+import { ReadWriteRepository, RepositoryError } from '@mds-core/mds-repository'
+import { UUID } from '@mds-core/mds-types'
+import { EventDomainModel } from '../@types'
 import entities from './entities'
+import { EventEntity } from './entities/event-entity'
+import { EventEntityToDomain } from './mappers'
 import migrations from './migrations'
 
 class IngestReadWriteRepository extends ReadWriteRepository {
   constructor() {
     super('ingest', { entities, migrations })
+  }
+  public getEvents = async (transaction_id: UUID): Promise<EventDomainModel[]> => {
+    const { connect } = this
+    try {
+      const connection = await connect('ro')
+      const entities = await connection.getRepository(EventEntity).find({ where: { transaction_id } })
+      return entities.map(EventEntityToDomain.map)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
   }
 }
 
