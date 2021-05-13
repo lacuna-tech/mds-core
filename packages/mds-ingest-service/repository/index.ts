@@ -26,11 +26,11 @@ class IngestReadWriteRepository extends ReadWriteRepository {
   constructor() {
     super('ingest', { entities, migrations })
   }
-  public getEvents = async (transaction_id: UUID): Promise<EventDomainModel[]> => {
+  public getEvents = async (provider_id: UUID): Promise<EventDomainModel[]> => {
     const { connect } = this
     try {
       const connection = await connect('ro')
-      const entities = await connection.getRepository(EventEntity).find({ where: { transaction_id } })
+      const entities = await connection.getRepository(EventEntity).find({ where: { provider_id } })
       return entities.map(EventEntityToDomain.map)
     } catch (error) {
       throw RepositoryError(error)
