@@ -50,6 +50,14 @@ paths:
                     items:
                       $ref: "#/components/schemas/ComplianceAggregate"
           description: OK
+        "400":
+          description: Bad Parameters
+        "401":
+          description: Unauthorized
+        "403":
+          description: No Access Without Scope
+        "500":
+          description: Fatal Server Error
 
   /violation_details_snapshot:
     get:
@@ -89,6 +97,16 @@ paths:
                   data:
                     $ref: "#/components/schemas/ComplianceSnapshot"
           description: OK
+        "400":
+          description: Bad Parameters
+        "401":
+          description: Unauthorized
+        "403":
+          description: No Access Without Scope
+        "404":
+          description: Not Found
+        "500":
+          description: Fatal Server Error
 
   /compliance_snapshot_ids:
     get:
@@ -116,7 +134,12 @@ paths:
                     items:
                       $ref: "#/components/schemas/uuid"
           description: OK
-
+        "401":
+          description: Unauthorized
+        "403":
+          description: No Access Without Scope
+        "500":
+          description: Fatal Server Error
 components:
   securitySchemes:
     bearerAuth:
