@@ -14,24 +14,126 @@
  * limitations under the License.
  */
 
-import { ReadWriteRepository, RepositoryError } from '@mds-core/mds-repository'
+import { InsertReturning, ReadWriteRepository, RepositoryError } from '@mds-core/mds-repository'
 import { UUID } from '@mds-core/mds-types'
-import { EventDomainModel } from '../@types'
+import {
+  EventDomainModel,
+  EventDomainCreateModel,
+  TelemetryDomainCreateModel,
+  DeviceDomainCreateModel
+} from '../@types'
 import entities from './entities'
+import { DeviceEntity } from './entities/device-entity'
 import { EventEntity } from './entities/event-entity'
-import { EventEntityToDomain } from './mappers'
+import { TelemetryEntity } from './entities/telemetry-entity'
+import {
+  DeviceDomainToEntityCreate,
+  DeviceEntityToDomain,
+  EventDomainToEntityCreate,
+  EventEntityToDomain,
+  TelemetryDomainToEntityCreate,
+  TelemetryEntityToDomain
+} from './mappers'
 import migrations from './migrations'
+
+/**
+ * Aborts execution if not running under a test environment.
+ */
+const testEnvSafeguard = () => {
+  if (process.env.NODE_ENV !== 'test') {
+    throw new Error(`This method is only supported when executing tests`)
+  }
+}
 
 class IngestReadWriteRepository extends ReadWriteRepository {
   constructor() {
     super('ingest', { entities, migrations })
   }
-  public getEvents = async (provider_id: UUID): Promise<EventDomainModel[]> => {
+
+  public createEvents = async (events: EventDomainCreateModel[]) => {
+    const { connect } = this
+    try {
+      const connection = await connect('rw')
+      const { raw: entities }: InsertReturning<EventEntity> = await connection
+        .getRepository(EventEntity)
+        .createQueryBuilder()
+        .insert()
+        .values(events.map(EventDomainToEntityCreate.mapper()))
+        .returning('*')
+        .execute()
+      return entities.map(EventEntityToDomain.map)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  public createTelemetries = async (events: TelemetryDomainCreateModel[]) => {
+    const { connect } = this
+    try {
+      const connection = await connect('rw')
+      const { raw: entities }: InsertReturning<TelemetryEntity> = await connection
+        .getRepository(EventEntity)
+        .createQueryBuilder()
+        .insert()
+        .values(events.map(TelemetryDomainToEntityCreate.mapper()))
+        .returning('*')
+        .execute()
+      return entities.map(TelemetryEntityToDomain.map)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  public createDevices = async (events: DeviceDomainCreateModel[]) => {
+    const { connect } = this
+    try {
+      const connection = await connect('rw')
+      const { raw: entities }: InsertReturning<DeviceEntity> = await connection
+        .getRepository(EventEntity)
+        .createQueryBuilder()
+        .insert()
+        .values(events.map(DeviceDomainToEntityCreate.mapper()))
+        .returning('*')
+        .execute()
+      return entities.map(DeviceEntityToDomain.map)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  public getLastEventPerDevice = async (provider_id: UUID): Promise<EventDomainModel[]> => {
     const { connect } = this
     try {
       const connection = await connect('ro')
-      const entities = await connection.getRepository(EventEntity).find({ where: { provider_id } })
+      // const entities = await connection.getRepository(EventEntity).find({ where: { provider_id } })
+
+      const entities = await connection
+        .getRepository(EventEntity)
+        .createQueryBuilder('events')
+        .innerJoinAndSelect(
+          qb => {
+            return qb.select('device_id, max(timestamp) as max_time').from(EventEntity, 'e').where(provider_id)
+          },
+          'le',
+          'le.device_id = events.device_id AND le.max_time = events.timestamp'
+        )
+        .getMany()
+
       return entities.map(EventEntityToDomain.map)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  public deleteAll = async () => {
+    testEnvSafeguard()
+    const { connect } = this
+    try {
+      const connection = await connect('rw')
+      const repos = await Promise.all(
+        ['EventEntity', 'DeviceEntity', 'TelemetryEntity'].map(entity => connection.getRepository(entity))
+      )
+      await Promise.all(repos.map(repository => repository.query(`DELETE FROM ${repository.metadata.tableName};`)))
     } catch (error) {
       throw RepositoryError(error)
     }

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /**
  * Copyright 2020 City of Los Angeles
  *
@@ -17,6 +18,83 @@
 import { IngestServiceManager } from '../service/manager'
 import { IngestServiceClient } from '../client'
 import { IngestRepository } from '../repository'
+import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
+import { now, uuid } from '@mds-core/mds-utils'
+import { Device, VehicleEvent } from '@mds-core/mds-types'
+
+const DEVICE_UUID = 'ec551174-f324-4251-bfed-28d9f3f473fc'
+const TRIP_UUID = '1f981864-cc17-40cf-aea3-70fd985e2ea7'
+const TEST_TELEMETRY = {
+  device_id: DEVICE_UUID,
+  provider_id: TEST1_PROVIDER_ID,
+  gps: {
+    lat: 37.3382,
+    lng: -121.8863,
+    speed: 0,
+    hdop: 1,
+    heading: 180,
+    accuracy: null,
+    altitude: null,
+    charge: null
+  },
+  charge: 0.5,
+  timestamp: now()
+}
+const TEST_TELEMETRY2 = {
+  device_id: DEVICE_UUID,
+  gps: {
+    lat: 37.3382,
+    lng: -121.8863,
+    speed: 0,
+    hdop: 1,
+    heading: 180,
+    satellites: 10
+  },
+  charge: 0.5,
+  timestamp: now() + 1000
+}
+
+const TEST_TAXI: Omit<Device, 'recorded'> = {
+  accessibility_options: ['wheelchair_accessible'],
+  device_id: uuid(),
+  provider_id: TEST1_PROVIDER_ID,
+  vehicle_id: 'test-id-1',
+  vehicle_type: 'car',
+  propulsion_types: ['electric'],
+  year: 2018,
+  mfgr: 'Schwinn',
+  modality: 'taxi',
+  model: 'Mantaray'
+}
+
+const TEST_TNC: Omit<Device, 'recorded'> = {
+  accessibility_options: ['wheelchair_accessible'],
+  device_id: uuid(),
+  provider_id: TEST1_PROVIDER_ID,
+  vehicle_id: 'test-id-1',
+  vehicle_type: 'car',
+  propulsion_types: ['electric'],
+  year: 2018,
+  mfgr: 'Schwinn',
+  modality: 'tnc',
+  model: 'Mantaray'
+}
+
+let testTimestamp = now()
+
+const test_event: Omit<VehicleEvent, 'recorded' | 'provider_id'> = {
+  device_id: DEVICE_UUID,
+  event_types: ['decommissioned'],
+  vehicle_state: 'removed',
+  trip_state: null,
+  timestamp: testTimestamp
+}
+
+testTimestamp += 1
+
+function deepCopy<T>(obj: T): T {
+  return JSON.parse(JSON.stringify(obj))
+}
 
 describe('Ingest Repository Tests', () => {
   beforeAll(async () => {
@@ -26,6 +104,8 @@ describe('Ingest Repository Tests', () => {
   it('Run Migrations', async () => {
     await IngestRepository.runAllMigrations()
   })
+
+  // it('gets last event per device', () => {})
 
   it('Revert Migrations', async () => {
     await IngestRepository.revertAllMigrations()
@@ -41,6 +121,13 @@ const IngestServer = IngestServiceManager.controller()
 describe('Ingest Service Tests', () => {
   beforeAll(async () => {
     await IngestServer.start()
+  })
+
+  /**
+   * Clear DB after each test runs, and after the file is finished. No side-effects for you.
+   */
+  beforeEach(async () => {
+    await IngestRepository.deleteAll()
   })
 
   it('Test Name Method', async () => {
