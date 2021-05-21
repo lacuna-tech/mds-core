@@ -25,7 +25,7 @@ export interface TripsStats {
   mystery_examples: { [key: string]: UUID[] }
 }
 
-export type TripMetadata<T extends any = {}> = {
+export type TripMetadata<T = {}> = {
   trip_id: UUID
   provider_id: UUID
   reservation_time?: Timestamp
