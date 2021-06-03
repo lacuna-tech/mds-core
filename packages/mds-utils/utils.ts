@@ -164,7 +164,7 @@ function rangeRandomInt(min: number, max?: number) {
   return Math.floor(rangeRandom(min, max))
 }
 
-function randomElement<T>(list: T[]) {
+function randomElement<T>(list: T[] | readonly T[]) {
   return list[rangeRandomInt(list.length)]
 }
 
