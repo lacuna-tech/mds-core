@@ -70,6 +70,7 @@ export interface ReadEventsQueryParams {
   end_recorded?: string
   device_id?: UUID
   trip_id?: UUID
+  provider_id?: UUID
 }
 
 export interface ReadHistoricalEventsQueryParams {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { VehicleEvent, Device, UUID, Timestamp, Recorded } from '@mds-core/mds-types'
+import { VehicleEvent, Device, UUID, Timestamp, Recorded, VehicleEvent_v0_4_1 } from '@mds-core/mds-types'
 import { now, isUUID, isTimestamp, seconds, yesterday } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { ReadEventsResult, ReadEventsQueryParams, ReadHistoricalEventsQueryParams } from './types'
@@ -115,74 +115,92 @@ export async function readEvents(params: ReadEventsQueryParams): Promise<ReadEve
 }
 
 export interface TripEvents {
-  [trip_id: string]: VehicleEvent[]
+  [trip_id: string]: VehicleEvent_v0_4_1[]
 }
 
 export interface TripEventsResult {
   trips: TripEvents
-  tripCount: number
 }
 
 /**
+ * @deprecated 1.0, for 0.4 vehicle_event types
  * @param ReadEventsQueryParams skip/take paginates on trip_id
  */
 export async function readTripEvents(params: ReadEventsQueryParams): Promise<TripEventsResult> {
-  const { skip, take, start_time, end_time } = params
+  const { skip, take = 100, start_time, end_time, provider_id } = params
   const client = await getReadOnlyClient()
   const vals = new SqlVals()
   const conditions = []
 
   if (start_time) {
-    conditions.push(`e."timestamp" >= ${vals.add(start_time)}`)
+    conditions.push(`"timestamp" >= ${vals.add(start_time)}`)
   }
   if (end_time) {
-    conditions.push(`e."timestamp" <= ${vals.add(end_time)}`)
+    conditions.push(`"timestamp" <= ${vals.add(end_time)}`)
+  }
+  if (provider_id) {
+    conditions.push(`provider_id = ${vals.add(provider_id)}`)
   }
 
-  conditions.push('e.trip_id is not null')
+  conditions.push('trip_id is not null')
 
-  const filter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
-  const countSql = `SELECT COUNT(DISTINCT(trip_id)) FROM ${schema.TABLE.events} e ${filter}`
-  const countVals = vals.values()
-
-  await logSql(countSql, countVals)
-
-  const res = await client.query(countSql, countVals)
-  const tripCount = parseInt(res.rows[0].count)
-
-  if (typeof skip === 'number' && skip >= 0) {
-    conditions.push(` e.trip_id > ${vals.add(skip)}`)
+  if (skip) {
+    conditions.push(` trip_id > ${vals.add(skip)}`)
   }
+
   const queryFilter = conditions.length ? `WHERE ${conditions.join(' AND ')}` : ''
 
-  let selectSql = `select et.trip_id, array_agg(row_to_json(et.*) order by best_timestamp) as events
+  /**
+   * Since pagination is done by trip_id, that index can be used to filter through the large dataset as well.
+   */
+  let tripIdSubQuery = `SELECT DISTINCT(trip_id) FROM events e2 ${queryFilter} ORDER BY e2.trip_id`
+
+  if (typeof take === 'number' && take >= 0) {
+    tripIdSubQuery += ` LIMIT ${vals.add(take)}`
+  }
+
+  const selectSql = `SELECT et.trip_id, array_agg(row_to_json(et.*) ORDER BY best_timestamp) AS events
     FROM
-      (SELECT e.*, to_json(t.*) as telemetry, COALESCE(e.telemetry_timestamp, e.timestamp) as best_timestamp
+      (SELECT e.*, to_json(t.*) as telemetry, e.telemetry_timestamp AS best_timestamp
       FROM ${schema.TABLE.events} e
-      LEFT JOIN ${schema.TABLE.telemetry} t ON e.device_id = t.device_id
-        AND COALESCE(e.telemetry_timestamp, e.timestamp) = t.timestamp
-      ${queryFilter}
-      order by trip_id
+      JOIN ${schema.TABLE.telemetry} t ON e.device_id = t.device_id
+        AND e.telemetry_timestamp = t.timestamp
+        AND e.trip_id in (${tripIdSubQuery})
+      ORDER BY trip_id
       ) et
     GROUP BY et.trip_id
     ORDER BY et.trip_id`
 
-  if (typeof take === 'number' && take >= 0) {
-    selectSql += ` LIMIT ${vals.add(take)}`
-  }
   const selectVals = vals.values()
   await logSql(selectSql, selectVals)
 
   const res2 = await client.query(selectSql, selectVals)
 
-  const trips = Object.values(res2.rows).reduce(
-    (acc: TripEvents, { trip_id, events }) => Object.assign(acc, { [trip_id]: events as VehicleEvent }),
-    {}
-  )
+  const trips = Object.values(res2.rows).reduce((acc: TripEvents, { trip_id, events: unmappedEvents }) => {
+    const events = (unmappedEvents as any[]).map(e => {
+      const { provider_id, device_id, timestamp, lat, lng, speed, heading, accuracy, altitude } = e.telemetry
+      return {
+        ...e,
+        telemetry: {
+          provider_id,
+          device_id,
+          timestamp,
+          gps: {
+            lng,
+            lat,
+            speed,
+            heading,
+            accuracy,
+            altitude
+          }
+        }
+      }
+    })
+    return Object.assign(acc, { [trip_id]: events as VehicleEvent[] })
+  }, {})
 
   return {
-    trips,
-    tripCount
+    trips
   }
 }
 
