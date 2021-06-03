@@ -15,7 +15,8 @@
  */
 
 import { InsertReturning, ReadWriteRepository, RepositoryError } from '@mds-core/mds-repository'
-import { UUID } from '@mds-core/mds-types'
+import { Enum, PROPULSION_TYPE, Timestamp, UUID, VEHICLE_EVENT, VEHICLE_STATE, VEHICLE_TYPE } from '@mds-core/mds-types'
+import { isUUID } from '@mds-core/mds-utils'
 import {
   EventDomainModel,
   EventDomainCreateModel,
@@ -45,6 +46,25 @@ const testEnvSafeguard = () => {
   }
 }
 
+const GROUPING_TYPES = Enum('latest_per_vehicle', 'latest_per_trip', 'all_events')
+export type GROUPING_TYPE = keyof typeof GROUPING_TYPES
+
+export type TimeRange = {
+  start: Timestamp
+  end: Timestamp
+}
+export interface GetVehicleEventsFilterParams {
+  vehicle_types?: VEHICLE_TYPE[]
+  propulsion_types?: PROPULSION_TYPE[]
+  provider_ids?: UUID[]
+  vehicle_states?: VEHICLE_STATE[]
+  time_range: TimeRange
+  grouping_type: GROUPING_TYPE
+  device_or_vehicle_id?: string // Match on device_id or vehicle_id
+  device_ids?: UUID[]
+  event_types?: VEHICLE_EVENT[]
+  geography_ids?: UUID[]
+}
 class IngestReadWriteRepository extends ReadWriteRepository {
   constructor() {
     super('ingest', { entities, migrations })
@@ -72,7 +92,7 @@ class IngestReadWriteRepository extends ReadWriteRepository {
     try {
       const connection = await connect('rw')
       const { raw: entities }: InsertReturning<TelemetryEntity> = await connection
-        .getRepository(EventEntity)
+        .getRepository(TelemetryEntity)
         .createQueryBuilder()
         .insert()
         .values(events.map(TelemetryDomainToEntityCreate.mapper()))
@@ -89,7 +109,7 @@ class IngestReadWriteRepository extends ReadWriteRepository {
     try {
       const connection = await connect('rw')
       const { raw: entities }: InsertReturning<DeviceEntity> = await connection
-        .getRepository(EventEntity)
+        .getRepository(DeviceEntity)
         .createQueryBuilder()
         .insert()
         .values(events.map(DeviceDomainToEntityCreate.mapper()))
@@ -101,23 +121,73 @@ class IngestReadWriteRepository extends ReadWriteRepository {
     }
   }
 
-  public getLastEventPerDevice = async (provider_id: UUID): Promise<EventDomainModel[]> => {
+  public getLastEventPerDevice = async (params: GetVehicleEventsFilterParams): Promise<EventDomainModel[]> => {
     const { connect } = this
+    const {
+      time_range: { start, end },
+      // geography_ids,
+      // grouping_type = 'latest_per_vehicle',
+      event_types,
+      vehicle_states,
+      vehicle_types,
+      device_or_vehicle_id,
+      device_ids,
+      propulsion_types,
+      provider_ids
+    } = params
     try {
       const connection = await connect('ro')
-      // const entities = await connection.getRepository(EventEntity).find({ where: { provider_id } })
 
-      const entities = await connection
+      const query = connection
         .getRepository(EventEntity)
         .createQueryBuilder('events')
+        .innerJoinAndSelect(qb => qb.from(DeviceEntity, 'd'), 'devices', 'devices.device_id = events.device_id')
         .innerJoinAndSelect(
           qb => {
-            return qb.select('device_id, max(timestamp) as max_time').from(EventEntity, 'e').where(provider_id)
+            return qb
+              .select(
+                'device_id, id as event_id, RANK() OVER (PARTITION BY device_id ORDER BY timestamp DESC) AS rownum'
+              )
+              .from(EventEntity, 'e')
+              .where('timestamp >= :start AND timestamp <= :end', { start, end })
           },
-          'le',
-          'le.device_id = events.device_id AND le.max_time = events.timestamp'
+          'last_device_event',
+          'last_device_event.event_id = events.id AND last_device_event.rownum = 1'
         )
-        .getMany()
+
+      if (event_types) {
+        query.andWhere('events.event_types && :event_types', { event_types })
+      }
+
+      if (propulsion_types) {
+        query.andWhere('devices.propulsion_types && :propulsion_types', { propulsion_types })
+      }
+
+      if (device_ids) {
+        query.andWhere('events.device_id = ANY(:device_ids)', { device_ids })
+      }
+
+      if (vehicle_types) {
+        query.andWhere('devices.vehicle_type = ANY(:vehicle_types)', { vehicle_types })
+      }
+
+      if (vehicle_states) {
+        query.andWhere('devices.vehicle_state = ANY(:vehicle_states)', { vehicle_states })
+      }
+
+      if (device_or_vehicle_id) {
+        if (isUUID(device_or_vehicle_id)) {
+          query.andWhere('(devices.device_id = ANY(:device_or_vehicle_id)', { device_or_vehicle_id })
+        } else {
+          query.andWhere('(devices.vehicle_id = ANY(:device_or_vehicle_id)', { device_or_vehicle_id })
+        }
+      }
+
+      if (provider_ids && provider_ids.every(isUUID)) {
+        query.andWhere('events.provider_id = ANY(:provider_ids)', { provider_ids })
+      }
+
+      const entities = await query.getMany()
 
       return entities.map(EventEntityToDomain.map)
     } catch (error) {

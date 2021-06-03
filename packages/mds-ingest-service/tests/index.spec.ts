@@ -21,55 +21,76 @@ import { IngestRepository } from '../repository'
 import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
 import { now, uuid } from '@mds-core/mds-utils'
 import { Device, VehicleEvent } from '@mds-core/mds-types'
+import { EventEntityCreateModel } from '../repository/mappers'
+import { EventDomainCreateModel, TelemetryDomainCreateModel } from '../@types'
 
-const DEVICE_UUID = 'ec551174-f324-4251-bfed-28d9f3f473fc'
-const TRIP_UUID = '1f981864-cc17-40cf-aea3-70fd985e2ea7'
-const TEST_TELEMETRY = {
-  device_id: DEVICE_UUID,
+const DEVICE_UUID_A = uuid()
+const DEVICE_UUID_B = uuid()
+const TRIP_UUID_A = uuid()
+const TRIP_UUID_B = uuid()
+const testTimestamp = now()
+
+const TEST_TELEMETRY_A1: TelemetryDomainCreateModel = {
+  device_id: DEVICE_UUID_A,
   provider_id: TEST1_PROVIDER_ID,
   gps: {
     lat: 37.3382,
     lng: -121.8863,
     speed: 0,
-    hdop: 1,
     heading: 180,
     accuracy: null,
-    altitude: null,
-    charge: null
+    altitude: null
   },
   charge: 0.5,
-  timestamp: now()
+  timestamp: testTimestamp
 }
-const TEST_TELEMETRY2 = {
-  device_id: DEVICE_UUID,
+const TEST_TELEMETRY_A2: TelemetryDomainCreateModel = {
+  device_id: DEVICE_UUID_A,
+  provider_id: TEST1_PROVIDER_ID,
   gps: {
     lat: 37.3382,
     lng: -121.8863,
     speed: 0,
-    hdop: 1,
     heading: 180,
-    satellites: 10
+    accuracy: null,
+    altitude: null
   },
   charge: 0.5,
-  timestamp: now() + 1000
+  timestamp: testTimestamp + 1000
 }
 
-const TEST_TAXI: Omit<Device, 'recorded'> = {
-  accessibility_options: ['wheelchair_accessible'],
-  device_id: uuid(),
+const TEST_TELEMETRY_B1: TelemetryDomainCreateModel = {
+  device_id: DEVICE_UUID_B,
   provider_id: TEST1_PROVIDER_ID,
-  vehicle_id: 'test-id-1',
-  vehicle_type: 'car',
-  propulsion_types: ['electric'],
-  year: 2018,
-  mfgr: 'Schwinn',
-  modality: 'taxi',
-  model: 'Mantaray'
+  gps: {
+    lat: 37.3382,
+    lng: -121.8863,
+    speed: 0,
+    heading: 180,
+    accuracy: null,
+    altitude: null
+  },
+  charge: 0.5,
+  timestamp: testTimestamp
+}
+const TEST_TELEMETRY_B2: TelemetryDomainCreateModel = {
+  device_id: DEVICE_UUID_B,
+  provider_id: TEST1_PROVIDER_ID,
+  gps: {
+    lat: 37.3382,
+    lng: -121.8863,
+    speed: 0,
+    heading: 180,
+    accuracy: null,
+    altitude: null
+  },
+  charge: 0.5,
+  timestamp: testTimestamp + 1000
 }
 
-const TEST_TNC: Omit<Device, 'recorded'> = {
+const TEST_TNC_A: Omit<Device, 'recorded'> = {
   accessibility_options: ['wheelchair_accessible'],
-  device_id: uuid(),
+  device_id: DEVICE_UUID_A,
   provider_id: TEST1_PROVIDER_ID,
   vehicle_id: 'test-id-1',
   vehicle_type: 'car',
@@ -80,17 +101,58 @@ const TEST_TNC: Omit<Device, 'recorded'> = {
   model: 'Mantaray'
 }
 
-let testTimestamp = now()
-
-const test_event: Omit<VehicleEvent, 'recorded' | 'provider_id'> = {
-  device_id: DEVICE_UUID,
-  event_types: ['decommissioned'],
-  vehicle_state: 'removed',
-  trip_state: null,
-  timestamp: testTimestamp
+const TEST_TNC_B: Omit<Device, 'recorded'> = {
+  accessibility_options: ['wheelchair_accessible'],
+  device_id: DEVICE_UUID_B,
+  provider_id: TEST1_PROVIDER_ID,
+  vehicle_id: 'test-id-1',
+  vehicle_type: 'car',
+  propulsion_types: ['electric'],
+  year: 2018,
+  mfgr: 'Schwinn',
+  modality: 'tnc',
+  model: 'Mantaray'
 }
 
-testTimestamp += 1
+const TEST_EVENT_A1: EventDomainCreateModel = {
+  device_id: DEVICE_UUID_A,
+  event_types: ['decommissioned'],
+  vehicle_state: 'removed',
+  trip_state: 'stopped',
+  timestamp: testTimestamp,
+  provider_id: TEST1_PROVIDER_ID,
+  trip_id: TRIP_UUID_A
+}
+
+const TEST_EVENT_A2: EventDomainCreateModel = {
+  device_id: DEVICE_UUID_A,
+  event_types: ['service_end'],
+  vehicle_state: 'unknown',
+  trip_state: 'stopped',
+  timestamp: testTimestamp + 1000,
+  provider_id: TEST1_PROVIDER_ID,
+  trip_id: TRIP_UUID_A
+}
+
+const TEST_EVENT_B1: EventDomainCreateModel = {
+  device_id: DEVICE_UUID_B,
+  event_types: ['decommissioned'],
+  vehicle_state: 'removed',
+  trip_state: 'stopped',
+  timestamp: testTimestamp,
+  provider_id: TEST1_PROVIDER_ID,
+  trip_id: TRIP_UUID_B
+}
+
+const TEST_EVENT_B2: EventDomainCreateModel = {
+  device_id: DEVICE_UUID_B,
+  event_types: ['service_end'],
+  vehicle_state: 'unknown',
+  trip_state: 'stopped',
+  timestamp: testTimestamp + 1000,
+  provider_id: TEST1_PROVIDER_ID,
+  trip_id: TRIP_UUID_B
+}
 
 function deepCopy<T>(obj: T): T {
   return JSON.parse(JSON.stringify(obj))
@@ -121,6 +183,7 @@ const IngestServer = IngestServiceManager.controller()
 describe('Ingest Service Tests', () => {
   beforeAll(async () => {
     await IngestServer.start()
+    await IngestRepository.initialize()
   })
 
   /**
@@ -130,12 +193,44 @@ describe('Ingest Service Tests', () => {
     await IngestRepository.deleteAll()
   })
 
-  it('Test Name Method', async () => {
-    const name = await IngestServiceClient.name()
-    expect(name).toEqual('mds-ingest-service')
+  describe('getLastEventPerDevice', async () => {
+    beforeEach(async () => {
+      const name = await IngestServiceClient.name()
+      await IngestRepository.createDevices([TEST_TNC_A, TEST_TNC_B])
+      await IngestRepository.createEvents([TEST_EVENT_A1, TEST_EVENT_B1])
+      await IngestRepository.createEvents([TEST_EVENT_A2, TEST_EVENT_B2])
+      await IngestRepository.createTelemetries([TEST_TELEMETRY_A1, TEST_TELEMETRY_B1])
+      await IngestRepository.createTelemetries([TEST_TELEMETRY_A2, TEST_TELEMETRY_B2])
+    })
+    it('gets two events, one for each device', async () => {
+      const events = await IngestRepository.getLastEventPerDevice({
+        time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+        grouping_type: 'latest_per_vehicle'
+      })
+      expect(events.length).toEqual(2)
+    })
+
+    it('gets two events, filters on event_types', async () => {
+      const events = await IngestRepository.getLastEventPerDevice({
+        time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+        event_types: ['service_end'],
+        grouping_type: 'latest_per_vehicle'
+      })
+      expect(events.length).toEqual(2)
+    })
+
+    it('gets two events, filters on vehicle_type', async () => {
+      const events = await IngestRepository.getLastEventPerDevice({
+        time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+        vehicle_types: ['car'],
+        grouping_type: 'latest_per_vehicle'
+      })
+      expect(events.length).toEqual(2)
+    })
   })
 
   afterAll(async () => {
+    await IngestRepository.shutdown()
     await IngestServer.stop()
   })
 })

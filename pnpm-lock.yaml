@@ -762,6 +762,7 @@ importers:
 
   packages/mds-ingest-service:
     specifiers:
+      '@mds-core/mds-providers': 0.1.29-lacuna-tech.36
       '@mds-core/mds-repository': 0.1.2
       '@mds-core/mds-rpc-common': 0.1.2
       '@mds-core/mds-schema-validators': 0.1.4
@@ -771,6 +772,7 @@ importers:
       joi: 17.4.0
       typeorm: 0.2.32
     dependencies:
+      '@mds-core/mds-providers': 0.1.29-lacuna-tech.36
       '@mds-core/mds-repository': link:../mds-repository
       '@mds-core/mds-rpc-common': link:../mds-rpc-common
       '@mds-core/mds-schema-validators': link:../mds-schema-validators
@@ -2398,6 +2400,18 @@ packages:
       write-file-atomic: 3.0.3
     dev: true
 
+  /@mds-core/mds-providers/0.1.29-lacuna-tech.36:
+    resolution: {integrity: sha1-YuJUF2EVDxm9anbIsegSqaNDidA=, tarball: '@mds-core/mds-providers/-/@mds-core/mds-providers-0.1.29-lacuna-tech.36.tgz'}
+    dependencies:
+      '@mds-core/mds-types': 0.1.26-lacuna-tech.36
+    dev: false
+
+  /@mds-core/mds-types/0.1.26-lacuna-tech.36:
+    resolution: {integrity: sha1-hCJaZy0tSrGoIuy7PjbB2cM68f0=, tarball: '@mds-core/mds-types/-/@mds-core/mds-types-0.1.26-lacuna-tech.36.tgz'}
+    dependencies:
+      '@types/geojson': 7946.0.7
+    dev: false
+
   /@nodelib/fs.scandir/2.1.4:
     resolution: {integrity: sha512-33g3pMJk3bg5nXbL/+CY6I2eJDzZAni49PfJnL5fghPTggPvBd/pFNSgJsdAgWptuFu7qq/ERvOYFlhvsLTCKA==}
     engines: {node: '>= 8'}
@@ -2780,7 +2794,7 @@ packages:
     dev: false
 
   /@types/geojson/7946.0.7:
-    resolution: {integrity: sha512-wE2v81i4C4Ol09RtsWFAqg3BUitWbHSpSlIo+bNdsCJijO9sjme+zm+73ZMCa/qMC8UEERxzGbvmr1cffo2SiQ==}
+    resolution: {integrity: sha1-yPpTK2CgBCIZzfFzyiGpde8GZq0=}
     dev: false
 
   /@types/git-revision-webpack-plugin/3.0.2:
