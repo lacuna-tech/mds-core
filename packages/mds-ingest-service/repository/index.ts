@@ -217,6 +217,10 @@ class IngestReadWriteRepository extends ReadWriteRepository {
     }
   }
 
+  /**
+   * Nukes everything from orbit. Boom.
+   */
+
   public deleteAll = async () => {
     testEnvSafeguard()
     const { connect } = this
