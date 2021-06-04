@@ -126,7 +126,7 @@ class IngestReadWriteRepository extends ReadWriteRepository {
     const {
       time_range: { start, end },
       // geography_ids,
-      // grouping_type = 'latest_per_vehicle',
+      grouping_type = 'latest_per_vehicle',
       event_types,
       vehicle_states,
       vehicle_types,
@@ -142,7 +142,9 @@ class IngestReadWriteRepository extends ReadWriteRepository {
         .getRepository(EventEntity)
         .createQueryBuilder('events')
         .innerJoinAndSelect(qb => qb.from(DeviceEntity, 'd'), 'devices', 'devices.device_id = events.device_id')
-        .innerJoinAndSelect(
+
+      if (grouping_type === 'latest_per_vehicle') {
+        query.innerJoinAndSelect(
           qb => {
             return qb
               .select(
@@ -154,6 +156,20 @@ class IngestReadWriteRepository extends ReadWriteRepository {
           'last_device_event',
           'last_device_event.event_id = events.id AND last_device_event.rownum = 1'
         )
+      }
+
+      if (grouping_type === 'latest_per_trip') {
+        query.innerJoinAndSelect(
+          qb => {
+            return qb
+              .select('trip_id, id as event_id, RANK() OVER (PARTITION BY trip_id ORDER BY timestamp DESC) AS rownum')
+              .from(EventEntity, 'e')
+              .where('timestamp >= :start AND timestamp <= :end', { start, end })
+          },
+          'last_trip_event',
+          'last_trip_event.event_id = events.id AND last_trip_event.rownum = 1'
+        )
+      }
 
       if (event_types) {
         query.andWhere('events.event_types && :event_types', { event_types })
@@ -172,14 +188,14 @@ class IngestReadWriteRepository extends ReadWriteRepository {
       }
 
       if (vehicle_states) {
-        query.andWhere('devices.vehicle_state = ANY(:vehicle_states)', { vehicle_states })
+        query.andWhere('events.vehicle_state = ANY(:vehicle_states)', { vehicle_states })
       }
 
       if (device_or_vehicle_id) {
         if (isUUID(device_or_vehicle_id)) {
-          query.andWhere('(devices.device_id = ANY(:device_or_vehicle_id)', { device_or_vehicle_id })
+          query.andWhere('devices.device_id = :device_or_vehicle_id', { device_or_vehicle_id })
         } else {
-          query.andWhere('(devices.vehicle_id = ANY(:device_or_vehicle_id)', { device_or_vehicle_id })
+          query.andWhere('devices.vehicle_id = :device_or_vehicle_id', { device_or_vehicle_id })
         }
       }
 
