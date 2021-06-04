@@ -141,10 +141,16 @@ class IngestReadWriteRepository extends ReadWriteRepository {
       const query = connection
         .getRepository(EventEntity)
         .createQueryBuilder('events')
-        .innerJoinAndSelect(qb => qb.from(DeviceEntity, 'd'), 'devices', 'devices.device_id = events.device_id')
+        .innerJoin(qb => qb.from(DeviceEntity, 'd'), 'devices', 'devices.device_id = events.device_id')
+        .leftJoinAndMapOne(
+          'events.telemetry',
+          TelemetryEntity,
+          'telemetry',
+          'telemetry.device_id = events.device_id AND telemetry.timestamp = events.telemetry_timestamp'
+        )
 
       if (grouping_type === 'latest_per_vehicle') {
-        query.innerJoinAndSelect(
+        query.innerJoin(
           qb => {
             return qb
               .select(
@@ -159,7 +165,7 @@ class IngestReadWriteRepository extends ReadWriteRepository {
       }
 
       if (grouping_type === 'latest_per_trip') {
-        query.innerJoinAndSelect(
+        query.innerJoin(
           qb => {
             return qb
               .select('trip_id, id as event_id, RANK() OVER (PARTITION BY trip_id ORDER BY timestamp DESC) AS rownum')

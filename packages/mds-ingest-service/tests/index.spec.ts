@@ -120,6 +120,7 @@ const TEST_EVENT_A1: EventDomainCreateModel = {
   vehicle_state: 'removed',
   trip_state: 'stopped',
   timestamp: testTimestamp,
+  telemetry_timestamp: testTimestamp,
   provider_id: TEST1_PROVIDER_ID,
   trip_id: TRIP_UUID_A
 }
@@ -130,6 +131,7 @@ const TEST_EVENT_A2: EventDomainCreateModel = {
   vehicle_state: 'unknown',
   trip_state: 'stopped',
   timestamp: testTimestamp + 1000,
+  telemetry_timestamp: testTimestamp + 1000,
   provider_id: TEST1_PROVIDER_ID,
   trip_id: TRIP_UUID_A
 }
@@ -140,6 +142,7 @@ const TEST_EVENT_B1: EventDomainCreateModel = {
   vehicle_state: 'removed',
   trip_state: 'stopped',
   timestamp: testTimestamp,
+  telemetry_timestamp: testTimestamp,
   provider_id: TEST1_PROVIDER_ID,
   trip_id: TRIP_UUID_B
 }
@@ -150,6 +153,7 @@ const TEST_EVENT_B2: EventDomainCreateModel = {
   vehicle_state: 'unknown',
   trip_state: 'stopped',
   timestamp: testTimestamp + 1000,
+  telemetry_timestamp: testTimestamp + 1000,
   provider_id: TEST1_PROVIDER_ID,
   trip_id: TRIP_UUID_B
 }
@@ -214,13 +218,20 @@ describe('Ingest Service Tests', () => {
         expect(events.length).toEqual(2)
       })
     })
+
     describe('latest_per_vehicle', () => {
-      it('gets two events, one for each device', async () => {
+      it('gets two events, one for each device, telemetry is loaded', async () => {
         const events = await IngestRepository.getLastEventPerDevice({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           grouping_type: 'latest_per_trip'
         })
         expect(events.length).toEqual(2)
+
+        events.forEach(e => {
+          expect(e.telemetry?.timestamp).toStrictEqual(TEST_TELEMETRY_B2.timestamp)
+          expect(e.telemetry?.gps.lat).toStrictEqual(TEST_TELEMETRY_B2.gps.lat)
+          expect(e.telemetry?.gps.lng).toStrictEqual(TEST_TELEMETRY_B2.gps.lng)
+        })
       })
 
       it('gets two events, filters on event_types', async () => {
@@ -232,6 +243,7 @@ describe('Ingest Service Tests', () => {
         expect(events.length).toEqual(2)
       })
     })
+
     describe('latest_per_vehicle', () => {
       it('gets two events, one for each device', async () => {
         const events = await IngestRepository.getLastEventPerDevice({
