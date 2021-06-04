@@ -191,7 +191,7 @@ describe('Ingest Service Tests', () => {
     await IngestRepository.deleteAll()
   })
 
-  describe('getLastEventPerDevice', () => {
+  describe('getEvents', () => {
     beforeEach(async () => {
       const name = await IngestServiceClient.name()
       await IngestRepository.createDevices([TEST_TNC_A, TEST_TNC_B])
@@ -202,7 +202,7 @@ describe('Ingest Service Tests', () => {
     })
     describe('all_events', () => {
       it('gets 4 events', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           grouping_type: 'all_events'
         })
@@ -210,7 +210,7 @@ describe('Ingest Service Tests', () => {
       })
 
       it('gets two events, filters on event_types', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           event_types: ['service_end'],
           grouping_type: 'all_events'
@@ -221,7 +221,7 @@ describe('Ingest Service Tests', () => {
 
     describe('latest_per_vehicle', () => {
       it('gets two events, one for each device, telemetry is loaded', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           grouping_type: 'latest_per_trip'
         })
@@ -235,7 +235,7 @@ describe('Ingest Service Tests', () => {
       })
 
       it('gets two events, filters on event_types', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           event_types: ['service_end'],
           grouping_type: 'latest_per_trip'
@@ -246,7 +246,7 @@ describe('Ingest Service Tests', () => {
 
     describe('latest_per_vehicle', () => {
       it('gets two events, one for each device', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           grouping_type: 'latest_per_vehicle'
         })
@@ -254,7 +254,7 @@ describe('Ingest Service Tests', () => {
       })
 
       it('gets two events, filters on event_types', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           event_types: ['service_end'],
           grouping_type: 'latest_per_vehicle'
@@ -263,7 +263,7 @@ describe('Ingest Service Tests', () => {
       })
 
       it('gets two events, filters on propulsion type', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           propulsion_types: ['electric'],
           grouping_type: 'latest_per_vehicle'
@@ -272,7 +272,7 @@ describe('Ingest Service Tests', () => {
       })
 
       it('gets two events, filters on device_ids', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           device_ids: [DEVICE_UUID_A, DEVICE_UUID_B],
           grouping_type: 'latest_per_vehicle'
@@ -281,7 +281,7 @@ describe('Ingest Service Tests', () => {
       })
 
       it('gets two events, filters on vehicle_type', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           vehicle_types: ['car'],
           grouping_type: 'latest_per_vehicle'
@@ -290,7 +290,7 @@ describe('Ingest Service Tests', () => {
       })
 
       it('gets two events, filters on vehicle_states', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           vehicle_states: ['unknown'],
           grouping_type: 'latest_per_vehicle'
@@ -299,14 +299,14 @@ describe('Ingest Service Tests', () => {
       })
 
       it('gets two events, filters on device_or_vehicle_id', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           device_or_vehicle_id: TEST_TNC_A.vehicle_id,
           grouping_type: 'latest_per_vehicle'
         })
         expect(events.length).toEqual(1)
 
-        const events2 = await IngestRepository.getLastEventPerDevice({
+        const events2 = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           device_or_vehicle_id: TEST_TNC_A.device_id,
           grouping_type: 'latest_per_vehicle'
@@ -315,7 +315,7 @@ describe('Ingest Service Tests', () => {
       })
 
       it('gets two events, filters on provider_ids', async () => {
-        const events = await IngestRepository.getLastEventPerDevice({
+        const events = await IngestRepository.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
           provider_ids: [TEST1_PROVIDER_ID],
           grouping_type: 'latest_per_vehicle'

@@ -121,7 +121,7 @@ class IngestReadWriteRepository extends ReadWriteRepository {
     }
   }
 
-  public getLastEventPerDevice = async (params: GetVehicleEventsFilterParams): Promise<EventDomainModel[]> => {
+  public getEvents = async (params: GetVehicleEventsFilterParams): Promise<EventDomainModel[]> => {
     const { connect } = this
     const {
       time_range: { start, end },
