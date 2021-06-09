@@ -14,7 +14,19 @@
  * limitations under the License.
  */
 
-import { VehicleEvent, Device, UUID, Timestamp, Recorded } from '@mds-core/mds-types'
+import {
+  VehicleEvent,
+  Device,
+  UUID,
+  Timestamp,
+  Recorded,
+  VEHICLE_TYPE,
+  PROPULSION_TYPE,
+  VEHICLE_STATUS,
+  VEHICLE_EVENT,
+  STATUS_EVENT_MAP,
+  Enum
+} from '@mds-core/mds-types'
 import { now, isUUID, isTimestamp, seconds, yesterday } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
 import { ReadEventsResult, ReadEventsQueryParams, ReadHistoricalEventsQueryParams } from './types'
@@ -482,4 +494,192 @@ export async function readEventsWithTelemetryAndVehicleId({
 export async function getMostRecentEventByProvider(): Promise<{ provider_id: UUID; max: number }[]> {
   const sql = `select provider_id, max(recorded) from ${schema.TABLE.events} group by provider_id`
   return makeReadOnlyQuery(sql)
+}
+
+// for CMM
+export type TimeRange = {
+  start: Timestamp
+  end: Timestamp
+}
+
+const GROUPING_TYPES = Enum('latest_per_vehicle', 'latest_per_trip', 'all_events')
+export type GROUPING_TYPE = keyof typeof GROUPING_TYPES
+
+export interface GetVehicleEventsFilterParams {
+  vehicle_types?: VEHICLE_TYPE[]
+  propulsion_types?: PROPULSION_TYPE[]
+  provider_ids?: UUID[]
+  vehicle_statuses?: VEHICLE_STATUS[]
+  time_range: TimeRange
+  grouping_type: GROUPING_TYPE
+  device_or_vehicle_id?: string // Match on device_id or vehicle_id
+  device_ids?: UUID[]
+  event_types?: VEHICLE_EVENT[]
+  geography_ids?: UUID[]
+}
+
+export async function getLatestEventPerVehicle({
+  vehicle_types,
+  propulsion_types,
+  provider_ids,
+  vehicle_statuses,
+  time_range,
+  device_or_vehicle_id,
+  device_ids,
+  event_types,
+  grouping_type,
+  geography_ids
+}: GetVehicleEventsFilterParams): Promise<Recorded<VehicleEvent & Pick<Device, 'vehicle_id'>>[]> {
+  const init_start = Date.now()
+
+  const client = await getReadOnlyClient()
+  const vals = new SqlVals()
+  const exec = SqlExecuter(client)
+
+  const { start: start_time, end: end_time } = time_range
+
+  const conditions: string[] = []
+  const time_range_conditions: string[] = []
+
+  if (!isTimestamp(start_time)) {
+    throw new Error(`invalid start_time ${start_time}`)
+  } else {
+    time_range_conditions.push(`e.timestamp >= ${vals.add(start_time)}`)
+  }
+
+  if (!isTimestamp(end_time)) {
+    throw new Error(`invalid end_time ${end_time}`)
+  } else {
+    time_range_conditions.push(`e.timestamp <= ${vals.add(end_time)}`)
+  }
+
+  if (vehicle_types) {
+    conditions.push(`d.type = ANY (${vals.add(vehicle_types)})`)
+  }
+
+  if (propulsion_types) {
+    conditions.push(`d.propulsion && (${vals.add(propulsion_types)})`)
+  }
+
+  // you can't use non-UUID values to compare to ::UUID types in the database.
+  if (device_or_vehicle_id) {
+    if (isUUID(device_or_vehicle_id)) {
+      conditions.push(`(d.device_id = ${vals.add(device_or_vehicle_id)})`)
+    } else {
+      conditions.push(`(d.vehicle_id = ${vals.add(device_or_vehicle_id)})`)
+    }
+  }
+
+  if (vehicle_statuses) {
+    const vehicle_event_types = vehicle_statuses.map(s => Object.values(STATUS_EVENT_MAP[s])).flat()
+    conditions.push(`e.event_type = ANY (${vals.add(vehicle_event_types)})`)
+  }
+
+  if (event_types) {
+    conditions.push(`e.event_type = ANY (${vals.add(event_types)})`)
+  }
+
+  if (provider_ids) {
+    if (!provider_ids.every(isUUID)) {
+      throw new Error(`invalid provider_ids: ${provider_ids}`)
+    } else {
+      conditions.push(`e.provider_id = ANY (${vals.add(provider_ids)})`)
+    }
+  }
+
+  if (device_ids) {
+    if (!device_ids.every(isUUID)) {
+      throw new Error(`invalid device_ids ${device_ids}`)
+    } else {
+      conditions.push(`e.device_id = ANY (${vals.add(device_ids)})`)
+    }
+  }
+
+  if (grouping_type === 'all_events') {
+    conditions.push(time_range_conditions[0])
+    conditions.push(time_range_conditions[1])
+  }
+
+  // we can only select based on event criteria
+  const time_range_where = ` ${time_range_conditions.join(' AND ')}`
+  const where = conditions.length ? ` WHERE ${conditions.join(' AND ')}` : ''
+
+  const grouping_query = {
+    latest_per_vehicle: `JOIN (
+      SELECT device_id,
+      id as event_id,
+      RANK() OVER (PARTITION BY device_id ORDER BY timestamp DESC) AS rownum
+      FROM events
+      WHERE ${time_range_where.replace(/e\./g, '')}
+    ) last_device_event ON
+      last_device_event.event_id = e.id
+      AND last_device_event.rownum = 1`,
+    latest_per_trip: `JOIN (
+      SELECT trip_id,
+      id as event_id,
+      RANK() OVER (PARTITION BY trip_id ORDER BY timestamp DESC) AS rownum
+      FROM events
+      WHERE ${time_range_where.replace(/e\./g, '')}
+    ) last_device_event ON
+      last_device_event.event_id = e.id
+      AND last_device_event.rownum = 1`,
+    all_events: ''
+  }
+
+  const init_end = Date.now()
+
+  logger.info('db connection init for getLatestEventPerVehicle took', {
+    start: init_start,
+    end: init_end,
+    duration_ms: init_end - init_start,
+    duration_s: (init_end - init_start) / 1000
+  })
+
+  const db_start = Date.now()
+  const { rows } = await exec(
+    ` SELECT e.*,  row_to_json(t.*) as telemetry
+      FROM events e
+      ${grouping_query[grouping_type]}
+      JOIN devices d ON e.device_id = d.device_id
+      LEFT JOIN telemetry t ON e.device_id = t.device_id AND e.telemetry_timestamp = t.timestamp
+      ${where}
+      ORDER BY e.timestamp`,
+    vals.values()
+  )
+  const db_end = Date.now()
+
+  logger.info('db exec for getLatestEventPerVehicle took', {
+    start: db_start,
+    end: db_end,
+    duration_ms: db_end - db_start,
+    duration_s: (db_end - db_start) / 1000,
+    num_rows: rows.length
+  })
+
+  const transform_start = Date.now()
+  const transformedRows = rows.map(({ telemetry, ...event }) => {
+    if (telemetry) {
+      const { lat, lng, speed, heading, accuracy, altitude, ...body_telemetry } = telemetry
+
+      return {
+        ...event,
+        telemetry: {
+          gps: { lat, lng, speed, heading, accuracy, altitude },
+          ...body_telemetry
+        }
+      }
+    }
+    return { ...event, telemetry: null }
+  })
+  const transform_end = Date.now()
+
+  logger.info('post-query transform for getLatestEventPerVehicle took', {
+    start: transform_start,
+    end: transform_end,
+    duration_ms: transform_end - transform_start,
+    duration_s: (transform_end - transform_start) / 1000,
+    num_rows: transformedRows.length
+  })
+
+  return transformedRows
 }

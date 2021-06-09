@@ -98,10 +98,11 @@ export const STATUS_EVENT_MAP = StatusEventMap({
     VEHICLE_EVENTS.service_start,
     VEHICLE_EVENTS.provider_drop_off,
     VEHICLE_EVENTS.cancel_reservation,
-    VEHICLE_EVENTS.agency_drop_off
+    VEHICLE_EVENTS.agency_drop_off,
+    VEHICLE_EVENTS.trip_end
   ),
   reserved: Enum(VEHICLE_EVENTS.reserve),
-  unavailable: Enum(VEHICLE_EVENTS.service_end, VEHICLE_EVENTS.trip_end),
+  unavailable: Enum(VEHICLE_EVENTS.service_end),
   trip: Enum(VEHICLE_EVENTS.trip_start, VEHICLE_EVENTS.trip_enter),
   elsewhere: Enum(VEHICLE_EVENTS.trip_leave),
   removed: Enum(VEHICLE_EVENTS.register, VEHICLE_EVENTS.provider_pick_up, VEHICLE_EVENTS.agency_pick_up),

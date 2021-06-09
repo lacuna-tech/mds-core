@@ -21,7 +21,22 @@ import should from 'should'
 import test from 'unit.js'
 
 import { FeatureCollection } from 'geojson'
-import { Telemetry, Recorded, VehicleEvent, Device, VEHICLE_EVENTS, Geography } from '@mds-core/mds-types'
+import {
+  Telemetry,
+  Recorded,
+  VehicleEvent,
+  Device,
+  VEHICLE_EVENTS,
+  Geography,
+  VEHICLE_TYPES,
+  VEHICLE_TYPE,
+  PROPULSION_TYPE,
+  PROPULSION_TYPES,
+  UUID,
+  VEHICLE_STATUS,
+  VEHICLE_STATUSES,
+  VEHICLE_EVENT
+} from '@mds-core/mds-types'
 import {
   JUMP_TEST_DEVICE_1,
   makeDevices,
@@ -53,6 +68,8 @@ import MDSDBPostgres from '../index'
 import { dropTables, createTables } from '../migration'
 import { Trip } from '../types'
 import { PGInfo } from '../sql-utils'
+import { LIME_PROVIDER_ID } from '@mds-core/mds-providers'
+import { GROUPING_TYPE } from '../events'
 
 const { env } = process
 const ACTIVE_POLICY_JSON = { ...POLICY_JSON, publish_date: yesterday(), start_date: yesterday() }
@@ -166,6 +183,41 @@ async function seedTripEvents(reinit = true) {
   const tripEndEvents: VehicleEvent[] = makeEventsWithTelemetry(
     devices.slice(9, 10),
     startTime + 10,
+    shapeUUID,
+    VEHICLE_EVENTS.trip_end,
+    rangeRandomInt(10),
+    trip_id
+  )
+  const telemetry: Telemetry[] = []
+  const events: VehicleEvent[] = tripStartEvents.concat(tripEndEvents)
+  events.map(event => {
+    if (event.telemetry) {
+      telemetry.push(event.telemetry)
+    }
+  })
+
+  await MDSDBPostgres.seed({ devices, events, telemetry })
+}
+
+/**
+ * @param reinit wipe the data first
+ */
+async function seedTripEventsForDevices(reinit = true, device_count = 10) {
+  reinit ? await MDSDBPostgres.reinitialize() : null
+
+  const devices: Device[] = makeDevices(device_count, startTime, JUMP_PROVIDER_ID) as Device[]
+  const trip_id = uuid()
+  const tripStartEvents: VehicleEvent[] = makeEventsWithTelemetry(
+    devices,
+    startTime + 10,
+    shapeUUID,
+    VEHICLE_EVENTS.trip_start,
+    rangeRandomInt(10),
+    trip_id
+  )
+  const tripEndEvents: VehicleEvent[] = makeEventsWithTelemetry(
+    devices,
+    startTime + 15,
     shapeUUID,
     VEHICLE_EVENTS.trip_end,
     rangeRandomInt(10),
@@ -370,6 +422,141 @@ if (pg_info.database) {
         const result = await MDSDBPostgres.health()
         assert(result.using === 'postgres')
         assert(!isNullOrUndefined(result.stats.current_running_queries))
+      })
+
+      const testCases: { grouping_type: GROUPING_TYPE; expected: number; expected_event_type: VEHICLE_EVENT }[] = [
+        { grouping_type: 'latest_per_vehicle', expected: 2, expected_event_type: VEHICLE_EVENTS.trip_end },
+        { grouping_type: 'latest_per_trip', expected: 2, expected_event_type: VEHICLE_EVENTS.trip_end },
+        { grouping_type: 'all_events', expected: 4, expected_event_type: VEHICLE_EVENTS.trip_start }
+      ]
+
+      testCases.forEach(({ grouping_type, expected, expected_event_type }) => {
+        describe(`getLatestEventPerVehicle: ${grouping_type}`, async () => {
+          beforeEach(async () => await seedTripEventsForDevices(true, 2))
+          it('reads events, with telemetry attached', async () => {
+            const start = startTime
+            const end = startTime + 200
+            const result = await MDSDBPostgres.getLatestEventPerVehicle({ grouping_type, time_range: { start, end } })
+            assert.deepStrictEqual(result.length, expected)
+            assert.deepStrictEqual(result[0].event_type, expected_event_type)
+            assert.notStrictEqual(result[0].telemetry, null)
+            assert.deepStrictEqual(result[1].event_type, expected_event_type)
+            assert.notStrictEqual(result[1].telemetry, null)
+          })
+          it('reads events, filters on vehicle types', async () => {
+            const start = startTime
+            const end = startTime + 200
+            let vehicle_types: VEHICLE_TYPE[] = [VEHICLE_TYPES.bicycle, VEHICLE_TYPES.scooter]
+            const resultSome = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              vehicle_types,
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultSome.length, expected)
+            vehicle_types = [VEHICLE_TYPES.car, VEHICLE_TYPES.moped]
+            const resultNone = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              vehicle_types,
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultNone.length, 0)
+          })
+          it('reads events, filters on propulsion types', async () => {
+            const start = startTime
+            const end = startTime + 200
+            let propulsion_types: PROPULSION_TYPE[] = [PROPULSION_TYPES.electric, PROPULSION_TYPES.human]
+            const resultSome = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              propulsion_types,
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultSome.length, expected)
+            propulsion_types = [PROPULSION_TYPES.hybrid, PROPULSION_TYPES.combustion]
+            const resultNone = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              propulsion_types,
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultNone.length, 0)
+          })
+          it('reads events, filters on provider_ids', async () => {
+            const start = startTime
+            const end = startTime + 200
+            let provider_ids: UUID[] = [JUMP_PROVIDER_ID]
+            const resultSome = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              provider_ids,
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultSome.length, expected)
+            provider_ids = [LIME_PROVIDER_ID]
+            const resultNone = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              provider_ids,
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultNone.length, 0)
+          })
+          it('reads events, filters on vehicle_statuses', async () => {
+            const start = startTime
+            const end = startTime + 200
+            const vehicle_statuses: VEHICLE_STATUS[] = [VEHICLE_STATUSES.unavailable] //trip_end
+            const resultSome = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              vehicle_statuses,
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultSome.length, 0)
+          })
+          it('reads events, filters on device_or_vehicle_id', async () => {
+            const start = startTime
+            const end = startTime + 200
+            const device_ids = await MDSDBPostgres.readDeviceIds(JUMP_PROVIDER_ID)
+            let device_or_vehicle_id: string = device_ids[0].device_id
+            const resultSome = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              device_or_vehicle_id,
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultSome.length, expected / 2)
+            const device = await MDSDBPostgres.readDevice(device_ids[0].device_id)
+            device_or_vehicle_id = device.vehicle_id
+            const resultNone = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              device_or_vehicle_id,
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultNone.length, expected / 2)
+          })
+          it('reads events, filters on device_ids', async () => {
+            const start = startTime
+            const end = startTime + 200
+            const device_ids = await MDSDBPostgres.readDeviceIds(JUMP_PROVIDER_ID)
+            const resultSome = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              device_ids: device_ids.map(d => d.device_id),
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultSome.length, expected)
+            const resultNone = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              device_ids: [uuid()],
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultNone.length, 0)
+          })
+          it('reads events, filters on event_types', async () => {
+            const start = startTime
+            const end = startTime + 200
+            const event_types: VEHICLE_EVENT[] = [VEHICLE_EVENTS.trip_end]
+            const resultSome = await MDSDBPostgres.getLatestEventPerVehicle({
+              grouping_type,
+              event_types,
+              time_range: { start, end }
+            })
+            assert.deepStrictEqual(resultSome.length, 2)
+          })
+        })
       })
     })
 

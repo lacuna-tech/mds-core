@@ -176,7 +176,7 @@ export async function logSql(sql: string, ...values: unknown[]): Promise<void> {
 }
 
 export class SqlVals {
-  public vals: (string | number)[]
+  public vals: (string | number | string[])[]
 
   private index: number
 
@@ -185,19 +185,22 @@ export class SqlVals {
     this.index = 1
   }
 
-  public add(value: string | number): string | number {
+  public add(value: string | number | string[]): string | number {
     this.vals.push(value)
     const literal = `$${this.index}`
     this.index += 1
     return literal
   }
 
-  public values(): (string | number)[] {
+  public values(): (string | number | string[])[] {
     return this.vals.slice()
   }
 }
 
-export const SqlExecuter = (client: MDSPostgresClient) => async (command: string, values: (string | number)[] = []) => {
+export const SqlExecuter = (client: MDSPostgresClient) => async (
+  command: string,
+  values: (string | number | string[])[] = []
+) => {
   await logSql(command, values)
   return client.query(command, values)
 }

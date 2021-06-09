@@ -4,14 +4,15 @@
     "outDir": "dist"
   },
   "references": [
-    { "path": "../../packages/mds-attachment-service/tsconfig.build.json" },
-    { "path": "../../packages/mds-audit-service/tsconfig.build.json" },
-    { "path": "../../packages/mds-geography-service/tsconfig.build.json" },
-    { "path": "../../packages/mds-ingest-service/tsconfig.build.json" },
-    { "path": "../../packages/mds-logger/tsconfig.build.json" },
-    { "path": "../../packages/mds-policy-service/tsconfig.build.json" },
-    { "path": "../../packages/mds-test-data/tsconfig.build.json" },
-    { "path": "../../packages/mds-types/tsconfig.build.json" },
-    { "path": "../../packages/mds-utils/tsconfig.build.json" }
+    { "path": "../mds-attachment-service/tsconfig.build.json" },
+    { "path": "../mds-audit-service/tsconfig.build.json" },
+    { "path": "../mds-geography-service/tsconfig.build.json" },
+    { "path": "../mds-ingest-service/tsconfig.build.json" },
+    { "path": "../mds-logger/tsconfig.build.json" },
+    { "path": "../mds-policy-service/tsconfig.build.json" },
+    { "path": "../mds-providers/tsconfig.build.json" },
+    { "path": "../mds-test-data/tsconfig.build.json" },
+    { "path": "../mds-types/tsconfig.build.json" },
+    { "path": "../mds-utils/tsconfig.build.json" }
   ]
 }
