@@ -223,13 +223,9 @@ class IngestReadWriteRepository extends ReadWriteRepository {
 
   public deleteAll = async () => {
     testEnvSafeguard()
-    const { connect } = this
     try {
-      const connection = await connect('rw')
-      const repos = await Promise.all(
-        ['EventEntity', 'DeviceEntity', 'TelemetryEntity'].map(entity => connection.getRepository(entity))
-      )
-      await Promise.all(repos.map(repository => repository.query(`DELETE FROM ${repository.metadata.tableName};`)))
+      const connection = await this.connect('rw')
+      await connection.getRepository(EventEntity).query('TRUNCATE events, devices, telemetry RESTART IDENTITY')
     } catch (error) {
       throw RepositoryError(error)
     }
