@@ -26,20 +26,26 @@ export const isServiceError = <E extends string = ServiceErrorDescriptorType>(
   (error as ServiceErrorDescriptor<E>).isServiceError === true &&
   (types.length === 0 || types.includes((error as ServiceErrorDescriptor<E>).type))
 
-/** Will match an error if it's thrown locally, or from a service */
+/** Will match an error of the specified type if it's thrown locally, or from a service */
 export const isError = <E extends Error>(error: unknown, type: new () => E) =>
-  error instanceof type || isServiceError(error, type.name)
+  error instanceof type || isServiceError(error, new type().name)
+
+/** Create a function that will match an error of the specified if it's thrown locally, or from a service */
+export const ErrorCheckFunction = <E extends Error>(type: new () => E) => {
+  const { name } = new type()
+  return (error: unknown) => error instanceof type || isServiceError(error, name)
+}
 
 // eslint-reason type inference requires any
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type ServiceResponseMethod<R = any> = AnyFunction<Promise<ServiceResponse<R>>>
 
-export const UnwrapServiceResult = <M extends ServiceResponseMethod>(method: M) => async (
-  ...args: Parameters<M>
-): Promise<ReturnType<M> extends Promise<ServiceResponse<infer R>> ? R : never> => {
-  const response = await method(...args)
-  if (response.error) {
-    throw response.error
+export const UnwrapServiceResult =
+  <M extends ServiceResponseMethod>(method: M) =>
+  async (...args: Parameters<M>): Promise<ReturnType<M> extends Promise<ServiceResponse<infer R>> ? R : never> => {
+    const response = await method(...args)
+    if (response.error) {
+      throw response.error
+    }
+    return response.result
   }
-  return response.result
-}
