@@ -15,13 +15,13 @@
  */
 
 import { InsertReturning, ReadWriteRepository, RepositoryError } from '@mds-core/mds-repository'
-import { Enum, PROPULSION_TYPE, Timestamp, UUID, VEHICLE_EVENT, VEHICLE_STATE, VEHICLE_TYPE } from '@mds-core/mds-types'
 import { isUUID } from '@mds-core/mds-utils'
 import {
   EventDomainModel,
   EventDomainCreateModel,
   TelemetryDomainCreateModel,
-  DeviceDomainCreateModel
+  DeviceDomainCreateModel,
+  GetVehicleEventsFilterParams
 } from '../@types'
 import entities from './entities'
 import { DeviceEntity } from './entities/device-entity'
@@ -44,26 +44,6 @@ const testEnvSafeguard = () => {
   if (process.env.NODE_ENV !== 'test') {
     throw new Error(`This method is only supported when executing tests`)
   }
-}
-
-const GROUPING_TYPES = Enum('latest_per_vehicle', 'latest_per_trip', 'all_events')
-export type GROUPING_TYPE = keyof typeof GROUPING_TYPES
-
-export type TimeRange = {
-  start: Timestamp
-  end: Timestamp
-}
-export interface GetVehicleEventsFilterParams {
-  vehicle_types?: VEHICLE_TYPE[]
-  propulsion_types?: PROPULSION_TYPE[]
-  provider_ids?: UUID[]
-  vehicle_states?: VEHICLE_STATE[]
-  time_range: TimeRange
-  grouping_type: GROUPING_TYPE
-  device_or_vehicle_id?: string // Match on device_id or vehicle_id
-  device_ids?: UUID[]
-  event_types?: VEHICLE_EVENT[]
-  geography_ids?: UUID[]
 }
 class IngestReadWriteRepository extends ReadWriteRepository {
   constructor() {
@@ -130,7 +110,7 @@ class IngestReadWriteRepository extends ReadWriteRepository {
       event_types,
       vehicle_states,
       vehicle_types,
-      device_or_vehicle_id,
+      vehicle_id,
       device_ids,
       propulsion_types,
       provider_ids
@@ -197,12 +177,8 @@ class IngestReadWriteRepository extends ReadWriteRepository {
         query.andWhere('events.vehicle_state = ANY(:vehicle_states)', { vehicle_states })
       }
 
-      if (device_or_vehicle_id) {
-        if (isUUID(device_or_vehicle_id)) {
-          query.andWhere('devices.device_id = :device_or_vehicle_id', { device_or_vehicle_id })
-        } else {
-          query.andWhere('devices.vehicle_id = :device_or_vehicle_id', { device_or_vehicle_id })
-        }
+      if (vehicle_id) {
+        query.andWhere('devices.vehicle_id = :vehicle_id', { vehicle_id })
       }
 
       if (provider_ids && provider_ids.every(isUUID)) {

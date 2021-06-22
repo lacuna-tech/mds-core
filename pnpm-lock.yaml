@@ -762,7 +762,8 @@ importers:
 
   packages/mds-ingest-service:
     specifiers:
-      '@mds-core/mds-providers': 0.1.29-lacuna-tech.36
+      '@mds-core/mds-logger': 0.2.2
+      '@mds-core/mds-providers': 0.1.28
       '@mds-core/mds-repository': 0.1.2
       '@mds-core/mds-rpc-common': 0.1.2
       '@mds-core/mds-schema-validators': 0.1.4
@@ -772,7 +773,8 @@ importers:
       joi: 17.4.0
       typeorm: 0.2.32
     dependencies:
-      '@mds-core/mds-providers': 0.1.29-lacuna-tech.36
+      '@mds-core/mds-logger': link:../mds-logger
+      '@mds-core/mds-providers': link:../mds-providers
       '@mds-core/mds-repository': link:../mds-repository
       '@mds-core/mds-rpc-common': link:../mds-rpc-common
       '@mds-core/mds-schema-validators': link:../mds-schema-validators
@@ -1124,7 +1126,7 @@ importers:
       webpack-merge: 5.7.3
     devDependencies:
       '@types/git-revision-webpack-plugin': 3.0.2
-      webpack: 5.36.2
+      webpack: 5.36.2_webpack-cli@4.6.0
 
 packages:
 
@@ -2399,18 +2401,6 @@ packages:
       npmlog: 4.1.2
       write-file-atomic: 3.0.3
     dev: true
-
-  /@mds-core/mds-providers/0.1.29-lacuna-tech.36:
-    resolution: {integrity: sha1-YuJUF2EVDxm9anbIsegSqaNDidA=, tarball: '@mds-core/mds-providers/-/@mds-core/mds-providers-0.1.29-lacuna-tech.36.tgz'}
-    dependencies:
-      '@mds-core/mds-types': 0.1.26-lacuna-tech.36
-    dev: false
-
-  /@mds-core/mds-types/0.1.26-lacuna-tech.36:
-    resolution: {integrity: sha1-hCJaZy0tSrGoIuy7PjbB2cM68f0=, tarball: '@mds-core/mds-types/-/@mds-core/mds-types-0.1.26-lacuna-tech.36.tgz'}
-    dependencies:
-      '@types/geojson': 7946.0.7
-    dev: false
 
   /@nodelib/fs.scandir/2.1.4:
     resolution: {integrity: sha512-33g3pMJk3bg5nXbL/+CY6I2eJDzZAni49PfJnL5fghPTggPvBd/pFNSgJsdAgWptuFu7qq/ERvOYFlhvsLTCKA==}
@@ -6235,7 +6225,7 @@ packages:
     peerDependencies:
       webpack: ^5.0.0
     dependencies:
-      webpack: 5.36.2
+      webpack: 5.36.2_webpack-cli@4.6.0
 
   /git-semver-tags/4.1.1:
     resolution: {integrity: sha512-OWyMt5zBe7xFs8vglMmhM9lRQzCWL3WjHtxNNfJTMngGym7pC1kh8sP6jevfydJ6LP3ZvGxfb6ABYgPUM0mtsA==}
@@ -11572,7 +11562,7 @@ packages:
       serialize-javascript: 5.0.1
       source-map: 0.6.1
       terser: 5.7.0
-      webpack: 5.36.2
+      webpack: 5.36.2_webpack-cli@4.6.0
     dev: true
 
   /terser/5.7.0:
@@ -12322,41 +12312,6 @@ packages:
     dependencies:
       source-list-map: 2.0.1
       source-map: 0.6.1
-    dev: true
-
-  /webpack/5.36.2:
-    resolution: {integrity: sha512-XJumVnnGoH2dV+Pk1VwgY4YT6AiMKpVoudUFCNOXMIVrEKPUgEwdIfWPjIuGLESAiS8EdIHX5+TiJz/5JccmRg==}
-    engines: {node: '>=10.13.0'}
-    hasBin: true
-    peerDependencies:
-      webpack-cli: '*'
-    peerDependenciesMeta:
-      webpack-cli:
-        optional: true
-    dependencies:
-      '@types/eslint-scope': 3.7.0
-      '@types/estree': 0.0.47
-      '@webassemblyjs/ast': 1.11.0
-      '@webassemblyjs/wasm-edit': 1.11.0
-      '@webassemblyjs/wasm-parser': 1.11.0
-      acorn: 8.2.2
-      browserslist: 4.16.6
-      chrome-trace-event: 1.0.3
-      enhanced-resolve: 5.8.0
-      es-module-lexer: 0.4.1
-      eslint-scope: 5.1.1
-      events: 3.3.0
-      glob-to-regexp: 0.4.1
-      graceful-fs: 4.2.6
-      json-parse-better-errors: 1.0.2
-      loader-runner: 4.2.0
-      mime-types: 2.1.30
-      neo-async: 2.6.2
-      schema-utils: 3.0.0
-      tapable: 2.2.0
-      terser-webpack-plugin: 5.1.1_webpack@5.36.2
-      watchpack: 2.1.1
-      webpack-sources: 2.2.0
     dev: true
 
   /webpack/5.36.2_webpack-cli@4.6.0:

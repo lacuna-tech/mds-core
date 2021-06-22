@@ -30,7 +30,6 @@ import {
   VEHICLE_TYPE
 } from '@mds-core/mds-types'
 import { RpcServiceDefinition, RpcRoute } from '@mds-core/mds-rpc-common'
-import { GetVehicleEventsFilterParams } from '../repository'
 
 export interface DeviceDomainModel extends RecordedColumn {
   device_id: UUID
@@ -63,6 +62,26 @@ export interface TelemetryDomainModel
 }
 
 export type TelemetryDomainCreateModel = DomainModelCreate<Omit<TelemetryDomainModel, keyof RecordedColumn>>
+
+export const GROUPING_TYPES = ['latest_per_vehicle', 'latest_per_trip', 'all_events'] as const
+export type GROUPING_TYPE = typeof GROUPING_TYPES[number]
+
+export type TimeRange = {
+  start: Timestamp
+  end: Timestamp
+}
+export interface GetVehicleEventsFilterParams {
+  vehicle_types?: VEHICLE_TYPE[]
+  propulsion_types?: PROPULSION_TYPE[]
+  provider_ids?: UUID[]
+  vehicle_states?: VEHICLE_STATE[]
+  time_range: TimeRange
+  grouping_type: GROUPING_TYPE
+  vehicle_id?: string
+  device_ids?: UUID[]
+  event_types?: VEHICLE_EVENT[]
+  geography_ids?: UUID[]
+}
 
 export interface EventDomainModel extends RecordedColumn {
   device_id: UUID
