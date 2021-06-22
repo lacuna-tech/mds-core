@@ -113,7 +113,8 @@ class IngestReadWriteRepository extends ReadWriteRepository {
       vehicle_id,
       device_ids,
       propulsion_types,
-      provider_ids
+      provider_ids,
+      limit
     } = params
     try {
       const connection = await connect('ro')
@@ -185,7 +186,7 @@ class IngestReadWriteRepository extends ReadWriteRepository {
         query.andWhere('events.provider_id = ANY(:provider_ids)', { provider_ids })
       }
 
-      const entities = await query.getMany()
+      const entities = await query.limit(limit).getMany()
 
       return entities.map(EventEntityToDomain.map)
     } catch (error) {

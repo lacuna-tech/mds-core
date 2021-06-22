@@ -209,6 +209,15 @@ describe('Ingest Service Tests', () => {
         expect(events.length).toEqual(4)
       })
 
+      it('gets 4 events, but limit to 1', async () => {
+        const events = await IngestServiceClient.getEvents({
+          time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+          grouping_type: 'all_events',
+          limit: 1
+        })
+        expect(events.length).toEqual(1)
+      })
+
       it('gets two events, filters on event_types', async () => {
         const events = await IngestServiceClient.getEvents({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },

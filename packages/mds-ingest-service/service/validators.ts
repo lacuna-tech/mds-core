@@ -107,7 +107,8 @@ export const { validate: validateGetVehicleEventsFilterParams } = SchemaValidato
     grouping_type: { type: 'string', enum: [...GROUPING_TYPES] },
     vehicle_id: { type: 'string' },
     device_ids: { type: 'array', items: { type: 'string', format: 'uuid' } },
-    event_types: { type: 'array', items: { type: 'string', enum: [...new Set(VEHICLE_EVENTS)] } }
+    event_types: { type: 'array', items: { type: 'string', enum: [...new Set(VEHICLE_EVENTS)] } },
+    limit: { type: 'integer' }
   },
   required: ['time_range']
 })

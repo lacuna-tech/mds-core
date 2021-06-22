@@ -81,6 +81,7 @@ export interface GetVehicleEventsFilterParams {
   device_ids?: UUID[]
   event_types?: VEHICLE_EVENT[]
   geography_ids?: UUID[]
+  limit?: number
 }
 
 export interface EventDomainModel extends RecordedColumn {
