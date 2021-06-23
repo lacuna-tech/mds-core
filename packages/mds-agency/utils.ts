@@ -67,12 +67,6 @@ export function badDevice(device: Device): { error: string; error_description: s
         error_description: `invalid device year ${device.year} is not an integer`
       }
     }
-    if (device.year < 1980 || device.year > 2020) {
-      return {
-        error: 'bad_param',
-        error_description: `invalid device year ${device.year} is out of range`
-      }
-    }
   }
   if (device.type === undefined) {
     return {

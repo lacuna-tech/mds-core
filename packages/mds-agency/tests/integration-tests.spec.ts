@@ -45,7 +45,7 @@ import { shutdown as socketShutdown } from '@mds-core/mds-web-sockets'
 import { makeDevices, makeEvents, JUMP_TEST_DEVICE_1 } from '@mds-core/mds-test-data'
 import { ApiServer } from '@mds-core/mds-api-server'
 import { TEST1_PROVIDER_ID, TEST2_PROVIDER_ID } from '@mds-core/mds-providers'
-import { pathPrefix } from '@mds-core/mds-utils'
+import { pathPrefix, uuid } from '@mds-core/mds-utils'
 import { api } from '../api'
 
 /* eslint-disable-next-line no-console */
@@ -254,22 +254,6 @@ describe('Tests API', () => {
     const badVehicle = deepCopy(TEST_VEHICLE)
     // @ts-ignore: Spoofing garbage data
     badVehicle.year = 'hamster'
-    request
-      .post(pathPrefix('/vehicles'))
-      .set('Authorization', AUTH)
-      .send(badVehicle)
-      .expect(400)
-      .end((err, result) => {
-        // log('err', err, 'body', result.body)
-        test.string(result.body.error).contains('bad')
-        test.string(result.body.error_description).contains('invalid')
-        test.value(result).hasHeader('content-type', APP_JSON)
-        done(err)
-      })
-  })
-  it('verifies post device out-of-range year', done => {
-    const badVehicle = deepCopy(TEST_VEHICLE)
-    badVehicle.year = 3000
     request
       .post(pathPrefix('/vehicles'))
       .set('Authorization', AUTH)
@@ -1376,6 +1360,48 @@ describe('Tests API', () => {
         test.value(result).hasHeader('content-type', APP_JSON)
         done(err)
       })
+  })
+})
+
+describe('Tests vehicle registration', async () => {
+  before(async () => {
+    await Promise.all([db.reinitialize(), cache.reinitialize()])
+  })
+
+  it('verifies post device less than current year succeeds', async () => {
+    const year = (new Date().getFullYear()) - 1
+    const vehicle = { ...TEST_VEHICLE, device_id: uuid(), year }
+    const result = await request
+      .post(pathPrefix('/vehicles'))
+      .set('Authorization', AUTH)
+      .send(vehicle)
+      .expect(201)
+    
+    test.value(result).hasHeader('content-type', APP_JSON)
+  })
+
+  it('verifies post device for current year succeeds', async () => {
+    const year = (new Date().getFullYear())
+    const vehicle = { ...TEST_VEHICLE, device_id: uuid(), year }
+    const result = await request
+      .post(pathPrefix('/vehicles'))
+      .set('Authorization', AUTH)
+      .send(vehicle)
+      .expect(201)
+    
+    test.value(result).hasHeader('content-type', APP_JSON)
+  })
+
+  it('verifies post device greater than current year succeeds', async () => {
+    const year = (new Date().getFullYear()) + 1
+    const vehicle = { ...TEST_VEHICLE, device_id: uuid(), year }
+    const result = await request
+      .post(pathPrefix('/vehicles'))
+      .set('Authorization', AUTH)
+      .send(vehicle)
+      .expect(201)
+    
+    test.value(result).hasHeader('content-type', APP_JSON)
   })
 })
 
