@@ -191,6 +191,23 @@ describe('Ingest Service Tests', () => {
     await IngestRepository.deleteAll()
   })
 
+  describe('getDevices', () => {
+    beforeEach(async () => {
+      const name = await IngestServiceClient.name()
+      await IngestRepository.createDevices([TEST_TNC_A, TEST_TNC_B])
+    })
+    describe('all_devices', () => {
+      it('gets 2 devices', async () => {
+        const devices = await IngestServiceClient.getDevices([DEVICE_UUID_A, DEVICE_UUID_B])
+        expect(devices.length).toEqual(2)
+      })
+      it('gets 0 devices', async () => {
+        const devices = await IngestServiceClient.getDevices([uuid()])
+        expect(devices.length).toEqual(0)
+      })
+    })
+  })
+
   describe('getEvents', () => {
     beforeEach(async () => {
       const name = await IngestServiceClient.name()
