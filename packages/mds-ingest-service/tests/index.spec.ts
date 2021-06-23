@@ -193,7 +193,6 @@ describe('Ingest Service Tests', () => {
 
   describe('getDevices', () => {
     beforeEach(async () => {
-      const name = await IngestServiceClient.name()
       await IngestRepository.createDevices([TEST_TNC_A, TEST_TNC_B])
     })
     describe('all_devices', () => {
@@ -210,7 +209,6 @@ describe('Ingest Service Tests', () => {
 
   describe('getEvents', () => {
     beforeEach(async () => {
-      const name = await IngestServiceClient.name()
       await IngestRepository.createDevices([TEST_TNC_A, TEST_TNC_B])
       await IngestRepository.createEvents([TEST_EVENT_A1, TEST_EVENT_B1])
       await IngestRepository.createEvents([TEST_EVENT_A2, TEST_EVENT_B2])
