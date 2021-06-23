@@ -131,7 +131,7 @@ export const registerVehicle = async (req: AgencyApiRegisterVehicleRequest, res:
     }
 
     logger.error('register vehicle failed:', { err: error, providerName: providerName(res.locals.provider_id) })
-    res.status(500).send(agencyServerError)
+    return res.status(500).send(agencyServerError)
   }
 }
 

@@ -34,38 +34,41 @@ import {
 
 const uuidSchema = { type: 'string', format: 'uuid' }
 
-export const { validate: validateDeviceDomainModel, $schema: DeviceSchema } = SchemaValidator<DeviceDomainModel>({
-  $id: 'Device',
-  type: 'object',
-  properties: {
-    device_id: uuidSchema,
-    provider_id: uuidSchema,
-    vehicle_id: {
-      type: 'string'
-    },
-    vehicle_type: { type: 'string', enum: VEHICLE_TYPES },
-    propulsion_types: {
-      type: 'array',
-      items: {
-        type: 'string',
-        enum: PROPULSION_TYPES
-      }
-    },
-    accessibility_options: {
-      type: 'array',
-      items: {
-        type: 'string',
-        enum: ACCESSIBILITY_OPTIONS
+export const { validate: validateDeviceDomainModel, $schema: DeviceSchema } = SchemaValidator<DeviceDomainModel>(
+  {
+    $id: 'Device',
+    type: 'object',
+    properties: {
+      device_id: uuidSchema,
+      provider_id: uuidSchema,
+      vehicle_id: {
+        type: 'string'
       },
-      default: []
+      vehicle_type: { type: 'string', enum: VEHICLE_TYPES },
+      propulsion_types: {
+        type: 'array',
+        items: {
+          type: 'string',
+          enum: PROPULSION_TYPES
+        }
+      },
+      accessibility_options: {
+        type: 'array',
+        items: {
+          type: 'string',
+          enum: ACCESSIBILITY_OPTIONS
+        },
+        default: []
+      },
+      modality: { type: 'string', enum: MODALITIES, default: 'micromobility' },
+      year: { type: 'integer' },
+      mfgr: { type: 'string' },
+      model: { type: 'string' }
     },
-    modality: { type: 'string', enum: MODALITIES, default: 'micromobility' },
-    year: { type: 'integer' },
-    mfgr: { type: 'string' },
-    model: { type: 'string' }
+    required: ['device_id', 'provider_id', 'vehicle_id', 'vehicle_type', 'propulsion_types']
   },
-  required: ['device_id', 'provider_id', 'vehicle_id', 'vehicle_type', 'propulsion_types']
-})
+  { useDefaults: true }
+)
 
 /* Separate so we can re-use in the event domain model validator */
 const telemetrySchema = Joi.object<TelemetryDomainModel>()
