@@ -207,6 +207,11 @@ describe('Ingest Service Tests', () => {
       it('get invalid device uuid', async () => {
         await expect(IngestServiceClient.getDevices(['foo-bar'])).rejects.toMatchObject({ type: 'ValidationError' })
       })
+      it('get with valid and invalid device uuid', async () => {
+        await expect(IngestServiceClient.getDevices([DEVICE_UUID_A, 'foo-bar'])).rejects.toMatchObject({
+          type: 'ValidationError'
+        })
+      })
     })
   })
 
