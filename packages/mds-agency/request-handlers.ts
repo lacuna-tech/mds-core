@@ -59,7 +59,7 @@ import {
   badTelemetry,
   readPayload,
   computeCompositeVehicleData,
-  agencyErrorParser
+  agencyValidationErrorParser
 } from './utils'
 import { isError } from '@mds-core/mds-service-helpers'
 import { validateDeviceDomainModel } from '@mds-core/mds-ingest-service'
@@ -76,8 +76,6 @@ export const registerVehicle = async (req: AgencyApiRegisterVehicleRequest, res:
     // TODO: Transform 0.4.1 -> 1.0.0
   }
 
-  // writing to the DB is the crucial part.  other failures should be noted as bugs but tolerated
-  // and fixed later.
   try {
     const {
       accessibility_options,
@@ -121,7 +119,7 @@ export const registerVehicle = async (req: AgencyApiRegisterVehicleRequest, res:
     return res.status(201).send({})
   } catch (error) {
     if (error instanceof ValidationError) {
-      const parsedError = agencyErrorParser(error)
+      const parsedError = agencyValidationErrorParser(error)
       return res.status(400).send(parsedError)
     }
 

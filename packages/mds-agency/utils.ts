@@ -63,7 +63,7 @@ import { DefinedError } from 'ajv'
  *
  * Note: It is assumed that these errors are typically emitted from AJV, and they are parsed accordingly. All non-AJV based validation errors will result in loose error emission.
  */
-export const agencyErrorParser = (error: ValidationError): AgencyApiError => {
+export const agencyValidationErrorParser = (error: ValidationError): AgencyApiError => {
   // Not the best typeguard in the world, but ¯\_(ツ)_/¯
   const isAjvErrors = (x: unknown): x is DefinedError[] => {
     return Array.isArray(x)
