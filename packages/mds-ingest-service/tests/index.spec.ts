@@ -19,7 +19,7 @@ import { IngestServiceManager } from '../service/manager'
 import { IngestServiceClient } from '../client'
 import { IngestRepository } from '../repository'
 import { TEST1_PROVIDER_ID } from '@mds-core/mds-providers'
-import { now, uuid } from '@mds-core/mds-utils'
+import { now, uuid, ValidationError } from '@mds-core/mds-utils'
 import { Device, VehicleEvent } from '@mds-core/mds-types'
 import { EventEntityCreateModel } from '../repository/mappers'
 import { EventDomainCreateModel, TelemetryDomainCreateModel } from '../@types'
@@ -203,6 +203,9 @@ describe('Ingest Service Tests', () => {
       it('gets 0 devices', async () => {
         const devices = await IngestServiceClient.getDevices([uuid()])
         expect(devices.length).toEqual(0)
+      })
+      it('get invalid device uuid', async () => {
+        await expect(IngestServiceClient.getDevices(['foo-bar'])).rejects.toMatchObject({ type: 'ValidationError' })
       })
     })
   })
