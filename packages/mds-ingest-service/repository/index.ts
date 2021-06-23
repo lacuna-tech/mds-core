@@ -15,7 +15,7 @@
  */
 
 import { InsertReturning, ReadWriteRepository, RepositoryError } from '@mds-core/mds-repository'
-import { In } from 'typeorm'
+import { Any } from 'typeorm'
 import { isUUID } from '@mds-core/mds-utils'
 import { UUID } from '@mds-core/mds-types'
 import {
@@ -107,7 +107,7 @@ class IngestReadWriteRepository extends ReadWriteRepository {
   public getDevices = async (ids: UUID[]): Promise<DeviceDomainModel[]> => {
     try {
       const connection = await this.connect('ro')
-      const entities = await connection.getRepository(DeviceEntity).find({ where: { device_id: In(ids) } })
+      const entities = await connection.getRepository(DeviceEntity).find({ where: { device_id: Any(ids) } })
       return entities.map(DeviceEntityToDomain.map)
     } catch (error) {
       throw RepositoryError(error)
