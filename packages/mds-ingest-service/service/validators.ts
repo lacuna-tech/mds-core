@@ -90,6 +90,10 @@ const telemetrySchema = Joi.object<TelemetryDomainModel>()
   })
   .unknown(false)
 
+const nullableInteger = { type: 'integer', nullable: true, default: null }
+
+const nullableFloat = { type: 'number', format: 'float', nullable: true, default: null }
+
 export const { validate: validateTelemetryDomainModel, $schema: TelemetrySchema } =
   SchemaValidator<TelemetryDomainModel>(
     {
@@ -105,15 +109,18 @@ export const { validate: validateTelemetryDomainModel, $schema: TelemetrySchema 
             lat: { type: 'number', format: 'float' },
             lng: { type: 'number', format: 'float' },
             // ⬇⬇⬇ NULLABLE/OPTIONAL PROPERTIES ⬇⬇⬇
-            speed: { type: 'number', format: 'float', nullable: true, default: null },
-            heading: { type: 'number', format: 'float', nullable: true, default: null },
-            accuracy: { type: 'number', format: 'float', nullable: true, default: null },
-            altitude: { type: 'number', format: 'float', nullable: true, default: null }
+            altitude: nullableFloat,
+            heading: nullableFloat,
+            speed: nullableFloat,
+            accuracy: nullableFloat,
+            hdop: nullableFloat,
+            satellites: nullableInteger
           },
           required: ['lat', 'lng']
         },
         // ⬇⬇⬇ NULLABLE/OPTIONAL PROPERTIES ⬇⬇⬇
-        charge: { type: 'number', format: 'float', minimum: 0, maximum: 1.0, nullable: true, default: null }
+        charge: { type: 'number', format: 'float', minimum: 0, maximum: 1.0, nullable: true, default: null },
+        stop_id: { ...uuidSchema, nullable: true, default: null }
       },
       required: ['device_id', 'provider_id', 'timestamp', 'gps']
     },

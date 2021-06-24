@@ -422,6 +422,7 @@ export const submitVehicleTelemetry = async (
         }
 
         try {
+          // Validate telemetry, and prune foreign properties
           const validatedTelemetry = validateTelemetryDomainModel(unvalidatedTelemetry)
 
           const { device_id } = validatedTelemetry
