@@ -25,6 +25,9 @@ pipeline {
       }
     }
     stage('Test') {
+      environment {
+        NODE_OPTIONS = '--max_old_space_size=4096'
+      }
       steps {
         nvm('version': 'v15.11.0') {
           sh '''
