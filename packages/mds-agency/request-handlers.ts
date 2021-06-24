@@ -406,7 +406,7 @@ export const submitVehicleTelemetry = async (
   const valid: Telemetry[] = []
 
   try {
-    const deviceIds = await (async () => {
+    const deviceIds: Map<UUID, Boolean> = await (async () => {
       if (data.length === 1) {
         const [telemetry] = data
 
