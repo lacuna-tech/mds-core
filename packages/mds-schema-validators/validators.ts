@@ -72,12 +72,12 @@ export const telemetrySchema = Joi.object().keys({
     .keys({
       lat: numberSchema.min(-90).max(90).required(),
       lng: numberSchema.min(-180).max(180).required(),
-      speed: numberSchema.optional(),
-      heading: numberSchema.optional(),
-      accuracy: numberSchema.optional(),
-      hdop: numberSchema.optional(),
-      altitude: numberSchema.optional(),
-      satellites: numberSchema.optional()
+      speed: numberSchema.optional().allow(null),
+      heading: numberSchema.optional().allow(null),
+      accuracy: numberSchema.optional().allow(null),
+      hdop: numberSchema.optional().allow(null),
+      altitude: numberSchema.optional().allow(null),
+      satellites: numberSchema.optional().allow(null)
     })
     .required(),
   charge: numberSchema.optional(),
@@ -87,7 +87,7 @@ export const telemetrySchema = Joi.object().keys({
   recorded: timestampSchema.optional()
 })
 
-const baseRuleSchema = Joi.object().keys({
+export const baseRuleSchema = Joi.object().keys({
   accessibility_options: Joi.array()
     .items(Joi.string().valid(...ACCESSIBILITY_OPTIONS))
     .optional(),
@@ -109,7 +109,7 @@ const baseRuleSchema = Joi.object().keys({
   vehicle_types: Joi.array().items(Joi.string().valid(...Object.values(VEHICLE_TYPES)))
 })
 
-const modalityRuleSchema = baseRuleSchema.keys({
+export const modalityRuleSchema = baseRuleSchema.keys({
   states: Joi.object()
     .keys(
       VEHICLE_STATES_v1_1_0.reduce(
@@ -354,7 +354,6 @@ export function validateGeographies(geographies: unknown): geographies is Geogra
 export function validateEvents(events: unknown): events is VehicleEvent[] {
   const { error } = eventsSchema.validate(events)
   if (error) {
-    console.log(error)
     throw new ValidationError('invalid events', {
       events,
       details: Format('events', error)

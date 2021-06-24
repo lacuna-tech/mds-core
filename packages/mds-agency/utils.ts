@@ -25,7 +25,6 @@ import {
   VehicleEvent,
   Telemetry,
   ErrorObject,
-  isEnum,
   VEHICLE_TYPES,
   PROPULSION_TYPES,
   BoundingBox,
@@ -74,7 +73,7 @@ export function badDevice(device: Device): { error: string; error_description: s
     }
   }
   for (const prop of device.propulsion_types) {
-    if (!isEnum(PROPULSION_TYPES, prop)) {
+    if (!PROPULSION_TYPES.includes(prop)) {
       return {
         error: 'bad_param',
         error_description: `invalid propulsion type ${prop}`
@@ -107,7 +106,7 @@ export function badDevice(device: Device): { error: string; error_description: s
       error_description: 'missing enum field "type"'
     }
   }
-  if (!isEnum(VEHICLE_TYPES, device.vehicle_type)) {
+  if (!VEHICLE_TYPES.includes(device.vehicle_type)) {
     return {
       error: 'bad_param',
       error_description: `invalid device type ${device.vehicle_type}`
@@ -283,19 +282,20 @@ export function badTelemetry(telemetry: Telemetry | null | undefined): ErrorObje
       error_description: `invalid lng ${lng}`
     }
   }
-  if (altitude !== undefined && !isFloat(altitude)) {
+  if (altitude !== undefined && altitude !== null && !isFloat(altitude)) {
     return {
       error: 'bad_param',
       error_description: `invalid altitude ${altitude}`
     }
   }
-  if (accuracy !== undefined && !isFloat(accuracy)) {
+
+  if (accuracy !== undefined && accuracy !== null && !isFloat(accuracy)) {
     return {
       error: 'bad_param',
       error_description: `invalid accuracy ${accuracy}`
     }
   }
-  if (speed !== undefined && !isFloat(speed)) {
+  if (speed !== undefined && speed !== null && !isFloat(speed)) {
     return {
       error: 'bad_param',
       error_description: `invalid speed ${speed}`
@@ -307,7 +307,7 @@ export function badTelemetry(telemetry: Telemetry | null | undefined): ErrorObje
       error_description: `invalid satellites ${satellites}`
     }
   }
-  if (charge !== undefined && !isPct(charge)) {
+  if (charge !== undefined && charge !== null && !isPct(charge)) {
     return {
       error: 'bad_param',
       error_description: `invalid charge ${charge}`

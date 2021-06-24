@@ -164,18 +164,18 @@ function rangeRandomInt(min: number, max?: number) {
   return Math.floor(rangeRandom(min, max))
 }
 
-function randomElement<T>(list: T[]) {
+function randomElement<T>(list: T[] | readonly T[]) {
   return list[rangeRandomInt(list.length)]
 }
 
-function head<T>(list: T[]) {
+function head<T>(list: T[] | readonly T[]) {
   if (!Array.isArray(list)) {
     throw new Error('not a list')
   }
   return list[0]
 }
 
-function tail<T>(list: T[]) {
+function tail<T>(list: T[] | readonly T[]) {
   if (!Array.isArray(list)) {
     throw new Error('not a list')
   }
@@ -679,11 +679,10 @@ const isDefined = <T>(elem: T | undefined | null, options: isDefinedOptions = {}
   return false
 }
 
-const filterDefined = (options: isDefinedOptions = {}) => <T>(
-  value: T | undefined | null,
-  index: number,
-  array: (T | undefined | null)[]
-): value is T => isDefined(value, options, index)
+const filterDefined =
+  (options: isDefinedOptions = {}) =>
+  <T>(value: T | undefined | null, index: number, array: (T | undefined | null)[]): value is T =>
+    isDefined(value, options, index)
 
 function moved(latA: number, lngA: number, latB: number, lngB: number) {
   const limit = 0.00001 // arbitrary amount

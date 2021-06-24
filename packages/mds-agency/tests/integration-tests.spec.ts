@@ -30,8 +30,6 @@
 import supertest from 'supertest'
 import test from 'unit.js'
 import {
-  VEHICLE_TYPES,
-  PROPULSION_TYPES,
   Timestamp,
   Device,
   VehicleEvent,
@@ -76,7 +74,10 @@ const TEST_TELEMETRY = {
     lng: -121.8863,
     speed: 0,
     hdop: 1,
-    heading: 180
+    heading: 180,
+    accuracy: null,
+    altitude: null,
+    charge: null
   },
   charge: 0.5,
   timestamp: now()
@@ -99,8 +100,8 @@ const TEST_BICYCLE: Omit<Device, 'recorded' | 'accessibility_options'> = {
   device_id: DEVICE_UUID,
   provider_id: TEST1_PROVIDER_ID,
   vehicle_id: 'test-id-1',
-  vehicle_type: VEHICLE_TYPES.bicycle,
-  propulsion_types: [PROPULSION_TYPES.human],
+  vehicle_type: 'bicycle',
+  propulsion_types: ['human'],
   year: 2018,
   mfgr: 'Schwinn',
   modality: 'micromobility',
@@ -112,7 +113,7 @@ const TEST_TAXI: Omit<Device, 'recorded'> = {
   device_id: uuid(),
   provider_id: TEST1_PROVIDER_ID,
   vehicle_id: 'test-id-1',
-  vehicle_type: VEHICLE_TYPES.car,
+  vehicle_type: 'car',
   propulsion_types: ['electric'],
   year: 2018,
   mfgr: 'Schwinn',
@@ -125,7 +126,7 @@ const TEST_TNC: Omit<Device, 'recorded'> = {
   device_id: uuid(),
   provider_id: TEST1_PROVIDER_ID,
   vehicle_id: 'test-id-1',
-  vehicle_type: VEHICLE_TYPES.car,
+  vehicle_type: 'car',
   propulsion_types: ['electric'],
   year: 2018,
   mfgr: 'Schwinn',
@@ -1127,8 +1128,24 @@ describe('Tests API', () => {
       .end((err, result) => {
         if (err) {
           log('telemetry err', err)
+          log('telemetry res', result)
         } else {
           // log('telemetry result', result)
+        }
+        done(err)
+      })
+  })
+  it('verifies post telemetry handling of empty data payload', done => {
+    request
+      .post(pathPrefix('/vehicles/telemetry'))
+      .set('Authorization', AUTH)
+      .send({})
+      .expect(400)
+      .end((err, result) => {
+        if (err) {
+          log('telemetry err', err)
+        } else {
+          test.string(result.body.error_description).contains('Missing data from post-body')
         }
         done(err)
       })
@@ -1277,7 +1294,27 @@ describe('Tests API', () => {
       .send({
         data: [TEST_TELEMETRY]
       })
-      .expect(500)
+      .expect(400)
+      .end((err, result) => {
+        if (err) {
+          log('telemetry err with mismatched provider', err)
+        } else {
+          log('telemetry result with mismatched provider', result.body)
+          test.value(result.body.error_details.length).is(1)
+        }
+        done(err)
+      })
+  })
+  it('verifies post telemetry with unregistered device', done => {
+    const telemetry = { ...TEST_TELEMETRY, device_id: uuid() } // randomly generate a new uuid, obviously not registered
+
+    request
+      .post(pathPrefix('/vehicles/telemetry'))
+      .set('Authorization', AUTH)
+      .send({
+        data: [telemetry]
+      })
+      .expect(400)
       .end((err, result) => {
         if (err) {
           log('telemetry err with mismatched provider', err)
@@ -1344,6 +1381,15 @@ describe('Tests API', () => {
       .expect(200)
     test.assert(result.body.state === 'removed')
     test.assert(JSON.stringify(result.body.prev_events) === JSON.stringify(['decommissioned']))
+  })
+
+  it('verifies can make request for foreign provider_id', async () => {
+    const provider_id = uuid()
+    const AUTH = `basic ${Buffer.from(`${provider_id}|${PROVIDER_SCOPES}`).toString('base64')}`
+
+    const [device] = makeDevices(1, now(), provider_id)
+
+    await request.post(pathPrefix('/vehicles')).set('Authorization', AUTH).send(device).expect(201)
   })
 
   it('get multiple devices endpoint has vehicle status default to `inactive` if event is missing for a device', async () => {

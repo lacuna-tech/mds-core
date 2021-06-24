@@ -23,6 +23,8 @@
     "watch": "pnpm build && nodemon --watch '../../packages' --ext 'ts' --ignore '*.d.ts' --exec pnpm ts-node --"
   },
   "dependencies": {
+    "@mds-core/mds-logger": "0.2.2",
+    "@mds-core/mds-providers": "0.1.28",
     "@mds-core/mds-repository": "0.1.2",
     "@mds-core/mds-rpc-common": "0.1.2",
     "@mds-core/mds-schema-validators": "0.1.4",
@@ -30,6 +32,6 @@
     "@mds-core/mds-types": "0.1.25",
     "@mds-core/mds-utils": "0.1.28",
     "joi": "17.4.0",
-    "typeorm": "0.2.32"
+    "typeorm": "0.2.34"
   }
 }

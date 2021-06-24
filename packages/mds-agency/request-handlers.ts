@@ -15,7 +15,7 @@
  */
 
 import logger from '@mds-core/mds-logger'
-import { isUUID, now, ValidationError, normalizeToArray, ServerError } from '@mds-core/mds-utils'
+import { isUUID, now, ValidationError, normalizeToArray, ServerError, NotFoundError } from '@mds-core/mds-utils'
 import { isValidDevice, validateEvent, isValidTelemetry, validateTripMetadata } from '@mds-core/mds-schema-validators'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-agency-cache'
@@ -61,6 +61,7 @@ import {
   readPayload,
   computeCompositeVehicleData
 } from './utils'
+import { isError } from '@mds-core/mds-service-helpers'
 
 const agencyServerError = { error: 'server_error', error_description: 'Unknown server error' }
 
@@ -106,7 +107,9 @@ export const registerVehicle = async (req: AgencyApiRegisterVehicleRequest, res:
   try {
     isValidDevice(device)
   } catch (err) {
-    logger.info(`Device ValidationError for ${providerName(provider_id)}. Error: ${JSON.stringify(err)}`)
+    logger.info(
+      `Non-critical prototype Device ValidationError for ${providerName(provider_id)}. Error: ${JSON.stringify(err)}`
+    )
   }
 
   const failure = badDevice(device)
@@ -268,7 +271,9 @@ export const submitVehicleEvent = async (
   try {
     validateEvent(event)
   } catch (err) {
-    logger.info(`Event ValidationError for ${providerName(provider_id)}. Error: ${JSON.stringify(err)}`)
+    logger.info(
+      `Non-critical prototype Event ValidationError for ${providerName(provider_id)}. Error: ${JSON.stringify(err)}`
+    )
   }
 
   if (event.telemetry) {
@@ -293,7 +298,7 @@ export const submitVehicleEvent = async (
   }
 
   /* istanbul ignore next */
-  async function fail(err: Error | Partial<{ message: string }>): Promise<void> {
+  async function fail(err: Error | Partial<{ message: string }>, event: Partial<VehicleEvent>): Promise<void> {
     const message = err.message || String(err)
     if (message.includes('duplicate')) {
       logger.info('duplicate event', { name, event })
@@ -311,6 +316,13 @@ export const submitVehicleEvent = async (
       logger.error('post event fail:', { event, message })
       res.status(500).send(agencyServerError)
     }
+
+    await stream.writeEventError({
+      provider_id,
+      data: event,
+      recorded: now(),
+      error_message: message
+    })
   }
 
   // TODO switch to cache for speed?
@@ -332,6 +344,12 @@ export const submitVehicleEvent = async (
     const failure = (await badEvent(device, event)) || (event.telemetry ? badTelemetry(event.telemetry) : null)
     // TODO unify with fail() above
     if (failure) {
+      await stream.writeEventError({
+        provider_id,
+        data: event,
+        recorded: now(),
+        error_message: failure.error_description
+      })
       logger.info('event failure', { name, failure, event })
       return res.status(400).send(failure)
     }
@@ -358,7 +376,7 @@ export const submitVehicleEvent = async (
       await success()
     }
   } catch (err) {
-    await fail(err)
+    await fail(err, event)
   }
 }
 
@@ -374,6 +392,13 @@ export const submitVehicleTelemetry = async (
     res.status(400).send({
       error: 'bad_param',
       error_description: 'Bad or missing provider_id'
+    })
+    return
+  }
+  if (!data) {
+    res.status(400).send({
+      error: 'bad_param',
+      error_description: 'Missing data from post-body'
     })
     return
   }
@@ -412,7 +437,11 @@ export const submitVehicleTelemetry = async (
       try {
         isValidTelemetry(telemetry)
       } catch (err) {
-        logger.info(`Telemetry ValidationError for ${providerName(provider_id)}. Error: ${JSON.stringify(err)}`)
+        logger.info(
+          `Non-critical prototype Telemetry ValidationError for ${providerName(provider_id)}. Error: ${JSON.stringify(
+            err
+          )}`
+        )
       }
 
       const bad_telemetry: ErrorObject | null = badTelemetry(telemetry)
@@ -466,11 +495,14 @@ export const submitVehicleTelemetry = async (
       })
     }
   } catch (err) {
-    res.status(500).send({
-      error: 'server_error',
-      error_description: 'None of the provided data was valid',
-      error_details: [`device_id ${data[0].device_id}: not found`]
-    })
+    if (isError(err, NotFoundError))
+      return res.status(400).send({
+        error: 'unregistered',
+        error_description: 'Some of the devices are unregistered',
+        error_details: [data[0].device_id]
+      })
+
+    return res.status(500).send({ error: new ServerError() })
   }
 }
 
@@ -482,8 +514,8 @@ export const writeTripMetadata = async (
   try {
     const { provider_id } = res.locals
     /* TODO Add better validation once trip metadata proposal is solidified */
-    const tripMetadata = validateTripMetadata({ ...req.body, provider_id })
-    await Promise.all([cache.writeTripMetadata(tripMetadata), stream.writeTripMetadata(tripMetadata)])
+    const tripMetadata = { ...validateTripMetadata({ ...req.body, provider_id }), recorded: Date.now() }
+    await stream.writeTripMetadata(tripMetadata)
 
     return res.status(201).send(tripMetadata)
   } catch (error) {

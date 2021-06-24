@@ -27,7 +27,7 @@ import {
   tail,
   setEmptyArraysToUndefined
 } from '@mds-core/mds-utils'
-import { UUID, Timestamp, Device, VehicleEvent, Telemetry, BoundingBox, TripMetadata } from '@mds-core/mds-types'
+import { UUID, Timestamp, Device, VehicleEvent, Telemetry, BoundingBox } from '@mds-core/mds-types'
 import { RedisCache } from '@mds-core/mds-cache'
 
 import { parseTelemetry, parseEvent, parseDevice, parseCachedItem } from './unflatteners'
@@ -159,19 +159,18 @@ async function hwrite(suffix: string, item: CacheReadDeviceResult | Telemetry | 
   return updateVehicleList(device_id)
 }
 
-const writeTripMetadata = async (metadata: TripMetadata) => {
-  const { trip_id } = metadata
-
-  return client.set(decorateKey(`trip:${trip_id}:metadata`), JSON.stringify(metadata))
-}
-
 // put basics of device in the cache
 async function writeDevice(device: Device) {
-  if (!device) {
-    throw new Error('null device not legal to write')
-  }
+  try {
+    if (!device) {
+      throw new Error('null device not legal to write')
+    }
 
-  return hwrite('device', device)
+    return hwrite('device', device)
+  } catch (err) {
+    logger.error('Failed to write device to cache', err)
+    throw err
+  }
 }
 
 async function readKeys(pattern: string) {
@@ -424,7 +423,12 @@ async function writeOneTelemetry(telemetry: Telemetry) {
 }
 
 async function writeTelemetry(telemetries: Telemetry[]) {
-  await Promise.all(telemetries.map(telemetry => writeOneTelemetry(telemetry)))
+  try {
+    await Promise.all(telemetries.map(telemetry => writeOneTelemetry(telemetry)))
+  } catch (err) {
+    logger.error('Failed to write telemetry to cache', err)
+    throw err
+  }
 }
 
 async function readAllTelemetry() {
@@ -547,6 +551,5 @@ export default {
   readKeys,
   wipeDevice,
   updateVehicleList,
-  cleanup,
-  writeTripMetadata
+  cleanup
 }

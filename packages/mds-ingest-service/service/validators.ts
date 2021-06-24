@@ -17,7 +17,14 @@
 import Joi from 'joi'
 import { schemaValidator } from '@mds-core/mds-schema-validators'
 import { VEHICLE_TYPES, PROPULSION_TYPES, VEHICLE_EVENTS, VEHICLE_STATES } from '@mds-core/mds-types'
-import { DeviceDomainModel, EventDomainModel, TelemetryDomainModel } from '../@types'
+import {
+  DeviceDomainModel,
+  EventDomainModel,
+  TelemetryDomainModel,
+  GROUPING_TYPES,
+  GetVehicleEventsFilterParams
+} from '../@types'
+import { SchemaValidator } from '@mds-core/mds-schema-validators'
 
 export const {
   validate: validateDeviceDomainModel,
@@ -82,3 +89,26 @@ export const {
     })
     .unknown(false)
 )
+
+export const { validate: validateGetVehicleEventsFilterParams } = SchemaValidator<GetVehicleEventsFilterParams>({
+  type: 'object',
+  properties: {
+    vehicle_types: { type: 'array', items: { type: 'string', enum: [...new Set(VEHICLE_TYPES)] } },
+    propulsion_types: { type: 'array', items: { type: 'string', enum: [...PROPULSION_TYPES] } },
+    provider_ids: { type: 'array', items: { type: 'string', format: 'uuid' } },
+    vehicle_states: { type: 'array', items: { type: 'string', enum: [...new Set(VEHICLE_STATES)] } },
+    time_range: {
+      type: 'object',
+      properties: {
+        start: { type: 'integer', nullable: false },
+        end: { type: 'integer', nullable: false }
+      }
+    },
+    grouping_type: { type: 'string', enum: [...GROUPING_TYPES] },
+    vehicle_id: { type: 'string' },
+    device_ids: { type: 'array', items: { type: 'string', format: 'uuid' } },
+    event_types: { type: 'array', items: { type: 'string', enum: [...new Set(VEHICLE_EVENTS)] } },
+    limit: { type: 'integer' }
+  },
+  required: ['time_range']
+})
