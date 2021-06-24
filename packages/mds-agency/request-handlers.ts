@@ -21,15 +21,7 @@ import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-agency-cache'
 import stream from '@mds-core/mds-stream'
 import { providerName } from '@mds-core/mds-providers'
-import {
-  VehicleEvent,
-  Telemetry,
-  ErrorObject,
-  VEHICLE_EVENT,
-  UUID,
-  VEHICLE_STATE,
-  TRIP_STATE
-} from '@mds-core/mds-types'
+import { VehicleEvent, Telemetry, VEHICLE_EVENT, UUID, VEHICLE_STATE, TRIP_STATE } from '@mds-core/mds-types'
 import urls from 'url'
 import { parseRequest } from '@mds-core/mds-api-helpers'
 import {
@@ -60,7 +52,7 @@ import {
   agencyValidationErrorParser
 } from './utils'
 import { isError } from '@mds-core/mds-service-helpers'
-import { validateDeviceDomainModel } from '@mds-core/mds-ingest-service'
+import { validateDeviceDomainModel, validateTelemetryDomainModel } from '@mds-core/mds-ingest-service'
 
 const agencyServerError = { error: 'server_error', error_description: 'Unknown server error' }
 
@@ -422,36 +414,37 @@ export const submitVehicleTelemetry = async (
       valid: Telemetry[]
       failures: { telemetry: Telemetry; reason: string }[]
     }>(
-      ({ valid, failures }, { device_id, timestamp, charge, gps }) => {
-        const telemetry: Telemetry = {
-          device_id,
+      ({ valid, failures }, rawTelemetry) => {
+        const unvalidatedTelemetry: Telemetry = {
+          ...rawTelemetry,
           provider_id,
-          timestamp,
-          charge,
-          gps: {
-            lat: gps.lat,
-            lng: gps.lng,
-            altitude: gps.altitude,
-            heading: gps.heading,
-            speed: gps.speed,
-            accuracy: gps.hdop,
-            satellites: gps.satellites
-          },
           recorded
         }
 
-        const bad_telemetry: ErrorObject | null = badTelemetry(telemetry)
+        try {
+          const validatedTelemetry = validateTelemetryDomainModel(unvalidatedTelemetry)
 
-        if (bad_telemetry)
-          return {
-            valid,
-            failures: [...failures, { telemetry, reason: bad_telemetry.error_description }]
+          const { device_id } = validatedTelemetry
+
+          if (!deviceIds.has(device_id))
+            return {
+              valid,
+              failures: [...failures, { telemetry: rawTelemetry, reason: `device_id: ${device_id} not found` }]
+            }
+
+          return { valid: [...valid, validatedTelemetry], failures }
+        } catch (error) {
+          if (error instanceof ValidationError) {
+            const parsedError = agencyValidationErrorParser(error)
+
+            return {
+              valid,
+              failures: [...failures, { telemetry: unvalidatedTelemetry, reason: parsedError.error_description }]
+            }
           }
+        }
 
-        if (!deviceIds.has(telemetry.device_id))
-          return { valid, failures: [...failures, { telemetry, reason: `device_id: ${device_id} not found` }] }
-
-        return { valid: [...valid, telemetry], failures }
+        return { valid, failures }
       },
       { valid: [], failures: [] }
     )

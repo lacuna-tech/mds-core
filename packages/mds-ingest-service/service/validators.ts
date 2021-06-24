@@ -62,9 +62,10 @@ export const { validate: validateDeviceDomainModel, $schema: DeviceSchema } = Sc
         default: []
       },
       modality: { type: 'string', enum: MODALITIES, default: 'micromobility' },
-      year: { type: 'integer' },
-      mfgr: { type: 'string' },
-      model: { type: 'string' }
+      // ⬇⬇⬇ NULLABLE/OPTIONAL PROPERTIES ⬇⬇⬇
+      year: { type: 'integer', nullable: true, default: null },
+      mfgr: { type: 'string', nullable: true, default: null },
+      model: { type: 'string', nullable: true, default: null }
     },
     required: ['device_id', 'provider_id', 'vehicle_id', 'vehicle_type', 'propulsion_types']
   },
@@ -89,8 +90,35 @@ const telemetrySchema = Joi.object<TelemetryDomainModel>()
   })
   .unknown(false)
 
-export const { validate: validateTelemetryDomainModel, isValid: isValidTelemetryDomainModel } =
-  schemaValidator<DeviceDomainModel>(telemetrySchema)
+export const { validate: validateTelemetryDomainModel, $schema: TelemetrySchema } =
+  SchemaValidator<TelemetryDomainModel>(
+    {
+      $id: 'Telemetry',
+      type: 'object',
+      properties: {
+        device_id: uuidSchema,
+        provider_id: uuidSchema,
+        timestamp: { type: 'integer' },
+        gps: {
+          type: 'object',
+          properties: {
+            lat: { type: 'number', format: 'float' },
+            lng: { type: 'number', format: 'float' },
+            // ⬇⬇⬇ NULLABLE/OPTIONAL PROPERTIES ⬇⬇⬇
+            speed: { type: 'number', format: 'float', nullable: true, default: null },
+            heading: { type: 'number', format: 'float', nullable: true, default: null },
+            accuracy: { type: 'number', format: 'float', nullable: true, default: null },
+            altitude: { type: 'number', format: 'float', nullable: true, default: null }
+          },
+          required: ['lat', 'lng']
+        },
+        // ⬇⬇⬇ NULLABLE/OPTIONAL PROPERTIES ⬇⬇⬇
+        charge: { type: 'number', format: 'float', minimum: 0, maximum: 1.0, nullable: true, default: null }
+      },
+      required: ['device_id', 'provider_id', 'timestamp', 'gps']
+    },
+    { useDefaults: true }
+  )
 
 export const { validate: validateEventDomainModel, isValid: isValidEventDomainModel } =
   schemaValidator<DeviceDomainModel>(
