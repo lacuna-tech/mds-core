@@ -22,7 +22,8 @@ import {
   VEHICLE_EVENTS,
   VEHICLE_STATES,
   MODALITIES,
-  ACCESSIBILITY_OPTIONS
+  ACCESSIBILITY_OPTIONS,
+  UUID
 } from '@mds-core/mds-types'
 import {
   DeviceDomainModel,
@@ -131,4 +132,9 @@ export const { validate: validateGetVehicleEventsFilterParams } = SchemaValidato
     limit: { type: 'integer' }
   },
   required: ['time_range']
+})
+
+export const { validate: validateUUIDs } = SchemaValidator<UUID[]>({
+  type: 'array',
+  items: uuidSchema
 })
