@@ -27,5 +27,6 @@ const IngestServiceRpcClient = RpcClient(IngestServiceDefinition, {
 export const IngestServiceClient: ServiceClient<IngestService> = {
   name: (...args) => RpcRequest(IngestServiceRpcClient.name, args),
   getEvents: (...args) => RpcRequest(IngestServiceRpcClient.getEvents, args),
-  getDevices: (...args) => RpcRequest(IngestServiceRpcClient.getDevices, args)
+  getDevices: (...args) => RpcRequest(IngestServiceRpcClient.getDevices, args),
+  writeEventAnnotations: (...args) => RpcRequest(IngestServiceRpcClient.writeEventAnnotations, args)
 }

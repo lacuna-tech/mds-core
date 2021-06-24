@@ -100,14 +100,28 @@ export interface EventDomainModel extends RecordedColumn {
 
 export type EventDomainCreateModel = DomainModelCreate<Omit<EventDomainModel, keyof RecordedColumn>>
 
+export interface EventAnnotationDomainModel extends RecordedColumn {
+  device_id: UUID
+  timestamp: Timestamp
+  vehicle_id: string
+  vehicle_type: VEHICLE_TYPE
+  propulsion_types: PROPULSION_TYPE[]
+  geography_ids: UUID[]
+  latency_ms: Timestamp
+}
+
+export type EventAnnotationDomainCreateModel = DomainModelCreate<Omit<EventAnnotationDomainModel, keyof RecordedColumn>>
+
 export interface IngestService {
   name: () => string
   getEvents: (params: GetVehicleEventsFilterParams) => EventDomainModel[]
   getDevices: (ids: UUID[]) => DeviceDomainModel[]
+  writeEventAnnotations: (params: EventAnnotationDomainCreateModel[]) => EventAnnotationDomainModel[]
 }
 
 export const IngestServiceDefinition: RpcServiceDefinition<IngestService> = {
   name: RpcRoute<IngestService['name']>(),
   getEvents: RpcRoute<IngestService['getEvents']>(),
-  getDevices: RpcRoute<IngestService['getDevices']>()
+  getDevices: RpcRoute<IngestService['getDevices']>(),
+  writeEventAnnotations: RpcRoute<IngestService['writeEventAnnotations']>()
 }

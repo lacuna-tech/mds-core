@@ -21,6 +21,8 @@ import { UUID } from '@mds-core/mds-types'
 import {
   EventDomainModel,
   EventDomainCreateModel,
+  EventAnnotationDomainModel,
+  EventAnnotationDomainCreateModel,
   TelemetryDomainCreateModel,
   DeviceDomainCreateModel,
   GetVehicleEventsFilterParams,
@@ -29,12 +31,15 @@ import {
 import entities from './entities'
 import { DeviceEntity } from './entities/device-entity'
 import { EventEntity } from './entities/event-entity'
+import { EventAnnotationEntity } from './entities/event-annotation-entity'
 import { TelemetryEntity } from './entities/telemetry-entity'
 import {
   DeviceDomainToEntityCreate,
   DeviceEntityToDomain,
   EventDomainToEntityCreate,
   EventEntityToDomain,
+  EventAnnotationDomainToEntityCreate,
+  EventAnnotationEntityToDomain,
   TelemetryDomainToEntityCreate,
   TelemetryEntityToDomain
 } from './mappers'
@@ -99,6 +104,25 @@ class IngestReadWriteRepository extends ReadWriteRepository {
         .returning('*')
         .execute()
       return entities.map(DeviceEntityToDomain.map)
+    } catch (error) {
+      throw RepositoryError(error)
+    }
+  }
+
+  public createEventAnnotations = async (
+    eventAnnotations: EventAnnotationDomainCreateModel[]
+  ): Promise<EventAnnotationDomainModel[]> => {
+    const { connect } = this
+    try {
+      const connection = await connect('rw')
+      const { raw: entities }: InsertReturning<EventAnnotationEntity> = await connection
+        .getRepository(EventAnnotationEntity)
+        .createQueryBuilder()
+        .insert()
+        .values(eventAnnotations.map(EventAnnotationDomainToEntityCreate.mapper()))
+        .returning('*')
+        .execute()
+      return entities.map(EventAnnotationEntityToDomain.map)
     } catch (error) {
       throw RepositoryError(error)
     }
