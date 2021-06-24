@@ -22,11 +22,9 @@ import cache from '@mds-core/mds-agency-cache'
 import stream from '@mds-core/mds-stream'
 import { providerName } from '@mds-core/mds-providers'
 import {
-  Device,
   VehicleEvent,
   Telemetry,
   ErrorObject,
-  DeviceID,
   VEHICLE_EVENT,
   UUID,
   VEHICLE_STATE,
@@ -384,6 +382,7 @@ export const submitVehicleTelemetry = async (
   req: AgencyApiSubmitVehicleTelemetryRequest,
   res: AgencyApiSubmitVehicleTelemetryResponse
 ) => {
+  const recorded = now()
   const start = Date.now()
 
   const { data } = req.body
@@ -406,16 +405,33 @@ export const submitVehicleTelemetry = async (
   const failures: string[] = []
   const valid: Telemetry[] = []
 
-  const recorded = now()
-  const p: Promise<Device | DeviceID[]> =
-    data.length === 1 && isUUID(data[0].device_id)
-      ? db.readDevice(data[0].device_id, provider_id)
-      : db.readDeviceIds(provider_id)
   try {
-    const deviceOrDeviceIds = await p
-    const deviceIds = Array.isArray(deviceOrDeviceIds) ? deviceOrDeviceIds : [deviceOrDeviceIds]
+    const deviceIds = await (async () => {
+      if (data.length === 1) {
+        const [telemetry] = data
+
+        if ('device_id' in telemetry) {
+          const { device_id } = telemetry
+
+          if (isUUID(device_id)) {
+            const device = await db.readDevice(device_id, provider_id)
+
+            // Map with only one entry
+            return new Map<UUID, boolean>([[device.device_id, true]])
+          }
+        }
+      }
+
+      const deviceIdsWithProviderIds = await db.readDeviceIds(provider_id)
+
+      // Turn array returned to a Map for fast lookups
+      return deviceIdsWithProviderIds.reduce((acc, { device_id: deviceId }) => {
+        acc.set(deviceId, true)
+        return acc
+      }, new Map<UUID, boolean>())
+    })()
+
     for (const item of data) {
-      // make sure the device exists
       const { gps } = item
       const telemetry: Telemetry = {
         device_id: item.device_id,
@@ -449,7 +465,7 @@ export const submitVehicleTelemetry = async (
         const msg = `bad telemetry for device_id ${telemetry.device_id}: ${bad_telemetry.error_description}`
         // append to failure
         failures.push(msg)
-      } else if (!deviceIds.some(item2 => item2.device_id === telemetry.device_id)) {
+      } else if (!deviceIds.has(telemetry.device_id)) {
         const msg = `device_id ${telemetry.device_id}: not found`
         failures.push(msg)
       } else {
@@ -470,10 +486,9 @@ export const submitVehicleTelemetry = async (
         })
       }
       if (recorded_telemetry.length) {
-        res.status(201).send({
-          result: `telemetry success for ${valid.length} of ${data.length}`,
-          recorded: now(),
-          unique: recorded_telemetry.length,
+        res.status(200).send({
+          success: valid.length,
+          total: data.length,
           failures
         })
       } else {

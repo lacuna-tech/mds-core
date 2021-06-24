@@ -66,9 +66,8 @@ export type AgencyApiSubmitVehicleEventResponse = AgencyApiResponse<{
 }>
 
 export type AgencyApiSubmitVehicleTelemetryResponse = AgencyApiResponse<{
-  result: string
-  recorded: Timestamp
-  unique: number
+  success: number
+  total: number
   failures: string[]
 }>
 
