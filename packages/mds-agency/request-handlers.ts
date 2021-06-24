@@ -16,7 +16,7 @@
 
 import logger from '@mds-core/mds-logger'
 import { isUUID, now, ValidationError, normalizeToArray, ServerError, NotFoundError } from '@mds-core/mds-utils'
-import { isValidDevice, validateEvent, isValidTelemetry, validateTripMetadata } from '@mds-core/mds-schema-validators'
+import { isValidDevice, validateEvent, validateTripMetadata } from '@mds-core/mds-schema-validators'
 import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-agency-cache'
 import stream from '@mds-core/mds-stream'
@@ -401,12 +401,11 @@ export const submitVehicleTelemetry = async (
     })
     return
   }
+
   const name = providerName(provider_id)
-  const failures: string[] = []
-  const valid: Telemetry[] = []
 
   try {
-    const deviceIds: Map<UUID, Boolean> = await (async () => {
+    const deviceIds: Set<UUID> = await (async () => {
       if (data.length === 1) {
         const [telemetry] = data
 
@@ -417,61 +416,54 @@ export const submitVehicleTelemetry = async (
             const device = await db.readDevice(device_id, provider_id)
 
             // Map with only one entry
-            return new Map<UUID, boolean>([[device.device_id, true]])
+            return new Set<UUID>([device.device_id])
           }
         }
       }
 
       const deviceIdsWithProviderIds = await db.readDeviceIds(provider_id)
 
-      // Turn array returned to a Map for fast lookups
-      return deviceIdsWithProviderIds.reduce((acc, { device_id: deviceId }) => {
-        acc.set(deviceId, true)
-        return acc
-      }, new Map<UUID, boolean>())
+      // Turn array returned to a Set for fast lookups
+      return new Set(deviceIdsWithProviderIds.map(({ device_id }) => device_id))
     })()
 
-    for (const item of data) {
-      const { gps } = item
-      const telemetry: Telemetry = {
-        device_id: item.device_id,
-        provider_id,
-        timestamp: item.timestamp,
-        charge: item.charge,
-        gps: {
-          lat: gps.lat,
-          lng: gps.lng,
-          altitude: gps.altitude,
-          heading: gps.heading,
-          speed: gps.speed,
-          accuracy: gps.hdop,
-          satellites: gps.satellites
-        },
-        recorded
-      }
+    const { valid, failures } = data.reduce<{
+      valid: Telemetry[]
+      failures: { telemetry: Telemetry; reason: string }[]
+    }>(
+      ({ valid, failures }, { device_id, timestamp, charge, gps }) => {
+        const telemetry: Telemetry = {
+          device_id,
+          provider_id,
+          timestamp,
+          charge,
+          gps: {
+            lat: gps.lat,
+            lng: gps.lng,
+            altitude: gps.altitude,
+            heading: gps.heading,
+            speed: gps.speed,
+            accuracy: gps.hdop,
+            satellites: gps.satellites
+          },
+          recorded
+        }
 
-      try {
-        isValidTelemetry(telemetry)
-      } catch (err) {
-        logger.info(
-          `Non-critical prototype Telemetry ValidationError for ${providerName(provider_id)}. Error: ${JSON.stringify(
-            err
-          )}`
-        )
-      }
+        const bad_telemetry: ErrorObject | null = badTelemetry(telemetry)
 
-      const bad_telemetry: ErrorObject | null = badTelemetry(telemetry)
-      if (bad_telemetry) {
-        const msg = `bad telemetry for device_id ${telemetry.device_id}: ${bad_telemetry.error_description}`
-        // append to failure
-        failures.push(msg)
-      } else if (!deviceIds.has(telemetry.device_id)) {
-        const msg = `device_id ${telemetry.device_id}: not found`
-        failures.push(msg)
-      } else {
-        valid.push(telemetry)
-      }
-    }
+        if (bad_telemetry)
+          return {
+            valid,
+            failures: [...failures, { telemetry, reason: bad_telemetry.error_description }]
+          }
+
+        if (!deviceIds.has(telemetry.device_id))
+          return { valid, failures: [...failures, { telemetry, reason: `device_id: ${device_id} not found` }] }
+
+        return { valid: [...valid, telemetry], failures }
+      },
+      { valid: [], failures: [] }
+    )
 
     if (valid.length) {
       const recorded_telemetry = await writeTelemetry(valid)
@@ -489,7 +481,7 @@ export const submitVehicleTelemetry = async (
         res.status(200).send({
           success: valid.length,
           total: data.length,
-          failures
+          failures: failures.map(({ telemetry }) => telemetry)
         })
       } else {
         logger.info(`no unique telemetry in ${data.length} items for ${name}`)

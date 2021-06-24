@@ -68,7 +68,7 @@ export type AgencyApiSubmitVehicleEventResponse = AgencyApiResponse<{
 export type AgencyApiSubmitVehicleTelemetryResponse = AgencyApiResponse<{
   success: number
   total: number
-  failures: string[]
+  failures: Telemetry[]
 }>
 
 export type AgencyApiPostTripMetadataResponse = AgencyApiResponse<TripMetadata>
