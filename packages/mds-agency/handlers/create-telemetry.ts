@@ -168,8 +168,9 @@ export const createTelemetryHandler = async (
 
   if (!data) {
     return res.status(400).send({
-      error: 'bad_param',
-      error_description: 'Missing data from post-body'
+      error: 'missing_param',
+      error_description: 'A required parameter is missing.',
+      error_details: ['data']
     })
   }
 
@@ -213,7 +214,7 @@ export const createTelemetryHandler = async (
 
       return res.status(400).send({
         error: 'invalid_data',
-        error_description: 'None of the provided data was valid',
+        error_description: 'None of the provided data was valid.',
         error_details: [`device: ${data[0].device_id} not found`]
       })
     }

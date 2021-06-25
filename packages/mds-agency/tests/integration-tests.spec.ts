@@ -1159,7 +1159,7 @@ describe('Tests API', () => {
         done(err)
       })
   })
-  it('verifies post telemetry handling of empty data payload', done => {
+  it('verifies post telemetry handling of empty data payload fails', done => {
     request
       .post(pathPrefix('/vehicles/telemetry'))
       .set('Authorization', AUTH)
@@ -1169,7 +1169,9 @@ describe('Tests API', () => {
         if (err) {
           log('telemetry err', err)
         } else {
-          test.string(result.body.error_description).contains('Missing data from post-body')
+          test.string(result.body.error).contains('missing_param')
+          test.string(result.body.error_description).contains('A required parameter is missing.')
+          test.string(result.body.error_details[0]).contains('data')
         }
         done(err)
       })
