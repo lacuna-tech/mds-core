@@ -220,6 +220,7 @@ export const createTelemetryHandler = async (
 
     if (isError(err, ValidationError)) return res.status(400).send(agencyValidationErrorParser(err))
 
+    logger.error('createTelemetryHandler fatal error', { error: err })
     return res.status(500).send({ error: new ServerError() })
   }
 }
