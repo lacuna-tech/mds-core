@@ -14,23 +14,23 @@
  * limitations under the License.
  */
 
-import Joi from 'joi'
 import { schemaValidator, SchemaValidator } from '@mds-core/mds-schema-validators'
 import {
-  VEHICLE_TYPES,
+  ACCESSIBILITY_OPTIONS,
+  MODALITIES,
   PROPULSION_TYPES,
+  UUID,
   VEHICLE_EVENTS,
   VEHICLE_STATES,
-  MODALITIES,
-  ACCESSIBILITY_OPTIONS,
-  UUID
+  VEHICLE_TYPES
 } from '@mds-core/mds-types'
+import Joi from 'joi'
 import {
   DeviceDomainModel,
   EventDomainModel,
-  TelemetryDomainModel,
+  GetVehicleEventsFilterParams,
   GROUPING_TYPES,
-  GetVehicleEventsFilterParams
+  TelemetryDomainModel
 } from '../@types'
 
 const uuidSchema = { type: 'string', format: 'uuid' }
@@ -119,7 +119,7 @@ export const { validate: validateTelemetryDomainModel, $schema: TelemetrySchema 
           required: ['lat', 'lng']
         },
         // ⬇⬇⬇ NULLABLE/OPTIONAL PROPERTIES ⬇⬇⬇
-        charge: { type: 'number', format: 'float', minimum: 0, maximum: 1.0, nullable: true, default: null },
+        charge: { ...nullableFloat, minimum: 0, maximum: 1.0 },
         stop_id: { ...uuidSchema, nullable: true, default: null }
       },
       required: ['device_id', 'provider_id', 'timestamp', 'gps']
