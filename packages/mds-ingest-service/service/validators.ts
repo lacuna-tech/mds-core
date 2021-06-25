@@ -34,6 +34,9 @@ import {
 } from '../@types'
 
 const uuidSchema = { type: 'string', format: 'uuid' }
+const nullableInteger = { type: 'integer', nullable: true, default: null }
+const nullableFloat = { type: 'number', format: 'float', nullable: true, default: null }
+const nullableString = { type: 'string', nullable: true, default: null }
 
 export const { validate: validateDeviceDomainModel, $schema: DeviceSchema } = SchemaValidator<DeviceDomainModel>(
   {
@@ -63,9 +66,9 @@ export const { validate: validateDeviceDomainModel, $schema: DeviceSchema } = Sc
       },
       modality: { type: 'string', enum: MODALITIES, default: 'micromobility' },
       // ⬇⬇⬇ NULLABLE/OPTIONAL PROPERTIES ⬇⬇⬇
-      year: { type: 'integer', nullable: true, default: null },
-      mfgr: { type: 'string', nullable: true, default: null },
-      model: { type: 'string', nullable: true, default: null }
+      year: nullableInteger,
+      mfgr: nullableString,
+      model: nullableString
     },
     required: ['device_id', 'provider_id', 'vehicle_id', 'vehicle_type', 'propulsion_types']
   },
@@ -89,10 +92,6 @@ const telemetrySchema = Joi.object<TelemetryDomainModel>()
     charge: Joi.number().allow(null)
   })
   .unknown(false)
-
-const nullableInteger = { type: 'integer', nullable: true, default: null }
-
-const nullableFloat = { type: 'number', format: 'float', nullable: true, default: null }
 
 export const { validate: validateTelemetryDomainModel, $schema: TelemetrySchema } =
   SchemaValidator<TelemetryDomainModel>(
