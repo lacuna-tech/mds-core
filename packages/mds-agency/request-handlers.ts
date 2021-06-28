@@ -17,12 +17,12 @@
 import cache from '@mds-core/mds-agency-cache'
 import { parseRequest } from '@mds-core/mds-api-helpers'
 import db from '@mds-core/mds-db'
-import { validateDeviceDomainModel } from '@mds-core/mds-ingest-service'
+import { validateDeviceDomainModel, validateEventDomainModel } from '@mds-core/mds-ingest-service'
 import logger from '@mds-core/mds-logger'
 import { providerName } from '@mds-core/mds-providers'
-import { validateEvent, validateTripMetadata } from '@mds-core/mds-schema-validators'
+import { validateTripMetadata } from '@mds-core/mds-schema-validators'
 import stream from '@mds-core/mds-stream'
-import { TRIP_STATE, UUID, VehicleEvent, VEHICLE_EVENT, VEHICLE_STATE } from '@mds-core/mds-types'
+import { UUID, VehicleEvent, VEHICLE_STATE } from '@mds-core/mds-types'
 import { normalizeToArray, now, ServerError, ValidationError } from '@mds-core/mds-utils'
 import urls from 'url'
 import {
@@ -40,14 +40,7 @@ import {
   AgencyApiUpdateVehicleRequest,
   AgencyApiUpdateVehicleResponse
 } from './types'
-import {
-  agencyValidationErrorParser,
-  badEvent,
-  computeCompositeVehicleData,
-  getVehicles,
-  lower,
-  readPayload
-} from './utils'
+import { agencyValidationErrorParser, badEvent, computeCompositeVehicleData, getVehicles, readPayload } from './utils'
 
 const agencyServerError = { error: 'server_error', error_description: 'Unknown server error' }
 
@@ -228,54 +221,24 @@ export const submitVehicleEvent = async (
 
   const recorded = now()
 
-  const event: VehicleEvent = {
+  const unparsedEvent = {
+    ...req.body,
     device_id: req.params.device_id,
-    provider_id: res.locals.provider_id,
-    event_types:
-      req.body.event_types && Array.isArray(req.body.event_types)
-        ? (req.body.event_types.map(lower) as VEHICLE_EVENT[])
-        : req.body.event_types, // FIXME: this is super not the best way of doing things. Need to use better validation.
-    vehicle_state: req.body.vehicle_state as VEHICLE_STATE,
-    trip_state: req.body.trip_state ? (req.body.trip_state as TRIP_STATE) : null,
-    telemetry: req.body.telemetry ? { ...req.body.telemetry, provider_id: res.locals.provider_id } : null,
-    timestamp: req.body.timestamp,
-    trip_id: req.body.trip_id,
-    recorded,
-    telemetry_timestamp: undefined // added for diagnostic purposes
-  }
-
-  try {
-    validateEvent(event)
-  } catch (err) {
-    logger.info(
-      `Non-critical prototype Event ValidationError for ${providerName(provider_id)}. Error: ${JSON.stringify(err)}`
-    )
-  }
-
-  if (event.telemetry) {
-    event.telemetry_timestamp = event.telemetry.timestamp
-  }
-
-  async function success() {
-    function fin() {
-      res.status(201).send({
-        device_id,
-        state: event.vehicle_state
-      })
-    }
-    const delta = now() - recorded
-
-    if (delta > 100) {
-      logger.info(`${name} post event took ${delta} ms`)
-      fin()
-    } else {
-      fin()
-    }
+    provider_id,
+    recorded
   }
 
   /* istanbul ignore next */
   async function fail(err: Error | Partial<{ message: string }>, event: Partial<VehicleEvent>): Promise<void> {
     const message = err.message || String(err)
+
+    await stream.writeEventError({
+      provider_id,
+      data: event,
+      recorded: now(),
+      error_message: message
+    })
+
     if (message.includes('duplicate')) {
       logger.info('duplicate event', { name, event })
       res.status(400).send({
@@ -292,18 +255,32 @@ export const submitVehicleEvent = async (
       logger.error('post event fail:', { event, message })
       res.status(500).send(agencyServerError)
     }
-
-    await stream.writeEventError({
-      provider_id,
-      data: event,
-      recorded: now(),
-      error_message: message
-    })
   }
 
-  // TODO switch to cache for speed?
   try {
+    const event = (() => {
+      const parsedEvent = validateEventDomainModel(unparsedEvent)
+
+      const { telemetry, device_id } = parsedEvent
+
+      if (telemetry) {
+        const { timestamp: telemetry_timestamp } = telemetry
+
+        return { ...parsedEvent, telemetry_timestamp, telemetry: { ...telemetry, device_id } }
+      }
+
+      return parsedEvent
+    })()
+
+    // TODO switch to cache for speed?
     const device = await db.readDevice(event.device_id, provider_id)
+
+    const invalidState = badEvent(device, event)
+
+    if (invalidState) {
+      res.status(400).send(invalidState)
+    }
+
     try {
       await cache.readDevice(event.device_id)
     } catch (err) {
@@ -314,23 +291,9 @@ export const submitVehicleEvent = async (
         logger.warn(`Error writing to cache/stream ${error}`)
       }
     }
-    if (event.telemetry) {
-      event.telemetry.device_id = event.device_id
-    }
-    const failure = await badEvent(device, event)
-    // TODO unify with fail() above
-    if (failure) {
-      await stream.writeEventError({
-        provider_id,
-        data: event,
-        recorded: now(),
-        error_message: failure.error_description
-      })
-      logger.info('event failure', { name, failure, event })
-      return res.status(400).send(failure)
-    }
 
     const { telemetry } = event
+
     if (telemetry) {
       await db.writeTelemetry(normalizeToArray(telemetry))
     }
@@ -338,6 +301,22 @@ export const submitVehicleEvent = async (
     // database write is crucial; failures of cache/stream should be noted and repaired
     const recorded_event = await db.writeEvent(event)
 
+    async function success() {
+      function fin() {
+        res.status(201).send({
+          device_id,
+          state: event.vehicle_state
+        })
+      }
+      const delta = now() - recorded
+
+      if (delta > 100) {
+        logger.info(`${name} post event took ${delta} ms`)
+        fin()
+      } else {
+        fin()
+      }
+    }
     try {
       await Promise.all([cache.writeEvent(recorded_event), stream.writeEvent(recorded_event)])
 
@@ -352,7 +331,9 @@ export const submitVehicleEvent = async (
       await success()
     }
   } catch (err) {
-    await fail(err, event)
+    if (err instanceof ValidationError) return res.status(400).send(agencyValidationErrorParser(err))
+
+    await fail(err, unparsedEvent)
   }
 }
 

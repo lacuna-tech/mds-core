@@ -649,7 +649,7 @@ describe('Tests API', () => {
       })
       .expect(400)
       .end((err, result) => {
-        test.string(result.body.error_description).contains('invalid')
+        test.string(result.body.error_description).contains('A validation error occurred.')
         done(err)
       })
   })
@@ -665,7 +665,7 @@ describe('Tests API', () => {
       .expect(400)
       .end((err, result) => {
         log(err, result.body)
-        test.string(result.body.error_description).contains('invalid')
+        test.string(result.body.error_description).contains('A validation error occurred.')
         done(err)
       })
   })
@@ -717,7 +717,7 @@ describe('Tests API', () => {
       .end((err, result) => {
         // log('post event', result.body)
         test.string(result.body.error).contains('bad')
-        test.string(result.body.error_description).contains('invalid')
+        test.string(result.body.error_description).contains('A validation error occurred.')
         done(err)
       })
   })
@@ -946,8 +946,8 @@ describe('Tests API', () => {
       .expect(400)
       .end((err, result) => {
         log(result.body)
-        test.string(result.body.error).contains('bad')
-        test.string(result.body.error_description).contains('invalid')
+        test.string(result.body.error).contains('bad_param')
+        test.string(result.body.error_description).contains('A validation error occurred.')
         done(err)
       })
   })
@@ -1665,7 +1665,7 @@ describe('Tests for taxi modality', async () => {
   for (const microEvent of MICRO_MOBILITY_EVENTS_NOT_IN_TAXI_EVENTS) {
     const validStates = MICRO_MOBILITY_EVENT_STATES_MAP[microEvent]
     for (const vehicle_state of validStates) {
-      it('verifies cannot send micromobility type event for a taxi', done => {
+      it(`verifies cannot send micromobility type event: ${microEvent} for a taxi`, done => {
         const { device_id } = TEST_TAXI
         request
           .post(pathPrefix(`/vehicles/${device_id}/event`))
@@ -1674,7 +1674,10 @@ describe('Tests for taxi modality', async () => {
             event_types: [microEvent],
             vehicle_state,
             telemetry: TEST_TELEMETRY,
-            timestamp: now()
+            timestamp: now(),
+            ...(microEvent.startsWith('trip_')
+              ? { trip_id: '1f943d59-ccc9-4d91-b6e2-0c5e771cbc6b', trip_state: vehicle_state as TRIP_STATE }
+              : {})
           })
           .expect(400)
           .end((err, result) => {
@@ -1740,7 +1743,7 @@ describe('Tests for tnc modality', async () => {
   for (const microEvent of MICRO_MOBILITY_EVENTS_NOT_IN_TNC_EVENTS) {
     const validStates = MICRO_MOBILITY_EVENT_STATES_MAP[microEvent]
     for (const vehicle_state of validStates) {
-      it('verifies cannot send micromobility type event for a tnc', done => {
+      it(`verifies cannot send micromobility type event: ${microEvent} for a tnc`, done => {
         const { device_id } = TEST_TNC
         request
           .post(pathPrefix(`/vehicles/${device_id}/event`))
@@ -1749,7 +1752,10 @@ describe('Tests for tnc modality', async () => {
             event_types: [microEvent],
             vehicle_state,
             telemetry: TEST_TELEMETRY,
-            timestamp: now()
+            timestamp: now(),
+            ...(microEvent.startsWith('trip_')
+              ? { trip_id: '1f943d59-ccc9-4d91-b6e2-0c5e771cbc6b', trip_state: vehicle_state as TRIP_STATE }
+              : {})
           })
           .expect(400)
           .end((err, result) => {
