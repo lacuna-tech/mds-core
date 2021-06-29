@@ -184,73 +184,88 @@ export async function getVehicles(
   }
 }
 
-// TODO Joi
-export function badEvent({ modality }: Pick<Device, 'modality'>, event: VehicleEvent) {
-  if (modality === 'micromobility') {
-    for (const event_type of event.event_types) {
-      if (!MICRO_MOBILITY_VEHICLE_EVENTS.includes(event_type as MICRO_MOBILITY_VEHICLE_EVENT))
-        return { error: 'bad_param', error_description: `invalid event_type in event_types ${event_type}` }
-    }
-
-    if (!MICRO_MOBILITY_VEHICLE_STATES.includes(event.vehicle_state as MICRO_MOBILITY_VEHICLE_STATE)) {
-      return { error: 'bad_param', error_description: `invalid vehicle_state ${event.vehicle_state}` }
-    }
-  } else if (modality === 'taxi') {
-    for (const event_type of event.event_types) {
-      if (!TAXI_VEHICLE_EVENTS.includes(event_type as TAXI_VEHICLE_EVENT))
-        return { error: 'bad_param', error_description: `invalid event_type in event_types ${event_type}` }
-    }
-
-    if (!TAXI_VEHICLE_STATES.includes(event.vehicle_state as TAXI_VEHICLE_STATE)) {
-      return { error: 'bad_param', error_description: `invalid vehicle_state ${event.vehicle_state}` }
-    }
-
-    if (
-      event.trip_id &&
-      TRIP_STATES.includes(event.vehicle_state as TRIP_STATE) &&
-      !areThereCommonElements(TAXI_TRIP_EXIT_EVENTS, event.event_types)
-    ) {
-      if (!event.trip_state) {
-        return { error: 'missing_param', error_description: `missing enum field "trip_state" required on trip events` }
+/**
+ *
+ * @param param0 Some object containing a modality (e.g. `Device`)
+ * @param event MDS Event
+ * @returns Error if applicable, null otherwise.
+ */
+export function eventValidForMode({ modality }: Pick<Device, 'modality'>, event: VehicleEvent) {
+  switch (modality) {
+    case 'micromobility': {
+      for (const event_type of event.event_types) {
+        if (!MICRO_MOBILITY_VEHICLE_EVENTS.includes(event_type as MICRO_MOBILITY_VEHICLE_EVENT))
+          return { error: 'bad_param', error_description: `invalid event_type in event_types ${event_type}` }
       }
 
-      if (event.trip_state && !TRIP_STATES.includes(event.trip_state)) {
-        return { error: 'bad_param', error_description: `invalid trip_state ${event.trip_state}` }
-      }
-    }
-  } else if (modality === 'tnc') {
-    for (const event_type of event.event_types) {
-      if (!TNC_VEHICLE_EVENT.includes(event_type as TNC_VEHICLE_EVENT))
-        return { error: 'bad_param', error_description: `invalid event_type in event_types ${event_type}` }
-    }
-
-    if (!TNC_VEHICLE_STATE.includes(event.vehicle_state as TNC_VEHICLE_STATE)) {
-      return { error: 'bad_param', error_description: `invalid vehicle_state ${event.vehicle_state}` }
-    }
-
-    if (
-      event.trip_id &&
-      TRIP_STATES.includes(event.vehicle_state as TRIP_STATE) &&
-      !areThereCommonElements(TNC_TRIP_EXIT_EVENTS, event.event_types)
-    ) {
-      if (!event.trip_state) {
-        return { error: 'missing_param', error_description: `missing enum field "trip_state" required on trip events` }
+      if (!MICRO_MOBILITY_VEHICLE_STATES.includes(event.vehicle_state as MICRO_MOBILITY_VEHICLE_STATE)) {
+        return { error: 'bad_param', error_description: `invalid vehicle_state ${event.vehicle_state}` }
       }
 
-      if (event.trip_state && !TRIP_STATES.includes(event.trip_state)) {
-        return { error: 'bad_param', error_description: `invalid trip_state ${event.trip_state}` }
-      }
+      break
     }
-  } else {
-    return { error: 'bad_param', error_description: `invalid event_types in ${event.event_types}` }
+    case 'taxi': {
+      for (const event_type of event.event_types) {
+        if (!TAXI_VEHICLE_EVENTS.includes(event_type as TAXI_VEHICLE_EVENT))
+          return { error: 'bad_param', error_description: `invalid event_type in event_types ${event_type}` }
+      }
+
+      if (!TAXI_VEHICLE_STATES.includes(event.vehicle_state as TAXI_VEHICLE_STATE)) {
+        return { error: 'bad_param', error_description: `invalid vehicle_state ${event.vehicle_state}` }
+      }
+
+      if (
+        event.trip_id &&
+        TRIP_STATES.includes(event.vehicle_state as TRIP_STATE) &&
+        !areThereCommonElements(TAXI_TRIP_EXIT_EVENTS, event.event_types)
+      ) {
+        if (!event.trip_state) {
+          return {
+            error: 'missing_param',
+            error_description: `missing enum field "trip_state" required on trip events`
+          }
+        }
+
+        if (event.trip_state && !TRIP_STATES.includes(event.trip_state)) {
+          return { error: 'bad_param', error_description: `invalid trip_state ${event.trip_state}` }
+        }
+      }
+
+      break
+    }
+    case 'tnc':
+      {
+        for (const event_type of event.event_types) {
+          if (!TNC_VEHICLE_EVENT.includes(event_type as TNC_VEHICLE_EVENT))
+            return { error: 'bad_param', error_description: `invalid event_type in event_types ${event_type}` }
+        }
+
+        if (!TNC_VEHICLE_STATE.includes(event.vehicle_state as TNC_VEHICLE_STATE)) {
+          return { error: 'bad_param', error_description: `invalid vehicle_state ${event.vehicle_state}` }
+        }
+
+        if (
+          event.trip_id &&
+          TRIP_STATES.includes(event.vehicle_state as TRIP_STATE) &&
+          !areThereCommonElements(TNC_TRIP_EXIT_EVENTS, event.event_types)
+        ) {
+          if (!event.trip_state) {
+            return {
+              error: 'missing_param',
+              error_description: `missing enum field "trip_state" required on trip events`
+            }
+          }
+
+          if (event.trip_state && !TRIP_STATES.includes(event.trip_state)) {
+            return { error: 'bad_param', error_description: `invalid trip_state ${event.trip_state}` }
+          }
+        }
+      }
+
+      break
   }
-}
 
-export function lower(s: string): string {
-  if (typeof s === 'string') {
-    return s.toLowerCase()
-  }
-  return s
+  return null
 }
 
 export async function writeTelemetry(telemetry: Telemetry | Telemetry[]) {

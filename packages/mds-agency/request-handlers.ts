@@ -17,13 +17,13 @@
 import cache from '@mds-core/mds-agency-cache'
 import { parseRequest } from '@mds-core/mds-api-helpers'
 import db from '@mds-core/mds-db'
-import { validateDeviceDomainModel, validateEventDomainModel } from '@mds-core/mds-ingest-service'
+import { validateDeviceDomainModel } from '@mds-core/mds-ingest-service'
 import logger from '@mds-core/mds-logger'
 import { providerName } from '@mds-core/mds-providers'
 import { validateTripMetadata } from '@mds-core/mds-schema-validators'
 import stream from '@mds-core/mds-stream'
-import { UUID, VehicleEvent, VEHICLE_STATE } from '@mds-core/mds-types'
-import { normalizeToArray, now, ServerError, ValidationError } from '@mds-core/mds-utils'
+import { UUID, VEHICLE_STATE } from '@mds-core/mds-types'
+import { now, ServerError, ValidationError } from '@mds-core/mds-utils'
 import urls from 'url'
 import {
   AgencyAipGetVehicleByIdResponse,
@@ -35,14 +35,11 @@ import {
   AgencyApiRegisterVehicleRequest,
   AgencyApiRegisterVehicleResponse,
   AgencyApiRequest,
-  AgencyApiSubmitVehicleEventRequest,
-  AgencyApiSubmitVehicleEventResponse,
   AgencyApiUpdateVehicleRequest,
-  AgencyApiUpdateVehicleResponse
+  AgencyApiUpdateVehicleResponse,
+  agencyServerError
 } from './types'
-import { agencyValidationErrorParser, badEvent, computeCompositeVehicleData, getVehicles, readPayload } from './utils'
-
-const agencyServerError = { error: 'server_error', error_description: 'Unknown server error' }
+import { agencyValidationErrorParser, computeCompositeVehicleData, getVehicles, readPayload } from './utils'
 
 export const registerVehicle = async (req: AgencyApiRegisterVehicleRequest, res: AgencyApiRegisterVehicleResponse) => {
   const { body } = req
@@ -207,133 +204,6 @@ export const updateVehicle = async (req: AgencyApiUpdateVehicleRequest, res: Age
     }
   } catch (err) {
     await updateVehicleFail(req, res, provider_id, device_id, 'not found')
-  }
-}
-
-export const submitVehicleEvent = async (
-  req: AgencyApiSubmitVehicleEventRequest,
-  res: AgencyApiSubmitVehicleEventResponse
-) => {
-  const { device_id } = req.params
-
-  const { provider_id } = res.locals
-  const name = providerName(provider_id || 'unknown')
-
-  const recorded = now()
-
-  const unparsedEvent = {
-    ...req.body,
-    device_id: req.params.device_id,
-    provider_id,
-    recorded
-  }
-
-  /* istanbul ignore next */
-  async function fail(err: Error | Partial<{ message: string }>, event: Partial<VehicleEvent>): Promise<void> {
-    const message = err.message || String(err)
-
-    await stream.writeEventError({
-      provider_id,
-      data: event,
-      recorded: now(),
-      error_message: message
-    })
-
-    if (message.includes('duplicate')) {
-      logger.info('duplicate event', { name, event })
-      res.status(400).send({
-        error: 'bad_param',
-        error_description: 'An event with this device_id and timestamp has already been received'
-      })
-    } else if (message.includes('not found') || message.includes('unregistered')) {
-      logger.info('event for unregistered', { name, event })
-      res.status(400).send({
-        error: 'unregistered',
-        error_description: 'The specified device_id has not been registered'
-      })
-    } else {
-      logger.error('post event fail:', { event, message })
-      res.status(500).send(agencyServerError)
-    }
-  }
-
-  try {
-    const event = (() => {
-      const parsedEvent = validateEventDomainModel(unparsedEvent)
-
-      const { telemetry, device_id } = parsedEvent
-
-      if (telemetry) {
-        const { timestamp: telemetry_timestamp } = telemetry
-
-        return { ...parsedEvent, telemetry_timestamp, telemetry: { ...telemetry, device_id } }
-      }
-
-      return parsedEvent
-    })()
-
-    // TODO switch to cache for speed?
-    const device = await db.readDevice(event.device_id, provider_id)
-
-    const invalidState = badEvent(device, event)
-
-    if (invalidState) {
-      res.status(400).send(invalidState)
-    }
-
-    try {
-      await cache.readDevice(event.device_id)
-    } catch (err) {
-      try {
-        await Promise.all([cache.writeDevice(device), stream.writeDevice(device)])
-        logger.info('Re-adding previously deregistered device to cache', err)
-      } catch (error) {
-        logger.warn(`Error writing to cache/stream ${error}`)
-      }
-    }
-
-    const { telemetry } = event
-
-    if (telemetry) {
-      await db.writeTelemetry(normalizeToArray(telemetry))
-    }
-
-    // database write is crucial; failures of cache/stream should be noted and repaired
-    const recorded_event = await db.writeEvent(event)
-
-    async function success() {
-      function fin() {
-        res.status(201).send({
-          device_id,
-          state: event.vehicle_state
-        })
-      }
-      const delta = now() - recorded
-
-      if (delta > 100) {
-        logger.info(`${name} post event took ${delta} ms`)
-        fin()
-      } else {
-        fin()
-      }
-    }
-    try {
-      await Promise.all([cache.writeEvent(recorded_event), stream.writeEvent(recorded_event)])
-
-      if (telemetry) {
-        telemetry.recorded = recorded
-        await Promise.all([cache.writeTelemetry([telemetry]), stream.writeTelemetry([telemetry])])
-      }
-
-      await success()
-    } catch (err) {
-      logger.warn('/event exception cache/stream', err)
-      await success()
-    }
-  } catch (err) {
-    if (err instanceof ValidationError) return res.status(400).send(agencyValidationErrorParser(err))
-
-    await fail(err, unparsedEvent)
   }
 }
 

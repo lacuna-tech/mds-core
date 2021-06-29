@@ -1365,10 +1365,15 @@ describe('Tests API', () => {
       .expect(400)
   })
   it('verifies post telemetry bulk with one unregistered device partially succeeds', async () => {
-    const telemetry = [
-      { ...TEST_TELEMETRY, timestamp: TEST_TELEMETRY.timestamp + 1 },
-      { ...TEST_TELEMETRY, device_id: uuid() }
-    ]
+    const devices = [...makeDevices(1, now(), TEST1_PROVIDER_ID), ...makeDevices(1, now(), TEST2_PROVIDER_ID)]
+    const telemetry = makeTelemetry(devices, now())
+
+    const [deviceToRegister] = devices
+
+    await Promise.all([
+      db.seed({ devices: [deviceToRegister] }),
+      cache.seed({ devices: [deviceToRegister], telemetry: [], events: [] })
+    ])
 
     const result = await request
       .post(pathPrefix('/vehicles/telemetry'))
