@@ -37,7 +37,7 @@ import {
   AgencyApiRequest,
   AgencyApiUpdateVehicleRequest,
   AgencyApiUpdateVehicleResponse,
-  agencyServerError
+  AgencyServerError
 } from './types'
 import { agencyValidationErrorParser, computeCompositeVehicleData, getVehicles, readPayload } from './utils'
 
@@ -106,7 +106,7 @@ export const registerVehicle = async (req: AgencyApiRegisterVehicleRequest, res:
     }
 
     logger.error('register vehicle failed:', { err: error, providerName: providerName(res.locals.provider_id) })
-    return res.status(500).send(agencyServerError)
+    return res.status(500).send(AgencyServerError)
   }
 }
 
@@ -151,7 +151,7 @@ export const getVehiclesByProvider = async (
     return res.status(200).send({ ...response })
   } catch (err) {
     logger.error('getVehicles fail', err)
-    return res.status(500).send(agencyServerError)
+    return res.status(500).send(AgencyServerError)
   }
 }
 
@@ -173,7 +173,7 @@ export async function updateVehicleFail(
     res.status(404).send({})
   } else {
     logger.error(`fail PUT /vehicles/${device_id}`, { providerName: providerName(provider_id), body: req.body, error })
-    res.status(500).send(agencyServerError)
+    res.status(500).send(AgencyServerError)
   }
 }
 

@@ -45,6 +45,7 @@ import {
   TNC_VEHICLE_EVENT,
   TripMetadata,
   TRIP_STATE,
+  TRIP_STATES,
   VehicleEvent
 } from '@mds-core/mds-types'
 import { pathPrefix, uuid } from '@mds-core/mds-utils'
@@ -1643,9 +1644,8 @@ describe('Tests for taxi modality', async () => {
           vehicle_state,
           telemetry: TEST_TELEMETRY,
           timestamp: now(),
-          ...(taxiEvent.startsWith('trip_')
-            ? { trip_id: '1f943d59-ccc9-4d91-b6e2-0c5e771cbc6b', trip_state: vehicle_state as TRIP_STATE }
-            : {})
+          ...(taxiEvent.startsWith('trip_') ? { trip_id: '1f943d59-ccc9-4d91-b6e2-0c5e771cbc6b' } : {}),
+          ...(TRIP_STATES.includes(vehicle_state as any) ? { trip_state: vehicle_state as TRIP_STATE } : {})
         }
         request
           .post(pathPrefix(`/vehicles/${device_id}/event`))
@@ -1680,9 +1680,8 @@ describe('Tests for taxi modality', async () => {
             vehicle_state,
             telemetry: TEST_TELEMETRY,
             timestamp: now(),
-            ...(microEvent.startsWith('trip_')
-              ? { trip_id: '1f943d59-ccc9-4d91-b6e2-0c5e771cbc6b', trip_state: vehicle_state as TRIP_STATE }
-              : {})
+            ...(microEvent.startsWith('trip_') ? { trip_id: '1f943d59-ccc9-4d91-b6e2-0c5e771cbc6b' } : {}),
+            ...(TRIP_STATES.includes(vehicle_state as any) ? { trip_state: vehicle_state as TRIP_STATE } : {})
           })
           .expect(400)
           .end((err, result) => {
@@ -1721,9 +1720,8 @@ describe('Tests for tnc modality', async () => {
           vehicle_state,
           telemetry: TEST_TELEMETRY,
           timestamp: now(),
-          ...(tncEvent.startsWith('trip_')
-            ? { trip_id: '1f943d59-ccc9-4d91-b6e2-0c5e771cbc6b', trip_state: vehicle_state as TRIP_STATE }
-            : {})
+          ...(tncEvent.startsWith('trip_') ? { trip_id: '1f943d59-ccc9-4d91-b6e2-0c5e771cbc6b' } : {}),
+          ...(TRIP_STATES.includes(vehicle_state as any) ? { trip_state: vehicle_state as TRIP_STATE } : {})
         }
         request
           .post(pathPrefix(`/vehicles/${device_id}/event`))
@@ -1758,9 +1756,8 @@ describe('Tests for tnc modality', async () => {
             vehicle_state,
             telemetry: TEST_TELEMETRY,
             timestamp: now(),
-            ...(microEvent.startsWith('trip_')
-              ? { trip_id: '1f943d59-ccc9-4d91-b6e2-0c5e771cbc6b', trip_state: vehicle_state as TRIP_STATE }
-              : {})
+            ...(microEvent.startsWith('trip_') ? { trip_id: '1f943d59-ccc9-4d91-b6e2-0c5e771cbc6b' } : {}),
+            ...(TRIP_STATES.includes(vehicle_state as any) ? { trip_state: vehicle_state as TRIP_STATE } : {})
           })
           .expect(400)
           .end((err, result) => {
