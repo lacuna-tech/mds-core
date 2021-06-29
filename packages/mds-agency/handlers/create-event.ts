@@ -4,7 +4,7 @@ import { validateEventDomainModel } from '@mds-core/mds-ingest-service'
 import logger from '@mds-core/mds-logger'
 import { providerName } from '@mds-core/mds-providers'
 import stream from '@mds-core/mds-stream'
-import { UUID, VehicleEvent } from '@mds-core/mds-types'
+import { Device, UUID, VehicleEvent } from '@mds-core/mds-types'
 import { normalizeToArray, now, ValidationError } from '@mds-core/mds-utils'
 import { AgencyApiSubmitVehicleEventRequest, AgencyApiSubmitVehicleEventResponse, AgencyServerError } from '../types'
 import { agencyValidationErrorParser, eventValidForMode } from '../utils'
@@ -79,6 +79,24 @@ const sendSuccess = (
   })
 }
 
+/**
+ * Refreshes the cache if a device was previously registered, but was removed from the cache due to decommissioning
+ * @param device MDS Device
+ * @param event MDS VehicleEvent
+ */
+const refreshDeviceCache = async (device: Device, event: VehicleEvent) => {
+  try {
+    await cache.readDevice(event.device_id)
+  } catch (err) {
+    try {
+      await Promise.all([cache.writeDevice(device), stream.writeDevice(device)])
+      logger.info('Re-adding previously deregistered device to cache', err)
+    } catch (error) {
+      logger.warn(`Error writing to cache/stream ${error}`)
+    }
+  }
+}
+
 export const createEventHandler = async (
   req: AgencyApiSubmitVehicleEventRequest,
   res: AgencyApiSubmitVehicleEventResponse
@@ -112,24 +130,15 @@ export const createEventHandler = async (
     })()
 
     // TODO switch to cache for speed?
-    const device = await db.readDevice(event.device_id, provider_id)
+    const device = await db.readDevice(device_id, provider_id)
 
-    // Note: Even though the event has passed validation, we need to verify it's allowed for this mode of vehicle
+    // Note: Even though the event has passed schema validation, we need to verify it's allowed for this mode of vehicle
     const invalidStateOrEventTypes = eventValidForMode(device, event)
     if (invalidStateOrEventTypes) {
-      res.status(400).send(invalidStateOrEventTypes)
+      return res.status(400).send(invalidStateOrEventTypes)
     }
 
-    try {
-      await cache.readDevice(event.device_id)
-    } catch (err) {
-      try {
-        await Promise.all([cache.writeDevice(device), stream.writeDevice(device)])
-        logger.info('Re-adding previously deregistered device to cache', err)
-      } catch (error) {
-        logger.warn(`Error writing to cache/stream ${error}`)
-      }
-    }
+    await refreshDeviceCache(device, event)
 
     const { telemetry } = event
     if (telemetry) {
