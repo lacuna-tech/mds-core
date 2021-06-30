@@ -38,7 +38,7 @@ describe('Redis Tests', () => {
       expect(res).toEqual('OK')
     })
 
-    it('mset()', async () => {
+    it('mset() obj', async () => {
       const testVal = 1
       const testArr = [2, 3]
       const testObj = { a: 1, b: 2, c: { foo: 'a', bar: 'b' } }
@@ -47,6 +47,27 @@ describe('Redis Tests', () => {
         arr: JSON.stringify(testArr),
         obj: JSON.stringify(testObj)
       })
+      expect(res).toEqual('OK')
+      const resVal = await redis.get('val')
+      expect(JSON.parse(resVal || '')).toEqual(testVal)
+      const resArr = await redis.get('arr')
+      expect(JSON.parse(resArr || '')).toEqual(testArr)
+      const resObj = await redis.get('obj')
+      expect(JSON.parse(resObj || '')).toEqual(testObj)
+    })
+
+    it('mset() arr', async () => {
+      const testVal = 1
+      const testArr = [2, 3]
+      const testObj = { a: 1, b: 2, c: { foo: 'a', bar: 'b' } }
+      const res = await redis.mset([
+        'val',
+        JSON.stringify(testVal),
+        'arr',
+        JSON.stringify(testArr),
+        'obj',
+        JSON.stringify(testObj)
+      ])
       expect(res).toEqual('OK')
       const resVal = await redis.get('val')
       expect(JSON.parse(resVal || '')).toEqual(testVal)
