@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import Redis, { KeyType, ValueType } from 'ioredis'
 import { Nullable, Timestamp, TimestampInSeconds } from '@mds-core/mds-types'
-import { isDefined, ClientDisconnectedError, ExceptionMessages } from '@mds-core/mds-utils'
-import { initClient } from './helpers/client'
+import { ClientDisconnectedError, ExceptionMessages, isDefined } from '@mds-core/mds-utils'
+import Redis, { KeyType, ValueType } from 'ioredis'
 import { OrderedFields } from '../@types'
+import { initClient } from './helpers/client'
 
 export type ExpireAtOptions = {
   key: KeyType
@@ -62,6 +62,8 @@ export const RedisCache = () => {
     mget: async (keys: KeyType[]) => safelyExec(theClient => theClient.mget(keys)),
 
     set: async (key: KeyType, val: ValueType) => safelyExec(theClient => theClient.set(key, val)),
+
+    mset: async (data: { [key: string]: ValueType }) => safelyExec(theClient => theClient.mset(data)),
 
     /**
      * Expires a key at Unix time in seconds, or time in milliseconds.
