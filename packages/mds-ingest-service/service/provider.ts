@@ -14,20 +14,29 @@
  * limitations under the License.
  */
 
-import { ServiceProvider, ProcessController, ServiceResult, ServiceException } from '@mds-core/mds-service-helpers'
+import logger from '@mds-core/mds-logger'
+import { ProcessController, ServiceException, ServiceProvider, ServiceResult } from '@mds-core/mds-service-helpers'
+import { UUID } from '@mds-core/mds-types'
 import { IngestService } from '../@types'
 import { IngestRepository } from '../repository'
-import logger from '@mds-core/mds-logger'
 import { validateGetVehicleEventsFilterParams, validateUUIDs } from './validators'
-import { UUID } from '@mds-core/mds-types'
 
 export const IngestServiceProvider: ServiceProvider<IngestService> & ProcessController = {
   start: IngestRepository.initialize,
   stop: IngestRepository.shutdown,
   name: async () => ServiceResult('mds-ingest-service'),
-  getEvents: async params => {
+  getEventsUsingOptions: async params => {
     try {
-      return ServiceResult(await IngestRepository.getEvents(validateGetVehicleEventsFilterParams(params)))
+      return ServiceResult(await IngestRepository.getEventsUsingOptions(validateGetVehicleEventsFilterParams(params)))
+    } catch (error) {
+      const exception = ServiceException(`Error in getEvents `, error)
+      logger.error('getEvents exception', { exception, error })
+      return exception
+    }
+  },
+  getEventsUsingCursor: async cursor => {
+    try {
+      return ServiceResult(await IngestRepository.getEventsUsingCursor(cursor))
     } catch (error) {
       const exception = ServiceException(`Error in getEvents `, error)
       logger.error('getEvents exception', { exception, error })

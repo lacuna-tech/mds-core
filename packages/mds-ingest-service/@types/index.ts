@@ -15,6 +15,7 @@
  */
 
 import { DomainModelCreate, RecordedColumn } from '@mds-core/mds-repository'
+import { RpcRoute, RpcServiceDefinition } from '@mds-core/mds-rpc-common'
 import {
   ACCESSIBILITY_OPTION,
   MODALITY,
@@ -29,7 +30,6 @@ import {
   VEHICLE_STATE,
   VEHICLE_TYPE
 } from '@mds-core/mds-types'
-import { RpcServiceDefinition, RpcRoute } from '@mds-core/mds-rpc-common'
 
 export interface DeviceDomainModel extends RecordedColumn {
   device_id: UUID
@@ -75,13 +75,21 @@ export interface GetVehicleEventsFilterParams {
   propulsion_types?: PROPULSION_TYPE[]
   provider_ids?: UUID[]
   vehicle_states?: VEHICLE_STATE[]
-  time_range: TimeRange
+  time_range: { start: number; end: number }
   grouping_type: GROUPING_TYPE
   vehicle_id?: string
   device_ids?: UUID[]
   event_types?: VEHICLE_EVENT[]
   geography_ids?: UUID[]
   limit?: number
+}
+
+export type GetVehicleEventsResponse = {
+  events: EventDomainModel[]
+  cursor: {
+    prev: Nullable<string>
+    next: Nullable<string>
+  }
 }
 
 export interface EventDomainModel extends RecordedColumn {
@@ -102,12 +110,14 @@ export type EventDomainCreateModel = DomainModelCreate<Omit<EventDomainModel, ke
 
 export interface IngestService {
   name: () => string
-  getEvents: (params: GetVehicleEventsFilterParams) => EventDomainModel[]
+  getEventsUsingOptions: (params: GetVehicleEventsFilterParams) => GetVehicleEventsResponse
+  getEventsUsingCursor: (cursor: string) => GetVehicleEventsResponse
   getDevices: (ids: UUID[]) => DeviceDomainModel[]
 }
 
 export const IngestServiceDefinition: RpcServiceDefinition<IngestService> = {
   name: RpcRoute<IngestService['name']>(),
-  getEvents: RpcRoute<IngestService['getEvents']>(),
+  getEventsUsingOptions: RpcRoute<IngestService['getEventsUsingOptions']>(),
+  getEventsUsingCursor: RpcRoute<IngestService['getEventsUsingCursor']>(),
   getDevices: RpcRoute<IngestService['getDevices']>()
 }
