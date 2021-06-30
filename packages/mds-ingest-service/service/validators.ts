@@ -23,7 +23,8 @@ import {
   UUID,
   VEHICLE_EVENTS,
   VEHICLE_STATES,
-  VEHICLE_TYPES
+  VEHICLE_TYPES,
+  WithNonNullableKeys
 } from '@mds-core/mds-types'
 import {
   DeviceDomainModel,
@@ -108,7 +109,9 @@ export const { validate: validateTelemetryDomainModel, $schema: TelemetrySchema 
     { useDefaults: true }
   )
 
-export const { validate: validateEventDomainModel, $schema: EventSchema } = SchemaValidator<EventDomainModel>(
+export const { validate: validateEventDomainModel, $schema: EventSchema } = SchemaValidator<
+  WithNonNullableKeys<EventDomainModel, 'telemetry'>
+>(
   {
     $id: 'Event',
     type: 'object',
@@ -129,8 +132,9 @@ export const { validate: validateEventDomainModel, $schema: EventSchema } = Sche
         enum: [...new Set(VEHICLE_STATES)]
       },
       telemetry: TelemetrySchema /** NOTE:
-        Telemetry is considered non-optional as of MDS 1.0, even though some legacy events do not have telemetry (e.g. `register`).
-        This is why the schema is more restrictive (non-nullable) than the typdef.
+        Telemetry is considered non-optional as of MDS 1.0, even though some legacy events do not have
+        telemetry (e.g. `register`). This is why the schema is more restrictive (non-nullable)
+        than the standard EventDomainModel, and why this returns a more restrictive type post-validation.
        */,
       // ⬇⬇⬇ NULLABLE/OPTIONAL PROPERTIES ⬇⬇⬇
       trip_state: {

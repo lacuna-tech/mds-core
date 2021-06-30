@@ -118,15 +118,10 @@ export const createEventHandler = async (
     const event = (() => {
       const parsedEvent = validateEventDomainModel(unparsedEvent)
 
-      const { telemetry, device_id } = parsedEvent
+      const { telemetry, device_id, recorded } = parsedEvent
+      const { timestamp: telemetry_timestamp } = telemetry
 
-      if (telemetry) {
-        const { timestamp: telemetry_timestamp } = telemetry
-
-        return { ...parsedEvent, telemetry_timestamp, telemetry: { ...telemetry, device_id } }
-      }
-
-      return parsedEvent
+      return { ...parsedEvent, telemetry_timestamp, telemetry: { ...telemetry, device_id, recorded } }
     })()
 
     // TODO switch to cache for speed?
@@ -149,12 +144,12 @@ export const createEventHandler = async (
     const recorded_event = await db.writeEvent(event)
 
     try {
-      await Promise.all([cache.writeEvent(recorded_event), stream.writeEvent(recorded_event)])
-
-      if (telemetry) {
-        telemetry.recorded = recorded
-        await Promise.all([cache.writeTelemetry([telemetry]), stream.writeTelemetry([telemetry])])
-      }
+      await Promise.all([
+        cache.writeEvent(recorded_event),
+        stream.writeEvent(recorded_event),
+        cache.writeTelemetry([telemetry]),
+        stream.writeTelemetry([telemetry])
+      ])
     } catch (err) {
       logger.warn('/event exception cache/stream', err)
     } finally {
