@@ -71,7 +71,7 @@ export type TimeRange = {
   end: Timestamp
 }
 
-export const GetVehicleEventsOrderColumn = <const>['timestamp', 'vehicle_id', 'provider_id', 'vehicle_state']
+export const GetVehicleEventsOrderColumn = <const>['timestamp', 'provider_id', 'vehicle_state']
 
 export type GetVehicleEventsOrderColumn = typeof GetVehicleEventsOrderColumn[number]
 

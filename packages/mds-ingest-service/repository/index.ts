@@ -219,15 +219,10 @@ class IngestReadWriteRepository extends ReadWriteRepository {
         query.andWhere('events.provider_id = ANY(:provider_ids)', { provider_ids })
       }
 
-      // Use query instead of paginator to manage order if using a joined field
-      if (order && order.column === 'vehicle_id') {
-        query.orderBy('devices.vehicle_id', order.direction)
-      }
-
       const pager = buildPaginator({
         entity: EventEntity,
         alias: 'events',
-        paginationKeys: ['timestamp', 'id'],
+        paginationKeys: [order?.column ?? 'timestamp', 'id'],
         query: {
           limit,
           order: order?.direction ?? (order?.column === undefined ? 'DESC' : 'ASC'),

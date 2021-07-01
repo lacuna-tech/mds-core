@@ -130,6 +130,7 @@ const TEST_EVENT_A1: EventDomainCreateModel = {
   telemetry_timestamp: testTimestamp,
   provider_id: TEST1_PROVIDER_ID,
   trip_id: TRIP_UUID_A
+  // test-id-1
 }
 
 const TEST_EVENT_A2: EventDomainCreateModel = {
@@ -141,6 +142,7 @@ const TEST_EVENT_A2: EventDomainCreateModel = {
   telemetry_timestamp: testTimestamp + 1000,
   provider_id: TEST1_PROVIDER_ID,
   trip_id: TRIP_UUID_A
+  // test-id-1
 }
 
 const TEST_EVENT_B1: EventDomainCreateModel = {
@@ -152,6 +154,7 @@ const TEST_EVENT_B1: EventDomainCreateModel = {
   telemetry_timestamp: testTimestamp,
   provider_id: TEST1_PROVIDER_ID,
   trip_id: TRIP_UUID_B
+  // test-id-2
 }
 
 const TEST_EVENT_B2: EventDomainCreateModel = {
@@ -163,6 +166,7 @@ const TEST_EVENT_B2: EventDomainCreateModel = {
   telemetry_timestamp: testTimestamp + 1000,
   provider_id: TEST1_PROVIDER_ID,
   trip_id: TRIP_UUID_B
+  // test-id-2
 }
 
 describe('Ingest Repository Tests', () => {
@@ -262,22 +266,23 @@ describe('Ingest Service Tests', () => {
         expect(events.length).toEqual(2)
       })
 
-      it('gets events in order provided (vehicle_id)', async () => {
+      it('gets events in order provided (vehicle_state)', async () => {
         const { events } = await IngestServiceClient.getEventsUsingOptions({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
-          order: { column: 'vehicle_id', direction: 'ASC' },
-          grouping_type: 'all_events'
+          order: { column: 'vehicle_state', direction: 'ASC' },
+          grouping_type: 'all_events',
+          limit: 1
         })
-        expect(events[0].device_id).toEqual(DEVICE_UUID_A)
+        expect(events[0].vehicle_state).toEqual('removed')
 
         // reverse order
         const { events: eventsDesc } = await IngestServiceClient.getEventsUsingOptions({
           time_range: { start: testTimestamp, end: testTimestamp + 2000 },
-          order: { column: 'vehicle_id', direction: 'DESC' },
+          order: { column: 'vehicle_state', direction: 'DESC' },
           grouping_type: 'all_events'
         })
 
-        expect(eventsDesc[0].device_id).toEqual(DEVICE_UUID_B)
+        expect(eventsDesc[0].vehicle_state).toEqual('unknown')
       })
 
       it('gets events in order provided (vehicle_state)', async () => {
@@ -321,6 +326,32 @@ describe('Ingest Service Tests', () => {
         expect(nextEvents.length).toEqual(2)
         expect(prev).not.toBeNull()
         expect(nextEvents[0].vehicle_state).toEqual('unknown')
+      })
+
+      it('uses secondary (timestamp) sort order when primary sort values are equal', async () => {
+        const {
+          events,
+          cursor: { next }
+        } = await IngestServiceClient.getEventsUsingOptions({
+          time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+          order: { column: 'provider_id', direction: 'ASC' },
+          grouping_type: 'all_events',
+          limit: 4
+        })
+
+        expect(events[0].timestamp).toBeLessThan(events[events.length - 1].timestamp)
+
+        const {
+          events: descEvents,
+          cursor: { next: descNext }
+        } = await IngestServiceClient.getEventsUsingOptions({
+          time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+          order: { column: 'provider_id', direction: 'DESC' },
+          grouping_type: 'all_events',
+          limit: 4
+        })
+
+        expect(descEvents[0].timestamp).toBeGreaterThan(descEvents[descEvents.length - 1].timestamp)
       })
     })
 
