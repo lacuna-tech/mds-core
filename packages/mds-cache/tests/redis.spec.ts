@@ -238,6 +238,12 @@ describe('Redis Tests', () => {
       )
     })
 
+    it('mset()', async () => {
+      await expect(redis.mset(['foo', 'bar'])).rejects.toEqual(
+        new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
+      )
+    })
+
     it('get()', async () => {
       await expect(redis.get('foo')).rejects.toEqual(
         new ClientDisconnectedError(ExceptionMessages.INITIALIZE_CLIENT_MESSAGE)
