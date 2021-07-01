@@ -143,7 +143,8 @@ class IngestReadWriteRepository extends ReadWriteRepository {
       provider_ids,
       limit,
       beforeCursor,
-      afterCursor
+      afterCursor,
+      order
     } = params
 
     const { start, end } = time_range
@@ -218,12 +219,18 @@ class IngestReadWriteRepository extends ReadWriteRepository {
         query.andWhere('events.provider_id = ANY(:provider_ids)', { provider_ids })
       }
 
+      // Use query instead of paginator to manage order if using a joined field
+      if (order && order.column === 'vehicle_id') {
+        query.orderBy('devices.vehicle_id', order.direction)
+      }
+
       const pager = buildPaginator({
         entity: EventEntity,
         alias: 'events',
         paginationKeys: ['timestamp', 'id'],
         query: {
           limit,
+          order: order?.direction ?? (order?.column === undefined ? 'DESC' : 'ASC'),
           beforeCursor: beforeCursor ?? undefined, // typeorm-cursor-pagination type weirdness
           afterCursor: afterCursor ?? undefined // typeorm-cursor-pagination type weirdness
         }
@@ -245,7 +252,8 @@ class IngestReadWriteRepository extends ReadWriteRepository {
         device_ids,
         propulsion_types,
         provider_ids,
-        limit
+        limit,
+        order
       }
 
       return {

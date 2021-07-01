@@ -70,6 +70,19 @@ export type TimeRange = {
   start: Timestamp
   end: Timestamp
 }
+
+export const GetVehicleEventsOrderColumn = <const>['timestamp', 'vehicle_id', 'provider_id', 'vehicle_state']
+
+export type GetVehicleEventsOrderColumn = typeof GetVehicleEventsOrderColumn[number]
+
+export const GetVehicleEventsOrderDirection = <const>['ASC', 'DESC']
+
+export type GetVehicleEventsOrderDirection = typeof GetVehicleEventsOrderDirection[number]
+
+export type GetVehicleEventsOrderOption = {
+  column: GetVehicleEventsOrderColumn
+  direction?: GetVehicleEventsOrderDirection
+}
 export interface GetVehicleEventsFilterParams {
   vehicle_types?: VEHICLE_TYPE[]
   propulsion_types?: PROPULSION_TYPE[]
@@ -82,6 +95,7 @@ export interface GetVehicleEventsFilterParams {
   event_types?: VEHICLE_EVENT[]
   geography_ids?: UUID[]
   limit?: number
+  order?: GetVehicleEventsOrderOption
 }
 
 export type GetVehicleEventsResponse = {

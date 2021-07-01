@@ -261,6 +261,67 @@ describe('Ingest Service Tests', () => {
         })
         expect(events.length).toEqual(2)
       })
+
+      it('gets events in order provided (vehicle_id)', async () => {
+        const { events } = await IngestServiceClient.getEventsUsingOptions({
+          time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+          order: { column: 'vehicle_id', direction: 'ASC' },
+          grouping_type: 'all_events'
+        })
+        expect(events[0].device_id).toEqual(DEVICE_UUID_A)
+
+        // reverse order
+        const { events: eventsDesc } = await IngestServiceClient.getEventsUsingOptions({
+          time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+          order: { column: 'vehicle_id', direction: 'DESC' },
+          grouping_type: 'all_events'
+        })
+
+        expect(eventsDesc[0].device_id).toEqual(DEVICE_UUID_B)
+      })
+
+      it('gets events in order provided (vehicle_state)', async () => {
+        const { events } = await IngestServiceClient.getEventsUsingOptions({
+          time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+          order: { column: 'vehicle_state', direction: 'ASC' },
+          grouping_type: 'all_events'
+        })
+        expect(events[0].vehicle_state).toEqual('removed')
+
+        // reverse order
+        const { events: eventsDesc } = await IngestServiceClient.getEventsUsingOptions({
+          time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+          order: { column: 'vehicle_state', direction: 'DESC' },
+          grouping_type: 'all_events'
+        })
+
+        expect(eventsDesc[0].vehicle_state).toEqual('unknown')
+      })
+
+      it('respects order when cursor is used', async () => {
+        const {
+          events,
+          cursor: { next }
+        } = await IngestServiceClient.getEventsUsingOptions({
+          time_range: { start: testTimestamp, end: testTimestamp + 2000 },
+          order: { column: 'vehicle_state', direction: 'ASC' },
+          grouping_type: 'all_events',
+          limit: 2
+        })
+        expect(events.length).toEqual(2)
+        expect(next).not.toBeNull()
+        expect(events[0].vehicle_state).toEqual('removed')
+
+        // reverse order
+        const {
+          events: nextEvents,
+          cursor: { prev }
+        } = await IngestServiceClient.getEventsUsingCursor(next!)
+
+        expect(nextEvents.length).toEqual(2)
+        expect(prev).not.toBeNull()
+        expect(nextEvents[0].vehicle_state).toEqual('unknown')
+      })
     })
 
     describe('latest_per_vehicle', () => {
