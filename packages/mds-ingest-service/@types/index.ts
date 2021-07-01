@@ -88,7 +88,7 @@ export interface GetVehicleEventsFilterParams {
   propulsion_types?: PROPULSION_TYPE[]
   provider_ids?: UUID[]
   vehicle_states?: VEHICLE_STATE[]
-  time_range: { start: number; end: number }
+  time_range: TimeRange
   grouping_type: GROUPING_TYPE
   vehicle_id?: string
   device_ids?: UUID[]
