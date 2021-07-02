@@ -17,9 +17,10 @@
 import { IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
 import { ACCESSIBILITY_OPTION, MODALITY, Nullable, PROPULSION_TYPE, UUID, VEHICLE_TYPE } from '@mds-core/mds-types'
 import { Column, Entity } from 'typeorm'
+import { MigratedEntity } from '../mixins/migrated-entity'
 
 @Entity('devices')
-export class DeviceEntity extends IdentityColumn(RecordedColumn(class {})) implements DeviceEntityModel {
+export class DeviceEntity extends MigratedEntity(IdentityColumn(RecordedColumn(class {}))) {
   @Column('uuid', { primary: true })
   device_id: UUID
 
