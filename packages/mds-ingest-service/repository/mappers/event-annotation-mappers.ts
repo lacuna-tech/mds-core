@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { Timestamp } from '@mds-core/mds-types'
 import { IdentityColumn, ModelMapper, RecordedColumn } from '@mds-core/mds-repository'
+import { Timestamp } from '@mds-core/mds-types'
 import { EventAnnotationDomainCreateModel, EventAnnotationDomainModel } from '../../@types'
 import { EventAnnotationEntityModel } from '../entities/event-annotation-entity'
 

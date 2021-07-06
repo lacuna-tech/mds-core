@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import { Entity, Column, Index } from 'typeorm'
 import { BigintTransformer, IdentityColumn, RecordedColumn } from '@mds-core/mds-repository'
+import { Column, Entity, Index } from 'typeorm'
 import { EventAnnotationDomainModel } from '../../@types'
 
 export interface EventAnnotationEntityModel extends IdentityColumn, RecordedColumn {
@@ -25,6 +25,7 @@ export interface EventAnnotationEntityModel extends IdentityColumn, RecordedColu
   vehicle_type: EventAnnotationDomainModel['vehicle_type']
   propulsion_types: EventAnnotationDomainModel['propulsion_types']
   geography_ids: EventAnnotationDomainModel['geography_ids']
+  geography_types: EventAnnotationDomainModel['geography_types']
   latency_ms: EventAnnotationDomainModel['latency_ms']
 }
 
@@ -54,6 +55,9 @@ export class EventAnnotationEntity
   @Index()
   @Column('uuid', { array: true })
   geography_ids: EventAnnotationEntityModel['geography_ids']
+
+  @Column('varchar', { array: true, length: 255 })
+  geography_types: EventAnnotationEntityModel['geography_types']
 
   @Column('bigint', { transformer: BigintTransformer })
   latency_ms: EventAnnotationEntityModel['latency_ms']
