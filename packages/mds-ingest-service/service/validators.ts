@@ -27,6 +27,7 @@ import {
 import Joi from 'joi'
 import {
   DeviceDomainModel,
+  EventAnnotationDomainCreateModel,
   EventDomainModel,
   GetVehicleEventsFilterParams,
   GetVehicleEventsOrderColumn,
@@ -181,4 +182,33 @@ export const { validate: validateGetVehicleEventsFilterParams } = SchemaValidato
 export const { validate: validateUUIDs } = SchemaValidator<UUID[]>({
   type: 'array',
   items: uuidSchema
+})
+
+export const { validate: validateEventAnnotationDomainCreateModels } = SchemaValidator<
+  EventAnnotationDomainCreateModel[]
+>({
+  type: 'array',
+  items: {
+    type: 'object',
+    properties: {
+      device_id: { type: 'string', format: 'uuid' },
+      timestamp: { type: 'integer' },
+      vehicle_id: { type: 'string' },
+      vehicle_type: { type: 'string', enum: VEHICLE_TYPES },
+      propulsion_types: { type: 'array', items: { type: 'string', enum: PROPULSION_TYPES } },
+      geography_ids: { type: 'array', items: { type: 'string', format: 'uuid' } },
+      geography_types: { type: 'array', items: nullableString },
+      latency_ms: { type: 'integer' }
+    },
+    required: [
+      'device_id',
+      'timestamp',
+      'vehicle_id',
+      'vehicle_type',
+      'propulsion_types',
+      'geography_ids',
+      'geography_types',
+      'latency_ms'
+    ]
+  }
 })
