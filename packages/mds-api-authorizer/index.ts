@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-import express from 'express'
-import jwt from 'jsonwebtoken'
 import { UUID } from '@mds-core/mds-types'
 import { getEnvVar } from '@mds-core/mds-utils'
+import express from 'express'
+import jwt from 'jsonwebtoken'
 
 export interface AuthorizerClaims {
   principalId: string
@@ -66,7 +66,7 @@ const decode = (token: string) => {
 const decoders: { [scheme: string]: (token: string) => AuthorizerClaims } = {
   bearer: (token: string) => {
     const {
-      sub: principalId,
+      sub: principalId = '',
       scope,
       [ProviderIdClaim()]: provider_id = null,
       [UserEmailClaim()]: user_email = null,

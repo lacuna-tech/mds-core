@@ -14,54 +14,40 @@
  * limitations under the License.
  */
 
-import logger from '@mds-core/mds-logger'
-import { isUUID, now, ValidationError, normalizeToArray, ServerError, NotFoundError } from '@mds-core/mds-utils'
-import { isValidDevice, validateEvent, isValidTelemetry, validateTripMetadata } from '@mds-core/mds-schema-validators'
-import db from '@mds-core/mds-db'
 import cache from '@mds-core/mds-agency-cache'
-import stream from '@mds-core/mds-stream'
-import { providerName } from '@mds-core/mds-providers'
-import {
-  Device,
-  VehicleEvent,
-  Telemetry,
-  ErrorObject,
-  DeviceID,
-  VEHICLE_EVENT,
-  UUID,
-  VEHICLE_STATE,
-  TRIP_STATE
-} from '@mds-core/mds-types'
-import urls from 'url'
 import { parseRequest } from '@mds-core/mds-api-helpers'
+import db from '@mds-core/mds-db'
+import { validateDeviceDomainModel } from '@mds-core/mds-ingest-service'
+import logger from '@mds-core/mds-logger'
+import { providerName } from '@mds-core/mds-providers'
+import { validateEvent, validateTripMetadata } from '@mds-core/mds-schema-validators'
+import stream from '@mds-core/mds-stream'
+import { TRIP_STATE, UUID, VehicleEvent, VEHICLE_EVENT, VEHICLE_STATE } from '@mds-core/mds-types'
+import { normalizeToArray, now, ServerError, ValidationError } from '@mds-core/mds-utils'
+import urls from 'url'
 import {
-  AgencyApiRequest,
-  AgencyApiRegisterVehicleResponse,
   AgencyAipGetVehicleByIdResponse,
+  AgencyApiGetVehicleByIdRequest,
   AgencyApiGetVehiclesByProviderRequest,
   AgencyApiGetVehiclesByProviderResponse,
-  AgencyApiUpdateVehicleResponse,
-  AgencyApiSubmitVehicleEventResponse,
-  AgencyApiSubmitVehicleTelemetryResponse,
-  AgencyApiGetVehicleByIdRequest,
-  AgencyApiUpdateVehicleRequest,
-  AgencyApiSubmitVehicleEventRequest,
-  AgencyApiSubmitVehicleTelemetryRequest,
   AgencyApiPostTripMetadataRequest,
   AgencyApiPostTripMetadataResponse,
-  AgencyApiRegisterVehicleRequest
+  AgencyApiRegisterVehicleRequest,
+  AgencyApiRegisterVehicleResponse,
+  AgencyApiRequest,
+  AgencyApiSubmitVehicleEventRequest,
+  AgencyApiSubmitVehicleEventResponse,
+  AgencyApiUpdateVehicleRequest,
+  AgencyApiUpdateVehicleResponse
 } from './types'
 import {
-  badDevice,
+  agencyValidationErrorParser,
+  badEvent,
+  computeCompositeVehicleData,
   getVehicles,
   lower,
-  writeTelemetry,
-  badEvent,
-  badTelemetry,
-  readPayload,
-  computeCompositeVehicleData
+  readPayload
 } from './utils'
-import { isError } from '@mds-core/mds-service-helpers'
 
 const agencyServerError = { error: 'server_error', error_description: 'Unknown server error' }
 
@@ -74,73 +60,63 @@ export const registerVehicle = async (req: AgencyApiRegisterVehicleRequest, res:
   if (!version || version === '0.4.1') {
     // TODO: Transform 0.4.1 -> 1.0.0
   }
-  // const { device_id, vehicle_id, type, propulsion, year, mfgr, model } = body
-  const {
-    accessibility_options = [],
-    device_id,
-    vehicle_id,
-    vehicle_type,
-    propulsion_types,
-    year,
-    mfgr,
-    modality = 'micromobility',
-    model
-  } = body
-
-  const status: VEHICLE_STATE = 'removed'
-
-  const device = {
-    accessibility_options,
-    provider_id,
-    device_id,
-    vehicle_id,
-    vehicle_type,
-    propulsion_types,
-    year,
-    mfgr,
-    modality,
-    model,
-    recorded,
-    status
-  }
 
   try {
-    isValidDevice(device)
-  } catch (err) {
-    logger.info(
-      `Non-critical prototype Device ValidationError for ${providerName(provider_id)}. Error: ${JSON.stringify(err)}`
-    )
-  }
+    const {
+      accessibility_options,
+      device_id,
+      vehicle_id,
+      vehicle_type,
+      propulsion_types,
+      year,
+      mfgr,
+      modality,
+      model
+    } = body
 
-  const failure = badDevice(device)
-  if (failure) {
-    return res.status(400).send(failure)
-  }
+    const status: VEHICLE_STATE = 'removed'
 
-  // writing to the DB is the crucial part.  other failures should be noted as bugs but tolerated
-  // and fixed later.
-  try {
+    const unvalidatedDevice = {
+      accessibility_options,
+      provider_id,
+      device_id,
+      vehicle_id,
+      vehicle_type,
+      propulsion_types,
+      year,
+      mfgr,
+      modality,
+      model,
+      recorded,
+      status
+    }
+    const device = validateDeviceDomainModel(unvalidatedDevice)
+
+    // DB Write is critical, and failures to write to the cache/stream should be considered non-critical (though they are likely indicative of a bug).
     await db.writeDevice(device)
     try {
       await Promise.all([cache.writeDevice(device), stream.writeDevice(device)])
-    } catch (err) {
-      logger.error('failed to write device stream/cache', err)
+    } catch (error) {
+      logger.error('failed to write device stream/cache', error)
     }
+
     logger.info('new vehicle added', { providerName: providerName(res.locals.provider_id), device })
-    res.status(201).send({})
-  } catch (err) {
-    if (String(err).includes('duplicate')) {
-      res.status(409).send({
+    return res.status(201).send({})
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      const parsedError = agencyValidationErrorParser(error)
+      return res.status(400).send(parsedError)
+    }
+
+    if (String(error).includes('duplicate')) {
+      return res.status(409).send({
         error: 'already_registered',
         error_description: 'A vehicle with this device_id is already registered'
       })
-    } else if (String(err).includes('db')) {
-      logger.error('register vehicle failed:', { err, providerName: providerName(res.locals.provider_id) })
-      res.status(500).send(agencyServerError)
-    } else {
-      logger.error('register vehicle failed:', { err, providerName: providerName(res.locals.provider_id) })
-      res.status(500).send(agencyServerError)
     }
+
+    logger.error('register vehicle failed:', { err: error, providerName: providerName(res.locals.provider_id) })
+    return res.status(500).send(agencyServerError)
   }
 }
 
@@ -341,7 +317,7 @@ export const submitVehicleEvent = async (
     if (event.telemetry) {
       event.telemetry.device_id = event.device_id
     }
-    const failure = (await badEvent(device, event)) || (event.telemetry ? badTelemetry(event.telemetry) : null)
+    const failure = await badEvent(device, event)
     // TODO unify with fail() above
     if (failure) {
       await stream.writeEventError({
@@ -377,132 +353,6 @@ export const submitVehicleEvent = async (
     }
   } catch (err) {
     await fail(err, event)
-  }
-}
-
-export const submitVehicleTelemetry = async (
-  req: AgencyApiSubmitVehicleTelemetryRequest,
-  res: AgencyApiSubmitVehicleTelemetryResponse
-) => {
-  const start = Date.now()
-
-  const { data } = req.body
-  const { provider_id } = res.locals
-  if (!provider_id) {
-    res.status(400).send({
-      error: 'bad_param',
-      error_description: 'Bad or missing provider_id'
-    })
-    return
-  }
-  if (!data) {
-    res.status(400).send({
-      error: 'bad_param',
-      error_description: 'Missing data from post-body'
-    })
-    return
-  }
-  const name = providerName(provider_id)
-  const failures: string[] = []
-  const valid: Telemetry[] = []
-
-  const recorded = now()
-  const p: Promise<Device | DeviceID[]> =
-    data.length === 1 && isUUID(data[0].device_id)
-      ? db.readDevice(data[0].device_id, provider_id)
-      : db.readDeviceIds(provider_id)
-  try {
-    const deviceOrDeviceIds = await p
-    const deviceIds = Array.isArray(deviceOrDeviceIds) ? deviceOrDeviceIds : [deviceOrDeviceIds]
-    for (const item of data) {
-      // make sure the device exists
-      const { gps } = item
-      const telemetry: Telemetry = {
-        device_id: item.device_id,
-        provider_id,
-        timestamp: item.timestamp,
-        charge: item.charge,
-        gps: {
-          lat: gps.lat,
-          lng: gps.lng,
-          altitude: gps.altitude,
-          heading: gps.heading,
-          speed: gps.speed,
-          accuracy: gps.hdop,
-          satellites: gps.satellites
-        },
-        recorded
-      }
-
-      try {
-        isValidTelemetry(telemetry)
-      } catch (err) {
-        logger.info(
-          `Non-critical prototype Telemetry ValidationError for ${providerName(provider_id)}. Error: ${JSON.stringify(
-            err
-          )}`
-        )
-      }
-
-      const bad_telemetry: ErrorObject | null = badTelemetry(telemetry)
-      if (bad_telemetry) {
-        const msg = `bad telemetry for device_id ${telemetry.device_id}: ${bad_telemetry.error_description}`
-        // append to failure
-        failures.push(msg)
-      } else if (!deviceIds.some(item2 => item2.device_id === telemetry.device_id)) {
-        const msg = `device_id ${telemetry.device_id}: not found`
-        failures.push(msg)
-      } else {
-        valid.push(telemetry)
-      }
-    }
-
-    if (valid.length) {
-      const recorded_telemetry = await writeTelemetry(valid)
-
-      const delta = Date.now() - start
-      if (delta > 300) {
-        logger.info('writeTelemetry', {
-          name,
-          validItems: valid.length,
-          unique: recorded_telemetry.length,
-          delta: `${delta} ms (${Math.round((1000 * valid.length) / delta)}/s)`
-        })
-      }
-      if (recorded_telemetry.length) {
-        res.status(201).send({
-          result: `telemetry success for ${valid.length} of ${data.length}`,
-          recorded: now(),
-          unique: recorded_telemetry.length,
-          failures
-        })
-      } else {
-        logger.info(`no unique telemetry in ${data.length} items for ${name}`)
-        res.status(400).send({
-          error: 'invalid_data',
-          error_description: 'None of the provided data was valid',
-          error_details: failures
-        })
-      }
-    } else {
-      const body = `${JSON.stringify(req.body).substring(0, 128)} ...`
-      const fails = `${JSON.stringify(failures).substring(0, 128)} ...`
-      logger.info(`no valid telemetry in ${data.length} items for ${name}`, { body, fails })
-      res.status(400).send({
-        error: 'invalid_data',
-        error_description: 'None of the provided data was valid',
-        error_details: failures
-      })
-    }
-  } catch (err) {
-    if (isError(err, NotFoundError))
-      return res.status(400).send({
-        error: 'unregistered',
-        error_description: 'Some of the devices are unregistered',
-        error_details: [data[0].device_id]
-      })
-
-    return res.status(500).send({ error: new ServerError() })
   }
 }
 

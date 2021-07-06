@@ -15,6 +15,7 @@
  */
 
 import { DomainModelCreate, RecordedColumn } from '@mds-core/mds-repository'
+import { RpcRoute, RpcServiceDefinition } from '@mds-core/mds-rpc-common'
 import {
   ACCESSIBILITY_OPTION,
   MODALITY,
@@ -29,7 +30,6 @@ import {
   VEHICLE_STATE,
   VEHICLE_TYPE
 } from '@mds-core/mds-types'
-import { RpcServiceDefinition, RpcRoute } from '@mds-core/mds-rpc-common'
 
 export interface DeviceDomainModel extends RecordedColumn {
   device_id: UUID
@@ -53,12 +53,12 @@ type WithGpsData<T extends TelemetryData, P extends string = 'gps'> = Omit<T, ke
     [p in P]: Omit<T, 'charge'>
   }
 
-export interface TelemetryDomainModel
-  extends WithGpsData<NullableOptional<Omit<TelemetryData, 'hdop' | 'satellites'>>>,
-    RecordedColumn {
+export interface TelemetryDomainModel extends WithGpsData<NullableOptional<TelemetryData>>, RecordedColumn {
   device_id: UUID
   provider_id: UUID
   timestamp: Timestamp
+  charge: Nullable<number>
+  stop_id: Nullable<UUID>
 }
 
 export type TelemetryDomainCreateModel = DomainModelCreate<Omit<TelemetryDomainModel, keyof RecordedColumn>>
@@ -69,6 +69,19 @@ export type GROUPING_TYPE = typeof GROUPING_TYPES[number]
 export type TimeRange = {
   start: Timestamp
   end: Timestamp
+}
+
+export const GetVehicleEventsOrderColumn = <const>['timestamp', 'provider_id', 'vehicle_state']
+
+export type GetVehicleEventsOrderColumn = typeof GetVehicleEventsOrderColumn[number]
+
+export const GetVehicleEventsOrderDirection = <const>['ASC', 'DESC']
+
+export type GetVehicleEventsOrderDirection = typeof GetVehicleEventsOrderDirection[number]
+
+export type GetVehicleEventsOrderOption = {
+  column: GetVehicleEventsOrderColumn
+  direction?: GetVehicleEventsOrderDirection
 }
 export interface GetVehicleEventsFilterParams {
   vehicle_types?: VEHICLE_TYPE[]
@@ -82,6 +95,15 @@ export interface GetVehicleEventsFilterParams {
   event_types?: VEHICLE_EVENT[]
   geography_ids?: UUID[]
   limit?: number
+  order?: GetVehicleEventsOrderOption
+}
+
+export type GetVehicleEventsResponse = {
+  events: EventDomainModel[]
+  cursor: {
+    prev: Nullable<string>
+    next: Nullable<string>
+  }
 }
 
 export interface EventDomainModel extends RecordedColumn {
@@ -114,14 +136,16 @@ export type EventAnnotationDomainCreateModel = DomainModelCreate<Omit<EventAnnot
 
 export interface IngestService {
   name: () => string
-  getEvents: (params: GetVehicleEventsFilterParams) => EventDomainModel[]
+  getEventsUsingOptions: (params: GetVehicleEventsFilterParams) => GetVehicleEventsResponse
+  getEventsUsingCursor: (cursor: string) => GetVehicleEventsResponse
   getDevices: (ids: UUID[]) => DeviceDomainModel[]
   writeEventAnnotations: (params: EventAnnotationDomainCreateModel[]) => EventAnnotationDomainModel[]
 }
 
 export const IngestServiceDefinition: RpcServiceDefinition<IngestService> = {
   name: RpcRoute<IngestService['name']>(),
-  getEvents: RpcRoute<IngestService['getEvents']>(),
+  getEventsUsingOptions: RpcRoute<IngestService['getEventsUsingOptions']>(),
+  getEventsUsingCursor: RpcRoute<IngestService['getEventsUsingCursor']>(),
   getDevices: RpcRoute<IngestService['getDevices']>(),
   writeEventAnnotations: RpcRoute<IngestService['writeEventAnnotations']>()
 }

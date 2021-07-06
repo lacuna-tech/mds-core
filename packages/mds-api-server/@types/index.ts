@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
-import express from 'express'
 import { AuthorizerClaims } from '@mds-core/mds-api-authorizer'
+import express from 'express'
 
 export type ApiRequest<B = {}> = express.Request<{}, unknown, B, {}>
 
@@ -40,7 +40,7 @@ export type ApiRequestQuery<S extends string, M extends string[] = never> = {
 /**
  * Standard format for API errors
  */
-export type ApiError = { error: unknown; error_description?: string; error_details?: string[] } | { errors: unknown[] }
+export type ApiError = { error: unknown; error_description?: string; error_details?: any[] } | { errors: unknown[] }
 
 /**
  * B: Type of response body (res.send)

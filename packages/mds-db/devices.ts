@@ -14,16 +14,13 @@
  * limitations under the License.
  */
 
-import { QueryResult } from 'pg'
-import { UUID, Device, Recorded, DeviceID } from '@mds-core/mds-types'
-import { now, isUUID, csv, NotFoundError } from '@mds-core/mds-utils'
 import logger from '@mds-core/mds-logger'
-
-import schema from './schema'
-
-import { vals_sql, cols_sql, vals_list, logSql, SqlVals, MDSPostgresClient } from './sql-utils'
-
+import { Device, DeviceID, Recorded, UUID } from '@mds-core/mds-types'
+import { csv, isUUID, NotFoundError, now } from '@mds-core/mds-utils'
+import { QueryResult } from 'pg'
 import { getReadOnlyClient, getWriteableClient, makeReadOnlyQuery } from './client'
+import schema from './schema'
+import { cols_sql, logSql, MDSPostgresClient, SqlVals, vals_list, vals_sql } from './sql-utils'
 
 export async function readDevicesByVehicleId(
   provider_id: UUID,
@@ -111,8 +108,7 @@ export async function readDeviceList(device_ids: UUID[]): Promise<Recorded<Devic
   return result.rows
 }
 
-export async function writeDevice(baseDevice: Device): Promise<Recorded<Device>> {
-  const device = { accessibility_options: [], ...baseDevice }
+export async function writeDevice(device: Device): Promise<Recorded<Device>> {
   const client = await getWriteableClient()
   const sql = `INSERT INTO ${schema.TABLE.devices} (${cols_sql(schema.TABLE_COLUMNS.devices)}) VALUES (${vals_sql(
     schema.TABLE_COLUMNS.devices
@@ -122,7 +118,7 @@ export async function writeDevice(baseDevice: Device): Promise<Recorded<Device>>
   const {
     rows: [recorded_device]
   }: { rows: Recorded<Device>[] } = await client.query(sql, values)
-  return { ...baseDevice, ...recorded_device }
+  return { ...device, ...recorded_device }
 }
 
 export async function updateDevice(device_id: UUID, provider_id: UUID, changes: Partial<Device>): Promise<Device> {

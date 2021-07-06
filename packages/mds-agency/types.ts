@@ -15,25 +15,25 @@
  */
 
 import {
-  UUID,
-  Device,
-  VehicleEvent,
-  Telemetry,
-  Timestamp,
-  Recorded,
-  VEHICLE_STATE,
-  VEHICLE_EVENT,
-  TripMetadata
-} from '@mds-core/mds-types'
-import { MultiPolygon } from 'geojson'
-import {
   ApiRequest,
+  ApiRequestParams,
   ApiResponse,
   ApiResponseLocals,
-  ApiRequestParams,
   ApiResponseLocalsClaims,
   ApiResponseLocalsVersion
 } from '@mds-core/mds-api-server'
+import {
+  Device,
+  Recorded,
+  Telemetry,
+  Timestamp,
+  TripMetadata,
+  UUID,
+  VehicleEvent,
+  VEHICLE_EVENT,
+  VEHICLE_STATE
+} from '@mds-core/mds-types'
+import { MultiPolygon } from 'geojson'
 
 export const AGENCY_API_SUPPORTED_VERSIONS = ['0.4.1', '1.0.0'] as const
 export type AGENCY_API_SUPPORTED_VERSION = typeof AGENCY_API_SUPPORTED_VERSIONS[number]
@@ -66,10 +66,9 @@ export type AgencyApiSubmitVehicleEventResponse = AgencyApiResponse<{
 }>
 
 export type AgencyApiSubmitVehicleTelemetryResponse = AgencyApiResponse<{
-  result: string
-  recorded: Timestamp
-  unique: number
-  failures: string[]
+  success: number
+  total: number
+  failures: Object[]
 }>
 
 export type AgencyApiPostTripMetadataResponse = AgencyApiResponse<TripMetadata>
@@ -109,4 +108,10 @@ export type PaginatedVehiclesList = {
   total: number
   links: { first: string; last: string; prev: string | null; next: string | null }
   vehicles: (Device & { updated?: number | null; telemetry?: Telemetry | null })[]
+}
+
+export type AgencyApiError = {
+  error: 'bad_param' | 'missing_param'
+  error_description: 'A validation error occurred.' | 'A required parameter is missing.'
+  error_details: any
 }

@@ -15,9 +15,10 @@
  */
 
 import { ApiVersionMiddleware } from '@mds-core/mds-api-server'
-import { AUDIT_API_SUPPORTED_VERSIONS, AUDIT_API_DEFAULT_VERSION } from '../types'
+import type { RequestHandler } from 'express'
+import { AUDIT_API_DEFAULT_VERSION, AUDIT_API_SUPPORTED_VERSIONS } from '../types'
 
-export const AuditApiVersionMiddleware = ApiVersionMiddleware(
+export const AuditApiVersionMiddleware: RequestHandler = ApiVersionMiddleware(
   'application/vnd.mds.audit+json',
   AUDIT_API_SUPPORTED_VERSIONS
 ).withDefaultVersion(AUDIT_API_DEFAULT_VERSION)
