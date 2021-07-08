@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { SchemaValidator, timestampSchema, uuidSchema } from '@mds-core/mds-schema-validators'
+import { SchemaValidator } from '@mds-core/mds-schema-validators'
 import {
   ACCESSIBILITY_OPTIONS,
   MODALITIES,
@@ -37,6 +37,8 @@ import {
   TelemetryDomainModel
 } from '../@types'
 
+const uuidSchema = { type: 'string', format: 'uuid' }
+const timestampSchema = { type: 'integer', minimum: 100_000_000_000, maximum: 99_999_999_999_999 }
 const nullableInteger = { type: 'integer', nullable: true, default: null }
 const nullableFloat = { type: 'number', format: 'float', nullable: true, default: null }
 const nullableString = { type: 'string', nullable: true, default: null }
