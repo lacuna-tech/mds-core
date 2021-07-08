@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { SchemaValidator } from '@mds-core/mds-schema-validators'
+import { SchemaValidator, timestampSchema, uuidSchema } from '@mds-core/mds-schema-validators'
 import {
   ACCESSIBILITY_OPTIONS,
   MODALITIES,
@@ -37,7 +37,6 @@ import {
   TelemetryDomainModel
 } from '../@types'
 
-const uuidSchema = { type: 'string', format: 'uuid' }
 const nullableInteger = { type: 'integer', nullable: true, default: null }
 const nullableFloat = { type: 'number', format: 'float', nullable: true, default: null }
 const nullableString = { type: 'string', nullable: true, default: null }
@@ -87,7 +86,7 @@ export const { validate: validateTelemetryDomainModel, $schema: TelemetrySchema 
       properties: {
         device_id: uuidSchema,
         provider_id: uuidSchema,
-        timestamp: { type: 'integer' },
+        timestamp: timestampSchema,
         gps: {
           type: 'object',
           properties: {
@@ -121,7 +120,7 @@ export const { validate: validateEventDomainModel, $schema: EventSchema } = Sche
     properties: {
       device_id: uuidSchema,
       provider_id: uuidSchema,
-      timestamp: { type: 'integer' },
+      timestamp: timestampSchema,
       event_types: {
         type: 'array',
         items: {
@@ -172,7 +171,7 @@ export const { validate: validateGetVehicleEventsFilterParams } = SchemaValidato
   properties: {
     vehicle_types: { type: 'array', items: { type: 'string', enum: [...new Set(VEHICLE_TYPES)] } },
     propulsion_types: { type: 'array', items: { type: 'string', enum: [...PROPULSION_TYPES] } },
-    provider_ids: { type: 'array', items: { type: 'string', format: 'uuid' } },
+    provider_ids: { type: 'array', items: uuidSchema },
     vehicle_states: { type: 'array', items: { type: 'string', enum: [...new Set(VEHICLE_STATES)] } },
     time_range: {
       type: 'object',
@@ -183,7 +182,7 @@ export const { validate: validateGetVehicleEventsFilterParams } = SchemaValidato
     },
     grouping_type: { type: 'string', enum: [...GROUPING_TYPES] },
     vehicle_id: { type: 'string' },
-    device_ids: { type: 'array', items: { type: 'string', format: 'uuid' } },
+    device_ids: { type: 'array', items: uuidSchema },
     event_types: { type: 'array', items: { type: 'string', enum: [...new Set(VEHICLE_EVENTS)] } },
     limit: { type: 'integer' },
     order: {
@@ -210,12 +209,12 @@ export const { validate: validateEventAnnotationDomainCreateModels } = SchemaVal
   items: {
     type: 'object',
     properties: {
-      device_id: { type: 'string', format: 'uuid' },
-      timestamp: { type: 'integer' },
+      device_id: uuidSchema,
+      timestamp: timestampSchema,
       vehicle_id: { type: 'string' },
       vehicle_type: { type: 'string', enum: VEHICLE_TYPES },
       propulsion_types: { type: 'array', items: { type: 'string', enum: PROPULSION_TYPES } },
-      geography_ids: { type: 'array', items: { type: 'string', format: 'uuid' } },
+      geography_ids: { type: 'array', items: uuidSchema },
       geography_types: { type: 'array', items: nullableString },
       latency_ms: { type: 'integer' }
     },

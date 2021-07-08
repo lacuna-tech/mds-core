@@ -60,7 +60,7 @@ export const numberSchema = Joi.number().options({ convert: false })
 
 export const uuidSchema = stringSchema.guid()
 
-export const timestampSchema = numberSchema.min(1420099200000)
+export const timestampSchema = Joi.number().integer().min(100_000_000_000).max(99_999_999_999_999)
 
 export const providerIdSchema = uuidSchema.valid(...Object.keys(providers))
 
