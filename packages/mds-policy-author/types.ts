@@ -23,7 +23,7 @@ import {
 } from '@mds-core/mds-api-server'
 import { ModalityPolicy, PolicyMetadata, PolicyTypeInfo, UUID } from '@mds-core/mds-types'
 
-export const POLICY_AUTHOR_API_SUPPORTED_VERSIONS = ['0.4.1'] as const
+export const POLICY_AUTHOR_API_SUPPORTED_VERSIONS = ['1.0.0'] as const
 export type POLICY_AUTHOR_API_SUPPORTED_VERSION = typeof POLICY_AUTHOR_API_SUPPORTED_VERSIONS[number]
 export const [POLICY_AUTHOR_API_DEFAULT_VERSION] = POLICY_AUTHOR_API_SUPPORTED_VERSIONS
 
