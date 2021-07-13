@@ -33,7 +33,7 @@ pipeline {
           sh '''
             # Fetch develop so we can only test the diff
             git fetch
-            git checkout develop
+            git checkout origin/develop
             git pull
             git checkout -
 
