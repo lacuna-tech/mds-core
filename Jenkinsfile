@@ -31,6 +31,13 @@ pipeline {
       steps {
         nvm('version': 'v15.11.0') {
           sh '''
+            # Fetch develop so we can only test the diff
+            git fetch
+            git branch
+            git checkout origin/develop
+            git pull
+            git checkout -
+
             set -eu
             set -o pipefail
 
@@ -58,7 +65,7 @@ pipeline {
             trap cleanup EXIT
 
             pnpm clean
-            PG_NAME=postgres PG_HOST=localhost PG_USER=postgres REDIS_HOST=localhost pnpm test
+            PG_NAME=postgres PG_HOST=localhost PG_USER=postgres REDIS_HOST=localhost pnpm test --filter "...[origin/develop]"
           '''
         }
       }
