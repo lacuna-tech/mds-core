@@ -33,6 +33,7 @@ pipeline {
           sh '''
             # Fetch develop so we can only test the diff
             git fetch origin develop
+            git pull origin develop
 
             set -eu
             set -o pipefail
