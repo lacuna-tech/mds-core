@@ -32,8 +32,9 @@ pipeline {
         nvm('version': 'v15.11.0') {
           sh '''
             # Fetch develop so we can only test the diff
-            git fetch origin develop
-            git pull origin develop
+            git checkout develop
+            git pull
+            git checkout -
 
             set -eu
             set -o pipefail
